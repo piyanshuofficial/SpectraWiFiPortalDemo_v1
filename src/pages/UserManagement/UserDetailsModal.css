@@ -1,0 +1,202 @@
+/*src/pages/UserManagement/UserDetailsModal.css*/
+
+.udm-modal-root {
+  background: #fff;
+  max-width: 560px;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(40,56,92,.1);
+  padding: 0 0 12px 0;
+}
+
+.udm-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 24px 28px 0 28px;
+}
+
+.udm-heading {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #183b6b;
+  flex: 1 1 100%;
+  letter-spacing: 0.1px;
+}
+
+.udm-close-btn {
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #8d99ae;
+  font-size: 1.6rem;
+  cursor: pointer;
+  transition: color .15s;
+  padding: 0 4px;
+}
+.udm-close-btn:hover { color: #183b6b; }
+
+.udm-main-grid {
+  display: flex;
+  justify-content: space-between;
+  gap: 32px;
+  margin: 14px 28px 0 28px;
+  flex-wrap: wrap;
+}
+
+.udm-section {
+  min-width: 180px;
+  flex: 1 1 45%;
+}
+
+.udm-section-title {
+  font-weight: 600;
+  color: #183b6b;
+  font-size: 0.95rem;
+  margin-bottom: 6px;
+  letter-spacing: 0.05px;
+}
+
+.udm-item {
+  margin-bottom: 5px;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+.udm-label {
+  color: #626980;
+  font-weight: 600;
+  min-width: 65px;
+  display: inline-block;
+}
+.udm-value {
+  color: #222;
+  font-weight: 400;
+  flex: 1 1 auto;
+}
+.udm-bold { font-weight: 600; }
+
+/* --- Spaced, single-row stats bar with scroll --- */
+.udm-stats-bar.fit-row {
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  align-items: stretch;
+  margin-bottom: 8px;
+  margin-top: 0;
+  width: 100%;
+  flex-wrap: nowrap;
+  padding: 8px 0 12px 0;
+  box-sizing: border-box;
+}
+
+.udm-stats-card {
+  background: #f8faff;
+  border-radius: 10px;
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 4px 7px 4px;
+  box-shadow: 0 1px 4px rgba(33,45,98,0.05);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.udm-stats-number {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 3px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  word-break: break-word;
+  width: 100%;
+  text-align: center;
+}
+.udm-stats-label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #4b5d83;
+  letter-spacing: 0.01em;
+  text-align: center;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Policy Row for Policy Pills */
+.policy-detail-stack { margin-top: 6px; }
+.policy-row { display: flex; align-items: center; margin-bottom: 3px; }
+.policy-icon {
+  width: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95em;
+}
+.policy-pill {
+  display: inline-block;
+  border-radius: 8px;
+  font-weight: 600;
+  padding: 1px 8px;
+  font-size: 0.8em;
+  margin-left: 3px;
+}
+.policy-pill.speed  { background: #eef4ff; color: #0053ba; }
+.policy-pill.data   { background: #e6fbe7; color: #229441; }
+.policy-pill.device { background: #f4eefd; color: #8832b1; }
+
+.udm-actions-row {
+  display: flex;
+  gap: 12px;
+  padding: 16px 28px 0 28px;
+  margin-top: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.udm-actions-row button {
+  min-width: 100px;
+  min-height: 36px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+/* Responsive for mobile screens */
+@media (max-width: 930px) {
+  .udm-main-grid { flex-direction: column; gap: 14px; }
+}
+@media (max-width: 520px) {
+  .udm-header-row, .udm-main-grid { margin-left: 6px; margin-right: 6px; }
+}
+@media (max-width: 480px) {
+  .udm-main-grid, .udm-header-row, .udm-stats-bar, .udm-actions-row {
+    padding-left: 2px !important;
+    padding-right: 2px !important;
+  }
+  .udm-actions-row button { min-width: 70px; font-size: 0.85em;}
+  .udm-header-row { padding-top:12px; }
+}
+@media (max-width: 850px) {
+  .udm-stats-bar.fit-row {
+    gap: 6px;
+  }
+  .udm-stats-card {
+    font-size: 0.9em;
+    padding: 7px 2px 6px 2px;
+    min-width: 60px;
+  }
+}
+@media (max-width: 600px) {
+  .udm-stats-bar.fit-row {
+    gap: 4px;
+  }
+  .udm-stats-card {
+    font-size: 0.85em;
+    max-width: 90vw;
+    padding: 6px 1vw 6px 1vw;
+  }
+}

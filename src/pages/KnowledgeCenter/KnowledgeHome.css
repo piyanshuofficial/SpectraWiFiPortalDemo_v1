@@ -1,0 +1,134 @@
+/*src/pages/KnowledgeCenter/KnowledgeHome.css*/
+
+.knowledge-center-main {
+  padding: 0 40px 36px 40px;
+}
+.knowledge-center-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin: 24px 0 18px 0;
+  color: #153874;
+}
+.knowledge-search-row {
+  display: flex;
+  margin-bottom: 28px;
+  gap: 14px;
+}
+.knowledge-search-input {
+  flex: 1;
+  padding: 10px 16px;
+  font-size: 0.95rem;
+  border-radius: 8px;
+  border: 1px solid #dde6f3;
+  background: #f9fafb;
+  outline: none;
+}
+.knowledge-search-btn {
+  padding: 10px 24px;
+  font-size: 0.9rem;
+  border-radius: 8px;
+  background: #13388f;
+  color: #fff;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+}
+.knowledge-feature-cards {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+.knowledge-feature-card {
+  flex: 1 1 180px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(35,50,110,0.07);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 18px 22px;
+  text-align: center;
+}
+.feature-icon {
+  font-size: 2.2rem;
+  margin-bottom: 14px;
+  color: #173aa3;
+}
+.feature-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.feature-desc {
+  color: #374157;
+  font-size: 0.85rem;
+}
+.knowledge-blocks-row {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+.knowledge-block {
+  flex: 1 1 280px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(35,50,110,0.07);
+  padding: 24px 24px 18px 24px;
+}
+.block-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #16346d;
+}
+.block-entry {
+  margin-bottom: 12px;
+  font-size: 0.9rem;
+}
+.knowledge-help-row {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(35,50,110,0.07);
+  padding: 24px 22px 18px 22px;
+  margin-top: 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.help-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #15397b;
+  margin-bottom: 10px;
+}
+.help-desc {
+  color: #384050;
+  margin-bottom: 18px;
+  font-size: 0.9rem;
+}
+.help-buttons {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 3px;
+}
+.help-btn {
+  font-size: 0.85rem;
+  min-width: 120px;
+  padding: 10px 8px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  cursor: pointer;
+  margin-bottom: 2px;
+}
+.help-btn.email { background: #193380; color: #fff; }
+.help-btn.call { background: #ffbe3b; color: #1d2536; }
+.help-btn.chat { background: #17bc71; color: #fff; }
+
+@media (max-width: 1200px) {
+  .knowledge-center-main { padding-left: 16px; padding-right: 16px;}
+  .knowledge-blocks-row, .knowledge-feature-cards { flex-direction: column; gap: 20px;}
+  .knowledge-block, .knowledge-feature-card { width: 100%; }
+}

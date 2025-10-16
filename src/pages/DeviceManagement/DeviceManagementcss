@@ -1,0 +1,39 @@
+.device-form-modal {
+  max-width: 480px;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  background: #fff;
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+
+.form-row {
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-row label {
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+input:disabled,
+select:disabled {
+  background-color: #f0f0f0;
+  color: #666;
+  cursor: not-allowed;
+}
+
+.error-message {
+  color: red;
+  font-size: 0.85rem;
+  margin-top: 4px;
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 16px;
+}

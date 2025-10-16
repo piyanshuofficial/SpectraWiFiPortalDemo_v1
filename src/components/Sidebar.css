@@ -1,0 +1,193 @@
+/* src/components/Sidebar.css */
+.sidebar {
+  background: #181818;
+  background-image: url('../assets/images/nav-bg.png');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-position: left top;
+  color: #fff;
+  width: 100px;
+  min-width: 100px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 101;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
+}
+
+.sidebar-logo-area {
+  background: #181818;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 60px;
+  width: 100%;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+
+.sidebar-logo-img {
+  max-width: 70px;
+  height: 50px;
+  object-fit: contain;
+  user-select: none;
+  pointer-events: none;
+  filter: brightness(1.1);
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: 8px 0 20px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  margin: 0;
+  overflow-y: auto;
+}
+
+.sidebar-nav,
+.sidebar-nav ul,
+.sidebar-nav-li {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.sidebar-nav-li {
+  padding: 0;
+  position: relative;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.sidebar-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 10px 8px;
+  width: 100%;
+  box-sizing: border-box;
+  background: transparent;
+  color: #9eb3c1;
+  font-weight: 500;
+  font-size: 0.9rem;
+  border-radius: 0;
+  position: relative;
+  transition: background 0.2s, color 0.2s;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.sidebar-nav-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #68d5ff;
+}
+
+.sidebar-nav-item.active-link {
+  background: rgba(104, 213, 255, 0.1);
+  color: #68d5ff;
+}
+
+.sidebar-nav-item.active-link::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 4px;
+  height: 100%;
+  background: #68d5ff;
+  border-radius: 0 4px 4px 0;
+}
+
+.sidebar-nav-icon {
+  font-size: 2.1rem;
+  color: inherit;
+  transition: color 0.2s;
+  margin-bottom: 6px;
+}
+
+.sidebar-nav-label {
+  display: block;
+  text-align: center;
+  font-size: 0.7rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+  color: inherit;
+  text-decoration: none;
+  line-height: 1.2;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+@media (max-width: 900px) {
+  .sidebar {
+    position: static;
+    width: 100vw;
+    height: 80px;
+    flex-direction: row;
+    min-height: 0;
+    z-index: 101;
+    /* For horizontal layout, use full width. Adjust background for mobile if desired: */
+    background-size: cover;
+    background-position: center;
+  }
+  
+  .sidebar-logo-area {
+    height: 54px;
+    width: 120px;
+    flex-shrink: 0;
+  }
+  
+  .sidebar-logo-img {
+    height: 40px;
+    max-width: 65px;
+  }
+  
+  .sidebar-nav {
+    flex-direction: row;
+    align-items: center;
+    padding: 0 10px;
+    overflow-x: auto;
+  }
+  
+  .sidebar-nav ul {
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+  }
+  
+  .sidebar-nav-li {
+    width: auto;
+    padding: 0;
+    margin-bottom: 0;
+  }
+  
+  .sidebar-nav-item {
+    flex-direction: row;
+    gap: 8px;
+    padding: 10px 14px;
+    font-size: 0.85rem;
+  }
+  
+  .sidebar-nav-item.active-link::before {
+    left: 0;
+    top: auto;
+    bottom: 0;
+    width: 100%;
+    height: 3px;
+  }
+  
+  .sidebar-nav-icon {
+    font-size: 1.3rem;
+    margin-bottom: 0;
+  }
+  
+  .sidebar-nav-label {
+    font-size: 0.8rem;
+  }
+}

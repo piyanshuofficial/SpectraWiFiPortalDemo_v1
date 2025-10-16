@@ -1,0 +1,137 @@
+/* src/pages/UserManagement/UserToolbar.css */
+
+.user-toolbar-content {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  min-height: 40px;
+  width: 100%;
+  margin-bottom: 5px;
+}
+
+.user-toolbar {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 6px rgba(0,0,0,.06);
+  padding: 8px 8px;
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 13px;
+  z-index: 1;
+}
+
+.user-toolbar-inner {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  gap: 16px;
+}
+
+.toolbar-left, .toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-license-ring-header {
+  position: static;     /* or just REMOVE the position property entirely */
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 180px;     /* adjust for your ring's width */
+  height: 100%;
+  margin-left: 5px;    /* spacing from toolbar group */
+}
+
+.toolbar-search {
+  padding: 6px 10px;
+  font-size: 0.8rem;
+  border-radius: 6px;
+  border: 1.2px solid #dadbe7;
+  outline: none;
+  min-width: 160px;
+  transition: border-color 0.2s ease;
+  line-height: 1.3;
+}
+.toolbar-search:focus { border-color: #004aad; }
+
+.toolbar-select {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1.2px solid #dadbe7;
+  font-size: 0.8rem;
+  cursor: pointer;
+  min-width: 110px;
+  appearance: none;
+  outline: none;
+  transition: border-color 0.2s ease;
+  line-height: 1.3;
+}
+.toolbar-select:focus { border-color: #004aad; }
+
+.help-icon {
+  font-size: 1rem;
+  color: #c1c1c1;
+  cursor: pointer;
+}
+
+@media (max-width: 900px) {
+  .user-toolbar-content {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .user-toolbar {
+    padding: 10px 12px;
+    width: 100%;
+  }
+  .user-license-ring-header {
+    position: static;
+    align-self: flex-end;
+    margin-bottom: 14px;
+  }
+  .user-toolbar-inner {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .toolbar-left, .toolbar-right {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .toolbar-search { min-width: 140px; }
+  .toolbar-select { min-width: 100px; }
+}
+
+@media (max-width: 600px) {
+  .user-toolbar-content {
+    gap: 6px;
+    min-height: 66px;
+  }
+  .user-toolbar {
+    padding: 8px 10px;
+    width: 100%;
+  }
+  .user-license-ring-header {
+    position: static;
+    align-self: flex-end;
+    margin-bottom: 10px;
+  }
+  .user-toolbar-inner {
+    flex-direction: column;
+    gap: 10px;
+    align-items: stretch;
+  }
+  .toolbar-left, .toolbar-right {
+    flex-direction: column;
+    gap: 7px;
+    width: 100%;
+  }
+  .toolbar-search, .toolbar-select {
+    min-width: unset;
+    width: 100%;
+  }
+}

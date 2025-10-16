@@ -1,0 +1,412 @@
+//src/components/DeviceFormModal.js
+
+
+
+import React, { useState, useEffect, useRef } from 'react';
+import Modal from './Modal';
+import Button from './Button';
+import './DeviceFormModal.css';
+import SEGMENT_DEVICE_AVAILABILITY from '../config/segmentDeviceConfig';
+
+const HUMAN_DEVICE_CATEGORIES = [
+  'Mobile',
+  'Laptop',
+  'Tablet',
+  'iPad',
+  'Smart Speaker'
+];
+
+const NONHUMAN_DEVICE_CATEGORIES = [
+  'Security Camera',
+  'IP Camera',
+  'Video Recording Server',
+  'DVR/NVR',
+  'Access Control System',
+  'Biometric',
+  'Intrusion Detection Sensor',
+  'Smoke Detector',
+  'Carbon Monoxide Detector',
+  'Smart Thermostat',
+  'Smart Lighting System',
+  'Smart Lock',
+  'HVAC Controller',
+  'Building Automation System',
+  'Smart TV',
+  'Streaming Device',
+  'Gaming Console',
+  'Smart Speaker',
+  'Digital Signage Display',
+  'Printer',
+  'Scanner',
+  'Projector',
+  'Point-of-Sale (POS) System',
+  'Alarm System',
+  'Smart Plug',
+  'Smart Appliance',
+  'Digital Assistant',
+  'Miscellaneous'
+];
+
+const DEVICE_TYPE_PREFIX = {
+  'Mobile': 'MOB',
+  'Laptop': 'LAP',
+  'Tablet': 'TAB',
+  'iPad': 'IPAD',
+  'Smart Speaker': 'SSPK',
+  'Security Camera': 'CAM',
+  'IP Camera': 'IPC',
+  'Video Recording Server': 'VRS',
+  'DVR/NVR': 'DVR',
+  'Access Control System': 'ACS',
+  'Biometric': 'BIO',
+  'Intrusion Detection Sensor': 'IDS',
+  'Smoke Detector': 'SD',
+  'Carbon Monoxide Detector': 'CMD',
+  'Smart Thermostat': 'THM',
+  'Smart Lighting System': 'SLS',
+  'Smart Lock': 'SLOCK',
+  'HVAC Controller': 'HVAC',
+  'Building Automation System': 'BAS',
+  'Smart TV': 'TV',
+  'Streaming Device': 'STR',
+  'Gaming Console': 'GCON',
+  'Digital Signage Display': 'DSD',
+  'Printer': 'PRN',
+  'Scanner': 'SCN',
+  'Projector': 'PROJ',
+  'Point-of-Sale (POS) System': 'POS',
+  'Alarm System': 'ALRM',
+  'Smart Plug': 'SPLG',
+  'Smart Appliance': 'SAPL',
+  'Digital Assistant': 'DASST',
+  'Miscellaneous': 'MISC'
+};
+
+const SEGMENT_ALLOW_MANUAL_OVERRIDE = {
+  enterprise: true,
+  coWorking: true,
+  coLiving: false
+};
+
+function generateNextDeviceUserId(category, existingIds = []) {
+  const prefix = DEVICE_TYPE_PREFIX[category] || 'DEV';
+  let maxNum = 0;
+  existingIds.forEach(id => {
+    const match = id.match(new RegExp(`^${prefix}-(\\d+)$`));
+    if (match) {
+      maxNum = Math.max(maxNum, parseInt(match[1], 10));
+    }
+  });
+  const nextNum = String(maxNum + 1).padStart(3, '0');
+  return `${prefix}-${nextNum}`;
+}
+
+function DeviceFormModal({
+  open,
+  onClose,
+  onSubmit,
+  device,
+  users = [],
+  devices = [],
+  segment = 'enterprise',
+  siteUserList = []
+}) {
+  const [mode, setMode] = useState('bindUser');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [deviceCategory, setDeviceCategory] = useState('');
+  const [deviceName, setDeviceName] = useState('');
+  const [userId, setUserId] = useState('');
+  const [macAddress, setMacAddress] = useState('');
+  const [errors, setErrors] = useState({});
+  const firstInputRef = useRef(null);
+
+  const existingDeviceUserIds = devices.map(dev => dev.userId).filter(Boolean);
+  const { allowHuman = true, allowNonHuman = true } = SEGMENT_DEVICE_AVAILABILITY[segment] || {};
+
+  useEffect(() => {
+    if (open) {
+      if (allowHuman && !allowNonHuman) setMode('bindUser');
+      else if (!allowHuman && allowNonHuman) setMode('deviceUser');
+      else setMode('bindUser');
+      setSearchTerm('');
+      setSelectedUser(null);
+      setDeviceCategory('');
+      setDeviceName('');
+      setUserId('');
+      setMacAddress('');
+      setErrors({});
+      setTimeout(() => firstInputRef.current && firstInputRef.current.focus(), 80);
+    }
+  }, [open, allowHuman, allowNonHuman]);
+
+  useEffect(() => {
+    if (mode === 'deviceUser' && deviceCategory) {
+      const genId = generateNextDeviceUserId(deviceCategory, existingDeviceUserIds);
+      setUserId(genId);
+      setDeviceName(`${deviceCategory} ${genId}`);
+    }
+  }, [mode, deviceCategory]);
+
+  const filteredUsers = siteUserList.filter(user =>
+    (user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+     user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+     user.id?.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
+
+  function validate() {
+    const errs = {};
+    if (mode === 'bindUser') {
+      if (!selectedUser) errs.selectedUser = 'Select a user to bind the device';
+    }
+    if (!deviceCategory) errs.deviceCategory = 'Device category is required';
+    if (!deviceName.trim()) errs.deviceName = 'Device name is required';
+    if (!macAddress.trim()) errs.macAddress = 'MAC Address is required';
+    else if (!/^([0-9A-F]{2}:){5}[0-9A-F]{2}$/i.test(macAddress))
+      errs.macAddress = 'MAC must be in format AA:BB:CC:DD:EE:FF';
+    if (mode === 'deviceUser') {
+      if (!userId.trim()) errs.userId = 'Auto-generated User ID required';
+      if (existingDeviceUserIds.includes(userId.trim()) && (!device || device.userId !== userId.trim())) {
+        errs.userId = 'Suggested User ID already in use, try a new category or edit.';
+      }
+    }
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
+  }
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    if (!validate()) return;
+    let deviceData = {};
+    if (mode === 'bindUser') {
+      deviceData = {
+        mode,
+        userId: selectedUser.id,
+        deviceCategory,
+        deviceName: deviceName.trim(),
+        macAddress: macAddress.replace(/:/g, '').toUpperCase()
+
+      };
+    } else {
+      deviceData = {
+        mode,
+        userId: userId.trim(),
+        deviceCategory,
+        deviceName: deviceName.trim(),
+        macAddress: macAddress.trim().toUpperCase()
+      };
+    }
+    onSubmit(deviceData);
+  }
+
+  const allowOverride = SEGMENT_ALLOW_MANUAL_OVERRIDE[segment] ?? true;
+  const categoryOptions = mode === 'bindUser' ? HUMAN_DEVICE_CATEGORIES : NONHUMAN_DEVICE_CATEGORIES;
+
+  if (!open || (!allowHuman && !allowNonHuman)) return null;
+
+  return (
+    <Modal onClose={onClose}>
+      <div className="device-form-modal">
+        <div className="device-form-header">
+          Register New Device
+        </div>
+        <div className="device-form-scrollable-content">
+          <form onSubmit={handleSubmit} autoComplete="off" noValidate>
+            <div className="device-form-row mapping-type-row">
+              <label htmlFor="mappingType">Mapping Type</label>
+              <div className="mapping-type-options">
+                {allowHuman && (
+                  <label>
+                    <input
+                      type="radio"
+                      name="mappingType"
+                      checked={mode === 'bindUser'}
+                      onChange={() => setMode('bindUser')}
+                    /> <span>Bind to Human User</span>
+                  </label>
+                )}
+                {allowNonHuman && (
+                  <label>
+                    <input
+                      type="radio"
+                      name="mappingType"
+                      checked={mode === 'deviceUser'}
+                      onChange={() => setMode('deviceUser')}
+                    /> <span>Register as Device User</span>
+                  </label>
+                )}
+              </div>
+            </div>
+            {mode === 'bindUser' && allowHuman && (
+              <>
+              <div className="device-form-row">
+                <label htmlFor="userSearch">
+                  Assign To User<span className="required-asterisk">*</span>
+                </label>
+                <div style={{ position: 'relative', width: '100%' }}>
+                  <input
+                    ref={firstInputRef}
+                    id="userSearch"
+                    placeholder="Search user by name, email or ID..."
+                    value={searchTerm}
+                    onChange={e => {
+                      setSearchTerm(e.target.value);
+                      setSelectedUser(null); // Reset selection if search term is changed
+                    }}
+                    autoComplete="off"
+                    className={errors.selectedUser ? 'error' : ''}
+                    aria-invalid={!!errors.selectedUser}
+                    aria-describedby="selectedUser-error"
+                    style={{ width: '100%' }}
+                  />
+                  {searchTerm.trim().length > 0 && filteredUsers.length > 0 && (
+                    <div
+                      className="search-results-list"
+                      style={{
+                        position: 'absolute',
+                        width: '100%',
+                        top: '100%',
+                        left: 0,
+                        zIndex: 10,
+                        maxHeight: 140,
+                        overflowY: 'auto'
+                      }}
+                    >
+                      {filteredUsers.map(user => (
+                        <div
+                          key={user.id}
+                          className={`search-user-row${selectedUser?.id === user.id ? ' selected' : ''}`}
+                          onClick={() => {
+                            setSelectedUser(user);
+                            setSearchTerm(`${user.name} (${user.id})`);
+                          }}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            padding: '6px 10px',
+                            cursor: 'pointer',
+                            background: selectedUser?.id === user.id ? '#e3f1ff' : undefined,
+                            color: '#193a6b',
+                            borderBottom: '1px solid #e8eaf3'
+                          }}
+                          tabIndex={0}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              setSelectedUser(user);
+                              setSearchTerm(`${user.name} (${user.id})`);
+                            }
+                          }}
+                        >
+                          <span>{user.name} <span style={{ fontSize: '0.85em', color: '#4a75ad' }}>({user.id})</span></span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <div className="error-message" id="selectedUser-error" role="alert">{errors.selectedUser}</div>
+              </div>
+              </>
+            )}
+            <div className="device-form-row">
+              <label htmlFor="devcat">
+                Device Category<span className="required-asterisk">*</span>
+              </label>
+              <select
+                id="devcat"
+                value={deviceCategory}
+                onChange={e => setDeviceCategory(e.target.value)}
+                required
+                className={errors.deviceCategory ? 'error' : ''}
+                aria-invalid={!!errors.deviceCategory}
+                aria-describedby="devcat-error"
+              >
+                <option value="">Choose category...</option>
+                {categoryOptions.map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
+              <div className="error-message" id="devcat-error" role="alert">{errors.deviceCategory}</div>
+            </div>
+            {mode === 'deviceUser' && allowNonHuman && (
+              <div className="device-form-row">
+                <label htmlFor="userid">
+                  Device User ID<span className="required-asterisk">*</span>
+                  {allowOverride && (
+                    <span style={{ fontSize: '0.79em', color: '#8aa' }}> (auto-suggested, can edit)</span>
+                  )}
+                </label>
+                <input
+                  id="userid"
+                  value={userId}
+                  onChange={e => allowOverride && setUserId(e.target.value)}
+                  maxLength={32}
+                  className={errors.userId ? 'error' : ''}
+                  disabled={!allowOverride}
+                  required
+                  aria-invalid={!!errors.userId}
+                  aria-describedby="userid-error"
+                  autoComplete="off"
+                  spellCheck={false}
+                />
+                <div className="error-message" id="userid-error" role="alert">{errors.userId}</div>
+              </div>
+            )}
+            <div className="device-form-row">
+              <label htmlFor="devicename">
+                Device Name<span className="required-asterisk">*</span>
+                {mode === 'deviceUser' && allowOverride && (
+                  <span style={{ fontSize: '0.79em', color: '#8aa' }}> (auto-suggested, can edit)</span>
+                )}
+              </label>
+              <input
+                id="devicename"
+                value={deviceName}
+                onChange={e => setDeviceName(e.target.value)}
+                maxLength={40}
+                className={errors.deviceName ? 'error' : ''}
+                required
+                aria-invalid={!!errors.deviceName}
+                aria-describedby="devicename-error"
+                autoComplete="off"
+                spellCheck={false}
+              />
+              <div className="error-message" id="devicename-error" role="alert">{errors.deviceName}</div>
+            </div>
+            <div className="device-form-row">
+              <label htmlFor="mac">
+                MAC Address<span className="required-asterisk">*</span>
+              </label>
+              <input
+              id="mac"
+              value={macAddress}
+              onChange={e => {
+                // Remove all non-hex characters, then format as XX:XX:XX:XX:XX:XX (up to 12 hex chars)
+                let val = e.target.value.replace(/[^a-fA-F0-9]/g, '').toUpperCase().slice(0,12);
+                let pretty = val.match(/.{1,2}/g)?.join(':') || '';
+                setMacAddress(pretty);
+              }}
+              maxLength={17}
+              placeholder="AA:BB:CC:DD:EE:FF"
+              className={errors.macAddress ? 'error' : ''}
+              autoComplete="off"
+              spellCheck={false}
+              required
+              aria-invalid={!!errors.macAddress}
+              aria-describedby="mac-error"
+            />
+              <div className="error-message" id="mac-error" role="alert">{errors.macAddress}</div>
+            </div>
+          </form>
+        </div>
+        <div className="device-form-actions">
+          <Button type="button" variant="secondary" onClick={onClose} aria-label="Cancel device form">Cancel</Button>
+          <Button type="submit" variant="primary" aria-label={device ? "Update device" : "Register device"}>
+            {device ? "Update Device" : "Register Device"}
+          </Button>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+export default DeviceFormModal;

@@ -1,0 +1,26 @@
+/* src/components/Modal.css */
+
+.modal-backdrop {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(30, 40, 60, 0.27);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+}
+
+.modal-container {
+  background: #fff;
+  border-radius: 12px;
+  max-width: 520px;
+  width: 90%;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 6px 20px rgba(40, 56, 92, 0.18);
+  position: relative;
+  padding: 20px 24px;
+}

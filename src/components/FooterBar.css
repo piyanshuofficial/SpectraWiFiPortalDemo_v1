@@ -1,0 +1,81 @@
+/* src/components/FooterBar.css */
+.footer-bar {
+  position: fixed;
+  left: 100px;
+  right: 0;
+  bottom: 0;
+  height: 50px;
+  background: #e8e8e8;
+  color: #333;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 15px;
+  font-size: 0.85rem;
+  z-index: 120;
+  box-shadow: 0 -1px 4px rgba(0, 0, 0, 0.08);
+  flex-wrap: nowrap;
+  border-top: 1px solid #d0d0d0;
+}
+
+.footer-left {
+  font-weight: 500;
+  white-space: nowrap;
+  color: #555;
+  font-size: 1.0rem;
+}
+
+.footer-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 1.0rem;
+  white-space: nowrap;
+}
+
+.footer-link {
+  color: #333;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.15s;
+  font-size: 1.0rem;
+}
+
+.footer-link:hover {
+  color: #004aad;
+  text-decoration: underline;
+}
+
+.footer-divider {
+  margin: 0 6px;
+  color: #666;
+  font-size: 1.1em;
+  font-weight: 500;
+}
+
+@media (max-width: 700px) {
+  .footer-bar {
+    left: 0;
+    padding: 0 10px;
+    height: auto;
+    flex-wrap: wrap;
+    gap: 4px;
+    font-size: 0.8rem;
+  }
+  
+  .footer-left, .footer-right {
+    width: 100%;
+    font-size: 0.8rem;
+    text-align: center;
+    white-space: normal;
+    padding: 4px 0;
+  }
+  
+  .footer-right {
+    justify-content: center;
+  }
+  
+  .footer-divider {
+    display: none;
+  }
+}
