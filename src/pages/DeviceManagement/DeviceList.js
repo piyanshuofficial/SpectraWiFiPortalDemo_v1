@@ -1,11 +1,12 @@
 // src/pages/DeviceManagement/DeviceList.js
 
-import React, { useState } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { FaDesktop, FaGlobeAmericas, FaBan, FaWifi, FaMobileAlt, FaLaptop } from "react-icons/fa";
 import { useAuth } from "../../context/AuthContext";
 import { Permissions } from "../../utils/accessLevels";
 import Button from "../../components/Button";
-import DeviceFormModal from "../../components/DeviceFormModal"; // ✅ UPDATED IMPORT
+import Pagination from "../../components/Pagination";
+import DeviceFormModal from "../../components/DeviceFormModal";
 import { toast } from "react-toastify";
 import "./DeviceList.css";
 
@@ -72,6 +73,127 @@ const devices = [
     ago: "1 hour ago",
     usage: "1.2 GB",
     online: true
+  },
+  {
+    id: 3,
+    name: "iPhone 13",
+    type: "mobile",
+    Icon: FaMobileAlt,
+    mac: "00:1B:44:11:3A:B8",
+    owner: "Rajesh Kumar",
+    ip: "192.168.1.143",
+    ago: "3 hours ago",
+    usage: "189 MB",
+    online: false
+  },
+  {
+    id: 4,
+    name: "Dell XPS 15",
+    type: "laptop",
+    Icon: FaLaptop,
+    mac: "00:1B:44:11:3A:C9",
+    owner: "Vikram Chatterjee",
+    ip: "192.168.1.157",
+    ago: "30 minutes ago",
+    usage: "890 MB",
+    online: true
+  },
+  {
+    id: 5,
+    name: "Samsung Galaxy S22",
+    type: "mobile",
+    Icon: FaMobileAlt,
+    mac: "00:1B:44:11:3A:B9",
+    owner: "Divya Nair",
+    ip: "192.168.1.144",
+    ago: "5 hours ago",
+    usage: "567 MB",
+    online: false
+  },
+  {
+    id: 6,
+    name: "HP Pavilion",
+    type: "laptop",
+    Icon: FaLaptop,
+    mac: "00:1B:44:11:3A:D0",
+    owner: "Sanjay Rao",
+    ip: "192.168.1.158",
+    ago: "15 minutes ago",
+    usage: "2.1 GB",
+    online: true,
+    blocked: true
+  },
+  {
+    id: 7,
+    name: "iPad Pro",
+    type: "mobile",
+    Icon: FaMobileAlt,
+    mac: "00:1B:44:11:3A:C0",
+    owner: "Rahul Desai",
+    ip: "192.168.1.145",
+    ago: "45 minutes ago",
+    usage: "432 MB",
+    online: true
+  },
+  {
+    id: 8,
+    name: "Lenovo ThinkPad",
+    type: "laptop",
+    Icon: FaLaptop,
+    mac: "00:1B:44:11:3A:D1",
+    owner: "Amit Sharma",
+    ip: "192.168.1.159",
+    ago: "10 minutes ago",
+    usage: "1.5 GB",
+    online: true
+  },
+  {
+    id: 9,
+    name: "iPhone 12 Mini",
+    type: "mobile",
+    Icon: FaMobileAlt,
+    mac: "00:1B:44:11:3A:C1",
+    owner: "Neeta Singh",
+    ip: "192.168.1.146",
+    ago: "6 hours ago",
+    usage: "234 MB",
+    online: false
+  },
+  {
+    id: 10,
+    name: "MacBook Pro 16",
+    type: "laptop",
+    Icon: FaLaptop,
+    mac: "00:1B:44:11:3A:D2",
+    owner: "Rajesh Kumar",
+    ip: "192.168.1.160",
+    ago: "20 minutes ago",
+    usage: "3.2 GB",
+    online: true
+  },
+  {
+    id: 11,
+    name: "Google Pixel 7",
+    type: "mobile",
+    Icon: FaMobileAlt,
+    mac: "00:1B:44:11:3A:C2",
+    owner: "Vikram Chatterjee",
+    ip: "192.168.1.147",
+    ago: "4 hours ago",
+    usage: "345 MB",
+    online: false
+  },
+  {
+    id: 12,
+    name: "Asus ROG",
+    type: "laptop",
+    Icon: FaLaptop,
+    mac: "00:1B:44:11:3A:D3",
+    owner: "Divya Nair",
+    ip: "192.168.1.161",
+    ago: "25 minutes ago",
+    usage: "2.8 GB",
+    online: true
   }
 ];
 
@@ -83,7 +205,46 @@ const DeviceList = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [searchText, setSearchText] = useState("");
   const [showDeviceModal, setShowDeviceModal] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(6);
 
+  // Compute filtered devices - ALWAYS called, not conditional
+  const filteredDevices = useMemo(() => {
+    return devices.filter(dev => {
+      if (typeFilter !== "all" && dev.type !== typeFilter) return false;
+      if (statusFilter === "online" && !dev.online) return false;
+      if (statusFilter === "blocked" && dev.blocked !== true) return false;
+      if (
+        searchText &&
+        !(
+          dev.name.toLowerCase().includes(searchText.toLowerCase()) ||
+          dev.mac.toLowerCase().includes(searchText.toLowerCase()) ||
+          dev.owner.toLowerCase().includes(searchText.toLowerCase())
+        )
+      )
+        return false;
+      return true;
+    });
+  }, [typeFilter, statusFilter, searchText]);
+
+  // Compute paged devices - ALWAYS called, not conditional
+  const pagedDevices = useMemo(() => {
+    const startIndex = (currentPage - 1) * rowsPerPage;
+    return filteredDevices.slice(startIndex, startIndex + rowsPerPage);
+  }, [filteredDevices, currentPage, rowsPerPage]);
+
+  // Reset to page 1 when filters change - ALWAYS called, not conditional
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [typeFilter, statusFilter, searchText, rowsPerPage]);
+
+  const handleDeviceSubmit = (deviceInfo) => {
+    toast.success(`Device "${deviceInfo.deviceName}" registered successfully`);
+    setShowDeviceModal(false);
+    // TODO: Backend integration - add device to list
+  };
+
+  // Early return AFTER all hooks have been called
   if (!rolePermissions.canManageDevices) {
     return (
       <div style={{ padding: 20, color: "red" }} role="alert">
@@ -91,27 +252,6 @@ const DeviceList = () => {
       </div>
     );
   }
-
-  const filteredDevices = devices.filter(dev => {
-    if (typeFilter !== "all" && dev.type !== typeFilter) return false;
-    if (statusFilter === "online" && !dev.online) return false;
-    if (statusFilter === "blocked" && dev.blocked !== true) return false;
-    if (
-      searchText &&
-      !(
-        dev.name.toLowerCase().includes(searchText.toLowerCase()) ||
-        dev.mac.toLowerCase().includes(searchText.toLowerCase())
-      )
-    )
-      return false;
-    return true;
-  });
-
-  const handleDeviceSubmit = (deviceInfo) => {
-    toast.success(`Device "${deviceInfo.deviceName}" registered successfully`);
-    setShowDeviceModal(false);
-    // TODO: Backend integration - add device to list
-  };
 
   return (
     <main className="device-mgmt-main">
@@ -142,6 +282,7 @@ const DeviceList = () => {
           value={typeFilter}
           onChange={e => setTypeFilter(e.target.value)}
           className="device-mgmt-select"
+          aria-label="Filter by device type"
         >
           {deviceTypes.map(t => (
             <option key={t.value} value={t.value}>
@@ -153,6 +294,7 @@ const DeviceList = () => {
           value={statusFilter}
           onChange={e => setStatusFilter(e.target.value)}
           className="device-mgmt-select"
+          aria-label="Filter by device status"
         >
           {statusOptions.map(s => (
             <option key={s.value} value={s.value}>
@@ -165,12 +307,14 @@ const DeviceList = () => {
           type="text"
           value={searchText}
           onChange={e => setSearchText(e.target.value)}
-          placeholder="Search by MAC or device name..."
+          placeholder="Search by name, MAC, or owner..."
+          aria-label="Search devices"
         />
         <Button 
           type="button" 
           className="device-mgmt-search-btn"
           onClick={() => toast.info("Search functionality ready for backend integration")}
+          aria-label="Execute search"
         >
           Search
         </Button>
@@ -184,49 +328,93 @@ const DeviceList = () => {
         </Button>
       </div>
 
+      {/* Pagination Controls - Top */}
+      <Pagination
+        totalItems={filteredDevices.length}
+        rowsPerPage={rowsPerPage}
+        currentPage={currentPage}
+        onPageChange={setCurrentPage}
+        onRowsPerPageChange={setRowsPerPage}
+      />
+
       {/* Device Cards */}
       <div className="device-card-list">
-        {filteredDevices.map(device => (
-          <div className="device-card" key={device.id}>
-            <div className="device-icon-bg">
-              <device.Icon className="device-main-icon" />
-            </div>
-            <div className="device-meta-col">
-              <div className="device-card-title">{device.name}</div>
-              <div className="device-detail">MAC: {device.mac}</div>
-              <div className="device-detail">Owner: {device.owner}</div>
-              <div className="device-card-info-row">
-                <span>
-                  IP Address:{" "}
-                  <span className="device-link">{device.ip}</span>
-                </span>
-                <span>
-                  Connected:{" "}
-                  <span className="device-link">{device.ago}</span>
-                </span>
-                <span>
-                  Data Usage:{" "}
-                  <span className="device-link">{device.usage}</span>
-                </span>
-              </div>
-            </div>
-            <div className="device-card-actions">
-              <Button className="details-btn" variant="primary">
-                Details
-              </Button>
-              <Button className="block-btn" variant="danger">
-                Block
-              </Button>
-            </div>
-            <span
-              className={`device-status-dot ${device.online ? "online" : "offline"}`}
-              title={device.online ? "Online" : "Offline"}
-            ></span>
+        {pagedDevices.length === 0 ? (
+          <div style={{ 
+            textAlign: "center", 
+            padding: "40px", 
+            color: "#666",
+            gridColumn: "1 / -1",
+            fontSize: "1.1rem"
+          }}>
+            No devices found matching your filters.
           </div>
-        ))}
+        ) : (
+          pagedDevices.map(device => (
+            <div className="device-card" key={device.id}>
+              <div className="device-icon-bg">
+                <device.Icon className="device-main-icon" />
+              </div>
+              <div className="device-meta-col">
+                <div className="device-card-title">{device.name}</div>
+                <div className="device-detail">MAC: {device.mac}</div>
+                <div className="device-detail">Owner: {device.owner}</div>
+                <div className="device-card-info-row">
+                  <span>
+                    IP Address:{" "}
+                    <span className="device-link">{device.ip}</span>
+                  </span>
+                  <span>
+                    Connected:{" "}
+                    <span className="device-link">{device.ago}</span>
+                  </span>
+                  <span>
+                    Data Usage:{" "}
+                    <span className="device-link">{device.usage}</span>
+                  </span>
+                </div>
+              </div>
+              <div className="device-card-actions">
+                <Button 
+                  className="details-btn" 
+                  variant="primary"
+                  onClick={() => toast.info(`Viewing details for ${device.name}`)}
+                  aria-label={`View details for ${device.name}`}
+                >
+                  Details
+                </Button>
+                <Button 
+                  className="block-btn" 
+                  variant="danger"
+                  onClick={() => toast.warn(`Blocking ${device.name}`)}
+                  aria-label={`Block ${device.name}`}
+                  disabled={device.blocked}
+                >
+                  {device.blocked ? "Blocked" : "Block"}
+                </Button>
+              </div>
+              <span
+                className={`device-status-dot ${device.online ? "online" : "offline"}`}
+                title={device.online ? "Online" : "Offline"}
+                aria-label={device.online ? "Device is online" : "Device is offline"}
+              ></span>
+            </div>
+          ))
+        )}
       </div>
 
-      {/* ✅ UPDATED: Using unified DeviceFormModal */}
+      {/* Pagination Controls - Bottom */}
+      {filteredDevices.length > 0 && (
+        <Pagination
+          totalItems={filteredDevices.length}
+          rowsPerPage={rowsPerPage}
+          currentPage={currentPage}
+          onPageChange={setCurrentPage}
+          onRowsPerPageChange={setRowsPerPage}
+        />
+      )}
+
+      {/* Device Registration Modal */}
       {showDeviceModal && (
         <DeviceFormModal
           open={showDeviceModal}

@@ -224,6 +224,23 @@ const UserList = () => {
 
   return (
     <div className="user-list-container">
+      {/* Segment Selector - Top Right Corner (Testing Only) */}
+      <div className="segment-selector-test">
+        <label htmlFor="segment-test-select">Segment:</label>
+        <select
+          id="segment-test-select"
+          value={segmentFilter}
+          onChange={(e) => setSegmentFilter(e.target.value)}
+          className="segment-test-dropdown"
+        >
+          {Object.keys(segmentSpecificFields).map((s) => (
+            <option key={s} value={s}>
+              {s === "all" ? "All" : s.charAt(0).toUpperCase() + s.slice(1)}
+            </option>
+          ))}
+        </select>
+      </div>
+
       <div className="user-toolbar-ring-row">
         <div className="user-toolbar">
           <UserToolbar
@@ -243,47 +260,33 @@ const UserList = () => {
           <UserLicenseRing current={USED_LICENSES} total={MAX_LICENSES} size={160} ringWidth={16} />
         </div>
       </div>
-      <div className="column-controls">
-        <div>
-          <label htmlFor="segment-select" className="column-controls-label">
-            Select Segment:
-          </label>
-          <select
-            id="segment-select"
-            value={segmentFilter}
-            onChange={(e) => setSegmentFilter(e.target.value)}
-            className="segment-dropdown"
-          >
-            {Object.keys(segmentSpecificFields).map((s) => (
-              <option key={s} value={s}>
-                {s === "all" ? "All Segments" : s.charAt(0).toUpperCase() + s.slice(1)}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label htmlFor="rows-per-page-select" className="rows-per-page-label">
-            Rows per page:
+
+      {/* Compact Column Controls */}
+      <div className="column-controls-compact">
+        <div className="column-controls-left">
+          <label htmlFor="rows-per-page-select" className="compact-label">
+            Rows:
           </label>
           <select
             id="rows-per-page-select"
-            className="rows-per-page-select"
-            aria-label="Rows per page selector"
+            className="compact-select"
             value={rowsPerPage}
             onChange={(e) => setRowsPerPage(Number(e.target.value))}
+            aria-label="Rows per page"
           >
             {[5, 10, 20, 50].map((n) => (
               <option key={n} value={n}>{n}</option>
             ))}
           </select>
         </div>
-        <div>
-          <span className="column-controls-label">Show Columns:</span>
-          <div className="column-checkbox-row">
+
+        <div className="column-controls-right">
+          <span className="compact-label">Columns:</span>
+          <div className="column-checkbox-compact">
             {columns
               .filter((c) => c.optional)
               .map((col) => (
-                <label key={col.key} className="column-checkbox-chip">
+                <label key={col.key} className="column-checkbox-chip-compact">
                   <input
                     type="checkbox"
                     checked={visibleColumns.includes(col.key)}
@@ -295,6 +298,7 @@ const UserList = () => {
           </div>
         </div>
       </div>
+
       <button
         className="btn btn-secondary"
         onClick={() => setAdvancedFilterVisible((v) => !v)}
@@ -306,6 +310,7 @@ const UserList = () => {
           ? `Hide Advanced Filters${activeFilterCount > 0 ? ` (${activeFilterCount})` : ""}`
           : `Show Advanced Filters${activeFilterCount > 0 ? ` (${activeFilterCount})` : ""}`}
       </button>
+
       {advancedFilterVisible && (
         <form
           id="advanced-filters-panel"
@@ -385,6 +390,7 @@ const UserList = () => {
           </div>
         </form>
       )}
+
       <div className="user-table-outer">
         <table className="user-table" role="table">
           <thead>
@@ -481,6 +487,7 @@ const UserList = () => {
           </tbody>
         </table>
       </div>
+
       <Pagination
         totalItems={filteredUsers.length}
         rowsPerPage={rowsPerPage}
@@ -488,6 +495,7 @@ const UserList = () => {
         onPageChange={setCurrentPage}
         onRowsPerPageChange={setRowsPerPage}
       />
+
       {showFormModal && (
         <UserFormModal
           user={editingUser}
@@ -499,6 +507,7 @@ const UserList = () => {
           }}
         />
       )}
+
       {showDetailsModal && detailsUser && (
         <UserDetailsModal
           user={detailsUser}
@@ -514,6 +523,7 @@ const UserList = () => {
           }}
         />
       )}
+
       {showDeviceModal && (
         <DeviceFormModal
           open={showDeviceModal}

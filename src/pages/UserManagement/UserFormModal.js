@@ -1,6 +1,5 @@
 // src/pages/UserManagement/UserFormModal.js
 
-
 import React, { useState, useEffect, useRef } from "react";
 import Modal from "../../components/Modal";
 import Button from "../../components/Button";
@@ -8,7 +7,7 @@ import Badge from "../../components/Badge";
 import { segmentFieldConfig } from "../../config/segmentFieldConfig";
 import { isEmailValid, isRequired } from "../../utils/validationUtils";
 import { toast } from "react-toastify";
-import "./UserManagement.css";
+import "./UserFormModal.css";
 import UserLicenseBar from '../../components/common/UserLicenseBar';
 
 const EMAIL_REQUIRED_SEGMENTS = {
@@ -35,6 +34,7 @@ const USED_LICENSES = 70;
 function randomPassword() {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
+
 function getTodayISO() {
   return new Date().toISOString().slice(0, 10);
 }
@@ -45,7 +45,7 @@ const DEFAULTS = {
   moveInDate: getTodayISO(),
   moveOutDate: getTodayISO(),
   checkInTime: "11:00",
-  checkOutTime: "14:00", // 2:00PM in 24hr
+  checkOutTime: "14:00",
 };
 
 const UserFormModal = ({ user, onSubmit, onClose, segment }) => {
@@ -54,6 +54,7 @@ const UserFormModal = ({ user, onSubmit, onClose, segment }) => {
   const allowedVolumes = segment === "enterprise" ? ["50 GB", "100 GB", "200 GB"] : ["10 GB", "25 GB", "50 GB"];
   const allowedDeviceCounts = ["1", "2", "3", "4", "5"];
   const isCycleTypeStatic = user && user.segment === "hotel";
+  
   let initialResidentType = "";
   let initialMemberType = "";
 
@@ -62,6 +63,7 @@ const UserFormModal = ({ user, onSubmit, onClose, segment }) => {
   } else if (segment === "coWorking") {
     initialMemberType = "Permanent";
   }
+
   const [form, setForm] = useState({
     id: "",
     firstName: "",
@@ -131,9 +133,11 @@ const UserFormModal = ({ user, onSubmit, onClose, segment }) => {
   function minCheckOutDate() {
     return form.checkInDate || DEFAULTS.checkInDate;
   }
+
   function minMoveOutDate() {
     return form.moveInDate || DEFAULTS.moveInDate;
   }
+
   function minCheckOutTime() {
     if (form.checkInDate === form.checkOutDate && form.checkInTime) return form.checkInTime;
     return "";
@@ -143,7 +147,6 @@ const UserFormModal = ({ user, onSubmit, onClose, segment }) => {
   const isCoLivingShortTerm = segment === "coLiving" && form.residentType === "Short-Term";
   const isCoWorkingPermanent = segment === "coWorking" && form.memberType === "Permanent";
   const isCoWorkingTemporary = segment === "coWorking" && form.memberType === "Temporary";
-
   const isEmailRequired = EMAIL_REQUIRED_SEGMENTS[segment] ?? false;
 
   const validate = () => {
@@ -158,7 +161,6 @@ const UserFormModal = ({ user, onSubmit, onClose, segment }) => {
     if (!isRequired(form.dataVolume)) newErrors.dataVolume = "Data Volume is required.";
     if (!isRequired(form.deviceLimit)) newErrors.deviceLimit = "Device Limit is required.";
 
-    // coLiving Short-Term (required)
     if (segment === "coLiving" && form.residentType === "Short-Term") {
       if (!isRequired(form.checkInDate)) newErrors.checkInDate = "Check-In Date required for short-term resident.";
       if (!isRequired(form.checkInTime)) newErrors.checkInTime = "Check-In Time required for short-term resident.";
@@ -168,27 +170,28 @@ const UserFormModal = ({ user, onSubmit, onClose, segment }) => {
       if (form.checkOutDate === form.checkInDate && form.checkOutTime < form.checkInTime) newErrors.checkOutTime = "Check-Out time cannot be before Check-In time for same date.";
     }
 
-    // coWorking Temporary (required)
     if (segment === "coWorking" && form.memberType === "Temporary") {
       if (!isRequired(form.moveInDate)) newErrors.moveInDate = "Move-In Date required for temporary member.";
       if (!isRequired(form.moveOutDate)) newErrors.moveOutDate = "Move-Out Date required for temporary member.";
       if (form.moveOutDate < form.moveInDate) newErrors.moveOutDate = "Move-Out date cannot be before Move-In date.";
     }
 
-    // coLiving Long-Term or always check date/time ordering
     if (segment === "coLiving" && form.checkOutDate && form.checkInDate) {
       if (form.checkOutDate < form.checkInDate) newErrors.checkOutDate = "Check-Out date cannot be before Check-In date.";
       if (form.checkOutDate === form.checkInDate && form.checkOutTime < form.checkInTime) newErrors.checkOutTime = "Check-Out time cannot be before Check-In time for same date.";
     }
+
     if (segment === "hotel" && form.checkOutDate && form.checkInDate) {
       if (form.checkOutDate < form.checkInDate) newErrors.checkOutDate = "Check-Out date cannot be before Check-In date.";
       if (form.checkOutDate === form.checkInDate && form.checkOutTime < form.checkInTime) newErrors.checkOutTime = "Check-Out time cannot be before Check-In time for same date.";
     }
+
     (segmentFieldConfig[segment] || []).forEach(field => {
       if (field.required && !form[field.name]) {
         newErrors[field.name] = `${field.label} is required.`;
       }
     });
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -232,87 +235,175 @@ const UserFormModal = ({ user, onSubmit, onClose, segment }) => {
   };
 
   return (
-    <Modal onClose={onClose} aria-labelledby="user-form-title" aria-modal="true" roledialog initialFocusRef={firstInputRef}>
-      <form className="user-form-modal" onSubmit={handleSubmit} noValidate style={{ maxWidth: '500px', margin: '0 auto' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
-          <h2 id="user-form-title" className="user-form-header" style={{
-            marginBottom: 18,
-            fontSize: "1.8rem",
-            fontWeight: 800,
-            color: "#183b6b",
-            letterSpacing: "0.5px",
-            lineHeight: 1.16
-          }}>
-            {user ? "Edit User" : "Add New User"}
-          </h2>
-          <UserLicenseBar current={USED_LICENSES} total={MAX_LICENSES} width={340} height={32} />
+    <Modal onClose={onClose} aria-labelledby="user-form-title" aria-modal="true" role="dialog">
+      <form className="user-form-modal" onSubmit={handleSubmit} noValidate>
+        <h2 id="user-form-title" className="user-form-header">
+          {user ? "Edit User" : "Add New User"}
+        </h2>
+        
+        {/* Compact License Bar */}
+        <div className="user-form-license-container">
+          <UserLicenseBar current={USED_LICENSES} total={MAX_LICENSES} width={280} height={24} />
         </div>
-        <div className="user-form-scrollable-content" style={{ paddingRight: '0', minWidth: '400px' }}>
+
+        <div className="user-form-scrollable-content">
           <div className="user-form-row">
-            <label htmlFor="id">User ID <span style={{ color: "#e14b4b", fontWeight: "bold" }}>*</span></label>
-            <input ref={firstInputRef} id="id" name="id" value={form.id} onChange={handleChange} disabled={!!user} aria-invalid={!!errors.id} aria-describedby="id-error" required />
-            <div className="error-message" id="id-error" role="alert">{errors.id}</div>
+            <label htmlFor="id">User ID <span className="required-asterisk">*</span></label>
+            <input 
+              ref={firstInputRef} 
+              id="id" 
+              name="id" 
+              value={form.id} 
+              onChange={handleChange} 
+              disabled={!!user} 
+              className={errors.id ? 'error' : ''}
+              aria-invalid={!!errors.id} 
+              aria-describedby="id-error" 
+              required 
+            />
+            {errors.id && <div className="error-message" id="id-error" role="alert">{errors.id}</div>}
           </div>
+
           <div className="user-form-row">
-            <label htmlFor="firstName">First Name <span style={{ color: "#e14b4b", fontWeight: "bold" }}>*</span></label>
-            <input id="firstName" name="firstName" value={form.firstName} onChange={handleChange} aria-invalid={!!errors.firstName} aria-describedby="firstName-error" required />
-            <div className="error-message" id="firstName-error" role="alert">{errors.firstName}</div>
+            <label htmlFor="firstName">First Name <span className="required-asterisk">*</span></label>
+            <input 
+              id="firstName" 
+              name="firstName" 
+              value={form.firstName} 
+              onChange={handleChange} 
+              className={errors.firstName ? 'error' : ''}
+              aria-invalid={!!errors.firstName} 
+              aria-describedby="firstName-error" 
+              required 
+            />
+            {errors.firstName && <div className="error-message" id="firstName-error" role="alert">{errors.firstName}</div>}
           </div>
+
           <div className="user-form-row">
-            <label htmlFor="lastName">Last Name <span style={{ color: "#e14b4b", fontWeight: "bold" }}>*</span></label>
-            <input id="lastName" name="lastName" value={form.lastName} onChange={handleChange} aria-invalid={!!errors.lastName} aria-describedby="lastName-error" required />
-            <div className="error-message" id="lastName-error" role="alert">{errors.lastName}</div>
+            <label htmlFor="lastName">Last Name <span className="required-asterisk">*</span></label>
+            <input 
+              id="lastName" 
+              name="lastName" 
+              value={form.lastName} 
+              onChange={handleChange} 
+              className={errors.lastName ? 'error' : ''}
+              aria-invalid={!!errors.lastName} 
+              aria-describedby="lastName-error" 
+              required 
+            />
+            {errors.lastName && <div className="error-message" id="lastName-error" role="alert">{errors.lastName}</div>}
           </div>
+
           <div className="user-form-row">
-            <label htmlFor="mobile">Mobile <span style={{ color: "#e14b4b", fontWeight: "bold" }}>*</span></label>
-            <input id="mobile" name="mobile" value={form.mobile} onChange={handleChange} aria-invalid={!!errors.mobile} aria-describedby="mobile-error" required />
-            <div className="error-message" id="mobile-error" role="alert">{errors.mobile}</div>
+            <label htmlFor="mobile">Mobile <span className="required-asterisk">*</span></label>
+            <input 
+              id="mobile" 
+              name="mobile" 
+              value={form.mobile} 
+              onChange={handleChange} 
+              className={errors.mobile ? 'error' : ''}
+              aria-invalid={!!errors.mobile} 
+              aria-describedby="mobile-error" 
+              required 
+            />
+            {errors.mobile && <div className="error-message" id="mobile-error" role="alert">{errors.mobile}</div>}
           </div>
+
           <div className="user-form-row">
-            <label htmlFor="email">Email{isEmailRequired && <span style={{ color: "#e14b4b", fontWeight: "bold" }}>*</span>}</label>
-            <input id="email" name="email" value={form.email} onChange={handleChange} aria-invalid={!!errors.email} aria-describedby="email-error" required={isEmailRequired} />
-            <div className="error-message" id="email-error" role="alert">{errors.email}</div>
+            <label htmlFor="email">
+              Email{isEmailRequired && <span className="required-asterisk">*</span>}
+            </label>
+            <input 
+              id="email" 
+              name="email" 
+              value={form.email} 
+              onChange={handleChange} 
+              className={errors.email ? 'error' : ''}
+              aria-invalid={!!errors.email} 
+              aria-describedby="email-error" 
+              required={isEmailRequired} 
+            />
+            {errors.email && <div className="error-message" id="email-error" role="alert">{errors.email}</div>}
           </div>
+
           <div className="user-form-row">
             <label htmlFor="dataCycleType">Data Cycle Type</label>
-            <select id="dataCycleType" name="dataCycleType" value={form.dataCycleType} onChange={handleChange} disabled={isCycleTypeStatic}>
+            <select 
+              id="dataCycleType" 
+              name="dataCycleType" 
+              value={form.dataCycleType} 
+              onChange={handleChange} 
+              disabled={isCycleTypeStatic}
+            >
               {allowedCycleTypes.map(type => (
                 <option key={type} value={type}>{type}</option>
               ))}
             </select>
           </div>
+
           <div className="user-form-row">
-            <label htmlFor="speed">Speed <span style={{ color: "#e14b4b", fontWeight: "bold" }}>*</span></label>
-            <select id="speed" name="speed" value={form.speed} onChange={handleChange} required aria-invalid={!!errors.speed} aria-describedby="speed-error">
+            <label htmlFor="speed">Speed <span className="required-asterisk">*</span></label>
+            <select 
+              id="speed" 
+              name="speed" 
+              value={form.speed} 
+              onChange={handleChange} 
+              className={errors.speed ? 'error' : ''}
+              required 
+              aria-invalid={!!errors.speed} 
+              aria-describedby="speed-error"
+            >
               {allowedSpeeds.map(speed => (
                 <option key={speed} value={speed}>{speed}</option>
               ))}
             </select>
-            <div className="error-message" id="speed-error" role="alert">{errors.speed}</div>
+            {errors.speed && <div className="error-message" id="speed-error" role="alert">{errors.speed}</div>}
           </div>
+
           <div className="user-form-row">
-            <label htmlFor="dataVolume">Data Volume <span style={{ color: "#e14b4b", fontWeight: "bold" }}>*</span></label>
-            <select id="dataVolume" name="dataVolume" value={form.dataVolume} onChange={handleChange} required aria-invalid={!!errors.dataVolume} aria-describedby="dataVolume-error">
+            <label htmlFor="dataVolume">Data Volume <span className="required-asterisk">*</span></label>
+            <select 
+              id="dataVolume" 
+              name="dataVolume" 
+              value={form.dataVolume} 
+              onChange={handleChange} 
+              className={errors.dataVolume ? 'error' : ''}
+              required 
+              aria-invalid={!!errors.dataVolume} 
+              aria-describedby="dataVolume-error"
+            >
               {allowedVolumes.map(volume => (
                 <option key={volume} value={volume}>{volume}</option>
               ))}
             </select>
-            <div className="error-message" id="dataVolume-error" role="alert">{errors.dataVolume}</div>
+            {errors.dataVolume && <div className="error-message" id="dataVolume-error" role="alert">{errors.dataVolume}</div>}
           </div>
+
           <div className="user-form-row">
-            <label htmlFor="deviceLimit">Device Limit <span style={{ color: "#e14b4b", fontWeight: "bold" }}>*</span></label>
-            <select id="deviceLimit" name="deviceLimit" value={form.deviceLimit} onChange={handleChange} required aria-invalid={!!errors.deviceLimit} aria-describedby="deviceLimit-error">
+            <label htmlFor="deviceLimit">Device Limit <span className="required-asterisk">*</span></label>
+            <select 
+              id="deviceLimit" 
+              name="deviceLimit" 
+              value={form.deviceLimit} 
+              onChange={handleChange} 
+              className={errors.deviceLimit ? 'error' : ''}
+              required 
+              aria-invalid={!!errors.deviceLimit} 
+              aria-describedby="deviceLimit-error"
+            >
               {allowedDeviceCounts.map(count => (
                 <option key={count} value={count}>{count}</option>
               ))}
             </select>
-            <div className="error-message" id="deviceLimit-error" role="alert">{errors.deviceLimit}</div>
+            {errors.deviceLimit && <div className="error-message" id="deviceLimit-error" role="alert">{errors.deviceLimit}</div>}
           </div>
+
+          {/* Segment-specific fields */}
           {(segmentFieldConfig[segment] || []).map(field => (
             <div className="user-form-row" key={field.name}>
               <label htmlFor={field.name}>
                 {field.label}
-                {field.required && <span style={{ color: "#e14b4b", fontWeight: "bold" }}>*</span>}
+                {field.required && <span className="required-asterisk">*</span>}
               </label>
               {field.type === "select" ? (
                 <select
@@ -320,6 +411,7 @@ const UserFormModal = ({ user, onSubmit, onClose, segment }) => {
                   name={field.name}
                   value={form[field.name] || ""}
                   onChange={handleChange}
+                  className={errors[field.name] ? 'error' : ''}
                   required={field.required}
                   aria-invalid={!!errors[field.name]}
                   aria-describedby={`${field.name}-error`}
@@ -336,19 +428,22 @@ const UserFormModal = ({ user, onSubmit, onClose, segment }) => {
                   type={field.type}
                   value={form[field.name] || ""}
                   onChange={handleChange}
+                  className={errors[field.name] ? 'error' : ''}
                   required={field.required}
                   aria-invalid={!!errors[field.name]}
                   aria-describedby={`${field.name}-error`}
                 />
               )}
-              <div className="error-message" id={`${field.name}-error`} role="alert">{errors[field.name]}</div>
+              {errors[field.name] && <div className="error-message" id={`${field.name}-error`} role="alert">{errors[field.name]}</div>}
             </div>
           ))}
+
+          {/* CoLiving specific fields */}
           {segment === "coLiving" && (
             <>
               <div className="user-form-row">
                 <label htmlFor="residentType">
-                  Resident Type <span style={{ color: "#e14b4b", fontWeight: "bold" }}>*</span>
+                  Resident Type <span className="required-asterisk">*</span>
                 </label>
                 <select
                   id="residentType"
@@ -360,9 +455,10 @@ const UserFormModal = ({ user, onSubmit, onClose, segment }) => {
                   <option value="Short-Term">Short-Term</option>
                 </select>
               </div>
+
               <div className="user-form-row">
                 <label htmlFor="checkInDate">
-                  Check-In Date{isCoLivingShortTerm && <span style={{ color: "#e14b4b", fontWeight: "bold" }}>*</span>}
+                  Check-In Date{isCoLivingShortTerm && <span className="required-asterisk">*</span>}
                 </label>
                 <input
                   id="checkInDate"
@@ -370,14 +466,16 @@ const UserFormModal = ({ user, onSubmit, onClose, segment }) => {
                   type="date"
                   value={form.checkInDate}
                   onChange={handleChange}
+                  className={errors.checkInDate ? 'error' : ''}
                   required={isCoLivingShortTerm}
                   disabled={isCoLivingLongTerm}
                 />
-                <div className="error-message" id="checkInDate-error" role="alert">{errors.checkInDate}</div>
+                {errors.checkInDate && <div className="error-message" id="checkInDate-error" role="alert">{errors.checkInDate}</div>}
               </div>
+
               <div className="user-form-row">
                 <label htmlFor="checkOutDate">
-                  Check-Out Date{isCoLivingShortTerm && <span style={{ color: "#e14b4b", fontWeight: "bold" }}>*</span>}
+                  Check-Out Date{isCoLivingShortTerm && <span className="required-asterisk">*</span>}
                 </label>
                 <input
                   id="checkOutDate"
@@ -385,15 +483,17 @@ const UserFormModal = ({ user, onSubmit, onClose, segment }) => {
                   type="date"
                   value={form.checkOutDate}
                   onChange={handleChange}
+                  className={errors.checkOutDate ? 'error' : ''}
                   min={minCheckOutDate()}
                   required={isCoLivingShortTerm}
                   disabled={isCoLivingLongTerm}
                 />
-                <div className="error-message" id="checkOutDate-error" role="alert">{errors.checkOutDate}</div>
+                {errors.checkOutDate && <div className="error-message" id="checkOutDate-error" role="alert">{errors.checkOutDate}</div>}
               </div>
+
               <div className="user-form-row">
                 <label htmlFor="checkInTime">
-                  Check-In Time{isCoLivingShortTerm && <span style={{ color: "#e14b4b", fontWeight: "bold" }}>*</span>}
+                  Check-In Time{isCoLivingShortTerm && <span className="required-asterisk">*</span>}
                 </label>
                 <input
                   id="checkInTime"
@@ -401,14 +501,16 @@ const UserFormModal = ({ user, onSubmit, onClose, segment }) => {
                   type="time"
                   value={form.checkInTime}
                   onChange={handleChange}
+                  className={errors.checkInTime ? 'error' : ''}
                   required={isCoLivingShortTerm}
                   disabled={isCoLivingLongTerm}
                 />
-                <div className="error-message" id="checkInTime-error" role="alert">{errors.checkInTime}</div>
+                {errors.checkInTime && <div className="error-message" id="checkInTime-error" role="alert">{errors.checkInTime}</div>}
               </div>
+
               <div className="user-form-row">
                 <label htmlFor="checkOutTime">
-                  Check-Out Time{isCoLivingShortTerm && <span style={{ color: "#e14b4b", fontWeight: "bold" }}>*</span>}
+                  Check-Out Time{isCoLivingShortTerm && <span className="required-asterisk">*</span>}
                 </label>
                 <input
                   id="checkOutTime"
@@ -416,19 +518,22 @@ const UserFormModal = ({ user, onSubmit, onClose, segment }) => {
                   type="time"
                   value={form.checkOutTime}
                   onChange={handleChange}
+                  className={errors.checkOutTime ? 'error' : ''}
                   min={minCheckOutTime()}
                   required={isCoLivingShortTerm}
                   disabled={isCoLivingLongTerm}
                 />
-                <div className="error-message" id="checkOutTime-error" role="alert">{errors.checkOutTime}</div>
+                {errors.checkOutTime && <div className="error-message" id="checkOutTime-error" role="alert">{errors.checkOutTime}</div>}
               </div>
             </>
           )}
+
+          {/* CoWorking specific fields */}
           {segment === "coWorking" && (
             <>
               <div className="user-form-row">
                 <label htmlFor="memberType">
-                  Member Type <span style={{ color: "#e14b4b", fontWeight: "bold" }}>*</span>
+                  Member Type <span className="required-asterisk">*</span>
                 </label>
                 <select
                   id="memberType"
@@ -440,9 +545,10 @@ const UserFormModal = ({ user, onSubmit, onClose, segment }) => {
                   <option value="Temporary">Temporary</option>
                 </select>
               </div>
+
               <div className="user-form-row">
                 <label htmlFor="moveInDate">
-                  Move-In Date{isCoWorkingTemporary && <span style={{ color: "#e14b4b", fontWeight: "bold" }}>*</span>}
+                  Move-In Date{isCoWorkingTemporary && <span className="required-asterisk">*</span>}
                 </label>
                 <input
                   id="moveInDate"
@@ -450,14 +556,16 @@ const UserFormModal = ({ user, onSubmit, onClose, segment }) => {
                   type="date"
                   value={form.moveInDate}
                   onChange={handleChange}
+                  className={errors.moveInDate ? 'error' : ''}
                   required={isCoWorkingTemporary}
                   disabled={isCoWorkingPermanent}
                 />
-                <div className="error-message" id="moveInDate-error" role="alert">{errors.moveInDate}</div>
+                {errors.moveInDate && <div className="error-message" id="moveInDate-error" role="alert">{errors.moveInDate}</div>}
               </div>
+
               <div className="user-form-row">
                 <label htmlFor="moveOutDate">
-                  Move-Out Date{isCoWorkingTemporary && <span style={{ color: "#e14b4b", fontWeight: "bold" }}>*</span>}
+                  Move-Out Date{isCoWorkingTemporary && <span className="required-asterisk">*</span>}
                 </label>
                 <input
                   id="moveOutDate"
@@ -465,69 +573,80 @@ const UserFormModal = ({ user, onSubmit, onClose, segment }) => {
                   type="date"
                   value={form.moveOutDate}
                   onChange={handleChange}
+                  className={errors.moveOutDate ? 'error' : ''}
                   min={minMoveOutDate()}
                   required={isCoWorkingTemporary}
                   disabled={isCoWorkingPermanent}
                 />
-                <div className="error-message" id="moveOutDate-error" role="alert">{errors.moveOutDate}</div>
+                {errors.moveOutDate && <div className="error-message" id="moveOutDate-error" role="alert">{errors.moveOutDate}</div>}
               </div>
             </>
           )}
+
+          {/* Hotel specific fields */}
           {segment === "hotel" && (
             <>
               <div className="user-form-row">
-                <label htmlFor="checkInDate">Check-In Date <span style={{ color: "#e14b4b", fontWeight: "bold" }}>*</span></label>
+                <label htmlFor="checkInDate">Check-In Date <span className="required-asterisk">*</span></label>
                 <input
                   id="checkInDate"
                   name="checkInDate"
                   type="date"
                   value={form.checkInDate}
                   onChange={handleChange}
+                  className={errors.checkInDate ? 'error' : ''}
                   required
                 />
-                <div className="error-message" id="checkInDate-error" role="alert">{errors.checkInDate}</div>
+                {errors.checkInDate && <div className="error-message" id="checkInDate-error" role="alert">{errors.checkInDate}</div>}
               </div>
+
               <div className="user-form-row">
-                <label htmlFor="checkOutDate">Check-Out Date <span style={{ color: "#e14b4b", fontWeight: "bold" }}>*</span></label>
+                <label htmlFor="checkOutDate">Check-Out Date <span className="required-asterisk">*</span></label>
                 <input
                   id="checkOutDate"
                   name="checkOutDate"
                   type="date"
                   value={form.checkOutDate}
                   onChange={handleChange}
+                  className={errors.checkOutDate ? 'error' : ''}
                   min={minCheckOutDate()}
                   required
                 />
-                <div className="error-message" id="checkOutDate-error" role="alert">{errors.checkOutDate}</div>
+                {errors.checkOutDate && <div className="error-message" id="checkOutDate-error" role="alert">{errors.checkOutDate}</div>}
               </div>
+
               <div className="user-form-row">
-                <label htmlFor="checkInTime">Check-In Time <span style={{ color: "#e14b4b", fontWeight: "bold" }}>*</span></label>
+                <label htmlFor="checkInTime">Check-In Time <span className="required-asterisk">*</span></label>
                 <input
                   id="checkInTime"
                   name="checkInTime"
                   type="time"
                   value={form.checkInTime}
                   onChange={handleChange}
+                  className={errors.checkInTime ? 'error' : ''}
                   required
                 />
-                <div className="error-message" id="checkInTime-error" role="alert">{errors.checkInTime}</div>
+                {errors.checkInTime && <div className="error-message" id="checkInTime-error" role="alert">{errors.checkInTime}</div>}
               </div>
+
               <div className="user-form-row">
-                <label htmlFor="checkOutTime">Check-Out Time <span style={{ color: "#e14b4b", fontWeight: "bold" }}>*</span></label>
+                <label htmlFor="checkOutTime">Check-Out Time <span className="required-asterisk">*</span></label>
                 <input
                   id="checkOutTime"
                   name="checkOutTime"
                   type="time"
                   value={form.checkOutTime}
                   onChange={handleChange}
+                  className={errors.checkOutTime ? 'error' : ''}
                   min={minCheckOutTime()}
                   required
                 />
-                <div className="error-message" id="checkOutTime-error" role="alert">{errors.checkOutTime}</div>
+                {errors.checkOutTime && <div className="error-message" id="checkOutTime-error" role="alert">{errors.checkOutTime}</div>}
               </div>
             </>
           )}
         </div>
+
         <div className="user-form-actions">
           <Button type="submit" variant="primary" aria-label="Submit user form" disabled={licensesFull}>
             {user ? "Update" : "Add"}

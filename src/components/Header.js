@@ -2,11 +2,11 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { FaBell, FaUserCircle } from 'react-icons/fa';
-import { ToastContainer, toast } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './Header.css';
 
-const siteName = "My Portal"; // Replace as needed
+const siteName = "My Portal";
 
 const Header = () => {
   const [notifOpen, setNotifOpen] = useState(false);
@@ -29,9 +29,38 @@ const Header = () => {
     { text: "Network health check passed", time: "2 days ago" }
   ];
 
-  const handleChangePassword = () => toast.info("Change Password - backend integration pending.");
-  const handleLogout = () => toast.info("Logout - backend integration pending.");
-  const handleBackToSpectraOne = () => toast.info("Back To SpectraOne - backend integration pending.");
+  const handleChangePassword = () => {
+    toast.info("Change Password - backend integration pending.", {
+      position: "top-right",
+      autoClose: 2000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+    });
+  };
+
+  const handleLogout = () => {
+    toast.info("Logout - backend integration pending.", {
+      position: "top-right",
+      autoClose: 2000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+    });
+  };
+
+  const handleBackToSpectraOne = () => {
+    toast.info("Back To SpectraOne - backend integration pending.", {
+      position: "top-right",
+      autoClose: 2000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+    });
+  };
 
   return (
     <>
@@ -111,6 +140,7 @@ const Header = () => {
                     tabIndex={0}
                     role="menuitem"
                     onClick={handleChangePassword}
+                    onKeyPress={e => e.key === 'Enter' && handleChangePassword()}
                   >
                     Change Password
                   </div>
@@ -119,6 +149,7 @@ const Header = () => {
                     tabIndex={0}
                     role="menuitem"
                     onClick={handleLogout}
+                    onKeyPress={e => e.key === 'Enter' && handleLogout()}
                   >
                     Logout
                   </div>
@@ -128,7 +159,18 @@ const Header = () => {
           </div>
         </div>
       </header>
-      <ToastContainer position="top-right" autoClose={1400} />
+      <ToastContainer 
+        position="top-right" 
+        autoClose={2000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
     </>
   );
 };

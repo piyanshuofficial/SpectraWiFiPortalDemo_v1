@@ -12,8 +12,7 @@ import KnowledgeCenter from './pages/KnowledgeCenter/KnowledgeHome';
 import { useAuth } from './context/AuthContext';
 import { Permissions } from './utils/accessLevels';
 import "./components/Badge.css";
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+
 
 const PrivateRoute = ({ permissionCheck, children }) => {
   const { currentUser } = useAuth();
@@ -27,7 +26,6 @@ function App() {
   return (
     <Router>
       <AppLayout>
-        <ToastContainer position="top-right" autoClose={3000} hideProgressBar />
         <Routes>
           {/* Redirect root to dashboard */}
           <Route path="/" element={<Navigate to="/dashboard" replace />} />

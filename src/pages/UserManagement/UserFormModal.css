@@ -2,44 +2,75 @@
 
 .user-form-modal {
   background: #fff;
-  padding: 20px 26px 14px 26px;
+  padding: 16px 22px 14px 22px;
   border-radius: 10px;
-  max-width: 380px;
+  max-width: 420px;
   width: 100%;
-  max-height: 85vh;
+  max-height: 90vh;
   box-shadow: 0 4px 16px rgba(33, 38, 71, 0.18);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   position: relative;
-  overflow: visible;
+  overflow: hidden;
   font-size: 13px;
+}
+
+@media (max-height: 700px) {
+  .user-form-modal {
+    max-height: 94vh;
+    padding: 14px 20px 12px 20px;
+  }
 }
 
 @media (max-height: 600px) {
   .user-form-modal {
-    max-height: 92vh;
+    max-height: 96vh;
+    padding: 12px 18px 10px 18px;
   }
 }
 
 .user-form-scrollable-content {
   flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
-  padding-right: 4px;
+  padding-right: 6px;
+  margin-top: 4px;
+}
+
+/* Custom scrollbar for better UX */
+.user-form-scrollable-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.user-form-scrollable-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.user-form-scrollable-content::-webkit-scrollbar-thumb {
+  background: #c1c8d4;
+  border-radius: 3px;
+}
+
+.user-form-scrollable-content::-webkit-scrollbar-thumb:hover {
+  background: #a8b0c0;
 }
 
 .user-form-header {
-  font-size: 1.2rem;
-  font-weight: 600;
-  margin-bottom: 12px;
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin-bottom: 10px;
   color: #193a6b;
-  text-align: left;
+  text-align: center;
+  line-height: 1.2;
+  padding: 0;
 }
 
 .user-form-row {
   display: flex;
   flex-direction: column;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .user-form-row label {
@@ -47,15 +78,16 @@
   color: #2150a2;
   font-weight: 600;
   margin-bottom: 4px;
+  line-height: 1.2;
 }
 
 .user-form-row input,
 .user-form-row select {
-  padding: 6px 10px;
+  padding: 6px 9px;
   font-size: 0.8rem;
   border-radius: 6px;
   border: 1.2px solid #cfd7ea;
-  margin-bottom: 2px;
+  margin-bottom: 1px;
   transition: border-color 0.2s;
   background: #f8faff;
   line-height: 1.3;
@@ -72,10 +104,22 @@
   outline: none;
 }
 
+.user-form-row input.error,
+.user-form-row select.error {
+  border-color: #e81500;
+}
+
 .error-message {
   color: #e81500;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   margin-top: 2px;
+  line-height: 1.2;
+}
+
+.required-asterisk {
+  color: #e14b4b;
+  font-weight: bold;
+  margin-left: 2px;
 }
 
 .user-form-actions {
@@ -96,31 +140,81 @@
   min-width: 0;
   max-width: unset;
   margin: 0;
-  padding: 8px 0;
+  padding: 7px 0;
   font-size: 0.85rem;
   font-weight: 600;
   border-radius: 6px;
   box-shadow: none;
-  min-height: 32px;
+  min-height: 34px;
+  line-height: 1.3;
+}
+
+/* Compact License Bar Styling */
+.user-form-license-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  margin: 8px 0 12px 0;
+  padding: 0;
+}
+
+.user-form-license-container > div {
+  transform: scale(0.8);
+  transform-origin: center center;
+  margin: -10px 0;
 }
 
 @media (max-width: 520px) {
   .user-form-modal {
-    padding: 16px 20px 12px 20px;
-    max-width: 95vw;
+    padding: 14px 18px 12px 18px;
+    max-width: 96vw;
   }
 
   .user-form-header {
-    font-size: 1.1rem;
+    font-size: 1.2rem;
+    margin-bottom: 8px;
+  }
+
+  .user-form-row {
+    margin-bottom: 8px;
   }
 
   .user-form-row label {
-    font-size: 0.75rem;
+    font-size: 0.78rem;
   }
 
   .user-form-row input,
   .user-form-row select {
-    font-size: 0.75rem;
+    font-size: 0.78rem;
     padding: 5px 8px;
+  }
+  
+  .user-form-license-container > div {
+    transform: scale(0.75);
+  }
+}
+
+@media (max-height: 600px) {
+  .user-form-row {
+    margin-bottom: 8px;
+  }
+  
+  .user-form-header {
+    font-size: 1.2rem;
+    margin-bottom: 8px;
+  }
+  
+  .user-form-actions {
+    margin: 10px 0 0 0;
+  }
+  
+  .user-form-license-container {
+    margin: 6px 0 10px 0;
+  }
+  
+  .user-form-license-container > div {
+    transform: scale(0.7);
+    margin: -15px 0;
   }
 }
