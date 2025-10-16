@@ -16,8 +16,6 @@ import {
   closeModal,
 } from "../../utils/userActions";
 
-
-
 const getUsageStats = (user) => [
   {
     label: "Total Data",
@@ -140,18 +138,12 @@ const UserDetailsModal = ({
             </div>
           </div>
         </div>
-        <div className="udm-section-title"
-          style={{
-            marginTop: 26,
-            marginBottom: 12,
-            textAlign: "left",
-            paddingLeft: "44px",
-          }}>
+        <div className="udm-section-title udm-usage-title">
           Usage Statistics
         </div>
         <div className="udm-stats-bar fit-row">
           {usageStats.map((card) => (
-            <div className="udm-stats-card" key={card.label}>
+            <div className="udm-stats-card" key={card.label} data-color={card.color}>
               <span className="udm-stats-number" style={{ color: card.color }}>
                 {card.value}
               </span>
@@ -163,19 +155,19 @@ const UserDetailsModal = ({
           <Button variant="primary" onClick={() => onEdit(user)}>
             Edit User
           </Button>
-        {onSendMessage && (
-          <Button
-            variant="secondary"
-            style={{ background: "#a3b9fd", color: "#183b6b" }}
-            onClick={() => onSendMessage(user)}
-          >
-            Resend Password
-          </Button>
-        )}
+          {onSendMessage && (
+            <Button
+              variant="secondary"
+              className="resend-password-btn"
+              onClick={() => onSendMessage(user)}
+            >
+              Resend Password
+            </Button>
+          )}
           {isActive && (
             <Button
               variant="warning"
-              style={{ background: "#FFA900", color: "#fff", border: "none" }}
+              className="suspend-user-btn"
               onClick={() => onSuspend(user)}
             >
               Suspend User

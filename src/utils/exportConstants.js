@@ -1,7 +1,8 @@
 // src/utils/exportConstants.js
+import { CHART } from '../constants/appConstants';
 
 export const EXPORT_CANVAS_SIZES = {
-  line: { width: 900, height: 450 },
-  bar: { width: 900, height: 450 },
-  pie: { width: 450, height: 450 },
+  line: { width: CHART.EXPORT_LINE_WIDTH, height: CHART.EXPORT_LINE_HEIGHT },
+  bar: { width: CHART.EXPORT_BAR_WIDTH, height: CHART.EXPORT_BAR_HEIGHT },
+  pie: { width: CHART.EXPORT_PIE_SIZE, height: CHART.EXPORT_PIE_SIZE },
 };

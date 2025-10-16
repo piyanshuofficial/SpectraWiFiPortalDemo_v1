@@ -7,6 +7,7 @@ import {
   FaAngleRight,
   FaAngleDoubleRight,
 } from "react-icons/fa";
+import { PAGINATION, COMPONENT_SIZES } from "../constants/appConstants";
 
 const Pagination = ({
   totalItems,
@@ -36,8 +37,8 @@ const Pagination = ({
             color: currentPage === i ? "#fff" : "#17418f",
             fontSize: "0.8rem",
             borderRadius: "4px",
-            width: "28px",
-            height: "24px",
+            width: `${COMPONENT_SIZES.PAGINATION_BUTTON_SIZE}px`,
+            height: `${COMPONENT_SIZES.PAGINATION_BUTTON_HEIGHT}px`,
             cursor: "pointer",
             transition: "background 0.15s, color 0.15s, border-color 0.15s",
             lineHeight: "1.2",
@@ -101,7 +102,7 @@ const Pagination = ({
             lineHeight: "1.2"
           }}
         >
-          {[5, 10, 20, 50].map(n => (
+          {PAGINATION.ROWS_PER_PAGE_OPTIONS.map(n => (
             <option key={n} value={n}>{n}</option>
           ))}
         </select>
@@ -128,8 +129,8 @@ const Pagination = ({
               color: currentPage === 1 ? "#b5bacd" : "#17418f",
               fontSize: "0.8rem",
               borderRadius: "4px",
-              width: "28px",
-              height: "24px",
+              width: `${COMPONENT_SIZES.PAGINATION_BUTTON_SIZE}px`,
+              height: `${COMPONENT_SIZES.PAGINATION_BUTTON_HEIGHT}px`,
               cursor: currentPage === 1 ? "not-allowed" : "pointer",
               transition: "background 0.15s, color 0.15s, border-color 0.15s",
               lineHeight: "1.2",
@@ -152,8 +153,8 @@ const Pagination = ({
               color: currentPage === 1 ? "#b5bacd" : "#17418f",
               fontSize: "0.8rem",
               borderRadius: "4px",
-              width: "28px",
-              height: "24px",
+              width: `${COMPONENT_SIZES.PAGINATION_BUTTON_SIZE}px`,
+              height: `${COMPONENT_SIZES.PAGINATION_BUTTON_HEIGHT}px`,
               cursor: currentPage === 1 ? "not-allowed" : "pointer",
               transition: "background 0.15s, color 0.15s, border-color 0.15s",
               lineHeight: "1.2",
@@ -177,8 +178,8 @@ const Pagination = ({
               color: currentPage === totalPages ? "#b5bacd" : "#17418f",
               fontSize: "0.8rem",
               borderRadius: "4px",
-              width: "28px",
-              height: "24px",
+              width: `${COMPONENT_SIZES.PAGINATION_BUTTON_SIZE}px`,
+              height: `${COMPONENT_SIZES.PAGINATION_BUTTON_HEIGHT}px`,
               cursor: currentPage === totalPages ? "not-allowed" : "pointer",
               transition: "background 0.15s, color 0.15s, border-color 0.15s",
               lineHeight: "1.2",
@@ -201,8 +202,8 @@ const Pagination = ({
               color: currentPage === totalPages ? "#b5bacd" : "#17418f",
               fontSize: "0.8rem",
               borderRadius: "4px",
-              width: "28px",
-              height: "24px",
+              width: `${COMPONENT_SIZES.PAGINATION_BUTTON_SIZE}px`,
+              height: `${COMPONENT_SIZES.PAGINATION_BUTTON_HEIGHT}px`,
               cursor: currentPage === totalPages ? "not-allowed" : "pointer",
               transition: "background 0.15s, color 0.15s, border-color 0.15s",
               lineHeight: "1.2",

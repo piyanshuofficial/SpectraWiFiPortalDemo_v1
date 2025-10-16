@@ -1,12 +1,21 @@
 // src/utils/commonChartOptions.js
 
-export function getStandardChartOptions({ type, title, xLabel, yLabel, darkMode = false, forExport = false }) {
+import { CHART } from '../constants/appConstants';
+
+export function getStandardChartOptions({ 
+  type, 
+  title, 
+  xLabel, 
+  yLabel, 
+  darkMode = false, 
+  forExport = false 
+}) {
   const gridColor = darkMode ? "#444" : "#e5e5e5";
   const textColor = darkMode ? "#fff" : "#222";
 
-  const baseFontSize = forExport ? 20 : 14;
-  const titleFontSize = forExport ? 28 : 18;
-  const tickFontSize = forExport ? 18 : 12;
+  const baseFontSize = forExport ? CHART.EXPORT_BASE_FONT : CHART.DISPLAY_BASE_FONT;
+  const titleFontSize = forExport ? CHART.EXPORT_TITLE_FONT : CHART.DISPLAY_TITLE_FONT;
+  const tickFontSize = forExport ? CHART.EXPORT_TICK_FONT : CHART.DISPLAY_TICK_FONT;
 
   return {
     type,

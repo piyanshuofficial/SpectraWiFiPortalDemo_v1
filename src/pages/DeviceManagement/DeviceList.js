@@ -9,6 +9,7 @@ import Pagination from "../../components/Pagination";
 import DeviceFormModal from "../../components/DeviceFormModal";
 import { toast } from "react-toastify";
 import "./DeviceList.css";
+import { PAGINATION } from "../../constants/appConstants";
 
 const deviceStats = [
   {
@@ -206,7 +207,7 @@ const DeviceList = () => {
   const [searchText, setSearchText] = useState("");
   const [showDeviceModal, setShowDeviceModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(6);
+  const [rowsPerPage, setRowsPerPage] = useState(PAGINATION.DEVICE_LIST_DEFAULT);
 
   // Compute filtered devices - ALWAYS called, not conditional
   const filteredDevices = useMemo(() => {

@@ -5,7 +5,8 @@ import Modal from './Modal';
 import Button from './Button';
 import './DeviceFormModal.css';
 import SEGMENT_DEVICE_AVAILABILITY from '../config/segmentDeviceConfig';
-
+import { DATA_LIMITS, ANIMATION, DEVICE } from '../constants/appConstants';
+import { VALIDATION } from '../constants/appConstants';
 const HUMAN_DEVICE_CATEGORIES = [
   'Mobile',
   'Laptop',
@@ -95,7 +96,7 @@ function generateNextDeviceUserId(category, existingIds = []) {
       maxNum = Math.max(maxNum, parseInt(match[1], 10));
     }
   });
-  const nextNum = String(maxNum + 1).padStart(3, '0');
+  const nextNum = String(maxNum + 1).padStart(DEVICE.USER_ID_NUMBER_LENGTH, '0');
   return `${prefix}-${nextNum}`;
 }
 
@@ -134,7 +135,7 @@ function DeviceFormModal({
       setUserId('');
       setMacAddress('');
       setErrors({});
-      setTimeout(() => firstInputRef.current && firstInputRef.current.focus(), 80);
+      setTimeout(() => firstInputRef.current && firstInputRef.current.focus(), ANIMATION.AUTO_FOCUS_DELAY);
     }
   }, [open, allowHuman, allowNonHuman]);
 
@@ -256,19 +257,9 @@ function DeviceFormModal({
                     aria-describedby="selectedUser-error"
                     style={{ width: '100%' }}
                   />
+
                   {searchTerm.trim().length > 0 && filteredUsers.length > 0 && (
-                    <div
-                      className="search-results-list"
-                      style={{
-                        position: 'absolute',
-                        width: '100%',
-                        top: '100%',
-                        left: 0,
-                        zIndex: 10,
-                        maxHeight: 140,
-                        overflowY: 'auto'
-                      }}
-                    >
+                    <div className="search-results-list-wrapper">
                       {filteredUsers.map(user => (
                         <div
                           key={user.id}
@@ -276,15 +267,6 @@ function DeviceFormModal({
                           onClick={() => {
                             setSelectedUser(user);
                             setSearchTerm(`${user.name} (${user.id})`);
-                          }}
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            padding: '6px 10px',
-                            cursor: 'pointer',
-                            background: selectedUser?.id === user.id ? '#e3f1ff' : undefined,
-                            color: '#193a6b',
-                            borderBottom: '1px solid #e8eaf3'
                           }}
                           tabIndex={0}
                           onKeyDown={e => {
@@ -294,11 +276,14 @@ function DeviceFormModal({
                             }
                           }}
                         >
-                          <span>{user.name} <span style={{ fontSize: '0.85em', color: '#4a75ad' }}>({user.id})</span></span>
+                          <span className="search-user-name">{user.name}</span>
+                          <span className="search-user-id">({user.id})</span>
                         </div>
                       ))}
                     </div>
                   )}
+
+
                 </div>
                 <div className="error-message" id="selectedUser-error" role="alert">{errors.selectedUser}</div>
               </div>
@@ -336,7 +321,7 @@ function DeviceFormModal({
                   id="userid"
                   value={userId}
                   onChange={e => allowOverride && setUserId(e.target.value)}
-                  maxLength={32}
+                  maxLength={DATA_LIMITS.MAX_USER_ID_LENGTH}
                   className={errors.userId ? 'error' : ''}
                   disabled={!allowOverride}
                   required
@@ -359,7 +344,7 @@ function DeviceFormModal({
                 id="devicename"
                 value={deviceName}
                 onChange={e => setDeviceName(e.target.value)}
-                maxLength={40}
+                maxLength={DATA_LIMITS.MAX_DEVICE_NAME_LENGTH}
                 className={errors.deviceName ? 'error' : ''}
                 required
                 aria-invalid={!!errors.deviceName}
@@ -381,8 +366,8 @@ function DeviceFormModal({
                 let pretty = val.match(/.{1,2}/g)?.join(':') || '';
                 setMacAddress(pretty);
               }}
-              maxLength={17}
-              placeholder="AA:BB:CC:DD:EE:FF"
+              maxLength={DATA_LIMITS.MAC_ADDRESS_LENGTH}
+              placeholder={VALIDATION.MAC_ADDRESS_FORMAT}
               className={errors.macAddress ? 'error' : ''}
               autoComplete="off"
               spellCheck={false}

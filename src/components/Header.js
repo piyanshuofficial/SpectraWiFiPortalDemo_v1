@@ -5,6 +5,7 @@ import { FaBell, FaUserCircle } from 'react-icons/fa';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './Header.css';
+import { NOTIFICATIONS, ANIMATION } from '../constants/appConstants';
 
 const siteName = "My Portal";
 
@@ -31,8 +32,8 @@ const Header = () => {
 
   const handleChangePassword = () => {
     toast.info("Change Password - backend integration pending.", {
-      position: "top-right",
-      autoClose: 2000,
+      position: NOTIFICATIONS.POSITION,
+      autoClose: NOTIFICATIONS.AUTO_CLOSE,
       hideProgressBar: false,
       closeOnClick: true,
       pauseOnHover: true,
@@ -42,8 +43,8 @@ const Header = () => {
 
   const handleLogout = () => {
     toast.info("Logout - backend integration pending.", {
-      position: "top-right",
-      autoClose: 2000,
+      position: NOTIFICATIONS.POSITION,
+      autoClose: NOTIFICATIONS.AUTO_CLOSE,
       hideProgressBar: false,
       closeOnClick: true,
       pauseOnHover: true,
@@ -53,8 +54,8 @@ const Header = () => {
 
   const handleBackToSpectraOne = () => {
     toast.info("Back To SpectraOne - backend integration pending.", {
-      position: "top-right",
-      autoClose: 2000,
+      position: NOTIFICATIONS.POSITION,
+      autoClose: NOTIFICATIONS.AUTO_CLOSE,
       hideProgressBar: false,
       closeOnClick: true,
       pauseOnHover: true,
@@ -160,8 +161,8 @@ const Header = () => {
         </div>
       </header>
       <ToastContainer 
-        position="top-right" 
-        autoClose={2000}
+        position={NOTIFICATIONS.POSITION}
+        autoClose={NOTIFICATIONS.AUTO_CLOSE}
         hideProgressBar={false}
         newestOnTop={false}
         closeOnClick

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { FaBookOpen, FaVideo, FaQuestionCircle } from 'react-icons/fa';
+import { ANIMATION } from '../../constants/appConstants';
 import './KnowledgeHome.css';
 
 const KnowledgeHome = () => {
@@ -19,7 +20,7 @@ const KnowledgeHome = () => {
           if (helpSectionRef.current) {
             helpSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
           }
-        }, 60);
+        }, ANIMATION.SCROLL_DELAY);
       }
     };
     window.addEventListener('triggerSupportHighlight', handler);

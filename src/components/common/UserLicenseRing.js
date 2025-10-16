@@ -1,23 +1,32 @@
 // src/components/common/UserLicenseRing.js
 
-
 import React from "react";
+import { LICENSE_THRESHOLDS, COMPONENT_SIZES } from "../../constants/appConstants";
 
-function UserLicenseRing({ current, total, size = 140, ringWidth = 14 }) {
+function UserLicenseRing({ 
+  current, 
+  total, 
+  size = COMPONENT_SIZES.LICENSE_RING_SIZE, 
+  ringWidth = COMPONENT_SIZES.LICENSE_RING_WIDTH 
+}) {
   const radius = size / 2 - ringWidth;
   const circumference = 2 * Math.PI * radius;
   const progress = current / total;
   const strokeDashoffset = circumference * (1 - progress);
   const valueString = `${current}/${total}`;
   const digitCount = valueString.length;
+  
   let fontSize = Math.floor(size * 0.18);
   if (digitCount >= 7) fontSize = Math.floor(size * 0.11);
   else if (digitCount === 6) fontSize = Math.floor(size * 0.13);
   else if (digitCount === 5) fontSize = Math.floor(size * 0.15);
 
-  let strokeColor = "#32ad4e"; // green
-  if (progress >= 0.9) strokeColor = "#e14b4b"; // red
-  else if (progress >= 0.75) strokeColor = "#ffc735"; // amber
+  let strokeColor = LICENSE_THRESHOLDS.COLOR_NORMAL;
+  if (progress >= LICENSE_THRESHOLDS.CRITICAL_PERCENT) {
+    strokeColor = LICENSE_THRESHOLDS.COLOR_CRITICAL;
+  } else if (progress >= LICENSE_THRESHOLDS.WARNING_PERCENT) {
+    strokeColor = LICENSE_THRESHOLDS.COLOR_WARNING;
+  }
 
   return (
     <div style={{ width: size, height: size, position: "relative" }}>

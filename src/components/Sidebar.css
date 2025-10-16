@@ -191,3 +191,22 @@
     font-size: 0.8rem;
   }
 }
+
+/* No access state */
+.sidebar-no-access {
+  padding: 20px 10px;
+  text-align: center;
+}
+
+.sidebar-no-access .sidebar-nav-item {
+  cursor: default;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.sidebar-no-access .sidebar-nav-label {
+  font-size: 0.8rem;
+  color: #9eb3c1;
+  opacity: 0.7;
+}

@@ -1,5 +1,7 @@
 // src/utils/validationUtils.js
 
+import { VALIDATION, DATA_LIMITS } from '../constants/appConstants';
+
 // Validate if value is non empty string after trimming
 export const isRequired = (value) => {
   if (value == null) return false;
@@ -12,19 +14,11 @@ export const isRequired = (value) => {
 // Simple mobile number validation: digits only, length between 7-15 (adjust as needed)
 export const isMobileValid = (value) => {
   if (!value) return false;
-  const mobileRegex = /^[0-9]{7,15}$/;
-  return mobileRegex.test(value.trim());
+  return VALIDATION.MOBILE_REGEX.test(value.trim());
 };
 
 // Email Validation using standard regex
 export const isEmailValid = (value) => {
   if (!value) return false;
-  // Basic RFC5322 email regex simplified
-  const emailRegex =
-    /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-  return emailRegex.test(value.trim());
+  return VALIDATION.EMAIL_REGEX.test(value.trim());
 };
-
-// Password, if needed, be validated elsewhere for complexity rules
-
-// Export for possible future validations (guestId, etc.)

@@ -4,6 +4,7 @@ import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { generateChartImage } from "./generateChartImage";
 import { SPECTRA_TTF_BASE64 } from "../assets/fonts/spectraFontBase64.js"; // use correct path here!
+import { CHART, EXPORT } from "../constants/appConstants";
 
 const SUPPORTING_COLORS = {
   purple: "#9465AA",
@@ -32,8 +33,8 @@ export async function exportReportPDF({
   chartOptions,
   filename,
   rolePermissions,
-  exportCanvasWidth = 900,
-  exportCanvasHeight = 450,
+  exportCanvasWidth = CHART.EXPORT_LINE_WIDTH,
+  exportCanvasHeight = CHART.EXPORT_LINE_HEIGHT,
   reportId
 }) {
   if (!rolePermissions.canViewReports) {
@@ -42,7 +43,7 @@ export async function exportReportPDF({
   }
 
   const { color } = getReportBranding(reportId);
-  const doc = new jsPDF("p", "pt", "a4");
+  const doc = new jsPDF(EXPORT.PDF_ORIENTATION, "pt", EXPORT.PDF_PAGE_SIZE);
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
 

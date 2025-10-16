@@ -20,9 +20,12 @@ import UserLicenseRing from '../../components/common/UserLicenseRing';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from "react-toastify";
 import SEGMENT_DEVICE_AVAILABILITY from '../../config/segmentDeviceConfig';
+import siteConfig from '../../config/siteConfig';
+import { PAGINATION } from '../../constants/appConstants';
 
-const MAX_LICENSES = 100;
-const USED_LICENSES = 70;
+
+const MAX_LICENSES = siteConfig.licenses.maxLicenses;
+const USED_LICENSES = siteConfig.licenses.usedLicenses;
 
 const UserList = () => {
   const { currentUser } = useAuth();
@@ -45,7 +48,7 @@ const UserList = () => {
   const [detailsUser, setDetailsUser] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [rowsPerPage, setRowsPerPage] = useState(PAGINATION.DEFAULT_ROWS_PER_PAGE);
   const [showDeviceModal, setShowDeviceModal] = useState(false);
 
   const segmentDeviceConfig = SEGMENT_DEVICE_AVAILABILITY[segmentFilter] || {};
@@ -274,7 +277,7 @@ const UserList = () => {
             onChange={(e) => setRowsPerPage(Number(e.target.value))}
             aria-label="Rows per page"
           >
-            {[5, 10, 20, 50].map((n) => (
+            {PAGINATION.ROWS_PER_PAGE_OPTIONS.map((n) => (
               <option key={n} value={n}>{n}</option>
             ))}
           </select>

@@ -153,3 +153,87 @@
 @media (max-width: 520px) {
   .quick-actions-row { grid-template-columns: 1fr;}
 }
+
+
+/* Recent Activities Card */
+.recent-activities-card {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.activity-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.activity-item {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-color, #e5e5e5);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--text-color, #333);
+  transition: background 0.15s ease;
+  cursor: default;
+}
+
+.activity-item:last-child {
+  border-bottom: none;
+}
+
+.activity-item:hover,
+.activity-item:focus {
+  background: rgba(0, 74, 173, 0.03);
+  outline: none;
+}
+
+.activity-item:focus-visible {
+  outline: 2px solid #004aad;
+  outline-offset: -2px;
+}
+
+.activity-text {
+  flex: 1;
+  font-size: 0.9em;
+  color: var(--text-color, #333);
+}
+
+.activity-time {
+  font-style: italic;
+  color: var(--text-muted, #888);
+  margin-left: 8px;
+  font-size: 0.85em;
+  white-space: nowrap;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .activity-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .activity-time {
+    margin-left: 0;
+    font-size: 0.8em;
+  }
+}
+
+/* No quick actions state */
+.no-quick-actions {
+  background: #f8f9fa;
+  border: 1px dashed #ccc;
+  border-radius: 8px;
+  padding: 40px 20px;
+  text-align: center;
+  color: #666;
+  font-style: italic;
+  width: 100%;
+}
+
+.no-quick-actions p {
+  margin: 0;
+  font-size: 1rem;
+}

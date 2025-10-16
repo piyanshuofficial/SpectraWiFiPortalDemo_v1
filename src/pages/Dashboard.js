@@ -24,6 +24,7 @@ import { getStandardChartOptions } from "../utils/commonChartOptions";
 import { EXPORT_CANVAS_SIZES } from "../utils/exportConstants";
 import { useNavigate } from "react-router-dom";
 import siteConfig from "../config/siteConfig";
+import { DATE_TIME, ANIMATION, ACTIVITY } from '../constants/appConstants';
 import "./Dashboard.css";
 
 const Dashboard = () => {
@@ -31,7 +32,7 @@ const Dashboard = () => {
   const { currentUser } = useAuth();
   const rolePermissions = Permissions[currentUser.accessLevel]?.[currentUser.role] || {};
   const navigate = useNavigate();
-  const [startDate, setStartDate] = useState(new Date(new Date().setDate(new Date().getDate() - 7)));
+  const [startDate, setStartDate] = useState(new Date(new Date().setDate(new Date().getDate() - DATE_TIME.DEFAULT_DAYS_BACK)));
   const [endDate, setEndDate] = useState(new Date());
   const [segment, setSegment] = useState("enterprise");
 
@@ -187,8 +188,57 @@ const Dashboard = () => {
     navigate('/knowledge');
     setTimeout(() => {
       window.dispatchEvent(new CustomEvent('triggerSupportHighlight', { detail: 'highlight-support' }));
-    }, 350);
+    }, ANIMATION.HIGHLIGHT_DURATION);
   };
+
+  // Permission-aware navigation handler
+  const handleQuickAction = (path, requiredPermission) => {
+    if (requiredPermission && !rolePermissions[requiredPermission]) {
+      alert(`You don't have permission to access ${path.replace('/', '')}. Please contact your administrator.`);
+      return;
+    }
+    navigate(path);
+  };
+
+  // Define quick actions with permission requirements
+  const quickActions = [
+    {
+      icon: FaUsers,
+      label: "Add User",
+      onClick: () => handleQuickAction('/users?add=1', 'canEditUsers'),
+      permission: 'canEditUsers',
+    },
+    {
+      icon: FaUserFriends,
+      label: "View Users",
+      onClick: () => handleQuickAction('/users', 'canEditUsers'),
+      permission: 'canEditUsers',
+    },
+    {
+      icon: FaChartPie,
+      label: "Reports",
+      onClick: () => handleQuickAction('/reports', 'canViewReports'),
+      permission: 'canViewReports',
+    },
+    {
+      icon: FaLifeRing,
+      label: "Support",
+      onClick: handleSupportQuickAction,
+      permission: 'canViewReports', // Available to anyone with reports access
+    },
+    {
+      icon: FaExclamationCircle,
+      label: "Alerts & Logs",
+      onClick: () => handleQuickAction('/alerts', 'canViewReports'),
+      permission: 'canViewReports',
+    },
+  ];
+
+  // Filter quick actions based on permissions
+  const accessibleQuickActions = quickActions.filter(action => {
+    if (!action.permission) return true;
+    return rolePermissions[action.permission] === true;
+  });
 
   return (
     <main className="main-content" role="main" aria-label="Dashboard">
@@ -201,68 +251,35 @@ const Dashboard = () => {
       {/* QUICK ACTIONS */}
       <h2 className="dashboard-section-title">Quick Actions</h2>
       <section className="dashboard-quick-actions" aria-label="Quick actions">
-        <div className="quick-actions-row">
-          <div
-            className="quick-action-card"
-            tabIndex={0}
-            role="button"
-            aria-label="Add User"
-            onClick={() => navigate('/users?add=1')}
-          >
-            <div className="quick-action-content">
-              <FaUsers className="quick-action-icon" />
-              <span className="quick-action-label">Add User</span>
-            </div>
+        {accessibleQuickActions.length === 0 ? (
+          <div className="no-quick-actions">
+            <p>No quick actions available with your current permissions.</p>
           </div>
-          <div
-            className="quick-action-card"
-            tabIndex={0}
-            role="button"
-            aria-label="View Users"
-            onClick={() => navigate('/users')}
-          >
-            <div className="quick-action-content">
-              <FaUserFriends className="quick-action-icon" />
-              <span className="quick-action-label">View Users</span>
-            </div>
+        ) : (
+          <div className="quick-actions-row">
+            {accessibleQuickActions.map((action, index) => (
+              <div
+                key={index}
+                className="quick-action-card"
+                tabIndex={0}
+                role="button"
+                aria-label={action.label}
+                onClick={action.onClick}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    action.onClick();
+                    e.preventDefault();
+                  }
+                }}
+              >
+                <div className="quick-action-content">
+                  <action.icon className="quick-action-icon" />
+                  <span className="quick-action-label">{action.label}</span>
+                </div>
+              </div>
+            ))}
           </div>
-          <div
-            className="quick-action-card"
-            tabIndex={0}
-            role="button"
-            aria-label="Reports"
-            onClick={() => navigate('/reports')}
-          >
-            <div className="quick-action-content">
-              <FaChartPie className="quick-action-icon" />
-              <span className="quick-action-label">Reports</span>
-            </div>
-          </div>
-          <div
-            className="quick-action-card"
-            tabIndex={0}
-            role="button"
-            aria-label="Support"
-            onClick={handleSupportQuickAction}
-          >
-            <div className="quick-action-content">
-              <FaLifeRing className="quick-action-icon" />
-              <span className="quick-action-label">Support</span>
-            </div>
-          </div>
-          <div
-            className="quick-action-card"
-            tabIndex={0}
-            role="button"
-            aria-label="Alerts and Event Logs"
-            onClick={() => navigate('/alerts')}
-          >
-            <div className="quick-action-content">
-              <FaExclamationCircle className="quick-action-icon" />
-              <span className="quick-action-label">Alerts & Logs</span>
-            </div>
-          </div>
-        </div>
+        )}
       </section>
 
       {/* NETWORK ANALYTICS */}
@@ -428,31 +445,22 @@ const Dashboard = () => {
 
       {/* RECENT ACTIVITIES */}
       <h2 className="dashboard-section-title">Recent Activities</h2>
-      <Card title="" style={{ maxHeight: "200px", overflowY: "auto" }} aria-label="Recent user activities">
-        <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-          {[
-            { text: "User Amit logged in", time: "10:30 AM" },
-            { text: "License allocation updated for Enterprise segment", time: "Yesterday" },
-            { text: "Network health check passed", time: "2 days ago" },
-            { text: "Password reset request for user Neeta", time: "3 days ago" },
-          ].map((activity, i) => (
-            <li
-              key={i}
-              style={{
-                padding: "8px 12px",
-                borderBottom: i === 3 ? "none" : "1px solid var(--text-color)",
-                display: "flex",
-                justifyContent: "space-between",
-                color: "var(--text-color)",
-              }}
-              tabIndex={0}
-            >
-              <span>{activity.text}</span>
-              <span style={{ fontStyle: "italic", color: "var(--text-color)" }}>{activity.time}</span>
-            </li>
-          ))}
-        </ul>
-      </Card>
+
+    <Card title="" className="recent-activities-card" aria-label="Recent user activities">
+      <ul className="activity-list">
+        {[
+          { text: "User Amit logged in", time: "10:30 AM" },
+          { text: "License allocation updated for Enterprise segment", time: "Yesterday" },
+          { text: "Network health check passed", time: "2 days ago" },
+          { text: "Password reset request for user Neeta", time: "3 days ago" },
+        ].slice(0, ACTIVITY.MAX_RECENT_ITEMS).map((activity, i) => (
+          <li key={i} className="activity-item" tabIndex={0}>
+            <span className="activity-text">{activity.text}</span>
+            <span className="activity-time">{activity.time}</span>
+          </li>
+        ))}
+      </ul>
+    </Card>
     </main>
   );
 };

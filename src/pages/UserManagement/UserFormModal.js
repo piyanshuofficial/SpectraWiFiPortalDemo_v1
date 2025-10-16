@@ -10,6 +10,7 @@ import { isEmailValid, isRequired } from "../../utils/validationUtils";
 import { toast } from "react-toastify";
 import "./UserFormModal.css";
 import UserLicenseBar from '../../components/common/UserLicenseBar';
+import { DATE_TIME, DATA_LIMITS, ANIMATION } from '../../constants/appConstants';
 
 const EMAIL_REQUIRED_SEGMENTS = {
   coWorking: true,
@@ -33,7 +34,9 @@ const MAX_LICENSES = siteConfig.licenses.maxLicenses;
 const USED_LICENSES = siteConfig.licenses.usedLicenses;
 
 function randomPassword() {
-  return Math.floor(100000 + Math.random() * 900000).toString();
+  const min = Math.pow(10, DATA_LIMITS.PASSWORD_DIGITS - 1);
+  const max = Math.pow(10, DATA_LIMITS.PASSWORD_DIGITS) - 1;
+  return Math.floor(min + Math.random() * (max - min)).toString();
 }
 
 function getTodayISO() {
@@ -45,8 +48,8 @@ const DEFAULTS = {
   checkOutDate: getTodayISO(),
   moveInDate: getTodayISO(),
   moveOutDate: getTodayISO(),
-  checkInTime: "11:00",
-  checkOutTime: "14:00",
+  checkInTime: DATE_TIME.DEFAULT_CHECK_IN_TIME,
+  checkOutTime: DATE_TIME.DEFAULT_CHECK_OUT_TIME,
 };
 
 const UserFormModal = ({ user, onSubmit, onClose, segment }) => {
@@ -128,7 +131,7 @@ const UserFormModal = ({ user, onSubmit, onClose, segment }) => {
     setErrors({});
     setTimeout(() => {
       firstInputRef.current?.focus();
-    }, 0);
+    }, ANIMATION.AUTO_FOCUS_DELAY);
   }, [user, segment]);
 
   function minCheckOutDate() {

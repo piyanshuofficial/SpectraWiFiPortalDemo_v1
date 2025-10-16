@@ -1,12 +1,22 @@
 // src/components/common/UserLicenseBar.js
 
 import React from "react";
+import { LICENSE_THRESHOLDS, COMPONENT_SIZES } from "../../constants/appConstants";
 
-function UserLicenseBar({ current, total, width = 280, height = 26 }) {
+function UserLicenseBar({ 
+  current, 
+  total, 
+  width = COMPONENT_SIZES.LICENSE_BAR_WIDTH, 
+  height = COMPONENT_SIZES.LICENSE_BAR_HEIGHT 
+}) {
   const usagePct = Math.min(current / total, 1);
-  let barColor = "#32ad4e";
-  if (usagePct >= 0.9) barColor = "#e14b4b";
-  else if (usagePct >= 0.75) barColor = "#ffc735";
+  let barColor = LICENSE_THRESHOLDS.COLOR_NORMAL;
+  
+  if (usagePct >= LICENSE_THRESHOLDS.CRITICAL_PERCENT) {
+    barColor = LICENSE_THRESHOLDS.COLOR_CRITICAL;
+  } else if (usagePct >= LICENSE_THRESHOLDS.WARNING_PERCENT) {
+    barColor = LICENSE_THRESHOLDS.COLOR_WARNING;
+  }
 
   const backgroundColor = "#e6eaf0";
   const pctWidth = Math.max(Math.floor(usagePct * width), 6);
@@ -39,7 +49,7 @@ function UserLicenseBar({ current, total, width = 280, height = 26 }) {
             top: "50%",
             transform: "translate(-50%, -50%)",
             fontWeight: 600,
-            fontSize: "0.9rem", // Smaller font
+            fontSize: "0.9rem",
             color: "#234",
             whiteSpace: "nowrap"
           }}

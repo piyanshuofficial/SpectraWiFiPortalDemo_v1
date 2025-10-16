@@ -251,3 +251,30 @@
     padding: 5px 2px;
   }
 }
+
+/* Usage Statistics Title */
+.udm-usage-title {
+  margin-top: 26px;
+  margin-bottom: 12px;
+  text-align: left;
+  padding-left: 44px;
+}
+
+/* Button Variants - Remove inline styles */
+.resend-password-btn {
+  background: #a3b9fd !important;
+  color: #183b6b !important;
+}
+
+.suspend-user-btn {
+  background: #FFA900 !important;
+  color: #fff !important;
+  border: none !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 520px) {
+  .udm-usage-title {
+    padding-left: 12px;
+  }
+}

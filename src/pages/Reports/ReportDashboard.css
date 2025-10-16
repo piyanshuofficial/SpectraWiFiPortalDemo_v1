@@ -169,3 +169,54 @@
   outline-offset: -3px;
   transition: outline 0.3s ease;
 }
+
+/* Table cell utilities */
+.text-center {
+  text-align: center;
+}
+
+.no-reports-message {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+  font-style: italic;
+}
+
+/* Report row states */
+.report-table tbody tr {
+  transition: background-color 0.2s ease, outline 0.3s ease;
+  cursor: default;
+}
+
+/* Remove inline style dependencies */
+.report-table tbody td {
+  padding: 10px 14px;
+  vertical-align: middle;
+  border-top: 1px solid var(--table-row-border, #ddd);
+}
+
+.report-table tbody td.actions-cell {
+  text-align: center;
+  padding: 10px;
+  white-space: nowrap;
+}
+
+.report-table tbody td.actions-cell > button {
+  margin: 0 3px;
+  vertical-align: middle;
+  min-width: 30px;
+  padding: 4px 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.report-table tbody td.actions-cell > button:last-child {
+  margin-right: 0;
+}
+
+.report-table tbody td svg {
+  pointer-events: none;
+  width: 14px;
+  height: 14px;
+}
