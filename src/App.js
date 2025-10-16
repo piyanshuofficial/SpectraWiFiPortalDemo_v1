@@ -8,7 +8,6 @@ import UserList from './pages/UserManagement/UserList';
 import DeviceManagement from './pages/DeviceManagement/DeviceList';
 import Reports from './pages/Reports/ReportDashboard';
 import KnowledgeCenter from './pages/KnowledgeCenter/KnowledgeHome';
-
 import { useAuth } from './context/AuthContext';
 import { Permissions } from './utils/accessLevels';
 import "./components/Badge.css";

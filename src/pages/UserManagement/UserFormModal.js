@@ -5,6 +5,7 @@ import Modal from "../../components/Modal";
 import Button from "../../components/Button";
 import Badge from "../../components/Badge";
 import { segmentFieldConfig } from "../../config/segmentFieldConfig";
+import siteConfig from "../../config/siteConfig";
 import { isEmailValid, isRequired } from "../../utils/validationUtils";
 import { toast } from "react-toastify";
 import "./UserFormModal.css";
@@ -28,8 +29,8 @@ const USER_CATEGORY_SEGMENT = {
   miscellaneous: "user",
 };
 
-const MAX_LICENSES = 100;
-const USED_LICENSES = 70;
+const MAX_LICENSES = siteConfig.licenses.maxLicenses;
+const USED_LICENSES = siteConfig.licenses.usedLicenses;
 
 function randomPassword() {
   return Math.floor(100000 + Math.random() * 900000).toString();
@@ -241,7 +242,6 @@ const UserFormModal = ({ user, onSubmit, onClose, segment }) => {
           {user ? "Edit User" : "Add New User"}
         </h2>
         
-        {/* Compact License Bar */}
         <div className="user-form-license-container">
           <UserLicenseBar current={USED_LICENSES} total={MAX_LICENSES} width={280} height={24} />
         </div>
@@ -398,7 +398,6 @@ const UserFormModal = ({ user, onSubmit, onClose, segment }) => {
             {errors.deviceLimit && <div className="error-message" id="deviceLimit-error" role="alert">{errors.deviceLimit}</div>}
           </div>
 
-          {/* Segment-specific fields */}
           {(segmentFieldConfig[segment] || []).map(field => (
             <div className="user-form-row" key={field.name}>
               <label htmlFor={field.name}>
@@ -438,7 +437,6 @@ const UserFormModal = ({ user, onSubmit, onClose, segment }) => {
             </div>
           ))}
 
-          {/* CoLiving specific fields */}
           {segment === "coLiving" && (
             <>
               <div className="user-form-row">
@@ -528,7 +526,6 @@ const UserFormModal = ({ user, onSubmit, onClose, segment }) => {
             </>
           )}
 
-          {/* CoWorking specific fields */}
           {segment === "coWorking" && (
             <>
               <div className="user-form-row">
@@ -583,7 +580,6 @@ const UserFormModal = ({ user, onSubmit, onClose, segment }) => {
             </>
           )}
 
-          {/* Hotel specific fields */}
           {segment === "hotel" && (
             <>
               <div className="user-form-row">

@@ -1,7 +1,5 @@
 //src/components/DeviceFormModal.js
 
-
-
 import React, { useState, useEffect, useRef } from 'react';
 import Modal from './Modal';
 import Button from './Button';
@@ -184,8 +182,7 @@ function DeviceFormModal({
         userId: selectedUser.id,
         deviceCategory,
         deviceName: deviceName.trim(),
-        macAddress: macAddress.replace(/:/g, '').toUpperCase()
-
+        macAddress: macAddress.trim().toUpperCase()
       };
     } else {
       deviceData = {
@@ -251,7 +248,7 @@ function DeviceFormModal({
                     value={searchTerm}
                     onChange={e => {
                       setSearchTerm(e.target.value);
-                      setSelectedUser(null); // Reset selection if search term is changed
+                      setSelectedUser(null);
                     }}
                     autoComplete="off"
                     className={errors.selectedUser ? 'error' : ''}
@@ -380,7 +377,6 @@ function DeviceFormModal({
               id="mac"
               value={macAddress}
               onChange={e => {
-                // Remove all non-hex characters, then format as XX:XX:XX:XX:XX:XX (up to 12 hex chars)
                 let val = e.target.value.replace(/[^a-fA-F0-9]/g, '').toUpperCase().slice(0,12);
                 let pretty = val.match(/.{1,2}/g)?.join(':') || '';
                 setMacAddress(pretty);
@@ -400,7 +396,7 @@ function DeviceFormModal({
         </div>
         <div className="device-form-actions">
           <Button type="button" variant="secondary" onClick={onClose} aria-label="Cancel device form">Cancel</Button>
-          <Button type="submit" variant="primary" aria-label={device ? "Update device" : "Register device"}>
+          <Button type="submit" variant="primary" onClick={handleSubmit} aria-label={device ? "Update device" : "Register device"}>
             {device ? "Update Device" : "Register Device"}
           </Button>
         </div>
