@@ -1,7 +1,13 @@
 // src/utils/commonChartOptions.js
 
 import { CHART } from '../constants/appConstants';
+import { DEFAULT_TOOLTIP_CONFIG, DEFAULT_LEGEND_CONFIG } from '../config/chartConfig';
 
+/**
+ * Get standardized chart options with consistent styling
+ * @param {object} params - Configuration parameters
+ * @returns {object} Chart.js options object
+ */
 export function getStandardChartOptions({ 
   type, 
   title, 
@@ -24,31 +30,58 @@ export function getStandardChartOptions({
     animation: !forExport,
     plugins: {
       legend: {
-        display: true,
-        position: "top",
+        ...DEFAULT_LEGEND_CONFIG,
         labels: {
+          ...DEFAULT_LEGEND_CONFIG.labels,
           color: textColor,
-          font: { size: baseFontSize, family: "Helvetica", weight: "bold" },
+          font: { 
+            size: baseFontSize, 
+            family: "Helvetica", 
+            weight: "bold" 
+          },
         },
       },
       title: {
         display: Boolean(title),
         text: title,
-        font: { size: titleFontSize, family: "Helvetica", weight: "bold" },
+        font: { 
+          size: titleFontSize, 
+          family: "Helvetica", 
+          weight: "bold" 
+        },
         color: textColor,
       },
+      tooltip: {
+        ...DEFAULT_TOOLTIP_CONFIG,
+        titleColor: textColor,
+        bodyColor: textColor
+      }
     },
     scales: type === "pie" ? undefined : {
       x: {
         display: true,
-        title: { display: Boolean(xLabel), text: xLabel, font: { size: baseFontSize } },
-        ticks: { color: textColor, font: { size: tickFontSize } },
+        title: { 
+          display: Boolean(xLabel), 
+          text: xLabel, 
+          font: { size: baseFontSize } 
+        },
+        ticks: { 
+          color: textColor, 
+          font: { size: tickFontSize } 
+        },
         grid: { color: gridColor },
       },
       y: {
         display: true,
-        title: { display: Boolean(yLabel), text: yLabel, font: { size: baseFontSize } },
-        ticks: { color: textColor, font: { size: tickFontSize } },
+        title: { 
+          display: Boolean(yLabel), 
+          text: yLabel, 
+          font: { size: baseFontSize } 
+        },
+        ticks: { 
+          color: textColor, 
+          font: { size: tickFontSize } 
+        },
         grid: { color: gridColor },
         beginAtZero: true,
       },

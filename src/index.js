@@ -8,6 +8,9 @@ import { AuthProvider } from './context/AuthContext';
 import { UserProvider } from './context/UserContext';
 import { LoadingProvider } from './context/LoadingContext';
 
+// Initialize Chart.js configuration globally
+import './config/chartConfig';
+
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>

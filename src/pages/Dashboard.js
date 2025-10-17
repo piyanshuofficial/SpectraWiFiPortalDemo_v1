@@ -1,18 +1,10 @@
 // src/pages/Dashboard.js
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Card from "../components/Card";
 import Button from "../components/Button";
 import { Line, Bar, Pie } from "react-chartjs-2";
-import {
-  FaUsers,
-  FaUserFriends,
-  FaChartPie,
-  FaExclamationCircle,
-  FaFileCsv,
-  FaFilePdf,
-  FaLifeRing,
-} from "react-icons/fa";
+import { FaUsers, FaUserFriends, FaChartPie, FaExclamationCircle, FaFileCsv, FaFilePdf, FaLifeRing } from "react-icons/fa";
 import { toast } from "react-toastify";
 import { useAuth } from "../context/AuthContext";
 import { useLoading } from "../context/LoadingContext";
@@ -57,20 +49,23 @@ const Dashboard = () => {
 
   const safeNumber = (value, fallback = 0) => typeof value === "number" && !isNaN(value) ? value : fallback;
 
-  //Simulate initial dashboard load ONCE
+  // ✅ FIX: Cleanup timeout on unmount
   useEffect(() => {
     let mounted = true;
+    let timeoutId = null;
 
     const loadDashboard = async () => {
       startLoading('dashboard');
       try {
-        await new Promise(resolve => setTimeout(resolve, 600));
+        timeoutId = setTimeout(() => {
+          if (mounted) {
+            stopLoading('dashboard');
+            setInitialLoad(false);
+          }
+        }, 600);
       } catch (error) {
         if (mounted) {
           toast.error("Failed to load dashboard");
-        }
-      } finally {
-        if (mounted) {
           stopLoading('dashboard');
           setInitialLoad(false);
         }
@@ -81,8 +76,11 @@ const Dashboard = () => {
 
     return () => {
       mounted = false;
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
     };
-  }, []); //Empty dependency array - only run once
+  }, []); // Empty dependency array - only run once
 
   const renderDashboardForSegment = () => (
     <>
@@ -140,13 +138,17 @@ const Dashboard = () => {
   const handleDashboardExportCSV = async (headers, rows, filename, chartId) => {
     setExportingCSV(true);
     setExportingChart(chartId);
+    let timeoutId = null;
     try {
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise(resolve => {
+        timeoutId = setTimeout(resolve, 500);
+      });
       exportChartDataToCSV({ headers, rows }, filename);
       toast.success("CSV exported successfully");
     } catch (error) {
       toast.error("Failed to export CSV");
     } finally {
+      if (timeoutId) clearTimeout(timeoutId);
       setExportingCSV(false);
       setExportingChart(null);
     }
@@ -155,8 +157,11 @@ const Dashboard = () => {
   const handleDashboardExportPDF = async (title, headers, rows, chartType, dataRows, filename, reportId, chartId) => {
     setExportingPDF(true);
     setExportingChart(chartId);
+    let timeoutId = null;
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(resolve => {
+        timeoutId = setTimeout(resolve, 1000);
+      });
       
       let chartData;
       if (chartType === "line") {
@@ -220,6 +225,7 @@ const Dashboard = () => {
     } catch (error) {
       toast.error("Failed to export PDF");
     } finally {
+      if (timeoutId) clearTimeout(timeoutId);
       setExportingPDF(false);
       setExportingChart(null);
     }
@@ -227,9 +233,12 @@ const Dashboard = () => {
 
   const handleSupportQuickAction = () => {
     navigate('/knowledge');
-    setTimeout(() => {
+    let timeoutId = setTimeout(() => {
       window.dispatchEvent(new CustomEvent('triggerSupportHighlight', { detail: 'highlight-support' }));
     }, ANIMATION.HIGHLIGHT_DURATION);
+    
+    // Cleanup happens automatically when component unmounts or on next navigation
+    return () => clearTimeout(timeoutId);
   };
 
   const handleQuickAction = (path, requiredPermission) => {
@@ -315,9 +324,8 @@ const Dashboard = () => {
       className="main-content" 
       role="main" 
       aria-label="Dashboard"
-      style={{ position: 'relative', zIndex: 1 }} // Ensure proper z-index
+      style={{ position: 'relative', zIndex: 1 }}
     >
-      {/* ✅ FIX: Loading overlay with proper z-index */}
       {(exportingCSV || exportingPDF) && (
         <LoadingOverlay 
           active={true}
@@ -326,13 +334,11 @@ const Dashboard = () => {
         />
       )}
 
-      {/* OVERVIEW */}
       <h2 className="dashboard-section-title">Overview</h2>
       <section className="dashboard-cards" aria-label="Dashboard summary cards">
         {renderDashboardForSegment()}
       </section>
 
-      {/* QUICK ACTIONS */}
       <h2 className="dashboard-section-title">Quick Actions</h2>
       <section className="dashboard-quick-actions" aria-label="Quick actions">
         {accessibleQuickActions.length === 0 ? (
@@ -357,7 +363,7 @@ const Dashboard = () => {
                 }}
                 style={{ 
                   cursor: 'pointer',
-                  pointerEvents: 'auto' // Ensure clickable
+                  pointerEvents: 'auto'
                 }}
               >
                 <div className="quick-action-content">
@@ -370,10 +376,8 @@ const Dashboard = () => {
         )}
       </section>
 
-      {/* NETWORK ANALYTICS */}
       <h2 className="dashboard-section-title">Network Analytics</h2>
       <section className="dashboard-charts" aria-label="Dashboard charts section">
-        {/* Network Usage Chart */}
         <Card title="Network Usage (GB)">
           <div id="chart-network-usage" className="chart-container">
             <Line
@@ -435,7 +439,6 @@ const Dashboard = () => {
           </div>
         </Card>
 
-        {/* License Usage Chart */}
         <Card title="License Usage by Type">
           <div id="chart-license-usage" className="chart-container">
             <Bar
@@ -495,7 +498,6 @@ const Dashboard = () => {
           </div>
         </Card>
 
-        {/* Alerts Summary Chart */}
         <Card title="Alerts Summary">
           <div id="chart-alerts-summary" className="chart-container">
             <Pie
@@ -555,7 +557,6 @@ const Dashboard = () => {
         </Card>
       </section>
 
-      {/* RECENT ACTIVITIES */}
       <h2 className="dashboard-section-title">Recent Activities</h2>
       <Card title="" className="recent-activities-card" aria-label="Recent user activities">
         <ul className="activity-list">

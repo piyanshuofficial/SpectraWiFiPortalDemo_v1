@@ -67,24 +67,37 @@ const UserList = () => {
   }, [segmentFilter]);
 
   // Simulate initial data load
-  useEffect(() => {
-    const loadInitialData = async () => {
-      startLoading('users');
-      try {
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 800));
-        setUsers(sampleUsers);
-        setDevices([]);
-      } catch (error) {
+useEffect(() => {
+  let mounted = true;
+  let timeoutId = null;
+
+  const loadInitialData = async () => {
+    startLoading('users');
+    try {
+      timeoutId = setTimeout(() => {
+        if (mounted) {
+          setUsers(sampleUsers);
+          setDevices([]);
+          stopLoading('users');
+          setInitialLoad(false);
+        }
+      }, 800);
+    } catch (error) {
+      if (mounted) {
         toast.error("Failed to load users");
-      } finally {
         stopLoading('users');
         setInitialLoad(false);
       }
-    };
+    }
+  };
 
-    loadInitialData();
-  }, []);
+  loadInitialData();
+
+  return () => {
+    mounted = false;
+    if (timeoutId) clearTimeout(timeoutId);
+  };
+}, []);
 
   useEffect(() => {
     const defaultCols = columns
@@ -199,48 +212,54 @@ const UserList = () => {
 
   const activeFilterCount = Object.values(advancedFilters).filter(Boolean).length;
 
-  const handleUserSubmit = async (userObj) => {
-    setSubmitting(true);
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const userWithActiveStatus = { ...userObj, status: "Active" };
-      if (editingUser) {
-        setUsers(users.map((u) => (u.id === editingUser.id ? userWithActiveStatus : u)));
-        toast.success("User updated successfully");
-      } else {
-        setUsers([userWithActiveStatus, ...users]);
-        toast.success("User added successfully");
-      }
-      setShowFormModal(false);
-      setEditingUser(null);
-    } catch (error) {
-      toast.error("Failed to save user");
-    } finally {
-      setSubmitting(false);
+const handleUserSubmit = async (userObj) => {
+  setSubmitting(true);
+  let timeoutId = null;
+  try {
+    await new Promise(resolve => {
+      timeoutId = setTimeout(resolve, 1000);
+    });
+    
+    const userWithActiveStatus = { ...userObj, status: "Active" };
+    if (editingUser) {
+      setUsers(users.map((u) => (u.id === editingUser.id ? userWithActiveStatus : u)));
+      toast.success("User updated successfully");
+    } else {
+      setUsers([userWithActiveStatus, ...users]);
+      toast.success("User added successfully");
     }
-  };
+    setShowFormModal(false);
+    setEditingUser(null);
+  } catch (error) {
+    toast.error("Failed to save user");
+  } finally {
+    if (timeoutId) clearTimeout(timeoutId);
+    setSubmitting(false);
+  }
+};
 
   const handleChangeStatus = (id, newStatus) => {
     setUsers(users.map((u) => (u.id === id ? { ...u, status: newStatus } : u)));
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this user?")) {
-      startLoading('users');
-      try {
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 500));
-        setUsers(users.filter((u) => u.id !== id));
-        toast.success("User deleted successfully");
-      } catch (error) {
-        toast.error("Failed to delete user");
-      } finally {
-        stopLoading('users');
-      }
+const handleDelete = async (id) => {
+  if (window.confirm("Are you sure you want to delete this user?")) {
+    startLoading('users');
+    let timeoutId = null;
+    try {
+      await new Promise(resolve => {
+        timeoutId = setTimeout(resolve, 500);
+      });
+      setUsers(users.filter((u) => u.id !== id));
+      toast.success("User deleted successfully");
+    } catch (error) {
+      toast.error("Failed to delete user");
+    } finally {
+      if (timeoutId) clearTimeout(timeoutId);
+      stopLoading('users');
     }
-  };
+  }
+};
 
   const handleDeviceSubmit = (deviceInfo) => {
     toast.success(`Device "${deviceInfo.deviceName}" registered successfully`);

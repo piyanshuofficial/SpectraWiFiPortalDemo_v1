@@ -1,9 +1,22 @@
 // src/utils/generateChartImage.js
-import { Chart, CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Title, Tooltip, Legend } from "chart.js";
 
-Chart.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Title, Tooltip, Legend);
+/**
+ * Generate base64 image from Chart.js chart data
+ * Used for PDF export functionality
+ * 
+ * Chart.js components are registered globally in src/config/chartConfig.js
+ */
 
+import { Chart } from '../config/chartConfig';
 
+/**
+ * Generate a chart image for PDF export
+ * @param {object} data - Chart.js data object
+ * @param {object} options - Chart.js options object
+ * @param {number} width - Canvas width in pixels
+ * @param {number} height - Canvas height in pixels
+ * @returns {Promise<string>} Base64 encoded image
+ */
 export async function generateChartImage(data, options, width = 900, height = 450) {
   return new Promise((resolve, reject) => {
     const canvas = document.createElement("canvas");
