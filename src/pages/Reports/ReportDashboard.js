@@ -1,6 +1,6 @@
 // src/pages/Reports/ReportDashboard.js
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import Button from "../../components/Button";
 import Badge from "../../components/Badge";
 import { useAuth } from "../../context/AuthContext";
@@ -24,7 +24,8 @@ import AlertsSummaryReport from "../../reports/AlertsSummaryReport";
 import sampleReports from "../../constants/sampleReports";
 import sampleReportsData from "../../constants/sampleReportsData";
 import { EXPORT_CANVAS_SIZES } from "../../utils/exportConstants";
-
+import { useLoading } from "../../context/LoadingContext";
+import LoadingOverlay from "../../components/Loading/LoadingOverlay";
 
 import { getStandardChartOptions } from "../../utils/commonChartOptions";
 
@@ -326,12 +327,14 @@ const ReportList = ({ reports, onView, onDownloadCSV, onExportPDF, selectedRepor
 
 const ReportDashboard = () => {
   const { currentUser } = useAuth();
+  const { startLoading, stopLoading, isLoading } = useLoading();
   const rolePermissions = Permissions[currentUser.accessLevel]?.[currentUser.role] || {};
   const [reports] = React.useState(sampleReports);
   const [selectedReportId, setSelectedReportId] = React.useState(null);
   const [highlightedReportId, setHighlightedReportId] = React.useState(null);
   const darkMode = document.documentElement.getAttribute("data-theme") === "dark";
-
+  const [exportingCSV, setExportingCSV] = useState(false);
+  const [exportingPDF, setExportingPDF] = useState(false);
   const accessibleReports = useMemo(() => reports.filter(() => true), [reports, rolePermissions]);
   const commonReports = accessibleReports.filter((r) => r.isCommon);
   const categorizedReports = accessibleReports.reduce((acc, r) => {
@@ -342,7 +345,10 @@ const ReportDashboard = () => {
   }, {});
 
   const handleExportPDF = async (report) => {
+    setExportingPDF(true);
+    startLoading('export');
     try {
+      await new Promise(resolve => setTimeout(resolve, 1200));
       const reportData = sampleReportsData[report.id];
       const { headers, rows } = getCSVData(report);
       let chartConfig = null;
@@ -358,6 +364,7 @@ const ReportDashboard = () => {
           }
         }
       } catch {
+        console.error("Chart config error:", error);
       }
       const { width, height } = EXPORT_CANVAS_SIZES[chartConfig.options.type];
 
@@ -372,15 +379,26 @@ const ReportDashboard = () => {
         exportCanvasWidth: width,
         exportCanvasHeight: height,
       });
-    } catch {
+      toast.success("PDF exported successfully");
+    } catch (error) {
+      toast.error("Failed to export PDF");
+    } finally {
+      setExportingPDF(false);
+      stopLoading('export');
     }
   };
 
-  const handleDownloadCSV = (report) => {
+  const handleDownloadCSV = async (report) => {
+    setExportingCSV(true);
     try {
+      await new Promise(resolve => setTimeout(resolve, 400));
       const { headers, rows } = getCSVData(report);
       exportChartDataToCSV({ headers, rows }, `${report.name.replace(/\s/g, "_")}.csv`);
-    } catch {
+      toast.success("CSV exported successfully");
+    } catch (error) {
+      toast.error("Failed to export CSV");
+    } finally {
+      setExportingCSV(false);
     }
   };
 
@@ -423,6 +441,10 @@ const ReportDashboard = () => {
 
   return (
     <div className="report-dashboard-container" role="region" aria-label="Reports Dashboard">
+      <LoadingOverlay 
+        active={isLoading('export') || exportingCSV || exportingPDF} 
+        message={exportingCSV ? "Preparing CSV..." : "Generating PDF..."}
+      />
       <h2>Quick Access</h2>
       <div className="report-shortcuts" role="list">
         {shortcutReports.map((report, idx) => (
@@ -437,6 +459,7 @@ const ReportDashboard = () => {
           </button>
         ))}
       </div>
+
 
       <h2>All Reports</h2>
       {Object.keys(categorizedReports).length > 0 ? (

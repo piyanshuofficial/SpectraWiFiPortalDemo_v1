@@ -108,7 +108,8 @@ function DeviceFormModal({
   users = [],
   devices = [],
   segment = 'enterprise',
-  siteUserList = []
+  siteUserList = [],
+  submitting = false
 }) {
   const [mode, setMode] = useState('bindUser');
   const [searchTerm, setSearchTerm] = useState('');
@@ -173,9 +174,10 @@ function DeviceFormModal({
     return Object.keys(errs).length === 0;
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     if (!validate()) return;
+    
     let deviceData = {};
     if (mode === 'bindUser') {
       deviceData = {
@@ -194,7 +196,7 @@ function DeviceFormModal({
         macAddress: macAddress.trim().toUpperCase()
       };
     }
-    onSubmit(deviceData);
+    await onSubmit(deviceData);
   }
 
   const allowOverride = SEGMENT_ALLOW_MANUAL_OVERRIDE[segment] ?? true;
@@ -379,9 +381,23 @@ function DeviceFormModal({
             </div>
           </form>
         </div>
-        <div className="device-form-actions">
-          <Button type="button" variant="secondary" onClick={onClose} aria-label="Cancel device form">Cancel</Button>
-          <Button type="submit" variant="primary" onClick={handleSubmit} aria-label={device ? "Update device" : "Register device"}>
+       <div className="device-form-actions">
+          <Button 
+            type="button" 
+            variant="secondary" 
+            onClick={onClose} 
+            aria-label="Cancel device form"
+            disabled={submitting}
+          >
+            Cancel
+          </Button>
+          <Button 
+            type="submit" 
+            variant="primary" 
+            onClick={handleSubmit} 
+            aria-label={device ? "Update device" : "Register device"}
+            loading={submitting}
+          >
             {device ? "Update Device" : "Register Device"}
           </Button>
         </div>

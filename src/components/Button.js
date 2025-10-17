@@ -1,26 +1,42 @@
 // src/components/Button.js
 
 import React from "react";
+import Spinner from "./Loading/Spinner";
 import "./Button.css";
 
 const Button = React.forwardRef(
   (
-    { variant = "primary", disabled = false, children, onClick, title, type = "button", ...rest },
+    { 
+      variant = "primary", 
+      disabled = false, 
+      loading = false,
+      children, 
+      onClick, 
+      title, 
+      type = "button", 
+      ...rest 
+    },
     ref
   ) => {
-    const className = `btn btn-${variant}${disabled ? " btn-disabled" : ""}`;
+    const isDisabled = disabled || loading;
+    const className = `btn btn-${variant}${isDisabled ? " btn-disabled" : ""}${loading ? " btn-loading" : ""}`;
+    
     return (
       <button
         type={type}
         className={className}
-        disabled={disabled}
+        disabled={isDisabled}
         onClick={onClick}
         title={title}
-        aria-disabled={disabled}
+        aria-disabled={isDisabled}
+        aria-busy={loading}
         ref={ref}
         {...rest}
       >
-        {children}
+        {loading && <Spinner size="sm" color="white" className="btn-spinner" />}
+        <span className={loading ? "btn-content-loading" : "btn-content"}>
+          {children}
+        </span>
       </button>
     );
   }

@@ -22,6 +22,9 @@ import { toast } from "react-toastify";
 import SEGMENT_DEVICE_AVAILABILITY from '../../config/segmentDeviceConfig';
 import siteConfig from '../../config/siteConfig';
 import { PAGINATION } from '../../constants/appConstants';
+import { useLoading } from "../../context/LoadingContext";
+import LoadingOverlay from "../../components/Loading/LoadingOverlay";
+import SkeletonLoader from "../../components/Loading/SkeletonLoader";
 
 
 const MAX_LICENSES = siteConfig.licenses.maxLicenses;
@@ -31,10 +34,12 @@ const UserList = () => {
   const { currentUser } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  const { startLoading, stopLoading, isLoading } = useLoading();
   const rolePermissions = Permissions[currentUser.accessLevel]?.[currentUser.role] || {};
-
   const [users, setUsers] = useState(sampleUsers);
   const [devices, setDevices] = useState([]);
+  const [initialLoad, setInitialLoad] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [segmentFilter, setSegmentFilter] = useState("enterprise");
@@ -60,6 +65,26 @@ const UserList = () => {
     const segmentCols = segmentSpecificFields[segmentFilter] || [];
     return [...commonColumns, ...segmentCols];
   }, [segmentFilter]);
+
+  // Simulate initial data load
+  useEffect(() => {
+    const loadInitialData = async () => {
+      startLoading('users');
+      try {
+        // Simulate API call
+        await new Promise(resolve => setTimeout(resolve, 800));
+        setUsers(sampleUsers);
+        setDevices([]);
+      } catch (error) {
+        toast.error("Failed to load users");
+      } finally {
+        stopLoading('users');
+        setInitialLoad(false);
+      }
+    };
+
+    loadInitialData();
+  }, []);
 
   useEffect(() => {
     const defaultCols = columns
@@ -174,27 +199,46 @@ const UserList = () => {
 
   const activeFilterCount = Object.values(advancedFilters).filter(Boolean).length;
 
-  const handleUserSubmit = (userObj) => {
-    const userWithActiveStatus = { ...userObj, status: "Active" };
-    if (editingUser) {
-      setUsers(users.map((u) => (u.id === editingUser.id ? userWithActiveStatus : u)));
-      toast.success("User updated successfully");
-    } else {
-      setUsers([userWithActiveStatus, ...users]);
-      toast.success("User added successfully");
+  const handleUserSubmit = async (userObj) => {
+    setSubmitting(true);
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const userWithActiveStatus = { ...userObj, status: "Active" };
+      if (editingUser) {
+        setUsers(users.map((u) => (u.id === editingUser.id ? userWithActiveStatus : u)));
+        toast.success("User updated successfully");
+      } else {
+        setUsers([userWithActiveStatus, ...users]);
+        toast.success("User added successfully");
+      }
+      setShowFormModal(false);
+      setEditingUser(null);
+    } catch (error) {
+      toast.error("Failed to save user");
+    } finally {
+      setSubmitting(false);
     }
-    setShowFormModal(false);
-    setEditingUser(null);
   };
 
   const handleChangeStatus = (id, newStatus) => {
     setUsers(users.map((u) => (u.id === id ? { ...u, status: newStatus } : u)));
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this user?")) {
-      setUsers(users.filter((u) => u.id !== id));
-      toast.success("User deleted successfully");
+      startLoading('users');
+      try {
+        // Simulate API call
+        await new Promise(resolve => setTimeout(resolve, 500));
+        setUsers(users.filter((u) => u.id !== id));
+        toast.success("User deleted successfully");
+      } catch (error) {
+        toast.error("Failed to delete user");
+      } finally {
+        stopLoading('users');
+      }
     }
   };
 
@@ -224,9 +268,23 @@ const UserList = () => {
       ) : "--"}
     </td>
   );
-
+    // Show skeleton loader on initial load
+  if (initialLoad) {
+    return (
+      <div className="user-list-container">
+        <div className="user-toolbar-ring-row">
+          <div className="user-toolbar">
+            <SkeletonLoader variant="rect" height={40} />
+          </div>
+        </div>
+        <SkeletonLoader variant="table" rows={10} />
+      </div>
+    );
+  }
   return (
     <div className="user-list-container">
+      {/* Loading overlay for operations */}
+      <LoadingOverlay active={isLoading('users')} message="Processing..." />
       {/* Segment Selector - Top Right Corner (Testing Only) */}
       <div className="segment-selector-test">
         <label htmlFor="segment-test-select">Segment:</label>
@@ -508,6 +566,7 @@ const UserList = () => {
             setShowFormModal(false);
             setEditingUser(null);
           }}
+          submitting={submitting}
         />
       )}
 

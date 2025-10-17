@@ -4,9 +4,12 @@ import React, { useState, useMemo, useEffect } from "react";
 import { FaDesktop, FaGlobeAmericas, FaBan, FaWifi, FaMobileAlt, FaLaptop } from "react-icons/fa";
 import { useAuth } from "../../context/AuthContext";
 import { Permissions } from "../../utils/accessLevels";
+import { useLoading } from "../../context/LoadingContext";
 import Button from "../../components/Button";
 import Pagination from "../../components/Pagination";
 import DeviceFormModal from "../../components/DeviceFormModal";
+import LoadingOverlay from "../../components/Loading/LoadingOverlay";
+import SkeletonLoader from "../../components/Loading/SkeletonLoader";
 import { toast } from "react-toastify";
 import "./DeviceList.css";
 import { PAGINATION } from "../../constants/appConstants";
@@ -50,7 +53,7 @@ const statusOptions = [
   { value: "blocked", label: "Blocked" }
 ];
 
-const devices = [
+const initialDevices = [
   {
     id: 1,
     name: "iPhone 14 Pro",
@@ -200,16 +203,41 @@ const devices = [
 
 const DeviceList = () => {
   const { currentUser } = useAuth();
+  const { startLoading, stopLoading, isLoading } = useLoading();
   const rolePermissions = Permissions[currentUser.accessLevel]?.[currentUser.role] || {};
 
+  const [devices, setDevices] = useState([]);
   const [typeFilter, setTypeFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [searchText, setSearchText] = useState("");
   const [showDeviceModal, setShowDeviceModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(PAGINATION.DEVICE_LIST_DEFAULT);
+  const [initialLoad, setInitialLoad] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [blockingDeviceId, setBlockingDeviceId] = useState(null);
+  const [viewingDeviceId, setViewingDeviceId] = useState(null);
 
-  // Compute filtered devices - ALWAYS called, not conditional
+  // Simulate initial data load
+  useEffect(() => {
+    const loadDevices = async () => {
+      startLoading('devices');
+      try {
+        // Simulate API call
+        await new Promise(resolve => setTimeout(resolve, 700));
+        setDevices(initialDevices);
+      } catch (error) {
+        toast.error("Failed to load devices");
+      } finally {
+        stopLoading('devices');
+        setInitialLoad(false);
+      }
+    };
+
+    loadDevices();
+  }, [startLoading, stopLoading]);
+
+  // Compute filtered devices
   const filteredDevices = useMemo(() => {
     return devices.filter(dev => {
       if (typeFilter !== "all" && dev.type !== typeFilter) return false;
@@ -226,26 +254,104 @@ const DeviceList = () => {
         return false;
       return true;
     });
-  }, [typeFilter, statusFilter, searchText]);
+  }, [devices, typeFilter, statusFilter, searchText]);
 
-  // Compute paged devices - ALWAYS called, not conditional
+  // Compute paged devices
   const pagedDevices = useMemo(() => {
     const startIndex = (currentPage - 1) * rowsPerPage;
     return filteredDevices.slice(startIndex, startIndex + rowsPerPage);
   }, [filteredDevices, currentPage, rowsPerPage]);
 
-  // Reset to page 1 when filters change - ALWAYS called, not conditional
+  // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
   }, [typeFilter, statusFilter, searchText, rowsPerPage]);
 
-  const handleDeviceSubmit = (deviceInfo) => {
-    toast.success(`Device "${deviceInfo.deviceName}" registered successfully`);
-    setShowDeviceModal(false);
-    // TODO: Backend integration - add device to list
+  const handleDeviceSubmit = async (deviceInfo) => {
+    setSubmitting(true);
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      // Add new device to list
+      const newDevice = {
+        id: devices.length + 1,
+        name: deviceInfo.deviceName,
+        type: deviceInfo.deviceCategory.toLowerCase().includes('mobile') ? 'mobile' : 'laptop',
+        Icon: deviceInfo.deviceCategory.toLowerCase().includes('mobile') ? FaMobileAlt : FaLaptop,
+        mac: deviceInfo.macAddress,
+        owner: deviceInfo.mode === 'bindUser' ? deviceInfo.userId : 'System',
+        ip: `192.168.1.${Math.floor(Math.random() * 200) + 1}`,
+        ago: 'Just now',
+        usage: '0 MB',
+        online: true,
+        blocked: false
+      };
+      
+      setDevices(prev => [newDevice, ...prev]);
+      toast.success(`Device "${deviceInfo.deviceName}" registered successfully`);
+      setShowDeviceModal(false);
+    } catch (error) {
+      toast.error("Failed to register device");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  // Early return AFTER all hooks have been called
+  const handleViewDetails = async (device) => {
+    setViewingDeviceId(device.id);
+    try {
+      // Simulate API call to fetch device details
+      await new Promise(resolve => setTimeout(resolve, 400));
+      toast.info(`Viewing details for ${device.name}`);
+    } catch (error) {
+      toast.error("Failed to load device details");
+    } finally {
+      setViewingDeviceId(null);
+    }
+  };
+
+  const handleBlockDevice = async (device) => {
+    if (device.blocked) {
+      toast.info(`${device.name} is already blocked`);
+      return;
+    }
+
+    if (!window.confirm(`Are you sure you want to block ${device.name}?`)) {
+      return;
+    }
+
+    setBlockingDeviceId(device.id);
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 600));
+      
+      setDevices(prev => 
+        prev.map(dev => 
+          dev.id === device.id 
+            ? { ...dev, blocked: true, online: false } 
+            : dev
+        )
+      );
+      toast.warn(`${device.name} has been blocked`);
+    } catch (error) {
+      toast.error(`Failed to block ${device.name}`);
+    } finally {
+      setBlockingDeviceId(null);
+    }
+  };
+
+  const handleSearch = () => {
+    // Search is handled by real-time filtering
+    // This button is just for UX, actual filtering happens in useMemo
+    if (searchText.trim()) {
+      toast.info(`Searching for: ${searchText}`);
+    } else {
+      toast.info("Enter search criteria");
+    }
+  };
+
+  // Early return for permission check - AFTER all hooks
   if (!rolePermissions.canManageDevices) {
     return (
       <div style={{ padding: 20, color: "red" }} role="alert">
@@ -254,8 +360,43 @@ const DeviceList = () => {
     );
   }
 
+  // Show skeleton loader on initial load
+  if (initialLoad) {
+    return (
+      <main className="device-mgmt-main">
+        <h1 className="device-mgmt-title">Device Management</h1>
+        
+        {/* Skeleton for stats cards */}
+        <div className="device-summary-cards">
+          {[...Array(4)].map((_, i) => (
+            <SkeletonLoader key={i} variant="card" />
+          ))}
+        </div>
+
+        {/* Skeleton for toolbar */}
+        <SkeletonLoader variant="rect" height={60} style={{ marginBottom: '20px' }} />
+
+        {/* Skeleton for pagination */}
+        <SkeletonLoader variant="rect" height={40} style={{ marginBottom: '16px' }} />
+
+        {/* Skeleton for device cards */}
+        <div className="device-card-list">
+          {[...Array(6)].map((_, i) => (
+            <SkeletonLoader key={i} variant="card" />
+          ))}
+        </div>
+      </main>
+    );
+  }
+
   return (
-    <main className="device-mgmt-main">
+    <main className="device-mgmt-main" style={{ position: 'relative' }}>
+      {/* Loading overlay for operations */}
+      <LoadingOverlay 
+        active={isLoading('devices')} 
+        message="Processing devices..."
+      />
+
       <h1 className="device-mgmt-title">Device Management</h1>
 
       {/* Stats / Summary Cards */}
@@ -284,6 +425,7 @@ const DeviceList = () => {
           onChange={e => setTypeFilter(e.target.value)}
           className="device-mgmt-select"
           aria-label="Filter by device type"
+          disabled={isLoading('devices')}
         >
           {deviceTypes.map(t => (
             <option key={t.value} value={t.value}>
@@ -296,6 +438,7 @@ const DeviceList = () => {
           onChange={e => setStatusFilter(e.target.value)}
           className="device-mgmt-select"
           aria-label="Filter by device status"
+          disabled={isLoading('devices')}
         >
           {statusOptions.map(s => (
             <option key={s.value} value={s.value}>
@@ -310,12 +453,14 @@ const DeviceList = () => {
           onChange={e => setSearchText(e.target.value)}
           placeholder="Search by name, MAC, or owner..."
           aria-label="Search devices"
+          disabled={isLoading('devices')}
         />
         <Button 
           type="button" 
           className="device-mgmt-search-btn"
-          onClick={() => toast.info("Search functionality ready for backend integration")}
+          onClick={handleSearch}
           aria-label="Execute search"
+          disabled={isLoading('devices')}
         >
           Search
         </Button>
@@ -324,6 +469,7 @@ const DeviceList = () => {
           onClick={() => setShowDeviceModal(true)}
           aria-label="Register New Device"
           style={{ marginLeft: "auto" }}
+          disabled={isLoading('devices') || submitting}
         >
           Register Device
         </Button>
@@ -379,17 +525,20 @@ const DeviceList = () => {
                 <Button 
                   className="details-btn" 
                   variant="primary"
-                  onClick={() => toast.info(`Viewing details for ${device.name}`)}
+                  onClick={() => handleViewDetails(device)}
                   aria-label={`View details for ${device.name}`}
+                  loading={viewingDeviceId === device.id}
+                  disabled={blockingDeviceId === device.id}
                 >
                   Details
                 </Button>
                 <Button 
                   className="block-btn" 
                   variant="danger"
-                  onClick={() => toast.warn(`Blocking ${device.name}`)}
+                  onClick={() => handleBlockDevice(device)}
                   aria-label={`Block ${device.name}`}
-                  disabled={device.blocked}
+                  disabled={device.blocked || viewingDeviceId === device.id}
+                  loading={blockingDeviceId === device.id}
                 >
                   {device.blocked ? "Blocked" : "Block"}
                 </Button>
@@ -421,6 +570,11 @@ const DeviceList = () => {
           open={showDeviceModal}
           onClose={() => setShowDeviceModal(false)}
           onSubmit={handleDeviceSubmit}
+          users={[]}
+          devices={devices}
+          segment="enterprise"
+          siteUserList={[]}
+          submitting={submitting}
         />
       )}
     </main>

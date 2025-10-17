@@ -1,0 +1,65 @@
+/* src/components/Loading/Spinner.css */
+
+.spinner {
+  display: inline-block;
+  position: relative;
+}
+
+.spinner-inner {
+  display: block;
+  border-radius: 50%;
+  border-style: solid;
+  border-color: currentColor transparent transparent transparent;
+  animation: spinner-rotate 0.8s linear infinite;
+}
+
+/* Size variants */
+.spinner-sm .spinner-inner {
+  width: 16px;
+  height: 16px;
+  border-width: 2px;
+}
+
+.spinner-md .spinner-inner {
+  width: 24px;
+  height: 24px;
+  border-width: 3px;
+}
+
+.spinner-lg .spinner-inner {
+  width: 40px;
+  height: 40px;
+  border-width: 4px;
+}
+
+/* Color variants */
+.spinner-primary {
+  color: #004aad;
+}
+
+.spinner-white {
+  color: #ffffff;
+}
+
+.spinner-secondary {
+  color: #666;
+}
+
+/* Animation */
+@keyframes spinner-rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .spinner-inner {
+    animation: none;
+    border-color: currentColor;
+    opacity: 0.6;
+  }
+}

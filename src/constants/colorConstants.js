@@ -28,6 +28,17 @@ export const SUPPORTING_COLORS = {
 };
 
 // ============================================
+// REPORT COLOR ASSIGNMENTS
+// ============================================
+export const REPORT_COLOR_ASSIGNMENTS = {
+  network_usage: "AQUA",
+  license_usage: "INDIGO",
+  alerts_summary: "PURPLE",
+  site_monthly_active_users: "MINT",
+  site_activity: "MINT",
+};
+
+// ============================================
 // SEMANTIC COLORS
 // ============================================
 export const SEMANTIC_COLORS = {
@@ -74,7 +85,6 @@ export const NEUTRAL_COLORS = {
   GRAY_800: "#444",
   GRAY_900: "#222",
   
-  // Specific grays
   BORDER: "#e5e5e5",
   BORDER_LIGHT: "#e1e1e1",
   BORDER_DARK: "#ddd",
@@ -186,9 +196,17 @@ export const GRADIENTS = {
   PRIMARY: "linear-gradient(135deg, #004aad 0%, #003a90 100%)",
 };
 
-// Helper function to get color with opacity
+// ============================================
+// HELPER FUNCTIONS
+// ============================================
+
+/**
+ * Get color with opacity
+ * @param {string} color - Hex color code
+ * @param {number} opacity - Opacity value (0-1)
+ * @returns {string} RGBA color string
+ */
 export const withOpacity = (color, opacity) => {
-  // Convert hex to rgba
   const hex = color.replace('#', '');
   const r = parseInt(hex.substring(0, 2), 16);
   const g = parseInt(hex.substring(2, 4), 16);
@@ -196,9 +214,24 @@ export const withOpacity = (color, opacity) => {
   return `rgba(${r}, ${g}, ${b}, ${opacity})`;
 };
 
+/**
+ * Get report branding color by report ID
+ * @param {string} reportId - Report identifier
+ * @returns {object} { color: string, colorKey: string }
+ */
+export const getReportBranding = (reportId) => {
+  const colorKey = REPORT_COLOR_ASSIGNMENTS[reportId] || "AQUA";
+  const color = SUPPORTING_COLORS[colorKey] || SUPPORTING_COLORS.AQUA;
+  return { color, colorKey };
+};
+
+// ============================================
+// DEFAULT EXPORT
+// ============================================
 export default {
   PRIMARY_COLORS,
   SUPPORTING_COLORS,
+  REPORT_COLOR_ASSIGNMENTS,
   SEMANTIC_COLORS,
   NEUTRAL_COLORS,
   BACKGROUND_COLORS,
@@ -208,4 +241,5 @@ export default {
   SHADOWS,
   GRADIENTS,
   withOpacity,
+  getReportBranding,
 };

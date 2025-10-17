@@ -52,7 +52,13 @@ const DEFAULTS = {
   checkOutTime: DATE_TIME.DEFAULT_CHECK_OUT_TIME,
 };
 
-const UserFormModal = ({ user, onSubmit, onClose, segment }) => {
+const UserFormModal = ({ 
+  user, 
+  onSubmit, 
+  onClose, 
+  segment,
+  submitting = false 
+}) => {
   const allowedCycleTypes = ["Daily", "Monthly"];
   const allowedSpeeds = segment === "enterprise" ? ["10 Mbps", "25 Mbps", "50 Mbps"] : ["5 Mbps", "10 Mbps", "15 Mbps"];
   const allowedVolumes = segment === "enterprise" ? ["50 GB", "100 GB", "200 GB"] : ["10 GB", "25 GB", "50 GB"];
@@ -214,10 +220,12 @@ const UserFormModal = ({ user, onSubmit, onClose, segment }) => {
 
   const handleSubmit = async e => {
     e.preventDefault();
-    if (licensesFull) {
+    
+    if (licensesFull && !user) {
       toast.error("Cannot add more users: all licenses are used. Please suspend or block an existing user or request additional licenses.");
       return;
     }
+    
     if (validate()) {
       const userCategory = USER_CATEGORY_SEGMENT[segment] || "user";
       const newUser = {
@@ -226,13 +234,8 @@ const UserFormModal = ({ user, onSubmit, onClose, segment }) => {
         userCategory,
         password: randomPassword(),
       };
-      try {
-        await onSubmit(newUser);
-        toast.success("User saved successfully");
-        onClose();
-      } catch {
-        toast.error("Failed to save user");
-      }
+      
+      await onSubmit(newUser);
     } else {
       toast.error("Please fix errors before submitting");
     }
@@ -258,7 +261,7 @@ const UserFormModal = ({ user, onSubmit, onClose, segment }) => {
               name="id" 
               value={form.id} 
               onChange={handleChange} 
-              disabled={!!user} 
+              disabled={!!user || submitting} 
               className={errors.id ? 'error' : ''}
               aria-invalid={!!errors.id} 
               aria-describedby="id-error" 
@@ -278,6 +281,7 @@ const UserFormModal = ({ user, onSubmit, onClose, segment }) => {
               aria-invalid={!!errors.firstName} 
               aria-describedby="firstName-error" 
               required 
+              disabled={submitting}
             />
             {errors.firstName && <div className="error-message" id="firstName-error" role="alert">{errors.firstName}</div>}
           </div>
@@ -293,6 +297,7 @@ const UserFormModal = ({ user, onSubmit, onClose, segment }) => {
               aria-invalid={!!errors.lastName} 
               aria-describedby="lastName-error" 
               required 
+              disabled={submitting}
             />
             {errors.lastName && <div className="error-message" id="lastName-error" role="alert">{errors.lastName}</div>}
           </div>
@@ -308,6 +313,7 @@ const UserFormModal = ({ user, onSubmit, onClose, segment }) => {
               aria-invalid={!!errors.mobile} 
               aria-describedby="mobile-error" 
               required 
+              disabled={submitting}
             />
             {errors.mobile && <div className="error-message" id="mobile-error" role="alert">{errors.mobile}</div>}
           </div>
@@ -325,6 +331,7 @@ const UserFormModal = ({ user, onSubmit, onClose, segment }) => {
               aria-invalid={!!errors.email} 
               aria-describedby="email-error" 
               required={isEmailRequired} 
+              disabled={submitting}
             />
             {errors.email && <div className="error-message" id="email-error" role="alert">{errors.email}</div>}
           </div>
@@ -336,7 +343,7 @@ const UserFormModal = ({ user, onSubmit, onClose, segment }) => {
               name="dataCycleType" 
               value={form.dataCycleType} 
               onChange={handleChange} 
-              disabled={isCycleTypeStatic}
+              disabled={isCycleTypeStatic || submitting}
             >
               {allowedCycleTypes.map(type => (
                 <option key={type} value={type}>{type}</option>
@@ -355,6 +362,7 @@ const UserFormModal = ({ user, onSubmit, onClose, segment }) => {
               required 
               aria-invalid={!!errors.speed} 
               aria-describedby="speed-error"
+              disabled={submitting}
             >
               {allowedSpeeds.map(speed => (
                 <option key={speed} value={speed}>{speed}</option>
@@ -374,6 +382,7 @@ const UserFormModal = ({ user, onSubmit, onClose, segment }) => {
               required 
               aria-invalid={!!errors.dataVolume} 
               aria-describedby="dataVolume-error"
+              disabled={submitting}
             >
               {allowedVolumes.map(volume => (
                 <option key={volume} value={volume}>{volume}</option>
@@ -393,6 +402,7 @@ const UserFormModal = ({ user, onSubmit, onClose, segment }) => {
               required 
               aria-invalid={!!errors.deviceLimit} 
               aria-describedby="deviceLimit-error"
+              disabled={submitting}
             >
               {allowedDeviceCounts.map(count => (
                 <option key={count} value={count}>{count}</option>
@@ -417,6 +427,7 @@ const UserFormModal = ({ user, onSubmit, onClose, segment }) => {
                   required={field.required}
                   aria-invalid={!!errors[field.name]}
                   aria-describedby={`${field.name}-error`}
+                  disabled={submitting}
                 >
                   <option value="">Select</option>
                   {field.options && field.options.map(opt => (
@@ -434,6 +445,7 @@ const UserFormModal = ({ user, onSubmit, onClose, segment }) => {
                   required={field.required}
                   aria-invalid={!!errors[field.name]}
                   aria-describedby={`${field.name}-error`}
+                  disabled={submitting}
                 />
               )}
               {errors[field.name] && <div className="error-message" id={`${field.name}-error`} role="alert">{errors[field.name]}</div>}
@@ -451,6 +463,7 @@ const UserFormModal = ({ user, onSubmit, onClose, segment }) => {
                   name="residentType"
                   value={form.residentType}
                   onChange={handleChange}
+                  disabled={submitting}
                 >
                   <option value="Long-Term">Long-Term</option>
                   <option value="Short-Term">Short-Term</option>
@@ -469,7 +482,7 @@ const UserFormModal = ({ user, onSubmit, onClose, segment }) => {
                   onChange={handleChange}
                   className={errors.checkInDate ? 'error' : ''}
                   required={isCoLivingShortTerm}
-                  disabled={isCoLivingLongTerm}
+                  disabled={isCoLivingLongTerm || submitting}
                 />
                 {errors.checkInDate && <div className="error-message" id="checkInDate-error" role="alert">{errors.checkInDate}</div>}
               </div>
@@ -487,7 +500,7 @@ const UserFormModal = ({ user, onSubmit, onClose, segment }) => {
                   className={errors.checkOutDate ? 'error' : ''}
                   min={minCheckOutDate()}
                   required={isCoLivingShortTerm}
-                  disabled={isCoLivingLongTerm}
+                  disabled={isCoLivingLongTerm || submitting}
                 />
                 {errors.checkOutDate && <div className="error-message" id="checkOutDate-error" role="alert">{errors.checkOutDate}</div>}
               </div>
@@ -504,7 +517,7 @@ const UserFormModal = ({ user, onSubmit, onClose, segment }) => {
                   onChange={handleChange}
                   className={errors.checkInTime ? 'error' : ''}
                   required={isCoLivingShortTerm}
-                  disabled={isCoLivingLongTerm}
+                  disabled={isCoLivingLongTerm || submitting}
                 />
                 {errors.checkInTime && <div className="error-message" id="checkInTime-error" role="alert">{errors.checkInTime}</div>}
               </div>
@@ -522,7 +535,7 @@ const UserFormModal = ({ user, onSubmit, onClose, segment }) => {
                   className={errors.checkOutTime ? 'error' : ''}
                   min={minCheckOutTime()}
                   required={isCoLivingShortTerm}
-                  disabled={isCoLivingLongTerm}
+                  disabled={isCoLivingLongTerm || submitting}
                 />
                 {errors.checkOutTime && <div className="error-message" id="checkOutTime-error" role="alert">{errors.checkOutTime}</div>}
               </div>
@@ -540,6 +553,7 @@ const UserFormModal = ({ user, onSubmit, onClose, segment }) => {
                   name="memberType"
                   value={form.memberType}
                   onChange={handleChange}
+                  disabled={submitting}
                 >
                   <option value="Permanent">Permanent</option>
                   <option value="Temporary">Temporary</option>
@@ -558,7 +572,7 @@ const UserFormModal = ({ user, onSubmit, onClose, segment }) => {
                   onChange={handleChange}
                   className={errors.moveInDate ? 'error' : ''}
                   required={isCoWorkingTemporary}
-                  disabled={isCoWorkingPermanent}
+                  disabled={isCoWorkingPermanent || submitting}
                 />
                 {errors.moveInDate && <div className="error-message" id="moveInDate-error" role="alert">{errors.moveInDate}</div>}
               </div>
@@ -576,7 +590,7 @@ const UserFormModal = ({ user, onSubmit, onClose, segment }) => {
                   className={errors.moveOutDate ? 'error' : ''}
                   min={minMoveOutDate()}
                   required={isCoWorkingTemporary}
-                  disabled={isCoWorkingPermanent}
+                  disabled={isCoWorkingPermanent || submitting}
                 />
                 {errors.moveOutDate && <div className="error-message" id="moveOutDate-error" role="alert">{errors.moveOutDate}</div>}
               </div>
@@ -595,6 +609,7 @@ const UserFormModal = ({ user, onSubmit, onClose, segment }) => {
                   onChange={handleChange}
                   className={errors.checkInDate ? 'error' : ''}
                   required
+                  disabled={submitting}
                 />
                 {errors.checkInDate && <div className="error-message" id="checkInDate-error" role="alert">{errors.checkInDate}</div>}
               </div>
@@ -610,6 +625,7 @@ const UserFormModal = ({ user, onSubmit, onClose, segment }) => {
                   className={errors.checkOutDate ? 'error' : ''}
                   min={minCheckOutDate()}
                   required
+                  disabled={submitting}
                 />
                 {errors.checkOutDate && <div className="error-message" id="checkOutDate-error" role="alert">{errors.checkOutDate}</div>}
               </div>
@@ -624,6 +640,7 @@ const UserFormModal = ({ user, onSubmit, onClose, segment }) => {
                   onChange={handleChange}
                   className={errors.checkInTime ? 'error' : ''}
                   required
+                  disabled={submitting}
                 />
                 {errors.checkInTime && <div className="error-message" id="checkInTime-error" role="alert">{errors.checkInTime}</div>}
               </div>
@@ -639,6 +656,7 @@ const UserFormModal = ({ user, onSubmit, onClose, segment }) => {
                   className={errors.checkOutTime ? 'error' : ''}
                   min={minCheckOutTime()}
                   required
+                  disabled={submitting}
                 />
                 {errors.checkOutTime && <div className="error-message" id="checkOutTime-error" role="alert">{errors.checkOutTime}</div>}
               </div>
@@ -647,10 +665,22 @@ const UserFormModal = ({ user, onSubmit, onClose, segment }) => {
         </div>
 
         <div className="user-form-actions">
-          <Button type="submit" variant="primary" aria-label="Submit user form" disabled={licensesFull}>
+          <Button 
+            type="submit" 
+            variant="primary" 
+            aria-label="Submit user form" 
+            disabled={licensesFull && !user}
+            loading={submitting}
+          >
             {user ? "Update" : "Add"}
           </Button>
-          <Button type="button" variant="secondary" onClick={onClose} aria-label="Cancel user form">
+          <Button 
+            type="button" 
+            variant="secondary" 
+            onClick={onClose} 
+            aria-label="Cancel user form"
+            disabled={submitting}
+          >
             Cancel
           </Button>
         </div>
