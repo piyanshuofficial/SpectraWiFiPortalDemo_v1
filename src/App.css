@@ -170,3 +170,76 @@ p {
     font-size: 1rem;
   }
 }
+
+/* CRITICAL: Ensure sidebar is always on top and clickable */
+.sidebar {
+  z-index: 101 !important;
+  pointer-events: auto !important;
+}
+
+/* Ensure main content doesn't block sidebar */
+.main-layout-wrapper {
+  position: relative;
+}
+
+.main-content-wrapper {
+  margin-left: 120px;
+  margin-top: 50px;
+  padding: 0;
+  background: #f1f3f7;
+  min-height: calc(100vh - 50px);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 1; /* Lower than sidebar */
+}
+
+/* Ensure header doesn't overlap sidebar */
+.header-bar {
+  z-index: 110; /* Higher than content, lower than sidebar on mobile */
+}
+
+/* Ensure footer doesn't block sidebar */
+.footer-bar {
+  z-index: 120; /* Highest but doesn't overlap sidebar area */
+}
+
+
+/* CRITICAL: Sidebar must be above all content */
+.sidebar {
+  z-index: 101 !important;
+  pointer-events: auto !important;
+}
+
+.sidebar * {
+  pointer-events: auto !important;
+}
+
+/* Main content lower z-index */
+.main-content-wrapper,
+.main-content {
+  position: relative;
+  z-index: 1 !important;
+  pointer-events: auto;
+}
+
+/* Header below sidebar on mobile */
+.header-bar {
+  z-index: 110 !important;
+}
+
+/* Ensure charts don't block navigation */
+canvas {
+  pointer-events: auto;
+  z-index: auto;
+}
+
+/* Loading overlays high but below modals */
+.loading-overlay {
+  z-index: 9999 !important;
+}
+
+/* Modals highest */
+.modal-backdrop {
+  z-index: 10000 !important;
+}

@@ -48,7 +48,7 @@ const sidebarItems = [
     icon: FaBook, 
     label: "Knowledge Center", 
     aria: "Knowledge Center",
-    permission: "canViewReports" // Accessible to anyone with report access
+    permission: "canViewReports"
   },
 ];
 
@@ -58,7 +58,7 @@ const Sidebar = () => {
 
   // Filter sidebar items based on permissions
   const accessibleItems = sidebarItems.filter(item => {
-    if (!item.permission) return true; // No permission required
+    if (!item.permission) return true;
     return rolePermissions[item.permission] === true;
   });
 
@@ -109,7 +109,7 @@ const Sidebar = () => {
                 aria-current={({ isActive }) => (isActive ? "page" : undefined)}
                 aria-label={aria}
               >
-                <span className={`sidebar-nav-icon${window.location.pathname === to ? " icon-active" : ""}`}>
+                <span className="sidebar-nav-icon">
                   <Icon />
                 </span>
                 <span className="sidebar-nav-label">{label}</span>

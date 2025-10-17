@@ -132,7 +132,6 @@
     flex-direction: row;
     min-height: 0;
     z-index: 101;
-    /* For horizontal layout, use full width. Adjust background for mobile if desired: */
     background-size: cover;
     background-position: center;
   }
@@ -192,7 +191,6 @@
   }
 }
 
-/* No access state */
 .sidebar-no-access {
   padding: 20px 10px;
   text-align: center;

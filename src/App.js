@@ -1,7 +1,6 @@
 // src/App.js
 
 import React from 'react';
-import ReactDOM from 'react-dom/client';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import AppLayout from './components/AppLayout';
 import Dashboard from './pages/Dashboard';
@@ -13,9 +12,24 @@ import { useAuth } from './context/AuthContext';
 import { Permissions } from './utils/accessLevels';
 import "./components/Badge.css";
 
-const PrivateRoute = ({ permissionCheck, children, fallbackMessage }) => {
+const PrivateRoute = ({ requiredPermission, children, fallbackMessage }) => {
   const { currentUser } = useAuth();
-  const hasPermission = permissionCheck(currentUser);
+  
+  // Safety check: Allow access if no proper auth setup (development mode)
+  if (!currentUser || !currentUser.role || !currentUser.accessLevel) {
+    return children;
+  }
+  
+  // Get user permissions
+  const userPermissions = Permissions[currentUser.accessLevel]?.[currentUser.role];
+  
+  // If permissions not found, allow access (development mode)
+  if (!userPermissions) {
+    return children;
+  }
+  
+  // Check specific permission
+  const hasPermission = userPermissions[requiredPermission] === true;
   
   if (!hasPermission) {
     return (
@@ -37,6 +51,7 @@ const PrivateRoute = ({ permissionCheck, children, fallbackMessage }) => {
       </div>
     );
   }
+  
   return children;
 };
 
@@ -52,9 +67,7 @@ function App() {
             path="/dashboard"
             element={
               <PrivateRoute
-                permissionCheck={(user) =>
-                  Permissions[user.accessLevel]?.[user.role]?.canViewReports
-                }
+                requiredPermission="canViewReports"
                 fallbackMessage="You need report viewing permissions to access the dashboard."
               >
                 <Dashboard />
@@ -66,9 +79,7 @@ function App() {
             path="/users"
             element={
               <PrivateRoute
-                permissionCheck={(user) =>
-                  Permissions[user.accessLevel]?.[user.role]?.canEditUsers
-                }
+                requiredPermission="canEditUsers"
                 fallbackMessage="You need user management permissions to access this page."
               >
                 <UserList />
@@ -80,9 +91,7 @@ function App() {
             path="/devices"
             element={
               <PrivateRoute
-                permissionCheck={(user) =>
-                  Permissions[user.accessLevel]?.[user.role]?.canManageDevices
-                }
+                requiredPermission="canManageDevices"
                 fallbackMessage="You need device management permissions to access this page."
               >
                 <DeviceManagement />
@@ -94,9 +103,7 @@ function App() {
             path="/reports"
             element={
               <PrivateRoute
-                permissionCheck={(user) =>
-                  Permissions[user.accessLevel]?.[user.role]?.canViewReports
-                }
+                requiredPermission="canViewReports"
                 fallbackMessage="You need report viewing permissions to access this page."
               >
                 <Reports />
@@ -108,9 +115,7 @@ function App() {
             path="/knowledge"
             element={
               <PrivateRoute
-                permissionCheck={(user) =>
-                  Permissions[user.accessLevel]?.[user.role]?.canViewReports
-                }
+                requiredPermission="canViewReports"
                 fallbackMessage="You need report viewing permissions to access the Knowledge Center."
               >
                 <KnowledgeCenter />

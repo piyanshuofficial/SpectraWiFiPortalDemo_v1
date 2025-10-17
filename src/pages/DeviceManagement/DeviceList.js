@@ -218,24 +218,37 @@ const DeviceList = () => {
   const [blockingDeviceId, setBlockingDeviceId] = useState(null);
   const [viewingDeviceId, setViewingDeviceId] = useState(null);
 
-  // Simulate initial data load
+  // ✅ FIX: Load devices only once on mount
   useEffect(() => {
+    let mounted = true;
+
     const loadDevices = async () => {
       startLoading('devices');
       try {
         // Simulate API call
         await new Promise(resolve => setTimeout(resolve, 700));
-        setDevices(initialDevices);
+        
+        if (mounted) {
+          setDevices(initialDevices);
+        }
       } catch (error) {
-        toast.error("Failed to load devices");
+        if (mounted) {
+          toast.error("Failed to load devices");
+        }
       } finally {
-        stopLoading('devices');
-        setInitialLoad(false);
+        if (mounted) {
+          stopLoading('devices');
+          setInitialLoad(false);
+        }
       }
     };
 
     loadDevices();
-  }, [startLoading, stopLoading]);
+
+    return () => {
+      mounted = false;
+    };
+  }, []); // ✅ Empty dependency array - only run once
 
   // Compute filtered devices
   const filteredDevices = useMemo(() => {
@@ -343,7 +356,6 @@ const DeviceList = () => {
 
   const handleSearch = () => {
     // Search is handled by real-time filtering
-    // This button is just for UX, actual filtering happens in useMemo
     if (searchText.trim()) {
       toast.info(`Searching for: ${searchText}`);
     } else {
@@ -390,12 +402,15 @@ const DeviceList = () => {
   }
 
   return (
-    <main className="device-mgmt-main" style={{ position: 'relative' }}>
-      {/* Loading overlay for operations */}
-      <LoadingOverlay 
-        active={isLoading('devices')} 
-        message="Processing devices..."
-      />
+    <main className="device-mgmt-main">
+      {/* ✅ FIX: Loading overlay with proper positioning */}
+      {isLoading('devices') && (
+        <LoadingOverlay 
+          active={true}
+          message="Processing devices..."
+          fullPage={false}
+        />
+      )}
 
       <h1 className="device-mgmt-title">Device Management</h1>
 

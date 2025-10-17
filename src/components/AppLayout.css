@@ -1,4 +1,4 @@
-/* src/components/AppLayout.css */
+/* src/components/AppLayout.css - CRITICAL FIX */
 html, body {
   height: 100%;
   margin: 0;
@@ -27,6 +27,8 @@ html, body {
   position: relative;
   transition: margin 0.2s ease;
   padding-bottom: 50px;
+  /* CRITICAL: Remove any z-index that might be blocking sidebar */
+  /* z-index: 10; */ /* REMOVE THIS IF PRESENT */
 }
 
 @media (max-width: 900px) {
@@ -41,6 +43,9 @@ html, body {
   padding: 24px 28px;
   min-width: 0;
   width: 100%;
+  /* CRITICAL: Ensure content doesn't overlap sidebar */
+  position: relative;
+  z-index: 1;
 }
 
 img, svg {

@@ -39,7 +39,7 @@ const Dashboard = () => {
   const [initialLoad, setInitialLoad] = useState(true);
   const [exportingCSV, setExportingCSV] = useState(false);
   const [exportingPDF, setExportingPDF] = useState(false);
-  const [exportingChart, setExportingChart] = useState(null); // Track which chart is being exported
+  const [exportingChart, setExportingChart] = useState(null);
 
   const darkMode = document.documentElement.getAttribute("data-theme") === "dark";
 
@@ -57,24 +57,32 @@ const Dashboard = () => {
 
   const safeNumber = (value, fallback = 0) => typeof value === "number" && !isNaN(value) ? value : fallback;
 
-  // Simulate initial dashboard load
+  //Simulate initial dashboard load ONCE
   useEffect(() => {
+    let mounted = true;
+
     const loadDashboard = async () => {
       startLoading('dashboard');
       try {
-        // Simulate API call for metrics
         await new Promise(resolve => setTimeout(resolve, 600));
-        // Data already loaded from config and constants
       } catch (error) {
-        toast.error("Failed to load dashboard");
+        if (mounted) {
+          toast.error("Failed to load dashboard");
+        }
       } finally {
-        stopLoading('dashboard');
-        setInitialLoad(false);
+        if (mounted) {
+          stopLoading('dashboard');
+          setInitialLoad(false);
+        }
       }
     };
 
     loadDashboard();
-  }, [startLoading, stopLoading]);
+
+    return () => {
+      mounted = false;
+    };
+  }, []); //Empty dependency array - only run once
 
   const renderDashboardForSegment = () => (
     <>
@@ -133,7 +141,6 @@ const Dashboard = () => {
     setExportingCSV(true);
     setExportingChart(chartId);
     try {
-      // Simulate export preparation
       await new Promise(resolve => setTimeout(resolve, 500));
       exportChartDataToCSV({ headers, rows }, filename);
       toast.success("CSV exported successfully");
@@ -149,7 +156,6 @@ const Dashboard = () => {
     setExportingPDF(true);
     setExportingChart(chartId);
     try {
-      // Simulate export preparation
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       let chartData;
@@ -219,7 +225,6 @@ const Dashboard = () => {
     }
   };
 
-  // Support quick action: navigate to Knowledge Center and signal highlight
   const handleSupportQuickAction = () => {
     navigate('/knowledge');
     setTimeout(() => {
@@ -227,7 +232,6 @@ const Dashboard = () => {
     }, ANIMATION.HIGHLIGHT_DURATION);
   };
 
-  // Permission-aware navigation handler
   const handleQuickAction = (path, requiredPermission) => {
     if (requiredPermission && !rolePermissions[requiredPermission]) {
       alert(`You don't have permission to access ${path.replace('/', '')}. Please contact your administrator.`);
@@ -236,7 +240,6 @@ const Dashboard = () => {
     navigate(path);
   };
 
-  // Define quick actions with permission requirements
   const quickActions = [
     {
       icon: FaUsers,
@@ -270,13 +273,11 @@ const Dashboard = () => {
     },
   ];
 
-  // Filter quick actions based on permissions
   const accessibleQuickActions = quickActions.filter(action => {
     if (!action.permission) return true;
     return rolePermissions[action.permission] === true;
   });
 
-  // Show skeleton on initial load
   if (initialLoad) {
     return (
       <main className="main-content" role="main" aria-label="Dashboard">
@@ -310,12 +311,20 @@ const Dashboard = () => {
   }
 
   return (
-    <main className="main-content" role="main" aria-label="Dashboard" style={{ position: 'relative' }}>
-      {/* Global loading for exports */}
-      <LoadingOverlay 
-        active={exportingCSV || exportingPDF} 
-        message={exportingCSV ? "Preparing CSV..." : "Generating PDF..."}
-      />
+    <main 
+      className="main-content" 
+      role="main" 
+      aria-label="Dashboard"
+      style={{ position: 'relative', zIndex: 1 }} // Ensure proper z-index
+    >
+      {/* ✅ FIX: Loading overlay with proper z-index */}
+      {(exportingCSV || exportingPDF) && (
+        <LoadingOverlay 
+          active={true}
+          message={exportingCSV ? "Preparing CSV..." : "Generating PDF..."}
+          fullPage={false}
+        />
+      )}
 
       {/* OVERVIEW */}
       <h2 className="dashboard-section-title">Overview</h2>
@@ -345,6 +354,10 @@ const Dashboard = () => {
                     action.onClick();
                     e.preventDefault();
                   }
+                }}
+                style={{ 
+                  cursor: 'pointer',
+                  pointerEvents: 'auto' // Ensure clickable
                 }}
               >
                 <div className="quick-action-content">
