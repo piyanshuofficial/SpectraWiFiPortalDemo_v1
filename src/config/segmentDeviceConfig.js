@@ -3,10 +3,10 @@
 const SEGMENT_DEVICE_AVAILABILITY = {
   enterprise: { allowHuman: true, allowNonHuman: true },
   coLiving: { allowHuman: false, allowNonHuman: true },
-  coWorking: { allowHuman: true, allowNonHuman: false },
-  hotel: { allowHuman: false, allowNonHuman: false },
-  pg: { allowHuman: true, allowNonHuman: false },
-  miscellaneous: { allowHuman: false, allowNonHuman: false }
+  coWorking: { allowHuman: false, allowNonHuman: true },
+  hotel: { allowHuman: true, allowNonHuman: true },
+  pg: { allowHuman: false, allowNonHuman: true },
+  miscellaneous: { allowHuman: true, allowNonHuman: false }
 };
 
 export default SEGMENT_DEVICE_AVAILABILITY;
