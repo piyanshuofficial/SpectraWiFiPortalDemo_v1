@@ -1,31 +1,41 @@
 /* src/components/Card.css */
 
 .card-container {
-  background: var(--card-bg, #fff);
-  border-radius: 8px;
-  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.05);
-  padding: 16px 20px;
+  /* Size using rem */
+  min-height: 5.625rem; /* 90px */
+  padding: var(--space-lg) var(--space-xl);
   margin: 0;
-  min-height: 90px;
+  
+  /* Border using rem */
+  border-radius: var(--radius-md);
+  
+  /* Colors */
+  background: var(--card-bg, #fff);
   color: var(--text-color, #333);
+  
+  /* Shadow */
+  box-shadow: 0 0.0625rem 0.5rem rgba(0, 0, 0, 0.05);
+  
+  /* Display */
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  
   transition: box-shadow 0.2s ease;
 }
 
 .card-container:hover {
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 0.125rem 0.75rem rgba(0, 0, 0, 0.08);
 }
 
 .card-header {
   display: flex;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: var(--space-sm);
 }
 
 .card-icon {
-  margin-right: 8px;
+  margin-right: var(--space-sm);
   font-size: 1.1em;
   color: #004aad;
   display: flex;
@@ -37,21 +47,22 @@
   font-weight: 600;
   margin: 0;
   color: var(--text-color, #333);
-  font-size: 0.9em;
-  line-height: 1.2;
+  font-size: var(--font-base);
+  line-height: var(--line-height-tight);
 }
 
 .card-content {
-  font-size: 0.9em;
+  font-size: var(--font-base);
+  line-height: var(--line-height-normal);
   flex: 1;
 }
 
 .card-trend {
   display: flex;
   align-items: center;
-  margin-top: 8px;
+  margin-top: var(--space-sm);
   font-weight: 600;
-  font-size: 0.8em;
+  font-size: var(--font-sm);
 }
 
 .card-trend.trend-up {
@@ -67,23 +78,23 @@
 }
 
 .trend-sparkline {
-  width: 60px;
-  height: 16px;
+  width: 3.75rem; /* 60px */
+  height: 1rem;   /* 16px */
   margin-left: auto;
 }
 
-/* Responsive adjustments */
+/* Responsive adjustments using rem */
 @media (max-width: 768px) {
   .card-container {
-    padding: 14px 16px;
-    min-height: 80px;
+    padding: var(--space-md) var(--space-lg);
+    min-height: 5rem; /* 80px */
   }
 
   .card-title {
-    font-size: 0.85em;
+    font-size: var(--font-sm);
   }
 
   .card-content {
-    font-size: 0.85em;
+    font-size: var(--font-sm);
   }
 }

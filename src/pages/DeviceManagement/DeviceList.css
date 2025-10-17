@@ -410,3 +410,61 @@
     margin-top: 20px;
   }
 }
+/* ============================================
+   SEGMENT SELECTOR - TOP RIGHT CORNER (TESTING)
+   ============================================ */
+.segment-selector-test {
+  position: fixed;
+  top: 70px;
+  right: 20px;
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 6px 12px;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  font-size: 0.8rem;
+  backdrop-filter: blur(4px);
+}
+
+.segment-selector-test label {
+  font-weight: 600;
+  color: #666;
+  white-space: nowrap;
+}
+
+.segment-test-dropdown {
+  padding: 4px 8px;
+  font-size: 0.8rem;
+  border-radius: 5px;
+  border: 1.2px solid #cfd7ea;
+  background: #fff;
+  min-width: 110px;
+  cursor: pointer;
+  line-height: 1.2;
+}
+
+/* Responsive adjustments */
+@media (max-width: 900px) {
+  .segment-selector-test {
+    top: 60px;
+    right: 12px;
+    padding: 5px 10px;
+  }
+  
+  .segment-test-dropdown {
+    min-width: 100px;
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .segment-selector-test {
+    position: static;
+    margin-bottom: 10px;
+    width: 100%;
+    justify-content: flex-start;
+  }
+}

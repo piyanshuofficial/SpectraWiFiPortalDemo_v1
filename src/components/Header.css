@@ -1,26 +1,27 @@
 /* src/components/Header.css */
+
 .header-bar {
   position: fixed;
   top: 0;
-  left: 100px;
+  left: var(--sidebar-width); /* 6.25rem = 100px */
   right: 0;
-  height: 60px;
+  height: var(--header-height); /* 3.75rem = 60px */
   background: #2c2c2c;
   background: linear-gradient(135deg, #2c2c2c 0%, #1a1a1a 100%);
   color: #fff;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.2);
   z-index: 110;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 0.0625rem solid rgba(255, 255, 255, 0.05);
 }
 
 .header-main-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 60px;
-  padding: 0 28px;
+  height: var(--header-height);
+  padding: 0 1.75rem;
   position: relative;
 }
 
@@ -29,11 +30,11 @@
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  min-width: 140px;
+  min-width: 8.75rem;
 }
 
 .header-back-to-spectra {
-  font-size: 0.9rem;
+  font-size: var(--font-base);
   font-weight: 600;
   color: #fff;
   opacity: 0.92;
@@ -58,7 +59,7 @@
 .header-site {
   font-family: 'Helvetica Neue', Arial, sans-serif;
   color: #47a8c5;
-  font-size: 1.25rem;
+  font-size: var(--font-3xl);
   font-weight: 700;
   letter-spacing: 0.02em;
   opacity: 1;
@@ -69,8 +70,8 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 20px;
-  min-width: 140px;
+  gap: var(--space-xl);
+  min-width: 8.75rem;
 }
 
 .notification-icon {
@@ -90,23 +91,23 @@
 
 .notification-badge {
   position: absolute;
-  top: -4px;
-  right: -10px;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 4px;
+  top: -0.25rem;
+  right: -0.625rem;
+  min-width: 1.125rem;
+  height: 1.125rem;
+  padding: 0 0.25rem;
   background: #ef5453;
   color: #fff;
-  font-size: 0.7rem;
+  font-size: var(--font-xs);
   font-weight: 700;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid #2c2c2c;
+  border: 0.125rem solid #2c2c2c;
   z-index: 3;
   pointer-events: none;
-  box-shadow: 0 2px 6px rgba(239, 84, 83, 0.4);
+  box-shadow: 0 0.125rem 0.375rem rgba(239, 84, 83, 0.4);
 }
 
 .header-avatar-icon {
@@ -118,7 +119,7 @@
   color: #fff;
   border-radius: 50%;
   transition: background 0.2s, color 0.2s;
-  padding: 4px;
+  padding: 0.25rem;
 }
 
 .header-avatar-icon:hover {
@@ -128,58 +129,58 @@
 
 .notification-panel {
   position: absolute;
-  top: 50px;
+  top: 3.125rem;
   right: 0;
-  min-width: 340px;
+  min-width: 21.25rem;
   background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  border-radius: var(--radius-md);
+  box-shadow: 0 0.5rem 2rem rgba(0, 0, 0, 0.2);
   z-index: 1050;
   padding: 0;
-  border: 1px solid #e0e0e0;
+  border: 0.0625rem solid #e0e0e0;
 }
 
 .notification-panel-header {
   display: flex;
   align-items: center;
-  padding: 18px 20px 14px 20px;
-  border-bottom: 1px solid #eee;
+  padding: 1.125rem 1.25rem 0.875rem 1.25rem;
+  border-bottom: 0.0625rem solid #eee;
   background: #f8f9fa;
-  border-radius: 8px 8px 0 0;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
 }
 
 .notif-title {
   font-weight: 700;
-  font-size: 1.1rem;
+  font-size: var(--font-xl);
   color: #222;
-  margin-right: 10px;
+  margin-right: 0.625rem;
   letter-spacing: 0.01em;
 }
 
 .notif-count-badge {
   background: #6fcced;
-  font-size: 0.8rem;
+  font-size: var(--font-sm);
   font-weight: 700;
-  padding: 2px 10px;
-  border-radius: 12px;
+  padding: 0.125rem 0.625rem;
+  border-radius: 0.75rem;
   color: #fff;
-  margin-left: 6px;
-  height: 22px;
+  margin-left: var(--space-xs);
+  height: 1.375rem;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .notification-panel-content {
-  padding: 24px 12px 20px 12px;
+  padding: 1.5rem 0.75rem 1.25rem 0.75rem;
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100px;
+  min-height: 6.25rem;
 }
 
 .notification-empty {
-  font-size: 1rem;
+  font-size: var(--font-lg);
   color: #888;
   text-align: center;
   margin: 0 auto;
@@ -190,14 +191,14 @@
   list-style: none;
   margin: 0;
   padding: 0;
-  max-height: 240px;
+  max-height: 15rem;
   overflow-y: auto;
 }
 
 .notification-list li {
-  font-size: 0.9rem;
-  padding: 10px 12px;
-  border-bottom: 1px solid #eee;
+  font-size: var(--font-base);
+  padding: 0.625rem 0.75rem;
+  border-bottom: 0.0625rem solid #eee;
   color: #333;
 }
 
@@ -207,36 +208,36 @@
 
 .notification-list li span {
   display: inline;
-  font-size: 0.85rem;
+  font-size: var(--font-sm);
   font-style: italic;
   color: #888;
-  margin-left: 8px;
+  margin-left: 0.5rem;
 }
 
 .profile-menu-dropdown {
   background: #2c2c2c;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
-  border-radius: 8px;
-  padding: 24px 26px;
-  min-width: 200px;
+  box-shadow: 0 0.375rem 1.25rem rgba(0, 0, 0, 0.25);
+  border-radius: var(--radius-md);
+  padding: 1.5rem 1.625rem;
+  min-width: 12.5rem;
   color: #fff;
   z-index: 1001;
   position: absolute;
   right: 0;
-  top: 46px;
+  top: 2.875rem;
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  gap: var(--space-xl);
+  border: 0.0625rem solid rgba(255, 255, 255, 0.1);
 }
 
 .profile-menu-option {
   cursor: pointer;
-  font-size: 1rem;
+  font-size: var(--font-lg);
   font-weight: 500;
-  padding: 8px 6px;
+  padding: 0.5rem 0.375rem;
   transition: color 0.15s, background 0.15s;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
 
 .profile-menu-option:hover,
@@ -248,25 +249,25 @@
 @media (max-width: 900px) {
   .header-bar {
     left: 0;
-    height: 54px;
+    height: 3.375rem; /* 54px */
   }
   
   .header-main-row {
-    padding: 8px 12px;
-    height: 54px;
+    padding: 0.5rem 0.75rem;
+    height: 3.375rem;
   }
   
   .header-site {
-    font-size: 1.1rem;
+    font-size: var(--font-2xl);
   }
   
   .header-actions {
-    gap: 14px;
+    gap: 0.875rem;
   }
   
   .notification-panel {
-    top: 44px;
+    top: 2.75rem;
     min-width: 95vw;
-    right: -10px;
+    right: -0.625rem;
   }
 }

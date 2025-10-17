@@ -13,6 +13,7 @@ import SkeletonLoader from "../../components/Loading/SkeletonLoader";
 import { toast } from "react-toastify";
 import "./DeviceList.css";
 import { PAGINATION } from "../../constants/appConstants";
+import SEGMENT_DEVICE_AVAILABILITY from "../../config/segmentDeviceConfig";
 
 const deviceStats = [
   {
@@ -217,15 +218,29 @@ const DeviceList = () => {
   const [submitting, setSubmitting] = useState(false);
   const [blockingDeviceId, setBlockingDeviceId] = useState(null);
   const [viewingDeviceId, setViewingDeviceId] = useState(null);
+  
+  //NEW: Segment selector for testing (matches UserList pattern)
+  const [segmentFilter, setSegmentFilter] = useState("enterprise");
+  
+  //NEW: Check segment-specific device availability
+  const segmentDeviceConfig = SEGMENT_DEVICE_AVAILABILITY[segmentFilter] || {};
+  const allowHuman = segmentDeviceConfig.allowHuman ?? false;
+  const allowNonHuman = segmentDeviceConfig.allowNonHuman ?? false;
+  const showRegisterDevice = allowHuman || allowNonHuman;
+  
+  //NEW: Check user permissions
+  const hasDevicePermission = rolePermissions.canManageDevices === true;
+  
+  //NEW: Final button state - both permission AND segment availability required
+  const canRegisterDevice = hasDevicePermission && showRegisterDevice;
 
-  // ✅ FIX: Load devices only once on mount
+  // Load devices only once on mount
   useEffect(() => {
     let mounted = true;
 
     const loadDevices = async () => {
       startLoading('devices');
       try {
-        // Simulate API call
         await new Promise(resolve => setTimeout(resolve, 700));
         
         if (mounted) {
@@ -248,9 +263,8 @@ const DeviceList = () => {
     return () => {
       mounted = false;
     };
-  }, []); // ✅ Empty dependency array - only run once
+  }, []);
 
-  // Compute filtered devices
   const filteredDevices = useMemo(() => {
     return devices.filter(dev => {
       if (typeFilter !== "all" && dev.type !== typeFilter) return false;
@@ -269,13 +283,11 @@ const DeviceList = () => {
     });
   }, [devices, typeFilter, statusFilter, searchText]);
 
-  // Compute paged devices
   const pagedDevices = useMemo(() => {
     const startIndex = (currentPage - 1) * rowsPerPage;
     return filteredDevices.slice(startIndex, startIndex + rowsPerPage);
   }, [filteredDevices, currentPage, rowsPerPage]);
 
-  // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
   }, [typeFilter, statusFilter, searchText, rowsPerPage]);
@@ -283,10 +295,8 @@ const DeviceList = () => {
   const handleDeviceSubmit = async (deviceInfo) => {
     setSubmitting(true);
     try {
-      // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 800));
       
-      // Add new device to list
       const newDevice = {
         id: devices.length + 1,
         name: deviceInfo.deviceName,
@@ -314,7 +324,6 @@ const DeviceList = () => {
   const handleViewDetails = async (device) => {
     setViewingDeviceId(device.id);
     try {
-      // Simulate API call to fetch device details
       await new Promise(resolve => setTimeout(resolve, 400));
       toast.info(`Viewing details for ${device.name}`);
     } catch (error) {
@@ -336,7 +345,6 @@ const DeviceList = () => {
 
     setBlockingDeviceId(device.id);
     try {
-      // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 600));
       
       setDevices(prev => 
@@ -355,22 +363,27 @@ const DeviceList = () => {
   };
 
   const handleSearch = () => {
-    // Search is handled by real-time filtering
     if (searchText.trim()) {
       toast.info(`Searching for: ${searchText}`);
     } else {
       toast.info("Enter search criteria");
     }
   };
-
-  // Early return for permission check - AFTER all hooks
-  if (!rolePermissions.canManageDevices) {
-    return (
-      <div style={{ padding: 20, color: "red" }} role="alert">
-        You do not have permission to manage devices.
-      </div>
-    );
-  }
+  
+  //NEW: Handle button click with proper messaging
+  const handleRegisterDeviceClick = () => {
+    if (!hasDevicePermission) {
+      toast.error("You don't have permission to register devices. Please contact your administrator.");
+      return;
+    }
+    
+    if (!showRegisterDevice) {
+      toast.error(`Device registration is not available for ${segmentFilter} segment.`);
+      return;
+    }
+    
+    setShowDeviceModal(true);
+  };
 
   // Show skeleton loader on initial load
   if (initialLoad) {
@@ -378,20 +391,15 @@ const DeviceList = () => {
       <main className="device-mgmt-main">
         <h1 className="device-mgmt-title">Device Management</h1>
         
-        {/* Skeleton for stats cards */}
         <div className="device-summary-cards">
           {[...Array(4)].map((_, i) => (
             <SkeletonLoader key={i} variant="card" />
           ))}
         </div>
 
-        {/* Skeleton for toolbar */}
         <SkeletonLoader variant="rect" height={60} style={{ marginBottom: '20px' }} />
-
-        {/* Skeleton for pagination */}
         <SkeletonLoader variant="rect" height={40} style={{ marginBottom: '16px' }} />
 
-        {/* Skeleton for device cards */}
         <div className="device-card-list">
           {[...Array(6)].map((_, i) => (
             <SkeletonLoader key={i} variant="card" />
@@ -403,18 +411,33 @@ const DeviceList = () => {
 
   return (
     <main className="device-mgmt-main">
-      {/* ✅ FIX: Loading overlay with proper positioning */}
-      {isLoading('devices') && (
-        <LoadingOverlay 
-          active={true}
-          message="Processing devices..."
-          fullPage={false}
-        />
-      )}
+      <LoadingOverlay 
+        active={isLoading('devices')}
+        message="Processing devices..."
+        fullPage={false}
+      />
+      
+      {/*NEW: Segment Selector (Testing Only) - Matches UserList pattern */}
+      <div className="segment-selector-test">
+        <label htmlFor="segment-test-select">Segment:</label>
+        <select
+          id="segment-test-select"
+          value={segmentFilter}
+          onChange={(e) => setSegmentFilter(e.target.value)}
+          className="segment-test-dropdown"
+          disabled={isLoading('devices')}
+        >
+          <option value="enterprise">Enterprise</option>
+          <option value="coLiving">Co-Living</option>
+          <option value="coWorking">Co-Working</option>
+          <option value="hotel">Hotel</option>
+          <option value="pg">PG</option>
+          <option value="miscellaneous">Miscellaneous</option>
+        </select>
+      </div>
 
       <h1 className="device-mgmt-title">Device Management</h1>
 
-      {/* Stats / Summary Cards */}
       <div className="device-summary-cards">
         {deviceStats.map(stat => (
           <div className={`device-summary-card ${stat.colorClass}`} key={stat.label}>
@@ -433,7 +456,6 @@ const DeviceList = () => {
         ))}
       </div>
 
-      {/* Filters/Toolbar */}
       <div className="device-mgmt-toolbar">
         <select
           value={typeFilter}
@@ -479,18 +501,32 @@ const DeviceList = () => {
         >
           Search
         </Button>
+        
+        {/*UPDATED: Register Device button with permission & segment checks */}
         <Button
           variant="primary"
-          onClick={() => setShowDeviceModal(true)}
-          aria-label="Register New Device"
+          onClick={handleRegisterDeviceClick}
+          aria-label={
+            !hasDevicePermission 
+              ? "Register Device - Permission Required" 
+              : !showRegisterDevice 
+              ? "Register Device - Not Available for This Segment"
+              : "Register New Device"
+          }
+          title={
+            !hasDevicePermission 
+              ? "You need device management permissions to register devices" 
+              : !showRegisterDevice 
+              ? `Device registration is not available for ${segmentFilter} segment`
+              : "Register a new device"
+          }
           style={{ marginLeft: "auto" }}
-          disabled={isLoading('devices') || submitting}
+          disabled={!canRegisterDevice || isLoading('devices') || submitting}
         >
           Register Device
         </Button>
       </div>
 
-      {/* Pagination Controls - Top */}
       <Pagination
         totalItems={filteredDevices.length}
         rowsPerPage={rowsPerPage}
@@ -499,7 +535,6 @@ const DeviceList = () => {
         onRowsPerPageChange={setRowsPerPage}
       />
 
-      {/* Device Cards */}
       <div className="device-card-list">
         {pagedDevices.length === 0 ? (
           <div style={{ 
@@ -568,7 +603,6 @@ const DeviceList = () => {
         )}
       </div>
 
-      {/* Pagination Controls - Bottom */}
       {filteredDevices.length > 0 && (
         <Pagination
           totalItems={filteredDevices.length}
@@ -579,7 +613,7 @@ const DeviceList = () => {
         />
       )}
 
-      {/* Device Registration Modal */}
+      {/*UPDATED: Pass segment to DeviceFormModal */}
       {showDeviceModal && (
         <DeviceFormModal
           open={showDeviceModal}
@@ -587,7 +621,7 @@ const DeviceList = () => {
           onSubmit={handleDeviceSubmit}
           users={[]}
           devices={devices}
-          segment="enterprise"
+          segment={segmentFilter}
           siteUserList={[]}
           submitting={submitting}
         />

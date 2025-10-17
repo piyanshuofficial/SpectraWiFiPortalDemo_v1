@@ -1,4 +1,5 @@
 /* src/components/Sidebar.css */
+
 .sidebar {
   background: #181818;
   background-image: url('../assets/images/nav-bg.png');
@@ -6,8 +7,8 @@
   background-repeat: no-repeat;
   background-position: left top;
   color: #fff;
-  width: 100px;
-  min-width: 100px;
+  width: var(--sidebar-width); /* 6.25rem = 100px */
+  min-width: var(--sidebar-width);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -16,7 +17,7 @@
   left: 0;
   top: 0;
   z-index: 101;
-  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 0.125rem 0 0.5rem rgba(0, 0, 0, 0.15);
 }
 
 .sidebar-logo-area {
@@ -24,15 +25,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 60px;
+  height: var(--header-height); /* 3.75rem = 60px */
   width: 100%;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 0.0625rem solid rgba(255, 255, 255, 0.08);
   flex-shrink: 0;
 }
 
 .sidebar-logo-img {
-  max-width: 70px;
-  height: 50px;
+  max-width: 4.375rem; /* 70px */
+  height: 3.125rem; /* 50px */
   object-fit: contain;
   user-select: none;
   pointer-events: none;
@@ -41,7 +42,7 @@
 
 .sidebar-nav {
   flex: 1;
-  padding: 8px 0 20px 0;
+  padding: 0.5rem 0 1.25rem 0;
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -61,7 +62,7 @@
   padding: 0;
   position: relative;
   width: 100%;
-  margin-bottom: 8px;
+  margin-bottom: 0.5rem;
 }
 
 .sidebar-nav-item {
@@ -70,13 +71,13 @@
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 10px 8px;
+  padding: 0.625rem 0.5rem;
   width: 100%;
   box-sizing: border-box;
   background: transparent;
   color: #9eb3c1;
   font-weight: 500;
-  font-size: 0.9rem;
+  font-size: var(--font-base);
   border-radius: 0;
   position: relative;
   transition: background 0.2s, color 0.2s;
@@ -99,27 +100,27 @@
   position: absolute;
   left: 0;
   top: 0;
-  width: 4px;
+  width: 0.25rem;
   height: 100%;
   background: #68d5ff;
-  border-radius: 0 4px 4px 0;
+  border-radius: 0 0.25rem 0.25rem 0;
 }
 
 .sidebar-nav-icon {
   font-size: 2.1rem;
   color: inherit;
   transition: color 0.2s;
-  margin-bottom: 6px;
+  margin-bottom: var(--space-xs);
 }
 
 .sidebar-nav-label {
   display: block;
   text-align: center;
-  font-size: 0.7rem;
+  font-size: var(--font-xs);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
   color: inherit;
   text-decoration: none;
-  line-height: 1.2;
+  line-height: var(--line-height-tight);
   font-weight: 500;
   letter-spacing: 0.01em;
 }
@@ -128,7 +129,7 @@
   .sidebar {
     position: static;
     width: 100vw;
-    height: 80px;
+    height: 5rem; /* 80px */
     flex-direction: row;
     min-height: 0;
     z-index: 101;
@@ -137,27 +138,27 @@
   }
   
   .sidebar-logo-area {
-    height: 54px;
-    width: 120px;
+    height: 3.375rem; /* 54px */
+    width: 7.5rem; /* 120px */
     flex-shrink: 0;
   }
   
   .sidebar-logo-img {
-    height: 40px;
-    max-width: 65px;
+    height: 2.5rem; /* 40px */
+    max-width: 4.0625rem; /* 65px */
   }
   
   .sidebar-nav {
     flex-direction: row;
     align-items: center;
-    padding: 0 10px;
+    padding: 0 0.625rem;
     overflow-x: auto;
   }
   
   .sidebar-nav ul {
     display: flex;
     flex-direction: row;
-    gap: 5px;
+    gap: 0.3125rem;
   }
   
   .sidebar-nav-li {
@@ -168,9 +169,9 @@
   
   .sidebar-nav-item {
     flex-direction: row;
-    gap: 8px;
-    padding: 10px 14px;
-    font-size: 0.85rem;
+    gap: 0.5rem;
+    padding: 0.625rem 0.875rem;
+    font-size: var(--font-sm);
   }
   
   .sidebar-nav-item.active-link::before {
@@ -178,7 +179,7 @@
     top: auto;
     bottom: 0;
     width: 100%;
-    height: 3px;
+    height: 0.1875rem;
   }
   
   .sidebar-nav-icon {
@@ -187,24 +188,24 @@
   }
   
   .sidebar-nav-label {
-    font-size: 0.8rem;
+    font-size: var(--font-sm);
   }
 }
 
 .sidebar-no-access {
-  padding: 20px 10px;
+  padding: 1.25rem 0.625rem;
   text-align: center;
 }
 
 .sidebar-no-access .sidebar-nav-item {
   cursor: default;
   background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
-  padding: 12px;
+  border-radius: var(--radius-md);
+  padding: 0.75rem;
 }
 
 .sidebar-no-access .sidebar-nav-label {
-  font-size: 0.8rem;
+  font-size: var(--font-sm);
   color: #9eb3c1;
   opacity: 0.7;
 }

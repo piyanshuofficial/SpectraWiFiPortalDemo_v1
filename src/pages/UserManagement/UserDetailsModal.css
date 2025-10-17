@@ -1,26 +1,26 @@
-/*src/pages/UserManagement/UserDetailsModal.css*/
+/* src/pages/UserManagement/UserDetailsModal.css */
 
 .udm-modal-root {
   background: #fff;
-  max-width: 520px;
-  border-radius: 10px;
-  box-shadow: 0 4px 16px rgba(40,56,92,.12);
-  padding: 0 0 10px 0;
+  max-width: 32.5rem;
+  border-radius: 0.625rem;
+  box-shadow: 0 0.25rem 1rem rgba(40, 56, 92, 0.12);
+  padding: 0 0 0.625rem 0;
 }
 
 .udm-header-row {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  padding: 18px 24px 0 24px;
+  padding: 1.125rem 1.5rem 0 1.5rem;
 }
 
 .udm-heading {
-  font-size: 1.2rem;
+  font-size: var(--font-3xl);
   font-weight: 700;
   color: #183b6b;
   flex: 1 1 100%;
-  letter-spacing: 0.05px;
+  letter-spacing: 0.003125rem;
 }
 
 .udm-close-btn {
@@ -28,97 +28,97 @@
   outline: none;
   background: transparent;
   color: #8d99ae;
-  font-size: 1.5rem;
+  font-size: var(--font-5xl);
   cursor: pointer;
-  transition: color .15s;
-  padding: 0 4px;
+  transition: color 0.15s;
+  padding: 0 0.25rem;
 }
 
-.udm-close-btn:hover { 
-  color: #183b6b; 
+.udm-close-btn:hover {
+  color: #183b6b;
 }
 
 .udm-main-grid {
   display: flex;
   justify-content: space-between;
-  gap: 24px;
-  margin: 12px 24px 0 24px;
+  gap: var(--space-2xl);
+  margin: 0.75rem 1.5rem 0 1.5rem;
   flex-wrap: wrap;
 }
 
 .udm-section {
-  min-width: 160px;
+  min-width: 10rem;
   flex: 1 1 45%;
 }
 
 .udm-section-title {
   font-weight: 600;
   color: #183b6b;
-  font-size: 0.9rem;
-  margin-bottom: 6px;
-  letter-spacing: 0.03px;
+  font-size: var(--font-base);
+  margin-bottom: 0.375rem;
+  letter-spacing: 0.001875rem;
 }
 
 .udm-item {
-  margin-bottom: 4px;
-  font-size: 0.85rem;
+  margin-bottom: 0.25rem;
+  font-size: var(--font-sm);
   display: flex;
   align-items: baseline;
-  gap: 5px;
+  gap: 0.3125rem;
 }
 
 .udm-label {
   color: #626980;
   font-weight: 600;
-  min-width: 60px;
+  min-width: 3.75rem;
   display: inline-block;
-  font-size: 0.82rem;
+  font-size: var(--font-xs);
 }
 
 .udm-value {
   color: #222;
   font-weight: 400;
   flex: 1 1 auto;
-  font-size: 0.82rem;
+  font-size: var(--font-xs);
 }
 
-.udm-bold { 
-  font-weight: 600; 
+.udm-bold {
+  font-weight: 600;
 }
 
 /* Compact stats bar with scroll for narrow screens */
 .udm-stats-bar.fit-row {
   display: flex;
-  gap: 10px;
+  gap: 0.625rem;
   justify-content: space-between;
   align-items: stretch;
-  margin-bottom: 8px;
+  margin-bottom: 0.5rem;
   margin-top: 0;
   width: 100%;
   flex-wrap: nowrap;
-  padding: 6px 0 10px 0;
+  padding: 0.375rem 0 0.625rem 0;
   box-sizing: border-box;
 }
 
 .udm-stats-card {
   background: #f8faff;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   flex: 1 1 0;
   min-width: 0;
-  max-width: 180px;
+  max-width: 11.25rem;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 7px 4px 6px 4px;
-  box-shadow: 0 1px 3px rgba(33,45,98,0.04);
+  padding: 0.4375rem 0.25rem 0.375rem 0.25rem;
+  box-shadow: 0 0.0625rem 0.1875rem rgba(33, 45, 98, 0.04);
   white-space: nowrap;
   overflow: hidden;
 }
 
 .udm-stats-number {
-  font-size: 0.95rem;
+  font-size: var(--font-md);
   font-weight: 600;
-  margin-bottom: 2px;
+  margin-bottom: 0.125rem;
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
@@ -128,10 +128,10 @@
 }
 
 .udm-stats-label {
-  font-size: 0.75rem;
+  font-size: var(--font-sm);
   font-weight: 500;
   color: #4b5d83;
-  letter-spacing: 0.01em;
+  letter-spacing: 0.00625rem;
   text-align: center;
   width: 100%;
   overflow: hidden;
@@ -139,18 +139,18 @@
 }
 
 /* Compact policy pills */
-.policy-detail-stack { 
-  margin-top: 5px; 
+.policy-detail-stack {
+  margin-top: 0.3125rem;
 }
 
-.policy-row { 
-  display: flex; 
-  align-items: center; 
-  margin-bottom: 2px; 
+.policy-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.125rem;
 }
 
 .policy-icon {
-  width: 16px;
+  width: 1rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -159,108 +159,47 @@
 
 .policy-pill {
   display: inline-block;
-  border-radius: 7px;
+  border-radius: 0.4375rem;
   font-weight: 600;
-  padding: 1px 7px;
+  padding: 0.0625rem 0.4375rem;
   font-size: 0.75em;
-  margin-left: 3px;
+  margin-left: 0.1875rem;
 }
 
-.policy-pill.speed  { background: #eef4ff; color: #0053ba; }
-.policy-pill.data   { background: #e6fbe7; color: #229441; }
-.policy-pill.device { background: #f4eefd; color: #8832b1; }
+.policy-pill.speed {
+  background: #eef4ff;
+  color: #0053ba;
+}
+
+.policy-pill.data {
+  background: #e6fbe7;
+  color: #229441;
+}
+
+.policy-pill.device {
+  background: #f4eefd;
+  color: #8832b1;
+}
 
 .udm-actions-row {
   display: flex;
-  gap: 10px;
-  padding: 14px 24px 0 24px;
-  margin-top: 10px;
+  gap: 0.625rem;
+  padding: 0.875rem 1.5rem 0 1.5rem;
+  margin-top: 0.625rem;
   justify-content: center;
   flex-wrap: wrap;
 }
 
 .udm-actions-row button {
-  min-width: 90px;
-  min-height: 34px;
-  border-radius: 6px;
+  min-width: 5.625rem;
+  min-height: 2.125rem;
+  border-radius: var(--radius-base);
   font-weight: 600;
-  font-size: 0.85rem;
-  padding: 6px 10px;
+  font-size: var(--font-sm);
+  padding: 0.375rem 0.625rem;
 }
 
-/* Responsive for mobile screens */
-@media (max-width: 930px) {
-  .udm-main-grid { 
-    flex-direction: column; 
-    gap: 12px; 
-  }
-}
-
-@media (max-width: 520px) {
-  .udm-header-row, 
-  .udm-main-grid { 
-    margin-left: 12px; 
-    margin-right: 12px; 
-  }
-  
-  .udm-actions-row {
-    padding-left: 12px;
-    padding-right: 12px;
-  }
-}
-
-@media (max-width: 480px) {
-  .udm-main-grid, 
-  .udm-header-row, 
-  .udm-stats-bar, 
-  .udm-actions-row {
-    padding-left: 10px;
-    padding-right: 10px;
-  }
-  
-  .udm-actions-row button { 
-    min-width: 70px; 
-    font-size: 0.8em;
-  }
-  
-  .udm-header-row { 
-    padding-top: 14px; 
-  }
-}
-
-@media (max-width: 850px) {
-  .udm-stats-bar.fit-row {
-    gap: 8px;
-  }
-  
-  .udm-stats-card {
-    font-size: 0.9em;
-    padding: 6px 3px 5px 3px;
-    min-width: 55px;
-  }
-}
-
-@media (max-width: 600px) {
-  .udm-stats-bar.fit-row {
-    gap: 6px;
-  }
-  
-  .udm-stats-card {
-    font-size: 0.85em;
-    max-width: 90vw;
-    padding: 5px 2px;
-  }
-}
-
-/* Usage Statistics Title */
-.udm-usage-title {
-  margin-top: 26px;
-  margin-bottom: 12px;
-  text-align: left;
-  padding-left: 44px;
-}
-
-/* Button Variants - Remove inline styles */
+/* Button Variants */
 .resend-password-btn {
   background: #a3b9fd !important;
   color: #183b6b !important;
@@ -272,9 +211,78 @@
   border: none !important;
 }
 
-/* Responsive adjustments */
+/* Usage Statistics Title */
+.udm-usage-title {
+  margin-top: 1.625rem;
+  margin-bottom: 0.75rem;
+  text-align: left;
+  padding-left: 2.75rem;
+}
+
+/* Responsive for mobile screens */
+@media (max-width: 930px) {
+  .udm-main-grid {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+}
+
 @media (max-width: 520px) {
+  .udm-header-row,
+  .udm-main-grid {
+    margin-left: 0.75rem;
+    margin-right: 0.75rem;
+  }
+
+  .udm-actions-row {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+  
   .udm-usage-title {
-    padding-left: 12px;
+    padding-left: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .udm-main-grid,
+  .udm-header-row,
+  .udm-stats-bar,
+  .udm-actions-row {
+    padding-left: 0.625rem;
+    padding-right: 0.625rem;
+  }
+
+  .udm-actions-row button {
+    min-width: 4.375rem;
+    font-size: 0.8em;
+  }
+
+  .udm-header-row {
+    padding-top: 0.875rem;
+  }
+}
+
+@media (max-width: 850px) {
+  .udm-stats-bar.fit-row {
+    gap: 0.5rem;
+  }
+
+  .udm-stats-card {
+    font-size: 0.9em;
+    padding: 0.375rem 0.1875rem 0.3125rem 0.1875rem;
+    min-width: 3.4375rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .udm-stats-bar.fit-row {
+    gap: 0.375rem;
+  }
+
+  .udm-stats-card {
+    font-size: 0.85em;
+    max-width: 90vw;
+    padding: 0.3125rem 0.125rem;
   }
 }

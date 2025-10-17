@@ -13,26 +13,24 @@
   animation: spinner-rotate 0.8s linear infinite;
 }
 
-/* Size variants */
 .spinner-sm .spinner-inner {
-  width: 16px;
-  height: 16px;
-  border-width: 2px;
+  width: 1rem;
+  height: 1rem;
+  border-width: 0.125rem;
 }
 
 .spinner-md .spinner-inner {
-  width: 24px;
-  height: 24px;
-  border-width: 3px;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-width: 0.1875rem;
 }
 
 .spinner-lg .spinner-inner {
-  width: 40px;
-  height: 40px;
-  border-width: 4px;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-width: 0.25rem;
 }
 
-/* Color variants */
 .spinner-primary {
   color: #004aad;
 }
@@ -45,7 +43,6 @@
   color: #666;
 }
 
-/* Animation */
 @keyframes spinner-rotate {
   0% {
     transform: rotate(0deg);
@@ -55,7 +52,6 @@
   }
 }
 
-/* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
   .spinner-inner {
     animation: none;
