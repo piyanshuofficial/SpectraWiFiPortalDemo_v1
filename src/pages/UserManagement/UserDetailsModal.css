@@ -3,7 +3,7 @@
 .udm-modal-root {
   background: #fff;
   max-width: 32.5rem;
-  border-radius: 0.625rem;
+  border-radius: var(--radius-lg);
   box-shadow: 0 0.25rem 1rem rgba(40, 56, 92, 0.12);
   padding: 0 0 0.625rem 0;
 }
@@ -86,7 +86,7 @@
   font-weight: 600;
 }
 
-/* Compact stats bar with scroll for narrow screens */
+/* Compact stats bar */
 .udm-stats-bar.fit-row {
   display: flex;
   gap: 0.625rem;
@@ -159,7 +159,7 @@
 
 .policy-pill {
   display: inline-block;
-  border-radius: 0.4375rem;
+  border-radius: var(--radius-md);
   font-weight: 600;
   padding: 0.0625rem 0.4375rem;
   font-size: 0.75em;

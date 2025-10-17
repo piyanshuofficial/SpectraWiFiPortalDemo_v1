@@ -1,4 +1,5 @@
 /* src/components/DeviceFormModal.css */
+
 *,
 *:before,
 *:after {
@@ -7,24 +8,24 @@
 
 .device-form-modal {
   background: #fff;
-  padding: 14px 16px 18px 16px;
-  border-radius: 10px;
-  max-width: 440px;
+  padding: 0.875rem 1rem 1.125rem 1rem;
+  border-radius: var(--radius-lg);
+  max-width: 27.5rem;
   width: 100%;
   max-height: 85vh;
-  box-shadow: 0 4px 16px rgba(33, 38, 71, 0.18);
+  box-shadow: 0 0.25rem 1rem rgba(33, 38, 71, 0.18);
   display: flex;
   flex-direction: column;
   position: relative;
-  font-size: 13px;
+  font-size: var(--font-sm-plus);
   margin: 0 auto;
   overflow: hidden;
 }
 
 .device-form-header {
-  font-size: 1.45rem;
+  font-size: var(--font-4xl);
   font-weight: 700;
-  margin-bottom: 22px;
+  margin-bottom: 1.375rem;
   color: #193a6b;
   text-align: left;
 }
@@ -49,35 +50,35 @@ form {
 .device-form-row {
   display: flex;
   flex-direction: column;
-  margin-bottom: 12px;
+  margin-bottom: 0.75rem;
   width: 100%;
   min-width: 0;
 }
 
 /* Mapping Type group enhancements */
 .device-form-row.mapping-type-row {
-  margin-bottom: 24px;
-  padding: 12px 0 4px 0;
+  margin-bottom: 1.5rem;
+  padding: 0.75rem 0 0.25rem 0;
 }
 
 .mapping-type-options {
   display: flex;
-  gap: 38px;
+  gap: 2.375rem;
   align-items: center;
   background: #f8faff;
-  border-radius: 8px;
-  padding: 11px 16px;
-  margin-top: 7px;
-  box-shadow: 0 2px 5px rgba(33,38,71,0.06);
-  border: 1.1px solid #dde5f5;
+  border-radius: var(--radius-md);
+  padding: 0.6875rem 1rem;
+  margin-top: 0.4375rem;
+  box-shadow: 0 0.125rem 0.3125rem rgba(33, 38, 71, 0.06);
+  border: 0.06875rem solid #dde5f5;
 }
 
 .mapping-type-options label {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 0.625rem;
   cursor: pointer;
-  font-size: 1.07rem;
+  font-size: var(--font-lg);
   color: #2150a2;
   font-weight: 600;
   transition: color 0.15s;
@@ -85,8 +86,8 @@ form {
 
 .mapping-type-options input[type='radio'] {
   accent-color: #3575dd;
-  width: 18px;
-  height: 18px;
+  width: 1.125rem;
+  height: 1.125rem;
 }
 
 .mapping-type-options label input[type='radio']:checked + span {
@@ -99,21 +100,21 @@ form {
 }
 
 .device-form-row label {
-  font-size: 0.9rem;
+  font-size: var(--font-base);
   color: #2150a2;
   font-weight: 600;
-  margin-bottom: 4px;
+  margin-bottom: 0.25rem;
 }
 
 .device-form-row input,
 .device-form-row select {
-  padding: 7px 10px;
-  font-size: 0.97rem;
-  border-radius: 6px;
-  border: 1.2px solid #cfd7ea;
-  margin-bottom: 2px;
+  padding: 0.4375rem 0.625rem;
+  font-size: var(--font-lg);
+  border-radius: var(--radius-base);
+  border: 0.075rem solid #cfd7ea;
+  margin-bottom: 0.125rem;
   background: #f8faff;
-  line-height: 1.3;
+  line-height: var(--line-height-snug);
   width: 100%;
   max-width: 100%;
   min-width: 0;
@@ -140,23 +141,23 @@ form {
 
 .error-message {
   color: #e81500;
-  font-size: 0.75rem;
-  margin-top: 2px;
+  font-size: var(--font-xs);
+  margin-top: 0.125rem;
 }
 
 .required-asterisk {
   color: #e14b4b;
   font-weight: bold;
-  margin-left: 2px;
+  margin-left: 0.125rem;
 }
 
-/* User search result list and item radio styles */
+/* User search result list */
 .search-results-list {
-  border: 1px solid #e8eaf3;
+  border: 0.0625rem solid #e8eaf3;
   background: #fcfdff;
-  border-radius: 6px;
-  margin-top: 2px;
-  max-height: 112px;
+  border-radius: var(--radius-base);
+  margin-top: 0.125rem;
+  max-height: 7rem;
   overflow-y: auto;
 }
 
@@ -164,8 +165,8 @@ form {
   display: flex;
   align-items: center;
   cursor: pointer;
-  border-bottom: 1px solid #e8eaf3;
-  padding: 5px 9px;
+  border-bottom: 0.0625rem solid #e8eaf3;
+  padding: 0.3125rem 0.5625rem;
   background: none;
   transition: background 0.15s;
 }
@@ -177,9 +178,9 @@ form {
 
 .search-results-list input[type='radio'] {
   accent-color: #3575dd;
-  width: 15px;
-  height: 15px;
-  margin-right: 8px;
+  width: 0.9375rem;
+  height: 0.9375rem;
+  margin-right: 0.5rem;
 }
 
 .search-results-list label[style*="background: #e3f1ff"] {
@@ -190,8 +191,8 @@ form {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 20px;
-  margin: 18px 0 16px 0;
+  gap: 1.25rem;
+  margin: 1.125rem 0 1rem 0;
   padding: 0;
   width: 100%;
   background: none;
@@ -202,41 +203,40 @@ form {
   flex: 1 1 0;
   min-width: 0;
   margin: 0;
-  padding: 9px 0;
-  font-size: 0.97rem;
+  padding: 0.5625rem 0;
+  font-size: var(--font-lg);
   font-weight: 600;
-  border-radius: 8px;
-  min-height: 36px;
-  box-shadow: 0 2px 6px rgba(33,38,71,0.10);
+  border-radius: var(--radius-md);
+  min-height: 2.25rem;
+  box-shadow: 0 0.125rem 0.375rem rgba(33, 38, 71, 0.10);
   transition: background 0.2s, box-shadow 0.2s;
 }
 
 .device-form-actions .btn:hover,
 .device-form-actions button:hover {
-  box-shadow: 0 4px 10px rgba(33,38,71,0.14);
+  box-shadow: 0 0.25rem 0.625rem rgba(33, 38, 71, 0.14);
 }
 
 /* Responsive for small screens */
 @media (max-width: 520px) {
   .device-form-modal {
-    padding: 8px 2vw 14px 2vw;
+    padding: 0.5rem 2vw 0.875rem 2vw;
     max-width: 100vw;
   }
   .device-form-header {
-    font-size: 1.15rem;
-    margin-bottom: 14px;
+    font-size: var(--font-3xl);
+    margin-bottom: 0.875rem;
   }
   .mapping-type-options {
-    gap: 18px;
-    padding: 7px 6px;
-    font-size: 0.95rem;
+    gap: 1.125rem;
+    padding: 0.4375rem 0.375rem;
+    font-size: var(--font-lg);
   }
   .search-results-list label {
-    font-size: 0.92rem;
-    padding: 5px 7px;
+    font-size: var(--font-base);
+    padding: 0.3125rem 0.4375rem;
   }
 }
-
 
 /* Search results wrapper */
 .search-results-list-wrapper {
@@ -245,20 +245,20 @@ form {
   top: 100%;
   left: 0;
   z-index: 10;
-  max-height: 140px;
+  max-height: 8.75rem;
   overflow-y: auto;
-  border: 1px solid #e8eaf3;
+  border: 0.0625rem solid #e8eaf3;
   background: #fcfdff;
-  border-radius: 6px;
-  margin-top: 2px;
+  border-radius: var(--radius-base);
+  margin-top: 0.125rem;
 }
 
 .search-user-row {
   display: flex;
   align-items: center;
-  padding: 6px 10px;
+  padding: 0.375rem 0.625rem;
   cursor: pointer;
-  border-bottom: 1px solid #e8eaf3;
+  border-bottom: 0.0625rem solid #e8eaf3;
   color: #193a6b;
   transition: background 0.15s;
 }
@@ -280,5 +280,5 @@ form {
 .search-user-id {
   font-size: 0.85em;
   color: #4a75ad;
-  margin-left: 4px;
+  margin-left: 0.25rem;
 }
