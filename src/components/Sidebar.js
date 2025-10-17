@@ -11,7 +11,7 @@ import {
 } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext";
 import { Permissions } from "../utils/accessLevels";
-import { preloadRoute } from "../config/routes"; // ✅ Import preload function
+import { preloadRoute } from "../config/routes"; // Import preload function
 import logoMark from "../assets/images/spectra-logo-white.png";
 import "./Sidebar.css";
 
@@ -63,7 +63,7 @@ const Sidebar = () => {
     return rolePermissions[item.permission] === true;
   });
 
-  // ✅ Preload route on hover for instant navigation
+  // Preload route on hover for instant navigation
   const handleMouseEnter = (path) => {
     preloadRoute(path);
   };
@@ -114,8 +114,8 @@ const Sidebar = () => {
                 }
                 aria-current={({ isActive }) => (isActive ? "page" : undefined)}
                 aria-label={aria}
-                onMouseEnter={() => handleMouseEnter(to)} // ✅ Preload on hover
-                onFocus={() => handleMouseEnter(to)} // ✅ Preload on focus
+                onMouseEnter={() => handleMouseEnter(to)} // Preload on hover
+                onFocus={() => handleMouseEnter(to)} // Preload on focus
               >
                 <span className="sidebar-nav-icon">
                   <Icon />

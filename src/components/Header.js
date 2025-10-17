@@ -7,7 +7,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import './Header.css';
 import { NOTIFICATIONS, ANIMATION } from '../constants/appConstants';
 
-const siteName = "My Portal";
+const siteName = "Sample Site Name";
 
 const Header = () => {
   const [notifOpen, setNotifOpen] = useState(false);
