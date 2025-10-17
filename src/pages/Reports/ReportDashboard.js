@@ -6,7 +6,7 @@ import Badge from "../../components/Badge";
 import { useAuth } from "../../context/AuthContext";
 import { Permissions } from "../../utils/accessLevels";
 import { FaEye, FaFileCsv, FaFilePdf } from "react-icons/fa";
-
+import { toast, ToastContainer } from 'react-toastify';
 import "./ReportDashboard.css";
 import shortcutColors from "../../constants/shortcutColors";
 import { exportChartDataToCSV } from "../../utils/exportUtils";
@@ -364,7 +364,7 @@ const ReportDashboard = () => {
           }
         }
       } catch {
-        console.error("Chart config error:", error);
+        
       }
       const { width, height } = EXPORT_CANVAS_SIZES[chartConfig.options.type];
 
