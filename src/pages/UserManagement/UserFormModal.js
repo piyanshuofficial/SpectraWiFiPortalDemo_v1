@@ -1,6 +1,5 @@
 // src/pages/UserManagement/UserFormModal.js
 
-
 import React, { useState, useEffect, useRef } from "react";
 import Modal from "../../components/Modal";
 import Button from "../../components/Button";
@@ -98,9 +97,12 @@ const UserFormModal = ({
 
   const [errors, setErrors] = useState({});
   const firstInputRef = useRef(null);
+  const focusTimeoutRef = useRef(null);
   const licensesFull = USED_LICENSES >= MAX_LICENSES;
 
   useEffect(() => {
+    let mounted = true;
+
     if (user) {
       setForm({
         id: user.id || "",
@@ -136,9 +138,21 @@ const UserFormModal = ({
       }));
     }
     setErrors({});
-    setTimeout(() => {
-      firstInputRef.current?.focus();
+    
+    // ✅ FIX: Cleanup timeout for focus
+    focusTimeoutRef.current = setTimeout(() => {
+      if (mounted && firstInputRef.current) {
+        firstInputRef.current.focus();
+      }
     }, ANIMATION.AUTO_FOCUS_DELAY);
+
+    return () => {
+      mounted = false;
+      if (focusTimeoutRef.current) {
+        clearTimeout(focusTimeoutRef.current);
+        focusTimeoutRef.current = null;
+      }
+    };
   }, [user, segment]);
 
   function minCheckOutDate() {

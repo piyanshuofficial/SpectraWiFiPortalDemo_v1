@@ -1,17 +1,18 @@
 // src/App.js
 
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import React, { Suspense, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import AppLayout from './components/AppLayout';
-import Dashboard from './pages/Dashboard';
-import UserList from './pages/UserManagement/UserList';
-import DeviceManagement from './pages/DeviceManagement/DeviceList';
-import Reports from './pages/Reports/ReportDashboard';
-import KnowledgeCenter from './pages/KnowledgeCenter/KnowledgeHome';
+import ErrorBoundary from './components/ErrorBoundary';
+import RouteLoader from './components/RouteLoader';
 import { useAuth } from './context/AuthContext';
 import { Permissions } from './utils/accessLevels';
+import { routes } from './config/routes';
 import "./components/Badge.css";
 
+/**
+ * PrivateRoute wrapper with permission checks
+ */
 const PrivateRoute = ({ requiredPermission, children, fallbackMessage }) => {
   const { currentUser } = useAuth();
   
@@ -55,79 +56,61 @@ const PrivateRoute = ({ requiredPermission, children, fallbackMessage }) => {
   return children;
 };
 
+/**
+ * Component to update document title based on current route
+ */
+const DocumentTitle = () => {
+  const location = useLocation();
+  
+  useEffect(() => {
+    const currentRoute = routes.find(route => route.path === location.pathname);
+    if (currentRoute && currentRoute.title) {
+      document.title = `${currentRoute.title} | Spectra Portal`;
+    } else {
+      document.title = 'Spectra Portal';
+    }
+  }, [location]);
+  
+  return null;
+};
+
 function App() {
   return (
-    <Router>
-      <AppLayout>
-        <Routes>
-          {/* Redirect root to dashboard */}
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+    <ErrorBoundary>
+      <Router>
+        <DocumentTitle />
+        <AppLayout>
+          <Suspense fallback={<RouteLoader />}>
+            <Routes>
+              {/* Redirect root to dashboard */}
+              <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
-          <Route
-            path="/dashboard"
-            element={
-              <PrivateRoute
-                requiredPermission="canViewReports"
-                fallbackMessage="You need report viewing permissions to access the dashboard."
-              >
-                <Dashboard />
-              </PrivateRoute>
-            }
-          />
+              {/* Dynamic routes from configuration */}
+              {routes.map((route) => {
+                const Component = route.component;
+                return (
+                  <Route
+                    key={route.path}
+                    path={route.path}
+                    element={
+                      <PrivateRoute
+                        requiredPermission={route.requiredPermission}
+                        fallbackMessage={route.fallbackMessage}
+                      >
+                        <Component />
+                      </PrivateRoute>
+                    }
+                  />
+                );
+              })}
 
-          <Route
-            path="/users"
-            element={
-              <PrivateRoute
-                requiredPermission="canEditUsers"
-                fallbackMessage="You need user management permissions to access this page."
-              >
-                <UserList />
-              </PrivateRoute>
-            }
-          />
-
-          <Route
-            path="/devices"
-            element={
-              <PrivateRoute
-                requiredPermission="canManageDevices"
-                fallbackMessage="You need device management permissions to access this page."
-              >
-                <DeviceManagement />
-              </PrivateRoute>
-            }
-          />
-
-          <Route
-            path="/reports"
-            element={
-              <PrivateRoute
-                requiredPermission="canViewReports"
-                fallbackMessage="You need report viewing permissions to access this page."
-              >
-                <Reports />
-              </PrivateRoute>
-            }
-          />
-
-          <Route
-            path="/knowledge"
-            element={
-              <PrivateRoute
-                requiredPermission="canViewReports"
-                fallbackMessage="You need report viewing permissions to access the Knowledge Center."
-              >
-                <KnowledgeCenter />
-              </PrivateRoute>
-            }
-          />
-
-          {/* Fallback to dashboard on unmatched route */}
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
-        </Routes>
-      </AppLayout>
-    </Router>
+              {/* Fallback to dashboard on unmatched route */}
+              <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            </Routes>
+          </Suspense>
+        </AppLayout>
+      </Router>
+    </ErrorBoundary>
   );
 }
 

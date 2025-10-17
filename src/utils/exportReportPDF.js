@@ -2,7 +2,7 @@
 
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
-import { generateChartImage } from "./generateChartImage";
+import { generateChartImageWithRetry } from "./generateChartImage"; // ✅ Use retry version
 import { SPECTRA_TTF_BASE64 } from "../assets/fonts/spectraFontBase64.js";
 import { CHART, EXPORT } from "../constants/appConstants";
 import { SUPPORTING_COLORS, REPORT_COLOR_ASSIGNMENTS } from "../constants/colorConstants";
@@ -92,12 +92,15 @@ export async function exportReportPDF({
   let tableStartY = 160;
   if (chartData && chartOptions) {
     try {
-      const base64Image = await generateChartImage(
+      // ✅ Use retry-enabled chart generation with event-based rendering
+      const base64Image = await generateChartImageWithRetry(
         chartData, 
         chartOptions, 
         exportCanvasWidth, 
-        exportCanvasHeight
+        exportCanvasHeight,
+        2 // Max 2 retries
       );
+      
       const chartWidth = pageWidth - 120;
       const chartHeight = (exportCanvasHeight * chartWidth) / exportCanvasWidth;
       doc.addImage(base64Image, "PNG", 60, 155, chartWidth, chartHeight);

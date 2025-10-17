@@ -5,47 +5,204 @@
  * Used for PDF export functionality
  * 
  * Chart.js components are registered globally in src/config/chartConfig.js
+ * 
+ * CHANGELOG:
+ * - Replaced fixed 1000ms timeout with event-based rendering detection
+ * - Added proper error handling and cleanup
+ * - Implements progressive timeout fallback for safety
+ * - Uses Chart.js animation complete callback
  */
 
 import { Chart } from '../config/chartConfig';
 
 /**
- * Generate a chart image for PDF export
- * @param {object} data - Chart.js data object
- * @param {object} options - Chart.js options object
- * @param {number} width - Canvas width in pixels
- * @param {number} height - Canvas height in pixels
- * @returns {Promise<string>} Base64 encoded image
+ * Wait for chart to complete rendering using animation callbacks
+ * @param {Chart} chart - Chart.js instance
+ * @param {number} maxWaitTime - Maximum time to wait in milliseconds
+ * @returns {Promise<void>}
  */
-export async function generateChartImage(data, options, width = 900, height = 450) {
+function waitForChartRender(chart, maxWaitTime = 3000) {
   return new Promise((resolve, reject) => {
-    const canvas = document.createElement("canvas");
-    canvas.width = width;
-    canvas.height = height;
-    document.body.appendChild(canvas);
+    let isResolved = false;
+    let timeoutId = null;
 
-    let chart;
-    try {
-      chart = new Chart(canvas, {
-        type: options.type || "line",
-        data,
-        options,
-      });
+    // Safety timeout - fallback if animation callback never fires
+    timeoutId = setTimeout(() => {
+      if (!isResolved) {
+        isResolved = true;
+        console.warn('Chart rendering fallback: timeout reached, proceeding with current state');
+        resolve();
+      }
+    }, maxWaitTime);
 
-      setTimeout(() => {
-        try {
-          const base64Image = canvas.toDataURL("image/png");
-          resolve(base64Image);
-        } catch (error) {
-          reject(error);
-        } finally {
-          chart.destroy();
-          document.body.removeChild(canvas);
+    // Primary method: Use Chart.js animation complete callback
+    if (chart.options.animation === false) {
+      // If animations are disabled, chart is immediately ready
+      clearTimeout(timeoutId);
+      isResolved = true;
+      resolve();
+    } else {
+      // Wait for animation to complete
+      const originalOnComplete = chart.options.animation?.onComplete;
+      
+      chart.options.animation = {
+        ...chart.options.animation,
+        onComplete: function(animation) {
+          // Call original callback if it existed
+          if (originalOnComplete && typeof originalOnComplete === 'function') {
+            originalOnComplete.call(this, animation);
+          }
+          
+          // Resolve our promise
+          if (!isResolved) {
+            clearTimeout(timeoutId);
+            isResolved = true;
+            resolve();
+          }
         }
-      }, 1000);
-    } catch (error) {
-      if (canvas.parentNode) canvas.parentNode.removeChild(canvas);
-      reject(error);
+      };
+
+      // Force chart update to trigger animation
+      chart.update('none'); // 'none' mode = immediate update
     }
   });
 }
+
+/**
+ * Generate a chart image for PDF export with event-based rendering
+ * @param {object} data - Chart.js data object
+ * @param {object} options - Chart.js options object
+ * @param {number} width - Canvas width in pixels (default: 900)
+ * @param {number} height - Canvas height in pixels (default: 450)
+ * @returns {Promise<string>} Base64 encoded image
+ */
+export async function generateChartImage(data, options, width = 900, height = 450) {
+  return new Promise(async (resolve, reject) => {
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    
+    // Temporarily add to DOM (required for proper rendering)
+    canvas.style.position = 'absolute';
+    canvas.style.left = '-9999px';
+    canvas.style.top = '-9999px';
+    document.body.appendChild(canvas);
+
+    let chart = null;
+
+    try {
+      // Ensure animations are enabled but fast for export
+      const exportOptions = {
+        ...options,
+        responsive: false,
+        maintainAspectRatio: false,
+        animation: {
+          duration: 0, // Instant rendering for export
+          ...(options.animation || {})
+        }
+      };
+
+      // Create chart instance
+      chart = new Chart(canvas, {
+        type: options.type || "line",
+        data,
+        options: exportOptions,
+      });
+
+      // Wait for chart to complete rendering
+      await waitForChartRender(chart, 3000);
+
+      // Small additional delay to ensure DOM paint is complete
+      await new Promise(resolveDelay => setTimeout(resolveDelay, 100));
+
+      // Generate image
+      const base64Image = canvas.toDataURL("image/png", 1.0);
+
+      // Validate image generation
+      if (!base64Image || base64Image === 'data:,') {
+        throw new Error('Failed to generate chart image: empty data URL');
+      }
+
+      resolve(base64Image);
+
+    } catch (error) {
+      console.error('Chart image generation error:', error);
+      reject(new Error(`Failed to generate chart image: ${error.message}`));
+    } finally {
+      // Cleanup: destroy chart and remove canvas
+      try {
+        if (chart) {
+          chart.destroy();
+        }
+      } catch (destroyError) {
+        console.warn('Chart destroy error:', destroyError);
+      }
+
+      try {
+        if (canvas.parentNode) {
+          document.body.removeChild(canvas);
+        }
+      } catch (removeError) {
+        console.warn('Canvas removal error:', removeError);
+      }
+    }
+  });
+}
+
+/**
+ * Generate multiple chart images concurrently
+ * Useful for batch PDF generation
+ * @param {Array<object>} charts - Array of {data, options, width, height}
+ * @returns {Promise<Array<string>>} Array of base64 images
+ */
+export async function generateChartImages(charts) {
+  try {
+    const imagePromises = charts.map(({ data, options, width, height }) =>
+      generateChartImage(data, options, width, height)
+    );
+    return await Promise.all(imagePromises);
+  } catch (error) {
+    console.error('Batch chart generation error:', error);
+    throw error;
+  }
+}
+
+/**
+ * Generate chart image with retry logic
+ * @param {object} data - Chart.js data object
+ * @param {object} options - Chart.js options object
+ * @param {number} width - Canvas width
+ * @param {number} height - Canvas height
+ * @param {number} maxRetries - Maximum retry attempts (default: 2)
+ * @returns {Promise<string>} Base64 encoded image
+ */
+export async function generateChartImageWithRetry(
+  data, 
+  options, 
+  width = 900, 
+  height = 450, 
+  maxRetries = 2
+) {
+  let lastError = null;
+  
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      if (attempt > 0) {
+        console.log(`Chart generation retry attempt ${attempt}/${maxRetries}`);
+      }
+      return await generateChartImage(data, options, width, height);
+    } catch (error) {
+      lastError = error;
+      if (attempt < maxRetries) {
+        // Wait before retry (exponential backoff)
+        await new Promise(resolve => setTimeout(resolve, 200 * Math.pow(2, attempt)));
+      }
+    }
+  }
+  
+  throw new Error(
+    `Failed to generate chart after ${maxRetries + 1} attempts: ${lastError.message}`
+  );
+}
+
+export default generateChartImage;
