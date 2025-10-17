@@ -363,6 +363,19 @@ const handleBlockDevice = async (device) => {
     }
   };
   
+   const handleViewDetails = async (device) => {
+    setViewingDeviceId(device.id);
+    try {
+      // Simulate API call to fetch device details
+      await new Promise(resolve => setTimeout(resolve, 400));
+      toast.info(`Viewing details for ${device.name}`);
+    } catch (error) {
+      toast.error("Failed to load device details");
+    } finally {
+      setViewingDeviceId(null);
+    }
+  };
+
   //NEW: Handle button click with proper messaging
   const handleRegisterDeviceClick = () => {
     if (!hasDevicePermission) {
