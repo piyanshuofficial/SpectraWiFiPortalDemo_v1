@@ -35,13 +35,82 @@ const Dashboard = () => {
 
   const darkMode = document.documentElement.getAttribute("data-theme") === "dark";
 
-  const chartOptions = getStandardChartOptions({
-    type: "line",
-    title: "",
-    xLabel: "",
-    yLabel: "",
-    darkMode,
-  });
+  // ✅ UPDATED: Enhanced chart options with better tooltip configuration
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: {
+      mode: 'index',
+      intersect: false,
+    },
+    plugins: {
+      legend: {
+        position: 'top',
+        labels: {
+          font: { size: 14 },
+          usePointStyle: true,
+          padding: 15,
+        }
+      },
+      tooltip: {
+        enabled: true,
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        titleColor: '#fff',
+        bodyColor: '#fff',
+        borderColor: 'rgba(255, 255, 255, 0.2)',
+        borderWidth: 1,
+        padding: 12,
+        displayColors: true,
+        boxPadding: 6,
+        titleFont: {
+          size: 14,
+          weight: 'bold'
+        },
+        bodyFont: {
+          size: 13,
+        },
+        callbacks: {
+          // ✅ Format tooltip title (day name)
+          title: function(tooltipItems) {
+            return tooltipItems[0].label;
+          },
+          // ✅ Format tooltip label with value
+          label: function(context) {
+            let label = context.dataset.label || '';
+            if (label) {
+              label += ': ';
+            }
+            if (context.parsed.y !== null) {
+              // Format the value based on chart type
+              if (context.chart.canvas.id === 'chart-network-usage') {
+                label += context.parsed.y + ' GB';
+              } else if (context.chart.canvas.id === 'chart-license-usage') {
+                label += context.parsed.y;
+              } else if (context.chart.canvas.id === 'chart-alerts-summary') {
+                label += context.parsed.y;
+              } else {
+                label += context.parsed.y;
+              }
+            }
+            return label;
+          }
+        }
+      }
+    },
+    scales: {
+      x: {
+        title: { display: false },
+        grid: { color: darkMode ? "#444" : "#e5e5e5" },
+        ticks: { color: darkMode ? "#fff" : "#222", font: { size: 12 } }
+      },
+      y: {
+        title: { display: false },
+        grid: { color: darkMode ? "#444" : "#e5e5e5" },
+        ticks: { color: darkMode ? "#fff" : "#222", font: { size: 12 } },
+        beginAtZero: true
+      }
+    }
+  };
 
   const networkData = sampleReportsData["network-usage-report"];
   const licenseData = sampleReportsData["license-usage-report"];
@@ -49,7 +118,6 @@ const Dashboard = () => {
 
   const safeNumber = (value, fallback = 0) => typeof value === "number" && !isNaN(value) ? value : fallback;
 
-  // ✅ FIX: Cleanup timeout on unmount
   useEffect(() => {
     let mounted = true;
     let timeoutId = null;
@@ -80,7 +148,7 @@ const Dashboard = () => {
         clearTimeout(timeoutId);
       }
     };
-  }, []); // Empty dependency array - only run once
+  }, []);
 
   const renderDashboardForSegment = () => (
     <>
@@ -237,7 +305,6 @@ const Dashboard = () => {
       window.dispatchEvent(new CustomEvent('triggerSupportHighlight', { detail: 'highlight-support' }));
     }, ANIMATION.HIGHLIGHT_DURATION);
     
-    // Cleanup happens automatically when component unmounts or on next navigation
     return () => clearTimeout(timeoutId);
   };
 
