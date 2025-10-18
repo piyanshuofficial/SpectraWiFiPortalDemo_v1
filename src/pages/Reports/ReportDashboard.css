@@ -588,3 +588,21 @@
   min-width: 9rem;
 }
 
+/*Center only the report content, not the header */
+.report-detail-container {
+  display: flex;
+  flex-direction: column;
+}
+  
+.report-detail-header {
+  /* Keep header as-is (space-between layout) */
+  width: 100%;
+}
+
+/*New wrapper class for centering charts */
+.report-content-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}

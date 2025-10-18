@@ -39,6 +39,7 @@ export const tableStyles = {
 
 
 export const chartContainerStyle = {
+  margin: "0 auto 12px auto",
   width: "100%",
   maxWidth: "800px", //PREVENT OVER-STRETCHING
   height: 200,
@@ -48,5 +49,4 @@ export const chartContainerStyle = {
   padding: 10,
   marginBottom: 12,
   boxSizing: "border-box",
-  margin: "0 auto 12px auto", // CENTER THE CHART
 };

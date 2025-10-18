@@ -574,9 +574,10 @@ const ReportDashboard = () => {
             </div>
           )}
         </div>
-
+         <div className="report-content-wrapper"> 
         {hasData ? (
           <>
+           <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}></div>
             {(() => {
               switch (selectedReport.id) {
                 case "site-monthly-active-users":
@@ -609,6 +610,7 @@ const ReportDashboard = () => {
             <p className="report-placeholder-note">Full report visualization coming soon...</p>
           </div>
         )}
+      </div>
       </div>
     );
   };
