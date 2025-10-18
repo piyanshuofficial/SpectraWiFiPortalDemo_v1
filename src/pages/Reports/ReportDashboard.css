@@ -479,6 +479,8 @@
   margin-top: 2rem;
   min-height: 18.75rem;
   border: 0.0625rem solid #e8eaf3;
+  position: relative; /* NOT absolute */
+  overflow: visible; /* NOT hidden */
 }
 
 .no-report-selected,

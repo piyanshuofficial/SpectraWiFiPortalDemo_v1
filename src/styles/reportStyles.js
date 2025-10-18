@@ -37,13 +37,16 @@ export const tableStyles = {
   }),
 };
 
+
 export const chartContainerStyle = {
   width: "100%",
-  height: 200, // Reduced height to match reference
+  maxWidth: "800px", //PREVENT OVER-STRETCHING
+  height: 200,
   background: "#fff",
   borderRadius: 6,
   boxShadow: "0 1px 4px #0001",
-  padding: 10, // Reduced padding
+  padding: 10,
   marginBottom: 12,
   boxSizing: "border-box",
+  margin: "0 auto 12px auto", // CENTER THE CHART
 };

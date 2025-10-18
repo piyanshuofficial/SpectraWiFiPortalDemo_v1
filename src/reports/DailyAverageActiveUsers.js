@@ -26,20 +26,44 @@ const DailyAverageActiveUsers = ({ data }) => {
   };
 
   const chartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: { position: "top", labels: { font: { size: 14 } } },
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: { position: "top", labels: { font: { size: 14 } } },
+  },
+  scales: {
+    x: { 
+      title: { display: true, text: "Date" }, 
+      ticks: { 
+        maxRotation: 45, 
+        minRotation: 45 
+      },
+      //  TO PREVENT OVER-SPACING:
+      offset: true,
+      grid: {
+        offset: true
+      }
     },
-    scales: {
-      x: { title: { display: true, text: "Date" }, ticks: { maxRotation: 45, minRotation: 45 } },
-      y: { title: { display: true, text: "Users" }, beginAtZero: true },
+    y: { 
+      title: { display: true, text: "Users" }, 
+      beginAtZero: true 
     },
-  };
+  },
+  // TO IMPROVE POINT VISIBILITY:
+  elements: {
+    line: {
+      tension: 0.4
+    },
+    point: {
+      radius: 6,        // Larger points
+      hoverRadius: 8,   // Even larger on hover
+      hitRadius: 10     // Easier to click
+    }
+  }
+};
 
   return (
     <div style={{ padding: 20 }}>
-      <h2 style={{ textAlign: "center" }}>Daily Average Active Users</h2>
       <ChartContainer>
         <Line data={chartData} options={chartOptions} />
       </ChartContainer>

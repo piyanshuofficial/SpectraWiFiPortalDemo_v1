@@ -30,7 +30,6 @@ const AlertsSummaryReport = ({ data }) => {
 
   return (
     <div style={{ padding: 20 }}>
-      <h2 style={{ textAlign: "center" }}>Alerts Summary</h2>
       <ChartContainer>
         <Pie data={chartData} options={chartOptions} />
       </ChartContainer>

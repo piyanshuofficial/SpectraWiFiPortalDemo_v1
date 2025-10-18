@@ -3,8 +3,11 @@
 import React from "react";
 import { chartContainerStyle } from "../../styles/reportStyles";
 
-const ChartContainer = ({ children }) => (
-  <div style={chartContainerStyle}>
+const ChartContainer = ({ children, minHeight = 200 }) => (
+  <div style={{
+    ...chartContainerStyle,
+    minHeight: minHeight
+  }}>
     {children}
   </div>
 );

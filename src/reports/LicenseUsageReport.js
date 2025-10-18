@@ -35,7 +35,6 @@ const LicenseUsageReport = ({ data }) => {
 
   return (
     <div style={{ padding: 20 }}>
-      <h2 style={{ textAlign: "center" }}>License Usage by Type</h2>
       <ChartContainer>
         <Bar data={chartData} options={chartOptions} />
       </ChartContainer>

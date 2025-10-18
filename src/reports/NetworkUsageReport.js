@@ -37,7 +37,6 @@ const NetworkUsageReport = ({ data }) => {
 
   return (
     <div style={{ padding: 20 }}>
-      <h2 style={{ textAlign: "center" }}>Network Usage (GB)</h2>
       <ChartContainer>
         <Line data={chartData} options={chartOptions} />
       </ChartContainer>

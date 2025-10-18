@@ -41,7 +41,6 @@ const PolicyWiseMonthlyAverageActiveUsers = ({ data }) => {
 
   return (
     <div style={{ padding: 20 }}>
-      <h2 style={{ textAlign: "center" }}>Policy-wise Monthly Average Active Users</h2>
       <ChartContainer>
         <Bar data={chartData} options={chartOptions} />
       </ChartContainer>
