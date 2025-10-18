@@ -8,15 +8,16 @@
 }
 
 /* ============================================
-   PINNED SHORTCUTS SECTION
+   PINNED SHORTCUTS SECTION - REDESIGNED
    ============================================ */
 
 .pinned-shortcuts-section {
   background: #fff;
   border-radius: var(--radius-lg);
-  box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.06);
+  box-shadow: 0 0.0625rem 0.375rem rgba(0, 0, 0, 0.06);
   padding: 1.25rem;
   margin-bottom: 1.5rem;
+  border: 0.0625rem solid #e8eaf3;
 }
 
 .shortcuts-header {
@@ -24,12 +25,14 @@
   align-items: center;
   gap: 0.5rem;
   margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 0.125rem solid #f0f4ff;
 }
 
 .shortcuts-title {
   font-size: var(--font-xl);
   font-weight: 700;
-  color: #193a6b;
+  color: #153874;
   margin: 0;
   display: flex;
   align-items: center;
@@ -43,8 +46,11 @@
 
 .shortcuts-count {
   font-size: var(--font-sm);
-  color: #666;
+  color: #6b7c93;
   font-weight: 500;
+  background: #f0f4ff;
+  padding: 0.125rem 0.5rem;
+  border-radius: var(--radius-base);
 }
 
 .shortcuts-grid {
@@ -53,31 +59,43 @@
   gap: 0.875rem;
 }
 
+/* Report-specific color styling using data attributes */
 .shortcut-card {
   position: relative;
-  background: linear-gradient(135deg, #3f80ff 0%, #5b8ac3 100%);
-  border: none;
+  border: 0.125rem solid transparent;
   border-radius: var(--radius-md);
   padding: 1rem;
   color: #fff;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
-  box-shadow: 0 0.125rem 0.375rem rgba(63, 128, 255, 0.2);
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.5rem;
   min-height: 5.625rem;
+  overflow: hidden;
+}
+
+/* Default gradient - will be overridden by inline styles for each report */
+.shortcut-card {
+  background: linear-gradient(135deg, #4AA7A9 0%, #42C1B5 100%);
+  box-shadow: 0 0.125rem 0.375rem rgba(74, 167, 169, 0.25);
 }
 
 .shortcut-card:hover {
-  transform: translateY(-0.125rem);
-  box-shadow: 0 0.25rem 0.75rem rgba(63, 128, 255, 0.35);
+  transform: translateY(-0.1875rem) scale(1.02);
+  box-shadow: 0 0.375rem 1rem rgba(74, 167, 169, 0.35);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.shortcut-card:active {
+  transform: translateY(-0.0625rem) scale(1.01);
 }
 
 .shortcut-icon {
   font-size: var(--font-3xl);
-  opacity: 0.9;
+  opacity: 0.95;
+  filter: drop-shadow(0 0.125rem 0.25rem rgba(0, 0, 0, 0.15));
 }
 
 .shortcut-name {
@@ -85,13 +103,14 @@
   font-weight: 600;
   text-align: center;
   line-height: var(--line-height-tight);
+  text-shadow: 0 0.0625rem 0.1875rem rgba(0, 0, 0, 0.2);
 }
 
 .unpin-btn {
   position: absolute;
   top: 0.375rem;
   right: 0.375rem;
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(0, 0, 0, 0.25);
   border: none;
   border-radius: 50%;
   width: 1.5rem;
@@ -102,38 +121,44 @@
   cursor: pointer;
   color: #fff;
   font-size: var(--font-xs);
-  transition: background 0.2s;
+  transition: background 0.2s, transform 0.2s;
+  backdrop-filter: blur(0.25rem);
 }
 
 .unpin-btn:hover {
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.45);
+  transform: scale(1.15);
 }
 
 .no-shortcuts {
   grid-column: 1 / -1;
-  padding: 2rem;
+  padding: 2.5rem 2rem;
   text-align: center;
-  color: #666;
+  color: #6b7c93;
   font-style: italic;
   font-size: var(--font-base);
+  background: #f8faff;
+  border-radius: var(--radius-md);
+  border: 0.125rem dashed #cfd7ea;
 }
 
 /* ============================================
-   RECENTLY VIEWED SECTION
+   RECENTLY VIEWED SECTION - REDESIGNED
    ============================================ */
 
 .recent-reports-section {
   background: #fff;
   border-radius: var(--radius-lg);
-  box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.06);
+  box-shadow: 0 0.0625rem 0.375rem rgba(0, 0, 0, 0.06);
   padding: 1rem 1.25rem;
   margin-bottom: 1.5rem;
+  border: 0.0625rem solid #e8eaf3;
 }
 
 .recent-title {
   font-size: var(--font-lg);
   font-weight: 700;
-  color: #193a6b;
+  color: #153874;
   margin: 0 0 0.75rem 0;
   display: flex;
   align-items: center;
@@ -141,7 +166,7 @@
 }
 
 .recent-icon {
-  color: #5b8ac3;
+  color: #6b7c93;
   font-size: var(--font-base);
 }
 
@@ -152,25 +177,28 @@
 }
 
 .recent-item {
-  background: #f0f4ff;
-  border: 0.0625rem solid #cfd7ea;
+  background: #f8faff;
+  border: 0.0625rem solid #e1e8f5;
   border-radius: var(--radius-base);
   padding: 0.5rem 0.875rem;
   font-size: var(--font-sm);
   font-weight: 600;
-  color: #193a6b;
+  color: #153874;
   cursor: pointer;
-  transition: background 0.2s, border-color 0.2s;
+  transition: all 0.2s;
   white-space: nowrap;
 }
 
 .recent-item:hover {
-  background: #dbe5ff;
-  border-color: #5b8ac3;
+  background: #e3f1ff;
+  border-color: #004aad;
+  color: #004aad;
+  transform: translateY(-0.0625rem);
+  box-shadow: 0 0.125rem 0.375rem rgba(0, 74, 173, 0.15);
 }
 
 /* ============================================
-   SEARCH SECTION
+   SEARCH SECTION - REDESIGNED
    ============================================ */
 
 .search-section {
@@ -190,14 +218,20 @@
   border-radius: var(--radius-lg);
   border: 0.125rem solid #cfd7ea;
   background: #fff;
-  box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.06);
-  transition: border-color 0.2s, box-shadow 0.2s;
+  box-shadow: 0 0.0625rem 0.375rem rgba(0, 0, 0, 0.06);
+  transition: all 0.2s;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
 }
 
 .search-input:focus {
   outline: none;
-  border-color: #3f80ff;
-  box-shadow: 0 0.125rem 0.75rem rgba(63, 128, 255, 0.2);
+  border-color: #004aad;
+  box-shadow: 0 0.125rem 0.75rem rgba(0, 74, 173, 0.15);
+  background: #fff;
+}
+
+.search-input::placeholder {
+  color: #8a9aae;
 }
 
 .search-icon {
@@ -205,7 +239,7 @@
   left: 1rem;
   top: 50%;
   transform: translateY(-50%);
-  color: #666;
+  color: #6b7c93;
   font-size: var(--font-lg);
   pointer-events: none;
 }
@@ -217,27 +251,31 @@
   transform: translateY(-50%);
   background: transparent;
   border: none;
-  color: #999;
+  color: #8a9aae;
   font-size: var(--font-lg);
   cursor: pointer;
   padding: 0.25rem;
-  transition: color 0.2s;
+  transition: color 0.2s, transform 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .search-clear-btn:hover {
-  color: #333;
+  color: #153874;
+  transform: translateY(-50%) scale(1.15);
 }
 
 .search-results-info {
   text-align: center;
   margin-top: 0.75rem;
   font-size: var(--font-base);
-  color: #666;
+  color: #6b7c93;
   font-weight: 500;
 }
 
 /* ============================================
-   CATEGORY TABS
+   CATEGORY TABS - REDESIGNED
    ============================================ */
 
 .category-tabs {
@@ -248,57 +286,63 @@
   background: #fff;
   padding: 1rem;
   border-radius: var(--radius-lg);
-  box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.06);
+  box-shadow: 0 0.0625rem 0.375rem rgba(0, 0, 0, 0.06);
+  border: 0.0625rem solid #e8eaf3;
 }
 
 .tab {
   padding: 0.625rem 1.25rem;
   font-size: var(--font-base);
   font-weight: 600;
-  border: 0.125rem solid #cfd7ea;
+  border: 0.125rem solid #e1e8f5;
   border-radius: var(--radius-base);
   background: #f8faff;
-  color: #193a6b;
+  color: #153874;
   cursor: pointer;
   transition: all 0.2s;
   white-space: nowrap;
 }
 
 .tab:hover {
-  background: #dbe5ff;
-  border-color: #5b8ac3;
+  background: #e3f1ff;
+  border-color: #004aad;
+  color: #004aad;
+  transform: translateY(-0.0625rem);
 }
 
 .tab-active {
-  background: #3f80ff;
+  background: #004aad;
   color: #fff;
-  border-color: #3f80ff;
+  border-color: #004aad;
+  box-shadow: 0 0.125rem 0.5rem rgba(0, 74, 173, 0.25);
 }
 
 .tab-active:hover {
-  background: #2d6de6;
-  border-color: #2d6de6;
+  background: #003a90;
+  border-color: #003a90;
+  transform: translateY(-0.0625rem);
 }
 
 /* ============================================
-   SUBCATEGORY DROPDOWN
+   SUBCATEGORY DROPDOWN - REDESIGNED
    ============================================ */
 
 .subcategory-section {
   background: #fff;
   padding: 1rem 1.25rem;
   border-radius: var(--radius-lg);
-  box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.06);
+  box-shadow: 0 0.0625rem 0.375rem rgba(0, 0, 0, 0.06);
   margin-bottom: 1.25rem;
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  border: 0.0625rem solid #e8eaf3;
 }
 
 .subcategory-label {
   font-size: var(--font-base);
   font-weight: 600;
-  color: #193a6b;
+  color: #153874;
   white-space: nowrap;
 }
 
@@ -308,19 +352,23 @@
   padding: 0.5rem 0.875rem;
   font-size: var(--font-base);
   border-radius: var(--radius-base);
-  border: 0.0625rem solid #cfd7ea;
+  border: 0.125rem solid #cfd7ea;
   background: #f8faff;
   cursor: pointer;
-  transition: border-color 0.2s;
+  transition: all 0.2s;
+  color: #153874;
+  font-weight: 500;
 }
 
 .subcategory-select:focus {
   outline: none;
-  border-color: #3f80ff;
+  border-color: #004aad;
+  background: #fff;
+  box-shadow: 0 0.125rem 0.375rem rgba(0, 74, 173, 0.15);
 }
 
 /* ============================================
-   REPORTS GRID
+   REPORTS GRID - REDESIGNED
    ============================================ */
 
 .reports-grid {
@@ -333,17 +381,19 @@
 .report-card {
   background: #fff;
   border-radius: var(--radius-lg);
-  box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.06);
+  box-shadow: 0 0.0625rem 0.375rem rgba(0, 0, 0, 0.06);
   padding: 1.25rem;
-  transition: box-shadow 0.2s, transform 0.2s;
+  transition: all 0.2s;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  border: 0.0625rem solid #e8eaf3;
 }
 
 .report-card:hover {
-  box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.12);
-  transform: translateY(-0.125rem);
+  box-shadow: 0 0.25rem 1rem rgba(0, 74, 173, 0.12);
+  transform: translateY(-0.1875rem);
+  border-color: #cfd7ea;
 }
 
 .report-card-header {
@@ -356,7 +406,7 @@
 .report-card-title {
   font-size: var(--font-lg);
   font-weight: 700;
-  color: #193a6b;
+  color: #153874;
   margin: 0;
   line-height: var(--line-height-tight);
   flex: 1;
@@ -365,16 +415,17 @@
 .pin-btn {
   background: transparent;
   border: none;
-  color: #ccc;
+  color: #d1d8e3;
   font-size: var(--font-lg);
   cursor: pointer;
   padding: 0.25rem;
-  transition: color 0.2s;
+  transition: all 0.2s;
   flex-shrink: 0;
 }
 
 .pin-btn:hover {
   color: #ffc107;
+  transform: scale(1.15);
 }
 
 .pin-btn.pinned {
@@ -398,22 +449,24 @@
 
 .report-category {
   background: #e3f1ff;
-  color: #0053ba;
+  color: #004aad;
+  border: 0.0625rem solid #cfd7ea;
 }
 
 .report-subcategory {
   background: #f0f4ff;
   color: #5b8ac3;
+  border: 0.0625rem solid #e1e8f5;
 }
 
 .meta-separator {
-  color: #ccc;
+  color: #d1d8e3;
   font-weight: 300;
 }
 
 .report-card-description {
   font-size: var(--font-sm);
-  color: #555;
+  color: #6b7c93;
   line-height: var(--line-height-relaxed);
   margin: 0;
   flex: 1;
@@ -424,6 +477,8 @@
   gap: 0.5rem;
   flex-wrap: wrap;
   margin-top: auto;
+  padding-top: 0.5rem;
+  border-top: 0.0625rem solid #f0f4ff;
 }
 
 .report-card-actions .btn {
@@ -437,35 +492,37 @@
   grid-column: 1 / -1;
   text-align: center;
   padding: 3rem 2rem;
-  background: #fff;
+  background: #f8faff;
   border-radius: var(--radius-lg);
-  box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.06);
+  box-shadow: 0 0.0625rem 0.375rem rgba(0, 0, 0, 0.06);
+  border: 0.125rem dashed #cfd7ea;
 }
 
 .no-reports p {
   font-size: var(--font-lg);
-  color: #666;
+  color: #6b7c93;
   margin-bottom: 1rem;
 }
 
 /* ============================================
-   REPORT DISPLAY SECTION
+   REPORT DISPLAY SECTION - REDESIGNED
    ============================================ */
 
 .report-display-section {
   background: #fff;
   border-radius: var(--radius-lg);
-  box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.06);
+  box-shadow: 0 0.0625rem 0.375rem rgba(0, 0, 0, 0.06);
   padding: 2rem;
   margin-top: 2rem;
   min-height: 18.75rem;
+  border: 0.0625rem solid #e8eaf3;
 }
 
 .no-report-selected,
 .report-placeholder {
   text-align: center;
   padding: 3rem 2rem;
-  color: #666;
+  color: #6b7c93;
 }
 
 .no-report-selected p {
@@ -475,20 +532,21 @@
 
 .report-placeholder h3 {
   font-size: var(--font-3xl);
-  color: #193a6b;
+  color: #153874;
   margin-bottom: 1rem;
 }
 
 .report-placeholder p {
   font-size: var(--font-base);
-  color: #555;
+  color: #6b7c93;
   margin-bottom: 0.5rem;
 }
 
 .report-placeholder-note {
   font-style: italic;
-  color: #999;
+  color: #8a9aae;
   margin-top: 1.5rem;
+  font-size: var(--font-sm);
 }
 
 /* ============================================
@@ -502,5 +560,21 @@
 
   .reports-grid {
     grid-template-columns: repeat(auto-fill, minmax(16.25rem, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .category-tabs {
+    padding: 0.75rem;
+  }
+
+  .tab {
+    font-size: var(--font-sm);
+    padding: 0.5rem 1rem;
+  }
+
+  .search-input {
+    font-size: var(--font-base);
+    padding: 0.75rem 0.875rem 0.75rem 2.75rem;
   }
 }

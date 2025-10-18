@@ -243,3 +243,33 @@ export default {
   withOpacity,
   getReportBranding,
 };
+
+
+/**
+ * Brand colors for pinned report cards
+ * Used for random color assignment with no consecutive duplicates
+ */
+export const PINNED_REPORT_BRAND_COLORS = [
+  "#9465AA",  // PURPLE
+  "#5B879F",  // INDIGO  
+  "#4AA7A9",  // AQUA
+  "#42C1B5",  // MINT
+];
+
+/**
+ * Get a random brand color different from the previous one
+ * @param {string} previousColor - The previous color to avoid
+ * @returns {string} A random brand color
+ */
+export const getRandomBrandColor = (previousColor = null) => {
+  let availableColors = [...PINNED_REPORT_BRAND_COLORS];
+  
+  // Remove the previous color to avoid consecutive duplicates
+  if (previousColor) {
+    availableColors = availableColors.filter(color => color !== previousColor);
+  }
+  
+  // Return random color from available options
+  const randomIndex = Math.floor(Math.random() * availableColors.length);
+  return availableColors[randomIndex];
+};

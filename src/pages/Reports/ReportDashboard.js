@@ -24,7 +24,7 @@ import { exportReportPDF } from "../../utils/exportReportPDF";
 import { getStandardChartOptions } from "../../utils/commonChartOptions";
 import { EXPORT_CANVAS_SIZES } from "../../utils/exportConstants";
 
-// Import report components (existing)
+// Import report components
 import SiteMonthlyActiveUsers from "../../reports/SiteMonthlyActiveUsers";
 import MonthlyDataUsageSummary from "../../reports/MonthlyDataUsageSummary";
 import DailyAverageActiveUsers from "../../reports/DailyAverageActiveUsers";
@@ -37,12 +37,67 @@ const MAX_PINNED_REPORTS = 6;
 const MAX_RECENT_REPORTS = 5;
 const LOCAL_STORAGE_KEYS = {
   PINNED: 'reportDashboard_pinnedReports',
-  RECENT: 'reportDashboard_recentReports'
+  RECENT: 'reportDashboard_recentReports',
+  COLORS: 'reportDashboard_pinnedColors'
+};
+
+// ============================================
+// BRAND COLORS FOR PINNED REPORTS
+// ============================================
+const PINNED_REPORT_BRAND_COLORS = [
+  "#9465AA",  // PURPLE
+  "#5B879F",  // INDIGO  
+  "#4AA7A9",  // AQUA
+  "#42C1B5",  // MINT
+];
+
+/**
+ * Get a random brand color different from the previous one
+ */
+const getRandomBrandColor = (previousColor = null) => {
+  let availableColors = [...PINNED_REPORT_BRAND_COLORS];
+  
+  if (previousColor) {
+    availableColors = availableColors.filter(color => color !== previousColor);
+  }
+  
+  if (availableColors.length === 0) {
+    availableColors = [...PINNED_REPORT_BRAND_COLORS];
+  }
+  
+  const randomIndex = Math.floor(Math.random() * availableColors.length);
+  return availableColors[randomIndex];
+};
+
+/**
+ * Helper: Convert hex to rgba
+ */
+const hexToRgba = (hex, alpha) => {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
+
+/**
+ * Helper: Adjust color brightness
+ */
+const adjustBrightness = (hex, percent) => {
+  const num = parseInt(hex.replace("#", ""), 16);
+  const amt = Math.round(2.55 * percent);
+  const R = Math.max(0, Math.min(255, (num >> 16) + amt));
+  const G = Math.max(0, Math.min(255, ((num >> 8) & 0x00FF) + amt));
+  const B = Math.max(0, Math.min(255, (num & 0x0000FF) + amt));
+  return "#" + (
+    0x1000000 +
+    R * 0x10000 +
+    G * 0x100 +
+    B
+  ).toString(16).slice(1);
 };
 
 /**
  * Main ReportDashboard Component
- * Features: Tabs, Search, Pinned Shortcuts, Recent Views, Card Grid
  */
 const ReportDashboard = () => {
   const { currentUser } = useAuth();
@@ -59,6 +114,7 @@ const ReportDashboard = () => {
   const [exportingCSV, setExportingCSV] = useState(false);
   const [exportingPDF, setExportingPDF] = useState(false);
   const [exportingReportId, setExportingReportId] = useState(null);
+  const [pinnedColors, setPinnedColors] = useState({});
 
   const searchInputRef = useRef(null);
   const categories = useMemo(() => getCategories(), []);
@@ -68,17 +124,60 @@ const ReportDashboard = () => {
   // ============================================
 
   useEffect(() => {
-    // Load pinned and recent reports from localStorage
     try {
       const savedPinned = localStorage.getItem(LOCAL_STORAGE_KEYS.PINNED);
       const savedRecent = localStorage.getItem(LOCAL_STORAGE_KEYS.RECENT);
+      const savedColors = localStorage.getItem(LOCAL_STORAGE_KEYS.COLORS);
+      
+      let pinnedIds = [];
       
       if (savedPinned) {
-        setPinnedReports(JSON.parse(savedPinned));
+        pinnedIds = JSON.parse(savedPinned);
       } else {
-        // Default to common reports
         const commonReports = getCommonReports().slice(0, MAX_PINNED_REPORTS);
-        setPinnedReports(commonReports.map(r => r.id));
+        pinnedIds = commonReports.map(r => r.id);
+      }
+      
+      setPinnedReports(pinnedIds);
+      
+      // Initialize colors
+      if (savedColors) {
+        const loadedColors = JSON.parse(savedColors);
+        // Verify all pinned reports have colors
+        const missingColors = pinnedIds.filter(id => !loadedColors[id]);
+        
+        if (missingColors.length > 0) {
+          const updatedColors = { ...loadedColors };
+          let prevColor = null;
+          
+          // Get the last color from existing assignments
+          const existingColors = Object.values(loadedColors);
+          if (existingColors.length > 0) {
+            prevColor = existingColors[existingColors.length - 1];
+          }
+          
+          missingColors.forEach(id => {
+            const newColor = getRandomBrandColor(prevColor);
+            updatedColors[id] = newColor;
+            prevColor = newColor;
+          });
+          
+          setPinnedColors(updatedColors);
+        } else {
+          setPinnedColors(loadedColors);
+        }
+      } else {
+        // Generate initial colors
+        const initialColors = {};
+        let previousColor = null;
+        
+        pinnedIds.forEach(reportId => {
+          const color = getRandomBrandColor(previousColor);
+          initialColors[reportId] = color;
+          previousColor = color;
+        });
+        
+        setPinnedColors(initialColors);
       }
       
       if (savedRecent) {
@@ -101,6 +200,13 @@ const ReportDashboard = () => {
     }
   }, [pinnedReports]);
 
+  // Save color assignments to localStorage
+  useEffect(() => {
+    if (Object.keys(pinnedColors).length > 0) {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.COLORS, JSON.stringify(pinnedColors));
+    }
+  }, [pinnedColors]);
+
   // Save recent reports to localStorage
   useEffect(() => {
     if (recentReports.length > 0) {
@@ -115,11 +221,9 @@ const ReportDashboard = () => {
   const filteredReports = useMemo(() => {
     let reports = enhancedSampleReports;
 
-    // Apply search filter (searches across all categories)
     if (searchTerm.trim()) {
       reports = searchReports(searchTerm);
     } else {
-      // Apply category and subcategory filters only when not searching
       if (activeCategory) {
         reports = getReportsByCategory(activeCategory, activeSubcategory || null);
       }
@@ -146,18 +250,37 @@ const ReportDashboard = () => {
   }, [recentReports]);
 
   // ============================================
-  // PINNING LOGIC
+  // PINNING LOGIC WITH COLOR MANAGEMENT
   // ============================================
 
   const togglePin = useCallback((reportId) => {
     setPinnedReports(prev => {
       if (prev.includes(reportId)) {
+        // Unpinning - remove color assignment
+        setPinnedColors(prevColors => {
+          const newColors = { ...prevColors };
+          delete newColors[reportId];
+          return newColors;
+        });
         return prev.filter(id => id !== reportId);
       } else {
         if (prev.length >= MAX_PINNED_REPORTS) {
           toast.warning(`Maximum ${MAX_PINNED_REPORTS} pinned reports allowed`);
           return prev;
         }
+        
+        // Pinning - assign new color different from the last pinned report
+        setPinnedColors(prevColors => {
+          const lastPinnedId = prev[prev.length - 1];
+          const lastColor = prevColors[lastPinnedId] || null;
+          const newColor = getRandomBrandColor(lastColor);
+          
+          return {
+            ...prevColors,
+            [reportId]: newColor
+          };
+        });
+        
         return [...prev, reportId];
       }
     });
@@ -187,7 +310,6 @@ const ReportDashboard = () => {
     setSelectedReport(report);
     addToRecent(report.id);
     
-    // Scroll to report display
     setTimeout(() => {
       const displaySection = document.getElementById('report-display-section');
       if (displaySection) {
@@ -312,7 +434,6 @@ const ReportDashboard = () => {
 
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
-    // Clear subcategory when searching
     if (e.target.value.trim()) {
       setActiveSubcategory('');
     }
@@ -390,29 +511,45 @@ const ReportDashboard = () => {
               <p>No pinned reports. Click the star icon on any report to pin it here.</p>
             </div>
           ) : (
-            pinnedReportObjects.map(report => (
-              <button
-                key={report.id}
-                className="shortcut-card"
-                onClick={() => handleViewReport(report)}
-                title={report.description}
-              >
-                <div className="shortcut-icon">
-                  <FaEye />
-                </div>
-                <span className="shortcut-name">{report.name}</span>
+            pinnedReportObjects.map(report => {
+              const color = pinnedColors[report.id] || PINNED_REPORT_BRAND_COLORS[0];
+              const darkerColor = adjustBrightness(color, -15);
+              
+              return (
                 <button
-                  className="unpin-btn"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    togglePin(report.id);
+                  key={report.id}
+                  className="shortcut-card"
+                  onClick={() => handleViewReport(report)}
+                  title={report.description}
+                  style={{
+                    background: `linear-gradient(135deg, ${color} 0%, ${darkerColor} 100%)`,
+                    boxShadow: `0 0.125rem 0.375rem ${hexToRgba(color, 0.25)}`
                   }}
-                  title="Unpin report"
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.boxShadow = `0 0.375rem 1rem ${hexToRgba(color, 0.35)}`;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.boxShadow = `0 0.125rem 0.375rem ${hexToRgba(color, 0.25)}`;
+                  }}
                 >
-                  <FaTimes />
+                  <div className="shortcut-icon">
+                    <FaEye />
+                  </div>
+                  <span className="shortcut-name">{report.name}</span>
+                  <button
+                    className="unpin-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      togglePin(report.id);
+                    }}
+                    title="Unpin report"
+                    aria-label="Unpin report"
+                  >
+                    <FaTimes />
+                  </button>
                 </button>
-              </button>
-            ))
+              );
+            })
           )}
         </div>
       </div>
