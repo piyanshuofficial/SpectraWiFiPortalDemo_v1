@@ -10,6 +10,12 @@ import { FaEye, FaFileCsv, FaFilePdf, FaStar, FaRegStar, FaTimes, FaClock, FaSea
 import { toast } from "react-toastify";
 import "./ReportDashboard.css";
 
+// ✅ IMPORT COLOR UTILITIES FROM CONSTANTS
+import { 
+  PINNED_REPORT_BRAND_COLORS, 
+  getRandomBrandColor 
+} from "../../constants/colorConstants";
+
 // Import enhanced report data and utilities
 import enhancedSampleReports, { 
   getCategories, 
@@ -41,33 +47,9 @@ const LOCAL_STORAGE_KEYS = {
   COLORS: 'reportDashboard_pinnedColors'
 };
 
-// ============================================
-// BRAND COLORS FOR PINNED REPORTS
-// ============================================
-const PINNED_REPORT_BRAND_COLORS = [
-  "#9465AA",  // PURPLE
-  "#5B879F",  // INDIGO  
-  "#4AA7A9",  // AQUA
-  "#42C1B5",  // MINT
-];
-
-/**
- * Get a random brand color different from the previous one
- */
-const getRandomBrandColor = (previousColor = null) => {
-  let availableColors = [...PINNED_REPORT_BRAND_COLORS];
-  
-  if (previousColor) {
-    availableColors = availableColors.filter(color => color !== previousColor);
-  }
-  
-  if (availableColors.length === 0) {
-    availableColors = [...PINNED_REPORT_BRAND_COLORS];
-  }
-  
-  const randomIndex = Math.floor(Math.random() * availableColors.length);
-  return availableColors[randomIndex];
-};
+// ❌ REMOVE LOCAL DEFINITIONS - USE IMPORTS INSTEAD
+// const PINNED_REPORT_BRAND_COLORS = [...] 
+// const getRandomBrandColor = (...) => {...}
 
 /**
  * Helper: Convert hex to rgba
@@ -119,6 +101,12 @@ const ReportDashboard = () => {
   const searchInputRef = useRef(null);
   const categories = useMemo(() => getCategories(), []);
 
+  // ✅ ADD DEBUG LOGGING
+  useEffect(() => {
+    console.log('🎨 Available Brand Colors:', PINNED_REPORT_BRAND_COLORS);
+    console.log('📌 Current Pinned Colors State:', pinnedColors);
+  }, [pinnedColors]);
+
   // ============================================
   // INITIALIZATION & PERSISTENCE
   // ============================================
@@ -138,15 +126,19 @@ const ReportDashboard = () => {
         pinnedIds = commonReports.map(r => r.id);
       }
       
+      console.log('📋 Pinned Report IDs:', pinnedIds);
       setPinnedReports(pinnedIds);
       
       // Initialize colors
       if (savedColors) {
         const loadedColors = JSON.parse(savedColors);
+        console.log('💾 Loaded Colors from Storage:', loadedColors);
+        
         // Verify all pinned reports have colors
         const missingColors = pinnedIds.filter(id => !loadedColors[id]);
         
         if (missingColors.length > 0) {
+          console.log('⚠️ Missing colors for reports:', missingColors);
           const updatedColors = { ...loadedColors };
           let prevColor = null;
           
@@ -158,6 +150,7 @@ const ReportDashboard = () => {
           
           missingColors.forEach(id => {
             const newColor = getRandomBrandColor(prevColor);
+            console.log(`🎨 Assigning color to ${id}: ${newColor} (prev: ${prevColor})`);
             updatedColors[id] = newColor;
             prevColor = newColor;
           });
@@ -168,15 +161,18 @@ const ReportDashboard = () => {
         }
       } else {
         // Generate initial colors
+        console.log('🆕 Generating fresh color assignments');
         const initialColors = {};
         let previousColor = null;
         
-        pinnedIds.forEach(reportId => {
+        pinnedIds.forEach((reportId, index) => {
           const color = getRandomBrandColor(previousColor);
+          console.log(`🎨 Report ${index + 1} (${reportId}): ${color} (prev: ${previousColor})`);
           initialColors[reportId] = color;
           previousColor = color;
         });
         
+        console.log('✅ Initial Colors Generated:', initialColors);
         setPinnedColors(initialColors);
       }
       
@@ -184,7 +180,7 @@ const ReportDashboard = () => {
         setRecentReports(JSON.parse(savedRecent));
       }
     } catch (error) {
-      console.error('Error loading saved report preferences:', error);
+      console.error('❌ Error loading saved report preferences:', error);
     }
 
     // Set default active category
@@ -203,6 +199,7 @@ const ReportDashboard = () => {
   // Save color assignments to localStorage
   useEffect(() => {
     if (Object.keys(pinnedColors).length > 0) {
+      console.log('💾 Saving colors to localStorage:', pinnedColors);
       localStorage.setItem(LOCAL_STORAGE_KEYS.COLORS, JSON.stringify(pinnedColors));
     }
   }, [pinnedColors]);
@@ -260,6 +257,7 @@ const ReportDashboard = () => {
         setPinnedColors(prevColors => {
           const newColors = { ...prevColors };
           delete newColors[reportId];
+          console.log(`🗑️ Removed color for ${reportId}`);
           return newColors;
         });
         return prev.filter(id => id !== reportId);
@@ -274,6 +272,8 @@ const ReportDashboard = () => {
           const lastPinnedId = prev[prev.length - 1];
           const lastColor = prevColors[lastPinnedId] || null;
           const newColor = getRandomBrandColor(lastColor);
+          
+          console.log(`📌 Pinning ${reportId}: ${newColor} (prev: ${lastColor})`);
           
           return {
             ...prevColors,
@@ -490,6 +490,7 @@ const ReportDashboard = () => {
   // ============================================
 
   return (
+
     <div className="report-dashboard-container" role="region" aria-label="Reports Dashboard">
       <LoadingOverlay 
         active={isLoading('export') || exportingCSV || exportingPDF} 
@@ -511,9 +512,12 @@ const ReportDashboard = () => {
               <p>No pinned reports. Click the star icon on any report to pin it here.</p>
             </div>
           ) : (
-            pinnedReportObjects.map(report => {
+            pinnedReportObjects.map((report, index) => {
               const color = pinnedColors[report.id] || PINNED_REPORT_BRAND_COLORS[0];
               const darkerColor = adjustBrightness(color, -15);
+              
+              // ✅ DEBUG LOG for each card
+              console.log(`🎴 Card ${index + 1} - ${report.name}: ${color}`);
               
               return (
                 <button
@@ -523,7 +527,8 @@ const ReportDashboard = () => {
                   title={report.description}
                   style={{
                     background: `linear-gradient(135deg, ${color} 0%, ${darkerColor} 100%)`,
-                    boxShadow: `0 0.125rem 0.375rem ${hexToRgba(color, 0.25)}`
+                    boxShadow: `0 0.125rem 0.375rem ${hexToRgba(color, 0.25)}`,
+                    border: 'none'
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.boxShadow = `0 0.375rem 1rem ${hexToRgba(color, 0.35)}`;
@@ -554,7 +559,9 @@ const ReportDashboard = () => {
         </div>
       </div>
 
-      {/* Recently Viewed */}
+      {/* Rest of the component remains the same... */}
+      {/* Recently Viewed, Search, Categories, Reports Grid, Display Section */}
+      
       {recentReportObjects.length > 0 && (
         <div className="recent-reports-section">
           <h3 className="recent-title">
@@ -575,7 +582,6 @@ const ReportDashboard = () => {
         </div>
       )}
 
-      {/* Search Bar */}
       <div className="search-section">
         <div className="search-input-wrapper">
           <FaSearch className="search-icon" />
@@ -605,7 +611,6 @@ const ReportDashboard = () => {
         )}
       </div>
 
-      {/* Category Tabs */}
       {!searchTerm && (
         <div className="category-tabs">
           {categories.map(category => (
@@ -623,7 +628,6 @@ const ReportDashboard = () => {
         </div>
       )}
 
-      {/* Subcategory Dropdown */}
       {!searchTerm && activeCategory && subcategories.length > 0 && (
         <div className="subcategory-section">
           <label htmlFor="subcategory-select" className="subcategory-label">
@@ -643,7 +647,6 @@ const ReportDashboard = () => {
         </div>
       )}
 
-      {/* Report Cards Grid */}
       <div className="reports-grid">
         {filteredReports.length === 0 ? (
           <div className="no-reports">
@@ -725,7 +728,6 @@ const ReportDashboard = () => {
         )}
       </div>
 
-      {/* Report Display Section */}
       <div id="report-display-section" className="report-display-section">
         {renderReportDetail()}
       </div>
