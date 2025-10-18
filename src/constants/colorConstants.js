@@ -1,13 +1,5 @@
 // src/constants/colorConstants.js
 
-/**
- * Color constants for consistent theming
- * All colors defined in one place
- */
-
-// ============================================
-// PRIMARY COLORS
-// ============================================
 export const PRIMARY_COLORS = {
   MAIN: "#004aad",
   DARK: "#003a90",
@@ -17,9 +9,6 @@ export const PRIMARY_COLORS = {
   ACCENT: "#68d5ff",
 };
 
-// ============================================
-// SUPPORTING COLORS (Brand Palette)
-// ============================================
 export const SUPPORTING_COLORS = {
   PURPLE: "#9465AA",
   INDIGO: "#5B879F",
@@ -27,9 +16,6 @@ export const SUPPORTING_COLORS = {
   MINT: "#42C1B5",
 };
 
-// ============================================
-// REPORT COLOR ASSIGNMENTS
-// ============================================
 export const REPORT_COLOR_ASSIGNMENTS = {
   network_usage: "AQUA",
   license_usage: "INDIGO",
@@ -38,9 +24,6 @@ export const REPORT_COLOR_ASSIGNMENTS = {
   site_activity: "MINT",
 };
 
-// ============================================
-// SEMANTIC COLORS
-// ============================================
 export const SEMANTIC_COLORS = {
   SUCCESS: "#4caf50",
   SUCCESS_DARK: "#388e3c",
@@ -67,9 +50,6 @@ export const SEMANTIC_COLORS = {
   INFO_TEXT: "#0c5460",
 };
 
-// ============================================
-// NEUTRAL COLORS
-// ============================================
 export const NEUTRAL_COLORS = {
   WHITE: "#ffffff",
   BLACK: "#000000",
@@ -96,9 +76,6 @@ export const NEUTRAL_COLORS = {
   TEXT_DISABLED: "#ccc",
 };
 
-// ============================================
-// BACKGROUND COLORS
-// ============================================
 export const BACKGROUND_COLORS = {
   BODY: "#f1f3f7",
   CARD: "#ffffff",
@@ -112,9 +89,6 @@ export const BACKGROUND_COLORS = {
   FOOTER: "#e8e8e8",
 };
 
-// ============================================
-// STATUS BADGE COLORS
-// ============================================
 export const BADGE_COLORS = {
   ACTIVE_BG: "#dff0d8",
   ACTIVE_TEXT: "#3c763d",
@@ -138,9 +112,6 @@ export const BADGE_COLORS = {
   SECONDARY_TEXT: "#383d41",
 };
 
-// ============================================
-// CHART COLORS
-// ============================================
 export const CHART_COLORS = {
   PRIMARY: "#004aad",
   PRIMARY_LIGHT: "rgba(0, 74, 173, 0.2)",
@@ -158,9 +129,6 @@ export const CHART_COLORS = {
   DATASET_3: "rgba(217,83,79,0.6)",
 };
 
-// ============================================
-// POLICY PILL COLORS
-// ============================================
 export const POLICY_COLORS = {
   SPEED_BG: "#eef4ff",
   SPEED_TEXT: "#0053ba",
@@ -172,9 +140,6 @@ export const POLICY_COLORS = {
   DEVICE_TEXT: "#8832b1",
 };
 
-// ============================================
-// SHADOW VALUES
-// ============================================
 export const SHADOWS = {
   SM: "0 1px 4px rgba(0, 0, 0, 0.03)",
   BASE: "0 1px 6px rgba(0, 0, 0, 0.06)",
@@ -188,24 +153,11 @@ export const SHADOWS = {
   DROPDOWN: "0 8px 32px rgba(0, 0, 0, 0.2)",
 };
 
-// ============================================
-// GRADIENT VALUES
-// ============================================
 export const GRADIENTS = {
   HEADER: "linear-gradient(135deg, #2c2c2c 0%, #1a1a1a 100%)",
   PRIMARY: "linear-gradient(135deg, #004aad 0%, #003a90 100%)",
 };
 
-// ============================================
-// HELPER FUNCTIONS
-// ============================================
-
-/**
- * Get color with opacity
- * @param {string} color - Hex color code
- * @param {number} opacity - Opacity value (0-1)
- * @returns {string} RGBA color string
- */
 export const withOpacity = (color, opacity) => {
   const hex = color.replace('#', '');
   const r = parseInt(hex.substring(0, 2), 16);
@@ -214,20 +166,12 @@ export const withOpacity = (color, opacity) => {
   return `rgba(${r}, ${g}, ${b}, ${opacity})`;
 };
 
-/**
- * Get report branding color by report ID
- * @param {string} reportId - Report identifier
- * @returns {object} { color: string, colorKey: string }
- */
 export const getReportBranding = (reportId) => {
   const colorKey = REPORT_COLOR_ASSIGNMENTS[reportId] || "AQUA";
   const color = SUPPORTING_COLORS[colorKey] || SUPPORTING_COLORS.AQUA;
   return { color, colorKey };
 };
 
-// ============================================
-// DEFAULT EXPORT
-// ============================================
 export default {
   PRIMARY_COLORS,
   SUPPORTING_COLORS,
@@ -244,32 +188,20 @@ export default {
   getReportBranding,
 };
 
-
-/**
- * Brand colors for pinned report cards
- * Used for random color assignment with no consecutive duplicates
- */
 export const PINNED_REPORT_BRAND_COLORS = [
-  "#9465AA",  // PURPLE
-  "#5B879F",  // INDIGO  
-  "#4AA7A9",  // AQUA
-  "#42C1B5",  // MINT
+  "#9465AA",
+  "#5B879F",
+  "#4AA7A9",
+  "#42C1B5",
 ];
 
-/**
- * Get a random brand color different from the previous one
- * @param {string} previousColor - The previous color to avoid
- * @returns {string} A random brand color
- */
 export const getRandomBrandColor = (previousColor = null) => {
   let availableColors = [...PINNED_REPORT_BRAND_COLORS];
   
-  // Remove the previous color to avoid consecutive duplicates
   if (previousColor) {
     availableColors = availableColors.filter(color => color !== previousColor);
   }
   
-  // Return random color from available options
   const randomIndex = Math.floor(Math.random() * availableColors.length);
   return availableColors[randomIndex];
 };
