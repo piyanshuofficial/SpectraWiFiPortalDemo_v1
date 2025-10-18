@@ -47,10 +47,6 @@ const LOCAL_STORAGE_KEYS = {
   COLORS: 'reportDashboard_pinnedColors'
 };
 
-// ❌ REMOVE LOCAL DEFINITIONS - USE IMPORTS INSTEAD
-// const PINNED_REPORT_BRAND_COLORS = [...] 
-// const getRandomBrandColor = (...) => {...}
-
 /**
  * Helper: Convert hex to rgba
  */
@@ -101,12 +97,6 @@ const ReportDashboard = () => {
   const searchInputRef = useRef(null);
   const categories = useMemo(() => getCategories(), []);
 
-  // ✅ ADD DEBUG LOGGING
-  useEffect(() => {
-    console.log('🎨 Available Brand Colors:', PINNED_REPORT_BRAND_COLORS);
-    console.log('📌 Current Pinned Colors State:', pinnedColors);
-  }, [pinnedColors]);
-
   // ============================================
   // INITIALIZATION & PERSISTENCE
   // ============================================
@@ -122,35 +112,28 @@ const ReportDashboard = () => {
       if (savedPinned) {
         pinnedIds = JSON.parse(savedPinned);
       } else {
+        // ✅ Default to first 6 common reports
         const commonReports = getCommonReports().slice(0, MAX_PINNED_REPORTS);
         pinnedIds = commonReports.map(r => r.id);
       }
       
-      console.log('📋 Pinned Report IDs:', pinnedIds);
       setPinnedReports(pinnedIds);
       
-      // Initialize colors
+      // ✅ ENHANCED: Initialize colors with guaranteed assignments
       if (savedColors) {
         const loadedColors = JSON.parse(savedColors);
-        console.log('💾 Loaded Colors from Storage:', loadedColors);
         
-        // Verify all pinned reports have colors
+        // Verify ALL pinned reports have colors
         const missingColors = pinnedIds.filter(id => !loadedColors[id]);
         
         if (missingColors.length > 0) {
-          console.log('⚠️ Missing colors for reports:', missingColors);
+          // Assign missing colors
           const updatedColors = { ...loadedColors };
-          let prevColor = null;
-          
-          // Get the last color from existing assignments
           const existingColors = Object.values(loadedColors);
-          if (existingColors.length > 0) {
-            prevColor = existingColors[existingColors.length - 1];
-          }
+          let prevColor = existingColors.length > 0 ? existingColors[existingColors.length - 1] : null;
           
           missingColors.forEach(id => {
             const newColor = getRandomBrandColor(prevColor);
-            console.log(`🎨 Assigning color to ${id}: ${newColor} (prev: ${prevColor})`);
             updatedColors[id] = newColor;
             prevColor = newColor;
           });
@@ -160,19 +143,16 @@ const ReportDashboard = () => {
           setPinnedColors(loadedColors);
         }
       } else {
-        // Generate initial colors
-        console.log('🆕 Generating fresh color assignments');
+        // ✅ Generate fresh color assignments
         const initialColors = {};
         let previousColor = null;
         
-        pinnedIds.forEach((reportId, index) => {
+        pinnedIds.forEach((reportId) => {
           const color = getRandomBrandColor(previousColor);
-          console.log(`🎨 Report ${index + 1} (${reportId}): ${color} (prev: ${previousColor})`);
           initialColors[reportId] = color;
           previousColor = color;
         });
         
-        console.log('✅ Initial Colors Generated:', initialColors);
         setPinnedColors(initialColors);
       }
       
@@ -180,7 +160,7 @@ const ReportDashboard = () => {
         setRecentReports(JSON.parse(savedRecent));
       }
     } catch (error) {
-      console.error('❌ Error loading saved report preferences:', error);
+      console.error('Error loading saved report preferences:', error);
     }
 
     // Set default active category
@@ -199,7 +179,6 @@ const ReportDashboard = () => {
   // Save color assignments to localStorage
   useEffect(() => {
     if (Object.keys(pinnedColors).length > 0) {
-      console.log('💾 Saving colors to localStorage:', pinnedColors);
       localStorage.setItem(LOCAL_STORAGE_KEYS.COLORS, JSON.stringify(pinnedColors));
     }
   }, [pinnedColors]);
@@ -257,7 +236,6 @@ const ReportDashboard = () => {
         setPinnedColors(prevColors => {
           const newColors = { ...prevColors };
           delete newColors[reportId];
-          console.log(`🗑️ Removed color for ${reportId}`);
           return newColors;
         });
         return prev.filter(id => id !== reportId);
@@ -272,8 +250,6 @@ const ReportDashboard = () => {
           const lastPinnedId = prev[prev.length - 1];
           const lastColor = prevColors[lastPinnedId] || null;
           const newColor = getRandomBrandColor(lastColor);
-          
-          console.log(`📌 Pinning ${reportId}: ${newColor} (prev: ${lastColor})`);
           
           return {
             ...prevColors,
@@ -490,7 +466,6 @@ const ReportDashboard = () => {
   // ============================================
 
   return (
-
     <div className="report-dashboard-container" role="region" aria-label="Reports Dashboard">
       <LoadingOverlay 
         active={isLoading('export') || exportingCSV || exportingPDF} 
@@ -512,12 +487,10 @@ const ReportDashboard = () => {
               <p>No pinned reports. Click the star icon on any report to pin it here.</p>
             </div>
           ) : (
-            pinnedReportObjects.map((report, index) => {
+            pinnedReportObjects.map((report) => {
+              // ✅ CRITICAL: Get color from state with fallback
               const color = pinnedColors[report.id] || PINNED_REPORT_BRAND_COLORS[0];
               const darkerColor = adjustBrightness(color, -15);
-              
-              // ✅ DEBUG LOG for each card
-              console.log(`🎴 Card ${index + 1} - ${report.name}: ${color}`);
               
               return (
                 <button
@@ -526,9 +499,11 @@ const ReportDashboard = () => {
                   onClick={() => handleViewReport(report)}
                   title={report.description}
                   style={{
+                    // ✅ CRITICAL: Inline styles provide ALL visual properties
                     background: `linear-gradient(135deg, ${color} 0%, ${darkerColor} 100%)`,
                     boxShadow: `0 0.125rem 0.375rem ${hexToRgba(color, 0.25)}`,
-                    border: 'none'
+                    border: 'none',
+                    color: '#fff'
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.boxShadow = `0 0.375rem 1rem ${hexToRgba(color, 0.35)}`;
@@ -559,9 +534,7 @@ const ReportDashboard = () => {
         </div>
       </div>
 
-      {/* Rest of the component remains the same... */}
-      {/* Recently Viewed, Search, Categories, Reports Grid, Display Section */}
-      
+      {/* Recently Viewed */}
       {recentReportObjects.length > 0 && (
         <div className="recent-reports-section">
           <h3 className="recent-title">
@@ -582,6 +555,7 @@ const ReportDashboard = () => {
         </div>
       )}
 
+      {/* Search Section */}
       <div className="search-section">
         <div className="search-input-wrapper">
           <FaSearch className="search-icon" />
@@ -611,6 +585,7 @@ const ReportDashboard = () => {
         )}
       </div>
 
+      {/* Category Tabs */}
       {!searchTerm && (
         <div className="category-tabs">
           {categories.map(category => (
@@ -628,6 +603,7 @@ const ReportDashboard = () => {
         </div>
       )}
 
+      {/* Subcategory Dropdown */}
       {!searchTerm && activeCategory && subcategories.length > 0 && (
         <div className="subcategory-section">
           <label htmlFor="subcategory-select" className="subcategory-label">
@@ -647,6 +623,7 @@ const ReportDashboard = () => {
         </div>
       )}
 
+      {/* Reports Grid */}
       <div className="reports-grid">
         {filteredReports.length === 0 ? (
           <div className="no-reports">
@@ -728,6 +705,7 @@ const ReportDashboard = () => {
         )}
       </div>
 
+      {/* Report Display Section */}
       <div id="report-display-section" className="report-display-section">
         {renderReportDetail()}
       </div>

@@ -59,16 +59,15 @@
   gap: 0.875rem;
 }
 
-/* ✅ CRITICAL FIX: Remove default background, let inline styles control color */
+/* ✅ CRITICAL FIX: Completely transparent base - inline styles control ALL colors */
 .shortcut-card {
   position: relative;
-  /* ❌ REMOVED: border: 0.125rem solid transparent; */
-  border: none; /* ✅ ADDED: No border by default */
+  border: none;
   border-radius: var(--radius-md);
   padding: 1rem;
   color: #fff;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: transform 0.2s;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -76,21 +75,14 @@
   min-height: 5.625rem;
   overflow: hidden;
   
-  /* ❌ REMOVED: Default gradient - inline styles will handle this */
-  /* background: linear-gradient(135deg, #4AA7A9 0%, #42C1B5 100%); */
-  /* box-shadow: 0 0.125rem 0.375rem rgba(74, 167, 169, 0.25); */
-  
-  /* ✅ ADDED: Transparent defaults to ensure inline styles work */
-  background: transparent;
-  box-shadow: none;
+  /* ✅ CRITICAL: No background or shadow - inline styles will provide everything */
+  background: transparent !important;
+  box-shadow: none !important;
 }
 
-/* Hover state should NOT override background color */
+/* ✅ Hover only affects transform, NOT colors */
 .shortcut-card:hover {
   transform: translateY(-0.1875rem) scale(1.02);
-  /* ❌ REMOVED: box-shadow override */
-  /* box-shadow: 0 0.375rem 1rem rgba(74, 167, 169, 0.35); */
-  /* ✅ Shadow will be set via inline onMouseEnter/onMouseLeave */
 }
 
 .shortcut-card:active {
