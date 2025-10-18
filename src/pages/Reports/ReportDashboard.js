@@ -265,18 +265,245 @@ const ReportDashboard = () => {
       }
 
       const { headers, rows } = getCSVData(report);
-      const { width, height } = EXPORT_CANVAS_SIZES.line;
+      
+      // Determine chart type and prepare chart data
+      let chartData = null;
+      let chartOptions = null;
+      let chartType = "line";
+      let canvasSize = EXPORT_CANVAS_SIZES.line;
+
+      switch (report.id) {
+        case "network-usage-report":
+          chartType = "line";
+          canvasSize = EXPORT_CANVAS_SIZES.line;
+          chartData = {
+            labels: reportData.map((n) => n.day),
+            datasets: [{
+              label: "Network Usage (GB)",
+              data: reportData.map((n) => n.usageGB),
+              borderColor: "#004aad",
+              backgroundColor: "rgba(0,74,173,0.2)",
+              fill: true,
+              tension: 0.4,
+            }],
+          };
+          chartOptions = getStandardChartOptions({
+            type: chartType,
+            title: report.name,
+            xLabel: "Day",
+            yLabel: "Usage (GB)",
+            darkMode: false,
+            forExport: true,
+          });
+          break;
+
+        case "license-usage-report":
+          chartType = "bar";
+          canvasSize = EXPORT_CANVAS_SIZES.bar;
+          chartData = {
+            labels: reportData.map((d) => d.licenseType),
+            datasets: [{
+              label: "License Usage",
+              data: reportData.map((d) => d.usageCount),
+              backgroundColor: ["#004aad", "#3f51b5", "#7986cb", "#c5cae9"],
+              borderWidth: 1,
+            }],
+          };
+          chartOptions = getStandardChartOptions({
+            type: chartType,
+            title: report.name,
+            xLabel: "License",
+            yLabel: "Usage",
+            darkMode: false,
+            forExport: true,
+          });
+          break;
+
+        case "alerts-summary-report":
+          chartType = "pie";
+          canvasSize = EXPORT_CANVAS_SIZES.pie;
+          chartData = {
+            labels: reportData.map((a) => a.alertType),
+            datasets: [{
+              label: "Alerts",
+              data: reportData.map((a) => a.count),
+              backgroundColor: ["#4caf50", "#ff9800", "#f44336"],
+            }],
+          };
+          chartOptions = getStandardChartOptions({
+            type: chartType,
+            title: report.name,
+            xLabel: "",
+            yLabel: "",
+            darkMode: false,
+            forExport: true,
+          });
+          break;
+
+        case "site-monthly-active-users":
+          chartType = "bar";
+          canvasSize = EXPORT_CANVAS_SIZES.bar;
+          chartData = {
+            labels: reportData.map((d) => d.month),
+            datasets: [
+              {
+                type: "bar",
+                label: "New Users",
+                backgroundColor: "rgba(33,80,162,0.6)",
+                data: reportData.map((d) => d.newUsers),
+                yAxisID: "y",
+              },
+              {
+                type: "bar",
+                label: "Churned Users",
+                backgroundColor: "rgba(217,83,79,0.6)",
+                data: reportData.map((d) => d.churnedUsers),
+                yAxisID: "y",
+              },
+              {
+                type: "line",
+                label: "Avg Active Users",
+                borderColor: "#004aad",
+                borderWidth: 3,
+                fill: false,
+                data: reportData.map((d) => d.avgActiveUsers),
+                yAxisID: "y1",
+                tension: 0.3,
+                pointRadius: 4,
+              },
+            ],
+          };
+          chartOptions = {
+            ...getStandardChartOptions({
+              type: chartType,
+              title: report.name,
+              xLabel: "Month",
+              yLabel: "Users",
+              darkMode: false,
+              forExport: true,
+            }),
+            scales: {
+              y: {
+                type: "linear",
+                display: true,
+                position: "left",
+                title: { display: true, text: "Users" },
+                beginAtZero: true,
+              },
+              y1: {
+                type: "linear",
+                display: true,
+                position: "right",
+                title: { display: true, text: "Avg Active Users" },
+                grid: { drawOnChartArea: false },
+                beginAtZero: true,
+              },
+            },
+          };
+          break;
+
+        case "monthly-data-usage-summary":
+          chartType = "bar";
+          canvasSize = EXPORT_CANVAS_SIZES.bar;
+          chartData = {
+            labels: reportData.map((d) => d.month),
+            datasets: [
+              {
+                label: "Total Usage (GB)",
+                backgroundColor: "rgba(33,80,162,0.6)",
+                data: reportData.map((d) => d.totalUsageGB),
+              },
+              {
+                label: "Peak Usage (GB)",
+                backgroundColor: "rgba(217,83,79,0.6)",
+                data: reportData.map((d) => d.peakUsageGB),
+              },
+            ],
+          };
+          chartOptions = getStandardChartOptions({
+            type: chartType,
+            title: report.name,
+            xLabel: "Month",
+            yLabel: "Usage (GB)",
+            darkMode: false,
+            forExport: true,
+          });
+          break;
+
+        case "daily-average-active-users":
+          chartType = "line";
+          canvasSize = EXPORT_CANVAS_SIZES.line;
+          chartData = {
+            labels: reportData.map((d) => d.date),
+            datasets: [{
+              label: "Avg. Active Users",
+              data: reportData.map((d) => d.avgActiveUsers),
+              borderColor: "#2150a2",
+              backgroundColor: "rgba(33, 80, 162, 0.1)",
+              fill: true,
+              tension: 0.4,
+              pointRadius: 4,
+              borderWidth: 2,
+            }],
+          };
+          chartOptions = getStandardChartOptions({
+            type: chartType,
+            title: report.name,
+            xLabel: "Date",
+            yLabel: "Users",
+            darkMode: false,
+            forExport: true,
+          });
+          break;
+
+        case "policy-wise-monthly-average-active-users":
+          chartType = "bar";
+          canvasSize = EXPORT_CANVAS_SIZES.bar;
+          const uniquePolicies = [...new Set(reportData.map(d => d.policy))];
+          const months = [...new Set(reportData.map(d => d.month))];
+          const datasets = uniquePolicies.map((policy, idx) => ({
+            label: policy,
+            data: months.map(month => {
+              const record = reportData.find(d => d.month === month && d.policy === policy);
+              return record ? record.avgActiveUsers : 0;
+            }),
+            backgroundColor: idx % 2 === 0 ? "rgba(33, 80, 162, 0.7)" : "rgba(49, 120, 115, 0.7)"
+          }));
+          chartData = {
+            labels: months,
+            datasets: datasets,
+          };
+          chartOptions = {
+            ...getStandardChartOptions({
+              type: chartType,
+              title: report.name,
+              xLabel: "Month",
+              yLabel: "Avg. Active Users",
+              darkMode: false,
+              forExport: true,
+            }),
+            scales: {
+              x: { stacked: true, title: { display: true, text: "Month" } },
+              y: { stacked: true, beginAtZero: true, title: { display: true, text: "Avg. Active Users" } }
+            }
+          };
+          break;
+
+        default:
+          // No chart for this report type
+          break;
+      }
 
       await exportReportPDF({
         title: report.name,
         headers,
         rows,
-        chartData: null,
-        chartOptions: null,
+        chartData,
+        chartOptions,
         filename: `${report.name.replace(/\s/g, "_")}_Report.pdf`,
         rolePermissions,
-        exportCanvasWidth: width,
-        exportCanvasHeight: height,
+        exportCanvasWidth: canvasSize.width,
+        exportCanvasHeight: canvasSize.height,
         reportId: report.id
       });
       
@@ -313,30 +540,77 @@ const ReportDashboard = () => {
       );
     }
 
-    switch (selectedReport.id) {
-      case "site-monthly-active-users":
-        return <SiteMonthlyActiveUsers data={sampleReportsData["site-monthly-active-users"]} />;
-      case "monthly-data-usage-summary":
-        return <MonthlyDataUsageSummary data={sampleReportsData["monthly-data-usage-summary"]} />;
-      case "daily-average-active-users":
-        return <DailyAverageActiveUsers data={sampleReportsData["daily-average-active-users"]} />;
-      case "policy-wise-monthly-average-active-users":
-        return <PolicyWiseMonthlyAverageActiveUsers data={sampleReportsData["policy-wise-monthly-average-active-users"]} />;
-      case "network-usage-report":
-        return <NetworkUsageReport data={sampleReportsData["network-usage-report"]} />;
-      case "license-usage-report":
-        return <LicenseUsageReport data={sampleReportsData["license-usage-report"]} />;
-      case "alerts-summary-report":
-        return <AlertsSummaryReport data={sampleReportsData["alerts-summary-report"]} />;
-      default:
-        return (
+    const reportData = sampleReportsData[selectedReport.id];
+    const hasData = !!reportData;
+
+    return (
+      <div className="report-detail-container">
+        <div className="report-detail-header">
+          <h2>{selectedReport.name}</h2>
+          {hasData && (
+            <div className="report-detail-actions">
+              <Button
+                variant="secondary"
+                onClick={() => handleDownloadCSV(selectedReport)}
+                title="Download CSV"
+                aria-label={`Download ${selectedReport.name} CSV`}
+                loading={exportingCSV && exportingReportId === selectedReport.id}
+                disabled={exportingPDF && exportingReportId === selectedReport.id}
+              >
+                <FaFileCsv style={{ marginRight: 6 }} />
+                Export CSV
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => handleExportPDF(selectedReport)}
+                title="Download PDF"
+                aria-label={`Download ${selectedReport.name} PDF`}
+                loading={exportingPDF && exportingReportId === selectedReport.id}
+                disabled={exportingCSV && exportingReportId === selectedReport.id}
+              >
+                <FaFilePdf style={{ marginRight: 6 }} />
+                Export PDF
+              </Button>
+            </div>
+          )}
+        </div>
+
+        {hasData ? (
+          <>
+            {(() => {
+              switch (selectedReport.id) {
+                case "site-monthly-active-users":
+                  return <SiteMonthlyActiveUsers data={reportData} />;
+                case "monthly-data-usage-summary":
+                  return <MonthlyDataUsageSummary data={reportData} />;
+                case "daily-average-active-users":
+                  return <DailyAverageActiveUsers data={reportData} />;
+                case "policy-wise-monthly-average-active-users":
+                  return <PolicyWiseMonthlyAverageActiveUsers data={reportData} />;
+                case "network-usage-report":
+                  return <NetworkUsageReport data={reportData} />;
+                case "license-usage-report":
+                  return <LicenseUsageReport data={reportData} />;
+                case "alerts-summary-report":
+                  return <AlertsSummaryReport data={reportData} />;
+                default:
+                  return (
+                    <div className="report-placeholder">
+                      <p>{selectedReport.description}</p>
+                      <p className="report-placeholder-note">Full report visualization coming soon...</p>
+                    </div>
+                  );
+              }
+            })()}
+          </>
+        ) : (
           <div className="report-placeholder">
-            <h3>{selectedReport.name}</h3>
             <p>{selectedReport.description}</p>
             <p className="report-placeholder-note">Full report visualization coming soon...</p>
           </div>
-        );
-    }
+        )}
+      </div>
+    );
   };
 
   return (

@@ -41,10 +41,7 @@ const SiteMonthlyActiveUsers = forwardRef((props, ref) => {
   ]);
 
   return (
-    <div style={{ padding: "36px 0" }}>
-      <h2 style={{ textAlign: "center", color: "#2150a2" }}>
-        Site Monthly Active Users Report
-      </h2>
+    <div>
       <div ref={chartWrapperRef}>
         <ChartContainer>
           <SiteActiveUsersComboChart data={reportData} />

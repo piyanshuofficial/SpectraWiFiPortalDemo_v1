@@ -30,11 +30,22 @@ const MonthlyDataUsageSummary = ({ data }) => {
     ],
   };
 
+  const options = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { position: "top", labels: { font: { size: 14 } } }
+    },
+    scales: {
+      x: { title: { display: true, text: "Month" } },
+      y: { title: { display: true, text: "Usage (GB)" }, beginAtZero: true }
+    }
+  };
+
   return (
-    <div style={{ padding: 20 }}>
-      <h2 style={{ textAlign: "center" }}>Monthly Data Usage Summary</h2>
+    <div>
       <ChartContainer>
-        <Bar data={chartData} options={{ responsive: true, maintainAspectRatio: false }} />
+        <Bar data={chartData} options={options} />
       </ChartContainer>
       <ReportTable columns={columns} data={tableData} />
     </div>
