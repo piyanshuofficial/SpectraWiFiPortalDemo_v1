@@ -28,6 +28,9 @@ import { exportReportPDF } from "../../utils/exportReportPDF";
 import { getStandardChartOptions } from "../../utils/commonChartOptions";
 import { EXPORT_CANVAS_SIZES } from "../../utils/exportConstants";
 
+import ReportCriteriaModal from "../../components/Reports/ReportCriteriaModal";
+import CriteriaDisplay from "../../components/Reports/CriteriaDisplay";
+
 import SiteMonthlyActiveUsers from "../../reports/SiteMonthlyActiveUsers";
 import MonthlyDataUsageSummary from "../../reports/MonthlyDataUsageSummary";
 import DailyAverageActiveUsers from "../../reports/DailyAverageActiveUsers";
@@ -68,9 +71,12 @@ const ReportDashboard = () => {
   const [pinnedReports, setPinnedReports] = useState([]);
   const [recentReports, setRecentReports] = useState([]);
   const [selectedReport, setSelectedReport] = useState(null);
+  const [selectedReportCriteria, setSelectedReportCriteria] = useState(null);
   const [exportingCSV, setExportingCSV] = useState(false);
   const [exportingPDF, setExportingPDF] = useState(false);
   const [exportingReportId, setExportingReportId] = useState(null);
+  const [criteriaModalOpen, setCriteriaModalOpen] = useState(false);
+  const [reportForCriteria, setReportForCriteria] = useState(null);
 
   const searchInputRef = useRef(null);
   const categories = useMemo(() => getCategories(), []);
@@ -173,8 +179,34 @@ const ReportDashboard = () => {
   }, []);
 
   const handleViewReport = useCallback((report) => {
-    setSelectedReport(report);
-    addToRecent(report.id);
+    // Check if report supports criteria
+    if (report.supportsCriteria) {
+      setReportForCriteria(report);
+      setCriteriaModalOpen(true);
+    } else {
+      // Show report immediately with no criteria
+      setSelectedReport(report);
+      setSelectedReportCriteria(null);
+      addToRecent(report.id);
+      
+      setTimeout(() => {
+        const displaySection = document.getElementById('report-display-section');
+        if (displaySection) {
+          displaySection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
+    }
+  }, [addToRecent]);
+
+  const handleGenerateReport = useCallback((criteria) => {
+    if (!reportForCriteria) return;
+
+    // Filter/transform data based on criteria
+    const filteredData = filterReportData(reportForCriteria.id, criteria);
+    
+    setSelectedReport(reportForCriteria);
+    setSelectedReportCriteria(criteria);
+    addToRecent(reportForCriteria.id);
     
     setTimeout(() => {
       const displaySection = document.getElementById('report-display-section');
@@ -182,10 +214,61 @@ const ReportDashboard = () => {
         displaySection.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     }, 100);
-  }, [addToRecent]);
+  }, [reportForCriteria, addToRecent]);
+
+  const filterReportData = (reportId, criteria) => {
+    // TODO: Replace with actual API call
+    // const response = await fetchReport(reportId, criteria);
+    // For now, using filtered sample data
+    
+    const rawData = sampleReportsData[reportId];
+    if (!rawData) return null;
+
+    // Apply date range filter
+    if (criteria.dateRange) {
+      const { start, end } = criteria.dateRange;
+      const startDate = new Date(start);
+      const endDate = new Date(end);
+      
+      return rawData.filter(item => {
+        if (item.date) {
+          const itemDate = new Date(item.date);
+          return itemDate >= startDate && itemDate <= endDate;
+        }
+        return true;
+      });
+    }
+
+    // Apply month range filter
+    if (criteria.monthRange) {
+      const { start, end } = criteria.monthRange;
+      
+      return rawData.filter(item => {
+        if (item.month) {
+          return item.month >= start && item.month <= end;
+        }
+        return true;
+      });
+    }
+
+    // Apply policy filter
+    if (criteria.policies && criteria.policies.length > 0) {
+      return rawData.filter(item => {
+        if (item.policy) {
+          return criteria.policies.includes(item.policy);
+        }
+        return true;
+      });
+    }
+
+    return rawData;
+  };
 
   const getCSVData = (report) => {
-    const reportData = sampleReportsData[report.id];
+    const reportData = selectedReportCriteria 
+      ? filterReportData(report.id, selectedReportCriteria)
+      : sampleReportsData[report.id];
+      
     if (!reportData) return { headers: [], rows: [] };
 
     let headers = [];
@@ -227,6 +310,26 @@ const ReportDashboard = () => {
     return { headers, rows };
   };
 
+  const generateFilename = (report, extension) => {
+    let filename = report.name.replace(/\s+/g, '_');
+    
+    if (selectedReportCriteria) {
+      if (selectedReportCriteria.dateRange) {
+        const { start, end } = selectedReportCriteria.dateRange;
+        filename += `_${start}_to_${end}`;
+      }
+      if (selectedReportCriteria.monthRange) {
+        const { start, end } = selectedReportCriteria.monthRange;
+        filename += `_${start}_to_${end}`;
+      }
+    }
+    
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T')[0];
+    filename += `_${timestamp}`;
+    
+    return `${filename}.${extension}`;
+  };
+
   const handleDownloadCSV = async (report) => {
     if (!rolePermissions.canViewReports) {
       toast.error("You don't have permission to export reports");
@@ -238,7 +341,7 @@ const ReportDashboard = () => {
     try {
       await new Promise(resolve => setTimeout(resolve, 400));
       const { headers, rows } = getCSVData(report);
-      await exportChartDataToCSV({ headers, rows }, `${report.name.replace(/\s/g, "_")}.csv`);
+      await exportChartDataToCSV({ headers, rows }, generateFilename(report, 'csv'));
       toast.success("CSV exported successfully");
     } catch (error) {
       toast.error("Failed to export CSV");
@@ -259,14 +362,16 @@ const ReportDashboard = () => {
     try {
       await new Promise(resolve => setTimeout(resolve, 1200));
       
-      const reportData = sampleReportsData[report.id];
+      const reportData = selectedReportCriteria 
+        ? filterReportData(report.id, selectedReportCriteria)
+        : sampleReportsData[report.id];
+        
       if (!reportData) {
         throw new Error('Report data not found');
       }
 
       const { headers, rows } = getCSVData(report);
       
-      // Determine chart type and prepare chart data
       let chartData = null;
       let chartOptions = null;
       let chartType = "line";
@@ -490,7 +595,6 @@ const ReportDashboard = () => {
           break;
 
         default:
-          // No chart for this report type
           break;
       }
 
@@ -500,7 +604,7 @@ const ReportDashboard = () => {
         rows,
         chartData,
         chartOptions,
-        filename: `${report.name.replace(/\s/g, "_")}_Report.pdf`,
+        filename: generateFilename(report, 'pdf'),
         rolePermissions,
         exportCanvasWidth: canvasSize.width,
         exportCanvasHeight: canvasSize.height,
@@ -531,6 +635,9 @@ const ReportDashboard = () => {
     }
   };
 
+
+  
+
   const renderReportDetail = () => {
     if (!selectedReport) {
       return (
@@ -540,8 +647,16 @@ const ReportDashboard = () => {
       );
     }
 
-    const reportData = sampleReportsData[selectedReport.id];
+    const reportData = selectedReportCriteria 
+      ? filterReportData(selectedReport.id, selectedReportCriteria)
+      : sampleReportsData[selectedReport.id];
+      
     const hasData = !!reportData;
+
+    const handleChangeCriteria = () => {
+      setReportForCriteria(selectedReport);
+      setCriteriaModalOpen(true);
+    };
 
     return (
       <div className="report-detail-container">
@@ -574,43 +689,52 @@ const ReportDashboard = () => {
             </div>
           )}
         </div>
-         <div className="report-content-wrapper"> 
-        {hasData ? (
-          <>
-           <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}></div>
-            {(() => {
-              switch (selectedReport.id) {
-                case "site-monthly-active-users":
-                  return <SiteMonthlyActiveUsers data={reportData} />;
-                case "monthly-data-usage-summary":
-                  return <MonthlyDataUsageSummary data={reportData} />;
-                case "daily-average-active-users":
-                  return <DailyAverageActiveUsers data={reportData} />;
-                case "policy-wise-monthly-average-active-users":
-                  return <PolicyWiseMonthlyAverageActiveUsers data={reportData} />;
-                case "network-usage-report":
-                  return <NetworkUsageReport data={reportData} />;
-                case "license-usage-report":
-                  return <LicenseUsageReport data={reportData} />;
-                case "alerts-summary-report":
-                  return <AlertsSummaryReport data={reportData} />;
-                default:
-                  return (
-                    <div className="report-placeholder">
-                      <p>{selectedReport.description}</p>
-                      <p className="report-placeholder-note">Full report visualization coming soon...</p>
-                    </div>
-                  );
-              }
-            })()}
-          </>
-        ) : (
-          <div className="report-placeholder">
-            <p>{selectedReport.description}</p>
-            <p className="report-placeholder-note">Full report visualization coming soon...</p>
-          </div>
+
+        {selectedReportCriteria && selectedReport.criteriaFields && (
+          <CriteriaDisplay 
+            criteria={selectedReportCriteria} 
+            criteriaFields={selectedReport.criteriaFields}
+            onChangeCriteria={selectedReport.supportsCriteria ? handleChangeCriteria : null}
+          />
         )}
-      </div>
+
+        <div className="report-content-wrapper">
+          {hasData ? (
+            <>
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}></div>
+              {(() => {
+                switch (selectedReport.id) {
+                  case "site-monthly-active-users":
+                    return <SiteMonthlyActiveUsers data={reportData} />;
+                  case "monthly-data-usage-summary":
+                    return <MonthlyDataUsageSummary data={reportData} />;
+                  case "daily-average-active-users":
+                    return <DailyAverageActiveUsers data={reportData} />;
+                  case "policy-wise-monthly-average-active-users":
+                    return <PolicyWiseMonthlyAverageActiveUsers data={reportData} />;
+                  case "network-usage-report":
+                    return <NetworkUsageReport data={reportData} />;
+                  case "license-usage-report":
+                    return <LicenseUsageReport data={reportData} />;
+                  case "alerts-summary-report":
+                    return <AlertsSummaryReport data={reportData} />;
+                  default:
+                    return (
+                      <div className="report-placeholder">
+                        <p>{selectedReport.description}</p>
+                        <p className="report-placeholder-note">Full report visualization coming soon...</p>
+                      </div>
+                    );
+                }
+              })()}
+            </>
+          ) : (
+            <div className="report-placeholder">
+              <p>{selectedReport.description}</p>
+              <p className="report-placeholder-note">Full report visualization coming soon...</p>
+            </div>
+          )}
+        </div>
       </div>
     );
   };
@@ -620,6 +744,16 @@ const ReportDashboard = () => {
       <LoadingOverlay 
         active={isLoading('export') || exportingCSV || exportingPDF} 
         message={exportingCSV ? "Preparing CSV..." : "Generating PDF..."}
+      />
+
+      <ReportCriteriaModal
+        open={criteriaModalOpen}
+        onClose={() => {
+          setCriteriaModalOpen(false);
+          setReportForCriteria(null);
+        }}
+        report={reportForCriteria}
+        onGenerate={handleGenerateReport}
       />
 
       <div className="pinned-shortcuts-section">
@@ -833,7 +967,7 @@ const ReportDashboard = () => {
                     onClick={() => handleExportPDF(report)}
                     title="Download PDF"
                     aria-label={`Download ${report.name} PDF`}
-                    loading={exportingPDF && exportingReportId === report.id}
+                    loading={exportingPDF && exportingReportId === selectedReport.id}
                     disabled={exportingCSV && exportingReportId === report.id}
                   >
                     <FaFilePdf style={{ marginRight: 6 }} />

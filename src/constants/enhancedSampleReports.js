@@ -24,7 +24,23 @@ const enhancedSampleReports = [
     dataPoints: ["avgActiveUsers", "newUsers", "churnedUsers", "activations", "deactivations"],
     hasChart: true,
     hasTable: true,
-    exportFormats: ["csv", "pdf", "excel"]
+    exportFormats: ["csv", "pdf", "excel"],
+    supportsCriteria: true,
+    criteriaFields: [
+      {
+        type: "monthRange",
+        name: "monthRange",
+        label: "Month Range",
+        required: true,
+        defaultValue: {
+          start: "2024-01",
+          end: "2024-06"
+        },
+        validation: {
+          maxRange: 12
+        }
+      }
+    ]
   },
   {
     id: "daily-average-active-users",
@@ -41,7 +57,23 @@ const enhancedSampleReports = [
     dataPoints: ["date", "avgActiveUsers"],
     hasChart: true,
     hasTable: true,
-    exportFormats: ["csv", "pdf", "excel"]
+    exportFormats: ["csv", "pdf", "excel"],
+    supportsCriteria: true,
+    criteriaFields: [
+      {
+        type: "dateRange",
+        name: "dateRange",
+        label: "Date Range",
+        required: true,
+        defaultValue: {
+          start: "2024-07-01",
+          end: "2024-07-07"
+        },
+        validation: {
+          maxRange: 90
+        }
+      }
+    ]
   },
   {
     id: "policy-wise-monthly-average-active-users",
@@ -58,7 +90,31 @@ const enhancedSampleReports = [
     dataPoints: ["month", "policy", "avgActiveUsers"],
     hasChart: true,
     hasTable: true,
-    exportFormats: ["csv", "pdf", "excel"]
+    exportFormats: ["csv", "pdf", "excel"],
+    supportsCriteria: true,
+    criteriaFields: [
+      {
+        type: "monthRange",
+        name: "monthRange",
+        label: "Month Range",
+        required: true,
+        defaultValue: {
+          start: "2024-01",
+          end: "2024-06"
+        },
+        validation: {
+          maxRange: 12
+        }
+      },
+      {
+        type: "multiSelect",
+        name: "policies",
+        label: "Filter by Policies",
+        required: false,
+        options: ["Policy A", "Policy B", "Policy C"],
+        defaultValue: []
+      }
+    ]
   },
   {
     id: "cluster-average-active-users",
@@ -75,7 +131,23 @@ const enhancedSampleReports = [
     dataPoints: ["cluster", "totalActiveUsers", "monthlyGrowth"],
     hasChart: true,
     hasTable: true,
-    exportFormats: ["csv", "pdf", "excel"]
+    exportFormats: ["csv", "pdf", "excel"],
+    supportsCriteria: true,
+    criteriaFields: [
+      {
+        type: "monthRange",
+        name: "monthRange",
+        label: "Month Range",
+        required: true,
+        defaultValue: {
+          start: "2024-01",
+          end: "2024-01"
+        },
+        validation: {
+          maxRange: 1
+        }
+      }
+    ]
   },
   {
     id: "city-average-active-users",
@@ -92,7 +164,23 @@ const enhancedSampleReports = [
     dataPoints: ["city", "totalActiveUsers", "monthlyGrowth"],
     hasChart: true,
     hasTable: true,
-    exportFormats: ["csv", "pdf", "excel"]
+    exportFormats: ["csv", "pdf", "excel"],
+    supportsCriteria: true,
+    criteriaFields: [
+      {
+        type: "monthRange",
+        name: "monthRange",
+        label: "Month Range",
+        required: true,
+        defaultValue: {
+          start: "2024-01",
+          end: "2024-01"
+        },
+        validation: {
+          maxRange: 1
+        }
+      }
+    ]
   },
   {
     id: "company-average-active-users",
@@ -109,7 +197,23 @@ const enhancedSampleReports = [
     dataPoints: ["company", "totalActiveUsers", "yearOverYear"],
     hasChart: true,
     hasTable: true,
-    exportFormats: ["csv", "pdf", "excel"]
+    exportFormats: ["csv", "pdf", "excel"],
+    supportsCriteria: true,
+    criteriaFields: [
+      {
+        type: "monthRange",
+        name: "monthRange",
+        label: "Month Range",
+        required: true,
+        defaultValue: {
+          start: "2024-01",
+          end: "2024-12"
+        },
+        validation: {
+          maxRange: 13
+        }
+      }
+    ]
   },
 
   // ============================================
@@ -130,7 +234,23 @@ const enhancedSampleReports = [
     dataPoints: ["month", "totalUsageGB", "peakUsageGB", "avgUsageGB"],
     hasChart: true,
     hasTable: true,
-    exportFormats: ["csv", "pdf", "excel"]
+    exportFormats: ["csv", "pdf", "excel"],
+    supportsCriteria: true,
+    criteriaFields: [
+      {
+        type: "monthRange",
+        name: "monthRange",
+        label: "Month Range",
+        required: true,
+        defaultValue: {
+          start: "2024-01",
+          end: "2024-06"
+        },
+        validation: {
+          maxRange: 12
+        }
+      }
+    ]
   },
   {
     id: "cluster-monthly-data-usage",
@@ -147,7 +267,23 @@ const enhancedSampleReports = [
     dataPoints: ["month", "cluster", "totalUsageGB", "peakUsageGB"],
     hasChart: true,
     hasTable: true,
-    exportFormats: ["csv", "pdf", "excel"]
+    exportFormats: ["csv", "pdf", "excel"],
+    supportsCriteria: true,
+    criteriaFields: [
+      {
+        type: "monthRange",
+        name: "monthRange",
+        label: "Month Range",
+        required: true,
+        defaultValue: {
+          start: "2024-01",
+          end: "2024-01"
+        },
+        validation: {
+          maxRange: 1
+        }
+      }
+    ]
   },
   {
     id: "city-monthly-data-usage",
@@ -164,7 +300,23 @@ const enhancedSampleReports = [
     dataPoints: ["month", "city", "totalUsageGB", "avgUsageGB"],
     hasChart: true,
     hasTable: true,
-    exportFormats: ["csv", "pdf", "excel"]
+    exportFormats: ["csv", "pdf", "excel"],
+    supportsCriteria: true,
+    criteriaFields: [
+      {
+        type: "monthRange",
+        name: "monthRange",
+        label: "Month Range",
+        required: true,
+        defaultValue: {
+          start: "2024-01",
+          end: "2024-01"
+        },
+        validation: {
+          maxRange: 1
+        }
+      }
+    ]
   },
   {
     id: "company-monthly-data-usage",
@@ -181,7 +333,23 @@ const enhancedSampleReports = [
     dataPoints: ["month", "company", "totalUsageTB", "yearOverYear"],
     hasChart: true,
     hasTable: true,
-    exportFormats: ["csv", "pdf", "excel"]
+    exportFormats: ["csv", "pdf", "excel"],
+    supportsCriteria: true,
+    criteriaFields: [
+      {
+        type: "monthRange",
+        name: "monthRange",
+        label: "Month Range",
+        required: true,
+        defaultValue: {
+          start: "2024-01",
+          end: "2024-12"
+        },
+        validation: {
+          maxRange: 13
+        }
+      }
+    ]
   },
 
   // ============================================
@@ -202,7 +370,23 @@ const enhancedSampleReports = [
     dataPoints: ["day", "usageGB"],
     hasChart: true,
     hasTable: true,
-    exportFormats: ["csv", "pdf"]
+    exportFormats: ["csv", "pdf"],
+    supportsCriteria: true,
+    criteriaFields: [
+      {
+        type: "dateRange",
+        name: "dateRange",
+        label: "Date Range",
+        required: true,
+        defaultValue: {
+          start: "2024-07-01",
+          end: "2024-07-07"
+        },
+        validation: {
+          maxRange: 30
+        }
+      }
+    ]
   },
   {
     id: "access-point-list",
@@ -219,7 +403,8 @@ const enhancedSampleReports = [
     dataPoints: ["apName", "mac", "location", "status", "connectedUsers"],
     hasChart: false,
     hasTable: true,
-    exportFormats: ["csv", "excel"]
+    exportFormats: ["csv", "excel"],
+    supportsCriteria: false
   },
   {
     id: "access-point-mac-list",
@@ -236,7 +421,8 @@ const enhancedSampleReports = [
     dataPoints: ["mac", "apName", "vendor"],
     hasChart: false,
     hasTable: true,
-    exportFormats: ["csv", "excel"]
+    exportFormats: ["csv", "excel"],
+    supportsCriteria: false
   },
   {
     id: "client-list",
@@ -253,7 +439,8 @@ const enhancedSampleReports = [
     dataPoints: ["clientMac", "userName", "apName", "signalStrength", "connectedTime"],
     hasChart: false,
     hasTable: true,
-    exportFormats: ["csv", "pdf"]
+    exportFormats: ["csv", "pdf"],
+    supportsCriteria: false
   },
   {
     id: "user-ap-analytics",
@@ -270,7 +457,23 @@ const enhancedSampleReports = [
     dataPoints: ["apName", "uniqueUsers", "totalSessions", "avgSessionTime"],
     hasChart: true,
     hasTable: true,
-    exportFormats: ["csv", "pdf", "excel"]
+    exportFormats: ["csv", "pdf", "excel"],
+    supportsCriteria: true,
+    criteriaFields: [
+      {
+        type: "dateRange",
+        name: "dateRange",
+        label: "Date Range",
+        required: true,
+        defaultValue: {
+          start: "2024-07-01",
+          end: "2024-07-07"
+        },
+        validation: {
+          maxRange: 30
+        }
+      }
+    ]
   },
   {
     id: "rogue-ap-list",
@@ -287,7 +490,8 @@ const enhancedSampleReports = [
     dataPoints: ["mac", "ssid", "detectedTime", "signalStrength", "threat"],
     hasChart: false,
     hasTable: true,
-    exportFormats: ["csv", "pdf"]
+    exportFormats: ["csv", "pdf"],
+    supportsCriteria: false
   },
   {
     id: "alarm-list",
@@ -304,7 +508,31 @@ const enhancedSampleReports = [
     dataPoints: ["timestamp", "severity", "message", "affectedDevice", "status"],
     hasChart: false,
     hasTable: true,
-    exportFormats: ["csv", "pdf"]
+    exportFormats: ["csv", "pdf"],
+    supportsCriteria: true,
+    criteriaFields: [
+      {
+        type: "dateRange",
+        name: "dateRange",
+        label: "Date Range",
+        required: true,
+        defaultValue: {
+          start: "2024-07-01",
+          end: "2024-07-07"
+        },
+        validation: {
+          maxRange: 30
+        }
+      },
+      {
+        type: "dropdown",
+        name: "severity",
+        label: "Severity",
+        required: false,
+        options: ["All", "Critical", "Warning", "Info"],
+        defaultValue: "All"
+      }
+    ]
   },
   {
     id: "event-list",
@@ -321,7 +549,23 @@ const enhancedSampleReports = [
     dataPoints: ["timestamp", "eventType", "user", "device", "details"],
     hasChart: false,
     hasTable: true,
-    exportFormats: ["csv", "excel"]
+    exportFormats: ["csv", "excel"],
+    supportsCriteria: true,
+    criteriaFields: [
+      {
+        type: "dateRange",
+        name: "dateRange",
+        label: "Date Range",
+        required: true,
+        defaultValue: {
+          start: "2024-07-01",
+          end: "2024-07-07"
+        },
+        validation: {
+          maxRange: 30
+        }
+      }
+    ]
   },
 
   // ============================================
@@ -342,7 +586,8 @@ const enhancedSampleReports = [
     dataPoints: ["licenseType", "usageCount"],
     hasChart: true,
     hasTable: true,
-    exportFormats: ["csv", "pdf"]
+    exportFormats: ["csv", "pdf"],
+    supportsCriteria: false
   },
   {
     id: "user-session-history",
@@ -359,7 +604,23 @@ const enhancedSampleReports = [
     dataPoints: ["userId", "sessionStart", "sessionEnd", "dataUsed", "duration"],
     hasChart: false,
     hasTable: true,
-    exportFormats: ["csv", "excel"]
+    exportFormats: ["csv", "excel"],
+    supportsCriteria: true,
+    criteriaFields: [
+      {
+        type: "dateRange",
+        name: "dateRange",
+        label: "Date Range",
+        required: true,
+        defaultValue: {
+          start: "2024-07-01",
+          end: "2024-07-07"
+        },
+        validation: {
+          maxRange: 30
+        }
+      }
+    ]
   },
   {
     id: "user-data-consumption",
@@ -376,7 +637,23 @@ const enhancedSampleReports = [
     dataPoints: ["userId", "date", "dataUsedMB", "sessions"],
     hasChart: true,
     hasTable: true,
-    exportFormats: ["csv", "pdf", "excel"]
+    exportFormats: ["csv", "pdf", "excel"],
+    supportsCriteria: true,
+    criteriaFields: [
+      {
+        type: "dateRange",
+        name: "dateRange",
+        label: "Date Range",
+        required: true,
+        defaultValue: {
+          start: "2024-07-01",
+          end: "2024-07-07"
+        },
+        validation: {
+          maxRange: 90
+        }
+      }
+    ]
   },
 
   // ============================================
@@ -397,7 +674,23 @@ const enhancedSampleReports = [
     dataPoints: ["timestamp", "uploadMbps", "downloadMbps", "utilization"],
     hasChart: true,
     hasTable: true,
-    exportFormats: ["csv", "pdf"]
+    exportFormats: ["csv", "pdf"],
+    supportsCriteria: true,
+    criteriaFields: [
+      {
+        type: "dateRange",
+        name: "dateRange",
+        label: "Date Range",
+        required: true,
+        defaultValue: {
+          start: "2024-07-01",
+          end: "2024-07-07"
+        },
+        validation: {
+          maxRange: 30
+        }
+      }
+    ]
   },
   {
     id: "internet-uptime",
@@ -414,7 +707,23 @@ const enhancedSampleReports = [
     dataPoints: ["date", "uptimePercent", "outages", "totalDowntime"],
     hasChart: true,
     hasTable: true,
-    exportFormats: ["csv", "pdf", "excel"]
+    exportFormats: ["csv", "pdf", "excel"],
+    supportsCriteria: true,
+    criteriaFields: [
+      {
+        type: "dateRange",
+        name: "dateRange",
+        label: "Date Range",
+        required: true,
+        defaultValue: {
+          start: "2024-07-01",
+          end: "2024-07-31"
+        },
+        validation: {
+          maxRange: 90
+        }
+      }
+    ]
   },
 
   // ============================================
@@ -435,7 +744,23 @@ const enhancedSampleReports = [
     dataPoints: ["alertType", "count"],
     hasChart: true,
     hasTable: true,
-    exportFormats: ["csv", "pdf"]
+    exportFormats: ["csv", "pdf"],
+    supportsCriteria: true,
+    criteriaFields: [
+      {
+        type: "dateRange",
+        name: "dateRange",
+        label: "Date Range",
+        required: true,
+        defaultValue: {
+          start: "2024-07-01",
+          end: "2024-07-07"
+        },
+        validation: {
+          maxRange: 30
+        }
+      }
+    ]
   },
   {
     id: "sla-compliance",
@@ -452,7 +777,23 @@ const enhancedSampleReports = [
     dataPoints: ["metric", "target", "actual", "compliance"],
     hasChart: true,
     hasTable: true,
-    exportFormats: ["csv", "pdf", "excel"]
+    exportFormats: ["csv", "pdf", "excel"],
+    supportsCriteria: true,
+    criteriaFields: [
+      {
+        type: "monthRange",
+        name: "monthRange",
+        label: "Month Range",
+        required: true,
+        defaultValue: {
+          start: "2024-01",
+          end: "2024-06"
+        },
+        validation: {
+          maxRange: 12
+        }
+      }
+    ]
   },
 
   // ============================================
@@ -473,7 +814,23 @@ const enhancedSampleReports = [
     dataPoints: ["timestamp", "userId", "method", "result", "ipAddress"],
     hasChart: false,
     hasTable: true,
-    exportFormats: ["csv", "excel"]
+    exportFormats: ["csv", "excel"],
+    supportsCriteria: true,
+    criteriaFields: [
+      {
+        type: "dateRange",
+        name: "dateRange",
+        label: "Date Range",
+        required: true,
+        defaultValue: {
+          start: "2024-07-01",
+          end: "2024-07-07"
+        },
+        validation: {
+          maxRange: 30
+        }
+      }
+    ]
   },
   {
     id: "failed-authentication",
@@ -490,7 +847,23 @@ const enhancedSampleReports = [
     dataPoints: ["timestamp", "userId", "attemptCount", "ipAddress", "reason"],
     hasChart: true,
     hasTable: true,
-    exportFormats: ["csv", "pdf"]
+    exportFormats: ["csv", "pdf"],
+    supportsCriteria: true,
+    criteriaFields: [
+      {
+        type: "dateRange",
+        name: "dateRange",
+        label: "Date Range",
+        required: true,
+        defaultValue: {
+          start: "2024-07-01",
+          end: "2024-07-07"
+        },
+        validation: {
+          maxRange: 30
+        }
+      }
+    ]
   },
 
   // ============================================
@@ -511,7 +884,23 @@ const enhancedSampleReports = [
     dataPoints: ["addonName", "users", "revenue", "purchaseDate"],
     hasChart: true,
     hasTable: true,
-    exportFormats: ["csv", "pdf", "excel"]
+    exportFormats: ["csv", "pdf", "excel"],
+    supportsCriteria: true,
+    criteriaFields: [
+      {
+        type: "monthRange",
+        name: "monthRange",
+        label: "Month Range",
+        required: true,
+        defaultValue: {
+          start: "2024-01",
+          end: "2024-06"
+        },
+        validation: {
+          maxRange: 12
+        }
+      }
+    ]
   },
   {
     id: "topup-history",
@@ -528,7 +917,23 @@ const enhancedSampleReports = [
     dataPoints: ["userId", "topupAmount", "purchaseDate", "remaining"],
     hasChart: true,
     hasTable: true,
-    exportFormats: ["csv", "pdf", "excel"]
+    exportFormats: ["csv", "pdf", "excel"],
+    supportsCriteria: true,
+    criteriaFields: [
+      {
+        type: "dateRange",
+        name: "dateRange",
+        label: "Date Range",
+        required: true,
+        defaultValue: {
+          start: "2024-07-01",
+          end: "2024-07-31"
+        },
+        validation: {
+          maxRange: 90
+        }
+      }
+    ]
   },
 ];
 

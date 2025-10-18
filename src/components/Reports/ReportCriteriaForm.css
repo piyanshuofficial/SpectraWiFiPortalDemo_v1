@@ -1,0 +1,99 @@
+/* src/components/Reports/ReportCriteriaForm.css */
+.report-criteria-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-label {
+  font-size: var(--font-base);
+  font-weight: 600;
+  color: #153874;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.required-mark {
+  color: #e14b4b;
+  font-weight: 700;
+}
+
+.form-select,
+.form-input {
+  padding: 0.625rem 0.875rem;
+  font-size: var(--font-base);
+  border-radius: var(--radius-base);
+  border: 0.125rem solid #cfd7ea;
+  background: #fff;
+  color: #153874;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.form-select:focus,
+.form-input:focus {
+  outline: none;
+  border-color: #004aad;
+  box-shadow: 0 0 0 0.1875rem rgba(0, 74, 173, 0.1);
+}
+
+.form-select-error,
+.form-input-error {
+  border-color: #e14b4b;
+}
+
+.form-error {
+  font-size: var(--font-sm);
+  color: #e14b4b;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.multi-select-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  padding: 0.75rem;
+  background: #f8faff;
+  border-radius: var(--radius-base);
+  border: 0.0625rem solid #e1e8f5;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: var(--font-base);
+  color: #153874;
+  padding: 0.375rem 0.5rem;
+  border-radius: var(--radius-sm);
+  transition: background 0.2s;
+}
+
+.checkbox-label:hover {
+  background: rgba(0, 74, 173, 0.05);
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 1.125rem;
+  height: 1.125rem;
+  cursor: pointer;
+  accent-color: #004aad;
+}
+
+.no-criteria {
+  text-align: center;
+  padding: 2rem;
+  color: #6b7c93;
+  font-style: italic;
+}
