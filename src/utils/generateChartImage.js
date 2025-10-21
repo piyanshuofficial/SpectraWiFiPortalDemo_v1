@@ -78,9 +78,17 @@ function waitForChartRender(chart, maxWaitTime = 3000) {
  */
 export async function generateChartImage(data, options, width = 900, height = 450) {
   return new Promise(async (resolve, reject) => {
+
+    //  Detect mobile device
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768;
+    
+    //  Reduce dimensions for mobile to prevent memory issues
+    const mobileWidth = isMobile ? Math.min(width, 600) : width;
+    const mobileHeight = isMobile ? Math.min(height, 400) : height;
+    
     const canvas = document.createElement("canvas");
-    canvas.width = width;
-    canvas.height = height;
+    canvas.width = mobileWidth;
+    canvas.height = mobileHeight;
     
     // Temporarily add to DOM (required for proper rendering)
     canvas.style.position = 'absolute';
@@ -99,7 +107,9 @@ export async function generateChartImage(data, options, width = 900, height = 45
         animation: {
           duration: 0, // Instant rendering for export
           ...(options.animation || {})
-        }
+        },
+        // Reduce complexity for mobile
+        devicePixelRatio: isMobile ? 1 : 2,
       };
 
       // Create chart instance
@@ -109,14 +119,16 @@ export async function generateChartImage(data, options, width = 900, height = 45
         options: exportOptions,
       });
 
-      // Wait for chart to complete rendering
-      await waitForChartRender(chart, 3000);
+       // Wait for chart to complete rendering
+      await waitForChartRender(chart, isMobile ? 5000 : 3000); // Longer timeout for mobile
 
       // Small additional delay to ensure DOM paint is complete
-      await new Promise(resolveDelay => setTimeout(resolveDelay, 100));
+      await new Promise(resolveDelay => setTimeout(resolveDelay, isMobile ? 200 : 100)); // Longer delay for mobile
 
-      // Generate image
-      const base64Image = canvas.toDataURL("image/png", 1.0);
+
+      // Generate image with lower quality for mobile
+      const imageQuality = isMobile ? 0.8 : 1.0; // Reduced quality for mobile
+      const base64Image = canvas.toDataURL("image/png", imageQuality);
 
       // Validate image generation
       if (!base64Image || base64Image === 'data:,') {

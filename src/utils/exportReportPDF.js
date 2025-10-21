@@ -50,6 +50,13 @@ export async function exportReportPDF({
     return;
   }
 
+  // Detect mobile device
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768;
+  
+  // Adjust canvas size for mobile
+  const finalWidth = isMobile ? Math.min(exportCanvasWidth, 600) : exportCanvasWidth;
+  const finalHeight = isMobile ? Math.min(exportCanvasHeight, 400) : exportCanvasHeight;
+
   // Get report-specific branding color
   const { color } = getReportBranding(reportId);
   
@@ -92,13 +99,13 @@ export async function exportReportPDF({
   let tableStartY = 160;
   if (chartData && chartOptions) {
     try {
-      // ✅ Use retry-enabled chart generation with event-based rendering
+      // Use mobile-optimized chart generation
       const base64Image = await generateChartImageWithRetry(
         chartData, 
         chartOptions, 
-        exportCanvasWidth, 
-        exportCanvasHeight,
-        2 // Max 2 retries
+        finalWidth,
+        finalHeight,
+        isMobile ? 1 : 2 // Fewer retries on mobile
       );
       
       const chartWidth = pageWidth - 120;
@@ -107,7 +114,12 @@ export async function exportReportPDF({
       tableStartY = 145 + chartHeight + 20;
     } catch (error) {
       console.error("Chart embedding failed:", error);
-      alert("Chart image embedding failed, exporting data only.");
+      // Better error message for mobile
+      if (isMobile) {
+        alert("Chart image could not be embedded on this device. The PDF will include data only.");
+      } else {
+        alert("Chart image embedding failed, exporting data only.");
+      }
     }
   }
 
@@ -140,7 +152,7 @@ export async function exportReportPDF({
       doc.setFontSize(8);
       doc.setTextColor("#444");
       doc.text(
-        "Spectra Wi-Fi Management Portal | Confidential", 
+        "SpectraOne Wi-Fi Portal | Confidential", 
         40, 
         pageHeight - 10
       );

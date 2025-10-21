@@ -88,6 +88,7 @@
   background-color: white;
   border-radius: var(--radius-md);
   margin: 0;
+  table-layout: auto; /* Changed from fixed */
 }
 
 .user-table thead {
@@ -95,6 +96,9 @@
   color: white;
   font-weight: 700;
   font-size: var(--font-sm);
+  position: sticky; /* Make header sticky */
+  top: 0;
+  z-index: 10;
 }
 
 .user-table thead th {
@@ -102,11 +106,18 @@
   vertical-align: middle;
   text-align: left;
   line-height: var(--line-height-tight);
+  white-space: nowrap; /* Prevent wrapping */
+}
+
+/* Ensure Actions column takes appropriate width */
+.user-table thead th:last-child {
+  min-width: 8rem; /* Minimum width for actions */
+  text-align: center;
 }
 
 .user-table tbody tr {
   border-top: 0.0625rem solid #e1e1e1;
-  height: 2.75rem;
+  min-height: 2.75rem;
 }
 
 .user-table tbody tr:nth-child(even) {
@@ -122,10 +133,17 @@
   line-height: var(--line-height-tight);
 }
 
+/* Actions column alignment */
+.user-table tbody td:last-child {
+  text-align: center;
+  white-space: nowrap;
+}
+
 .user-table-actions {
   display: flex;
   gap: 0.25rem;
   align-items: center;
+  justify-content: center; /* Center actions */
 }
 
 .action-icon {
@@ -447,71 +465,95 @@
   }
 }
 
+/* Improved mobile toolbar layout */
 @media (max-width: 900px) {
   .user-list-container {
     padding: 0.625rem 0.75rem 1.5rem 0.75rem;
   }
 
-  .user-table {
-    min-width: 30rem;
-  }
-
   .user-toolbar-ring-row {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch; /* Changed from flex-start */
+    gap: 0.75rem;
   }
 
   .user-toolbar {
     width: 100%;
-    margin-bottom: 0.75rem;
+    margin-bottom: 0;
+    order: 1; /* Toolbar first */
   }
 
   .user-license-ring-header {
-    align-self: flex-end;
+    align-self: center; /* Center the ring */
     margin-left: 0;
-    margin-bottom: 0.625rem;
+    margin-bottom: 0.75rem;
+    order: 2; /* Ring second */
   }
 
   .user-license-ring-header > div {
-    transform: scale(0.9);
+    transform: scale(0.85); /* Slightly smaller for mobile */
   }
 
-  .segment-selector-test {
-    top: 3.75rem;
-    right: 0.75rem;
-    padding: 0.3125rem 0.625rem;
+  /* Compact column controls */
+  .column-controls-compact {
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.625rem 0.75rem;
+    order: 3; /* Column controls third */
   }
 
-  .segment-test-dropdown {
-    min-width: 6.25rem;
-    font-size: var(--font-xs);
+  .column-controls-left,
+  .column-controls-right {
+    width: 100%;
+  }
+
+  /* Table wrapper */
+  .user-table-outer {
+    margin-top: 0.75rem;
+    order: 4; /* Table last */
+  }
+
+  .user-table {
+    min-width: 42.5rem;
   }
 }
 
 @media (max-width: 600px) {
+  .user-toolbar-content {
+    gap: 0.375rem;
+    min-height: auto; /* Remove fixed height */
+  }
+
   .user-toolbar {
-    flex-direction: column;
     padding: 0.5rem 0.625rem;
-  }
-
-  .user-table th,
-  .user-table td {
-    padding: 0.3125rem 0.5rem;
-  }
-
-  .column-controls-compact {
-    padding: 0.625rem 0.75rem;
-  }
-
-  .column-checkbox-chip-compact {
-    font-size: var(--font-xs);
-    padding: 0.1875rem 0.5rem 0.1875rem 0.375rem;
-  }
-
-  .segment-selector-test {
-    position: static;
-    margin-bottom: 0.625rem;
     width: 100%;
-    justify-content: flex-start;
+  }
+
+  .user-license-ring-header {
+    margin-bottom: 0.625rem;
+  }
+
+  .user-toolbar-inner {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: stretch;
+  }
+
+  .toolbar-left,
+  .toolbar-right {
+    flex-direction: column;
+    gap: 0.375rem;
+    width: 100%;
+  }
+
+  .toolbar-search,
+  .toolbar-select {
+    min-width: unset;
+    width: 100%;
+  }
+
+  /* Ensure buttons stack properly */
+  .toolbar-left .btn {
+    width: 100%;
   }
 }

@@ -1,5 +1,4 @@
-//src/components/FooterBar.js
-
+// src/components/FooterBar.js
 
 import React from "react";
 import "./FooterBar.css";

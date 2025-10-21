@@ -88,69 +88,73 @@ const UserDetailsModal = ({
             ×
           </button>
         </div>
-        <div className="udm-main-grid">
-          <div className="udm-section">
-            <div className="udm-section-title">Personal Information</div>
-            <div className="udm-item">
-              <span className="udm-label">Name:</span>
-              <span className="udm-value">
-                {user.firstName} {user.lastName}
-              </span>
-            </div>
-            <div className="udm-item">
-              <span className="udm-label">Email:</span>
-              <span className="udm-value">{user.email || "--"}</span>
-            </div>
-            <div className="udm-item">
-              <span className="udm-label">Mobile:</span>
-              <span className="udm-value">{user.mobile || "--"}</span>
-            </div>
-            {user.location && (
+        
+        <div className="udm-scrollable-content">
+          <div className="udm-main-grid">
+            <div className="udm-section">
+              <div className="udm-section-title">Personal Information</div>
               <div className="udm-item">
-                <span className="udm-label">Location:</span>
-                <span className="udm-value">{user.location}</span>
+                <span className="udm-label">Name:</span>
+                <span className="udm-value">
+                  {user.firstName} {user.lastName}
+                </span>
               </div>
-            )}
-          </div>
-          <div className="udm-section">
-            <div className="udm-section-title">Account Details</div>
-            <div className="udm-item">
-              <span className="udm-label">User ID:</span>
-              <span className="udm-value udm-bold">{user.id}</span>
-            </div>
-            <div className="udm-item">
-              <span className="udm-label">Policy:</span>
-              {renderPolicyDetails(userPolicy)}
-            </div>
-            <div className="udm-item">
-              <span className="udm-label">Status:</span>
-              {user.status ? (
-                <Badge variant={user.status.toLowerCase()} size="table">
-                  {user.status}
-                </Badge>
-              ) : (
-                <span className="udm-value">--</span>
+              <div className="udm-item">
+                <span className="udm-label">Email:</span>
+                <span className="udm-value">{user.email || "--"}</span>
+              </div>
+              <div className="udm-item">
+                <span className="udm-label">Mobile:</span>
+                <span className="udm-value">{user.mobile || "--"}</span>
+              </div>
+              {user.location && (
+                <div className="udm-item">
+                  <span className="udm-label">Location:</span>
+                  <span className="udm-value">{user.location}</span>
+                </div>
               )}
             </div>
-            <div className="udm-item">
-              <span className="udm-label">Devices:</span>
-              <span className="udm-value">{user.devices ?? "--"}</span>
+            <div className="udm-section">
+              <div className="udm-section-title">Account Details</div>
+              <div className="udm-item">
+                <span className="udm-label">User ID:</span>
+                <span className="udm-value udm-bold">{user.id}</span>
+              </div>
+              <div className="udm-item">
+                <span className="udm-label">Policy:</span>
+                {renderPolicyDetails(userPolicy)}
+              </div>
+              <div className="udm-item">
+                <span className="udm-label">Status:</span>
+                {user.status ? (
+                  <Badge variant={user.status.toLowerCase()} size="table">
+                    {user.status}
+                  </Badge>
+                ) : (
+                  <span className="udm-value">--</span>
+                )}
+              </div>
+              <div className="udm-item">
+                <span className="udm-label">Devices:</span>
+                <span className="udm-value">{user.devicesCount ?? "--"}</span>
+              </div>
             </div>
           </div>
+          <div className="udm-section-title udm-usage-title">
+            Usage Statistics
+          </div>
+          <div className="udm-stats-bar fit-row">
+            {usageStats.map((card) => (
+              <div className="udm-stats-card" key={card.label} data-color={card.color}>
+                <span className="udm-stats-number" style={{ color: card.color }}>
+                  {card.value}
+                </span>
+                <span className="udm-stats-label">{card.label}</span>
+              </div>
+            ))}
+          </div>
         </div>
-        <div className="udm-section-title udm-usage-title">
-          Usage Statistics
-        </div>
-        <div className="udm-stats-bar fit-row">
-          {usageStats.map((card) => (
-            <div className="udm-stats-card" key={card.label} data-color={card.color}>
-              <span className="udm-stats-number" style={{ color: card.color }}>
-                {card.value}
-              </span>
-              <span className="udm-stats-label">{card.label}</span>
-            </div>
-          ))}
-        </div>
+        
         <div className="udm-actions-row">
           <Button variant="primary" onClick={() => onEdit(user)}>
             Edit User
