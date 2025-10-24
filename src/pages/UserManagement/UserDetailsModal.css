@@ -237,16 +237,28 @@
   padding: 0.375rem 0.625rem;
 }
 
-/* Button Variants */
+/* Button Variants - Updated for consistency */
 .resend-password-btn {
-  background: #a3b9fd !important;
-  color: #183b6b !important;
+  background: #e0e9ff !important;
+  color: #1e40af !important;
+  border: 1px solid #c7d2fe !important;
+}
+
+.resend-password-btn:hover {
+  background: #c7d2fe !important;
+  color: #1e3a8a !important;
+  border-color: #a5b4fc !important;
 }
 
 .suspend-user-btn {
   background: #FFA900 !important;
   color: #fff !important;
-  border: none !important;
+  border: 1px solid #FFA900 !important;
+}
+
+.suspend-user-btn:hover {
+  background: #e69800 !important;
+  border-color: #e69800 !important;
 }
 
 /* Usage Statistics Title */

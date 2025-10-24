@@ -261,6 +261,16 @@ const handleDelete = async (id) => {
   }
 };
 
+  const handleEditClick = (user) => {
+    const isBlocked = user.status === "Blocked" || user.status === "Restricted";
+    if (isBlocked) {
+      toast.error("Cannot edit user with Blocked status");
+      return;
+    }
+    setEditingUser(user);
+    setShowFormModal(true);
+  };
+
   const handleDeviceSubmit = (deviceInfo) => {
     toast.success(`Device "${deviceInfo.deviceName}" registered successfully`);
     setDevices([deviceInfo, ...devices]);
@@ -510,59 +520,61 @@ const handleDelete = async (id) => {
                 </td>
               </tr>
             ) : (
-              pagedUsers.map((user) => (
-                <tr key={user.id}>
-                  {visibleColumns.includes("id") && <td>{user.id}</td>}
-                  {visibleColumns.includes("firstName") && <td>{user.firstName} {user.lastName}</td>}
-                  {visibleColumns.includes("mobile") && <td>{user.mobile}</td>}
-                  {visibleColumns.includes("email") && <td>{user.email}</td>}
-                  {(visibleColumns.includes("userPolicy") || visibleColumns.includes("policy")) && renderPolicyCell(user)}
-                  {visibleColumns.includes("devicesCount") && <td>{user.devicesCount}</td>}
-                  {visibleColumns.includes("status") && (
-                    <td><Badge variant={user.status.toLowerCase()} size="table">{user.status}</Badge></td>
-                  )}
-                  {visibleColumns.includes("registration") && <td>{user.registration}</td>}
-                  {visibleColumns.includes("lastOnline") && <td>{user.lastOnline}</td>}
-                  {segmentSpecificFields[segmentFilter]?.map((col) => (
-                    visibleColumns.includes(col.key) ? <td key={col.key}>{user[col.key] || "-"}</td> : null
-                  ))}
-                  <td>
-                    <Button
-                      variant="info"
-                      title="User Details"
-                      aria-label="View User Details"
-                      onClick={() => {
-                        setDetailsUser(user);
-                        setShowDetailsModal(true);
-                      }}
-                    >
-                      <FaInfoCircle />
-                    </Button>
-                    {rolePermissions.canEditUsers ? (
-                      <>
-                        <Button
-                          variant="primary"
-                          title="Edit User"
-                          aria-label="Edit User"
-                          onClick={() => {
-                            setEditingUser(user);
-                            setShowFormModal(true);
-                          }}
-                        >
+              pagedUsers.map((user) => {
+                const isBlocked = user.status === "Blocked" || user.status === "Restricted";
+                
+                return (
+                  <tr key={user.id}>
+                    {visibleColumns.includes("id") && <td>{user.id}</td>}
+                    {visibleColumns.includes("firstName") && <td>{user.firstName} {user.lastName}</td>}
+                    {visibleColumns.includes("mobile") && <td>{user.mobile}</td>}
+                    {visibleColumns.includes("email") && <td>{user.email}</td>}
+                    {(visibleColumns.includes("userPolicy") || visibleColumns.includes("policy")) && renderPolicyCell(user)}
+                    {visibleColumns.includes("devicesCount") && <td>{user.devicesCount}</td>}
+                    {visibleColumns.includes("status") && (
+                      <td><Badge variant={user.status.toLowerCase()} size="table">{user.status}</Badge></td>
+                    )}
+                    {visibleColumns.includes("registration") && <td>{user.registration}</td>}
+                    {visibleColumns.includes("lastOnline") && <td>{user.lastOnline}</td>}
+                    {segmentSpecificFields[segmentFilter]?.map((col) => (
+                      visibleColumns.includes(col.key) ? <td key={col.key}>{user[col.key] || "-"}</td> : null
+                    ))}
+                    <td>
+                      <Button
+                        variant="info"
+                        title="User Details"
+                        aria-label="View User Details"
+                        onClick={() => {
+                          setDetailsUser(user);
+                          setShowDetailsModal(true);
+                        }}
+                      >
+                        <FaInfoCircle />
+                      </Button>
+                      {rolePermissions.canEditUsers ? (
+                        <>
+                          <Button
+                            variant="primary"
+                            title={isBlocked ? "Cannot edit user with Blocked status" : "Edit User"}
+                            aria-label={isBlocked ? "Edit User Disabled - Blocked Status" : "Edit User"}
+                            onClick={() => handleEditClick(user)}
+                            disabled={isBlocked}
+                          >
+                            <FaEdit />
+                          </Button>
+                          <Button variant="danger" title="Delete User - Disabled" aria-label="Delete User Disabled" disabled>
+                            <FaTrash />
+                          </Button>
+                        </>
+                      ) : (
+                        <Button variant="primary" title="Edit User - Permission Required" aria-label="Edit Disabled, Permission Required" disabled>
                           <FaEdit />
                         </Button>
-                        <Button variant="danger" title="Delete User - Disabled" aria-label="Delete User Disabled" disabled>
-                          <FaTrash />
-                        </Button>
-                      </>
-                    ) : (
-                      <Button variant="primary" title="Edit User - Permission Required" aria-label="Edit Disabled, Permission Required" disabled>
-                        <FaEdit />
-                      </Button>
-                    )}
-                  </td>
-                </tr>
-              ))
+                      )}
+                    </td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>

@@ -50,9 +50,18 @@ const UserDetailsModal = ({
 }) => {
   const isActive = user.status === "Active";
   const isSuspended = user.status === "Suspended";
+  const isBlocked = user.status === "Blocked" || user.status === "Restricted";
 
   const usageStats = getUsageStats(user);
   const userPolicy = user.policy || user.userPolicy;
+
+  const handleEditClick = () => {
+    if (isBlocked) {
+      toast.error("Cannot edit user with Blocked status");
+      return;
+    }
+    onEdit(user);
+  };
 
   const renderPolicyDetails = (policy) => {
     if (!policy || typeof policy === "string") return <span className="udm-value">{policy || "--"}</span>;
@@ -156,10 +165,15 @@ const UserDetailsModal = ({
         </div>
         
         <div className="udm-actions-row">
-          <Button variant="primary" onClick={() => onEdit(user)}>
+          <Button 
+            variant="primary" 
+            onClick={handleEditClick}
+            disabled={isBlocked}
+            title={isBlocked ? "Cannot edit user with Blocked status" : "Edit user details"}
+          >
             Edit User
           </Button>
-          {onSendMessage && (
+          {onSendMessage && !isBlocked && (
             <Button
               variant="secondary"
               className="resend-password-btn"
