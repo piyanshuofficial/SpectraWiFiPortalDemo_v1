@@ -53,33 +53,52 @@ const DeviceList = () => {
   
   const canRegisterDevice = hasDevicePermission && showRegisterDevice;
 
-  // Device statistics from siteConfig
-  const deviceStats = [
-    {
-      label: "Total Devices",
-      value: siteConfig.devices.totalDevices,
-      Icon: FaDesktop,
-      colorClass: "stat-blue"
-    },
-    {
-      label: "Online Now",
-      value: siteConfig.devices.onlineDevices,
-      Icon: FaGlobeAmericas,
-      colorClass: "stat-green"
-    },
-    {
-      label: "Blocked",
-      value: siteConfig.devices.blockedDevices,
-      Icon: FaBan,
-      colorClass: "stat-red"
-    },
-    {
-      label: "Access Points",
-      value: siteConfig.devices.accessPoints,
-      Icon: FaWifi,
-      colorClass: "stat-yellow"
-    }
-  ];
+  // Get current site info based on selected segment
+  const currentSite = siteConfig.segmentSites[segmentFilter] || siteConfig.segmentSites.enterprise;
+
+  // Get users for the selected segment
+  const segmentUsers = useMemo(() => {
+    return sampleUsers.filter(user => user.segment === segmentFilter);
+  }, [segmentFilter]);
+
+  // Get user IDs for the selected segment
+  const segmentUserIds = useMemo(() => {
+    return new Set(segmentUsers.map(user => user.id));
+  }, [segmentUsers]);
+
+  // Device statistics - calculated from segment-filtered devices
+  const segmentDeviceStats = useMemo(() => {
+    const segmentDevices = devices.filter(device => segmentUserIds.has(device.userId));
+    const onlineDevices = segmentDevices.filter(d => d.online).length;
+    const blockedDevices = segmentDevices.filter(d => d.blocked).length;
+    
+    return [
+      {
+        label: "Total Devices",
+        value: segmentDevices.length,
+        Icon: FaDesktop,
+        colorClass: "stat-blue"
+      },
+      {
+        label: "Online Now",
+        value: onlineDevices,
+        Icon: FaGlobeAmericas,
+        colorClass: "stat-green"
+      },
+      {
+        label: "Blocked",
+        value: blockedDevices,
+        Icon: FaBan,
+        colorClass: "stat-red"
+      },
+      {
+        label: "Access Points",
+        value: siteConfig.devices.accessPoints,
+        Icon: FaWifi,
+        colorClass: "stat-yellow"
+      }
+    ];
+  }, [devices, segmentUserIds]);
 
   const deviceTypes = useMemo(() => [
     { value: "all", label: "All Device Types" },
@@ -93,7 +112,6 @@ const DeviceList = () => {
     { value: "blocked", label: "Blocked" }
   ], []);
 
-  // ✅ FIXED: Simplified loading with direct state update
   useEffect(() => {
     const loadDevices = () => {
       // Enrich devices with owner information
@@ -102,7 +120,8 @@ const DeviceList = () => {
         return {
           ...device,
           Icon: getDeviceIcon(device.category),
-          owner: owner ? `${owner.firstName} ${owner.lastName}` : 'Unknown'
+          owner: owner ? `${owner.firstName} ${owner.lastName}` : 'Unknown',
+          ownerSegment: owner?.segment || 'unknown'
         };
       });
       
@@ -110,14 +129,18 @@ const DeviceList = () => {
       setInitialLoad(false);
     };
 
-    // Small delay to show loading state briefly
     const timer = setTimeout(loadDevices, 300);
     
     return () => clearTimeout(timer);
   }, []);
 
+  // Filter devices by segment first, then by other filters
   const filteredDevices = useMemo(() => {
     return devices.filter(dev => {
+      // First filter by segment - only show devices belonging to users of selected segment
+      if (!segmentUserIds.has(dev.userId)) return false;
+      
+      // Then apply other filters
       if (typeFilter !== "all" && dev.type !== typeFilter) return false;
       if (statusFilter === "online" && !dev.online) return false;
       if (statusFilter === "blocked" && dev.blocked !== true) return false;
@@ -132,7 +155,7 @@ const DeviceList = () => {
         return false;
       return true;
     });
-  }, [devices, typeFilter, statusFilter, searchText]);
+  }, [devices, segmentUserIds, typeFilter, statusFilter, searchText]);
 
   const pagedDevices = useMemo(() => {
     const startIndex = (currentPage - 1) * rowsPerPage;
@@ -141,7 +164,7 @@ const DeviceList = () => {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [typeFilter, statusFilter, searchText, rowsPerPage]);
+  }, [typeFilter, statusFilter, searchText, rowsPerPage, segmentFilter]);
 
   const handleDeviceSubmit = async (deviceInfo) => {
     setSubmitting(true);
@@ -290,10 +313,22 @@ const DeviceList = () => {
         </select>
       </div>
 
-      <h1 className="device-mgmt-title">Device Management</h1>
+      <div style={{ marginBottom: '1.5rem' }}>
+        <h1 className="device-mgmt-title">Device Management</h1>
+        <div style={{ 
+          fontSize: '0.9rem', 
+          color: '#555', 
+          marginTop: '0.5rem',
+          fontWeight: '500'
+        }}>
+          <span>{currentSite.siteName}</span>
+          <span style={{ margin: '0 0.5rem', color: '#ccc' }}>•</span>
+          <span>{currentSite.location}</span>
+        </div>
+      </div>
 
       <div className="device-summary-cards">
-        {deviceStats.map(stat => (
+        {segmentDeviceStats.map(stat => (
           <div className={`device-summary-card ${stat.colorClass}`} key={stat.label}>
             <div className="devsc-toprow">
               <div className="devsc-title">{stat.label}</div>
@@ -389,7 +424,7 @@ const DeviceList = () => {
             gridColumn: "1 / -1",
             fontSize: "1.1rem"
           }}>
-            No devices found matching your filters.
+            No devices found for this segment.
           </div>
         ) : (
           pagedDevices.map(device => (
@@ -461,10 +496,10 @@ const DeviceList = () => {
           open={showDeviceModal}
           onClose={() => setShowDeviceModal(false)}
           onSubmit={handleDeviceSubmit}
-          users={sampleUsers}
+          users={segmentUsers}
           devices={devices}
           segment={segmentFilter}
-          siteUserList={sampleUsers}
+          siteUserList={segmentUsers}
           submitting={submitting}
         />
       )}

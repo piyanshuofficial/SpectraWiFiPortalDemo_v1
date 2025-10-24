@@ -1,10 +1,51 @@
 // src/config/siteConfig.js
 const siteConfig = {
+  // Default site (can be overridden based on segment)
   siteName: "Mumbai Corporate Office",
-  siteId: "SITE-MUM-001",
+  siteId: "SITE-MUM-ENT-001",
   company: "Spectra Technologies",
   segment: "Enterprise",
   accessLevel: "Site",
+  
+  // Segment-specific site configurations
+  segmentSites: {
+    enterprise: {
+      siteName: "Mumbai Corporate Office",
+      siteId: "SITE-MUM-ENT-001",
+      location: "Mumbai, Maharashtra",
+      address: "Spectra Business Park, Andheri East, Mumbai - 400069"
+    },
+    coLiving: {
+      siteName: "Spectra Urban Living - Bangalore",
+      siteId: "SITE-BLR-COL-002",
+      location: "Bangalore, Karnataka",
+      address: "Koramangala, Bangalore - 560034"
+    },
+    coWorking: {
+      siteName: "Spectra WorkHub - Pune",
+      siteId: "SITE-PUN-COW-003",
+      location: "Pune, Maharashtra",
+      address: "Hinjewadi IT Park, Pune - 411057"
+    },
+    hotel: {
+      siteName: "Spectra Grand Hotel - Goa",
+      siteId: "SITE-GOA-HTL-004",
+      location: "Goa",
+      address: "Calangute Beach Road, Goa - 403516"
+    },
+    pg: {
+      siteName: "Spectra PG Residency - Chennai",
+      siteId: "SITE-CHN-PGR-005",
+      location: "Chennai, Tamil Nadu",
+      address: "Adyar, Chennai - 600020"
+    },
+    miscellaneous: {
+      siteName: "Spectra Community Hub - Delhi",
+      siteId: "SITE-DEL-MIS-006",
+      location: "Delhi",
+      address: "Connaught Place, New Delhi - 110001"
+    }
+  },
   
   licenses: {
     maxLicenses: 250,
@@ -197,7 +238,7 @@ const siteConfig = {
 
   support: {
     email: "support@spectra.co",
-    phone: "+91-1800 121 5678",
+    phone: "+1800 121 5678",
     helpdesk: "https://www.spectra.co",
     documentation: "https://www.spectra.co"
   }
