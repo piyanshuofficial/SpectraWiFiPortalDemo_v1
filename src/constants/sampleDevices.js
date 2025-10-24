@@ -1,9 +1,9 @@
 // src/constants/sampleDevices.js
 const sampleDevices = [
-  // Amit Sharma's devices (user001)
+  // Amit Sharma's devices (USER001)
   {
     id: "dev001",
-    userId: "user001",
+    userId: "USER001",
     name: "iPhone 14 Pro",
     type: "mobile",
     category: "Smartphone",
@@ -17,7 +17,7 @@ const sampleDevices = [
   },
   {
     id: "dev002",
-    userId: "user001",
+    userId: "USER001",
     name: "Lenovo ThinkPad",
     type: "laptop",
     category: "Laptop",
@@ -30,10 +30,10 @@ const sampleDevices = [
     blocked: false
   },
   
-  // Neeta Singh's devices (user002)
+  // Neeta Singh's devices (USER012)
   {
     id: "dev003",
-    userId: "user002",
+    userId: "USER012",
     name: "MacBook Air",
     type: "laptop",
     category: "Laptop",
@@ -47,7 +47,7 @@ const sampleDevices = [
   },
   {
     id: "dev004",
-    userId: "user002",
+    userId: "USER012",
     name: "iPhone 12 Mini",
     type: "mobile",
     category: "Smartphone",
@@ -60,10 +60,10 @@ const sampleDevices = [
     blocked: false
   },
   
-  // Rajesh Kumar's devices (user003)
+  // Rajesh Kumar's devices (USER003)
   {
     id: "dev005",
-    userId: "user003",
+    userId: "USER003",
     name: "iPhone 13",
     type: "mobile",
     category: "Smartphone",
@@ -77,7 +77,7 @@ const sampleDevices = [
   },
   {
     id: "dev006",
-    userId: "user003",
+    userId: "USER003",
     name: "MacBook Pro 16",
     type: "laptop",
     category: "Laptop",
@@ -90,10 +90,10 @@ const sampleDevices = [
     blocked: false
   },
   
-  // Vikram Chatterjee's devices (user004)
+  // Vikram Chatterjee's devices (USER007)
   {
     id: "dev007",
-    userId: "user004",
+    userId: "USER007",
     name: "Dell XPS 15",
     type: "laptop",
     category: "Laptop",
@@ -107,7 +107,7 @@ const sampleDevices = [
   },
   {
     id: "dev008",
-    userId: "user004",
+    userId: "USER007",
     name: "Google Pixel 7",
     type: "mobile",
     category: "Smartphone",
@@ -120,10 +120,10 @@ const sampleDevices = [
     blocked: false
   },
   
-  // Divya Nair's devices (user005)
+  // Divya Nair's devices (USER008)
   {
     id: "dev009",
-    userId: "user005",
+    userId: "USER008",
     name: "Samsung Galaxy S22",
     type: "mobile",
     category: "Smartphone",
@@ -137,7 +137,7 @@ const sampleDevices = [
   },
   {
     id: "dev010",
-    userId: "user005",
+    userId: "USER008",
     name: "Asus ROG",
     type: "laptop",
     category: "Laptop",
@@ -150,10 +150,10 @@ const sampleDevices = [
     blocked: false
   },
   
-  // Sanjay Rao's devices (user006)
+  // Sanjay Rao's devices (USER005)
   {
     id: "dev011",
-    userId: "user006",
+    userId: "USER005",
     name: "HP Pavilion",
     type: "laptop",
     category: "Laptop",
@@ -163,11 +163,11 @@ const sampleDevices = [
     lastUsageDate: "15 minutes ago",
     dataUsage: "2.1 GB",
     online: true,
-    blocked: false
+    blocked: true
   },
   {
     id: "dev012",
-    userId: "user006",
+    userId: "USER005",
     name: "Samsung Galaxy Tab S8",
     type: "mobile",
     category: "Tablet",
@@ -180,10 +180,10 @@ const sampleDevices = [
     blocked: false
   },
   
-  // Rahul Desai's devices (user007)
+  // Rahul Desai's devices (USER009)
   {
     id: "dev013",
-    userId: "user007",
+    userId: "USER009",
     name: "iPad Pro",
     type: "mobile",
     category: "Tablet",
@@ -197,7 +197,7 @@ const sampleDevices = [
   },
   {
     id: "dev014",
-    userId: "user007",
+    userId: "USER009",
     name: "Microsoft Surface",
     type: "laptop",
     category: "Laptop",
@@ -210,10 +210,10 @@ const sampleDevices = [
     blocked: false
   },
   
-  // Priya Menon's devices (user008)
+  // Ravi Kumar's devices (USER011)
   {
     id: "dev015",
-    userId: "user008",
+    userId: "USER011",
     name: "OnePlus 11",
     type: "mobile",
     category: "Smartphone",
@@ -227,7 +227,7 @@ const sampleDevices = [
   },
   {
     id: "dev016",
-    userId: "user008",
+    userId: "USER011",
     name: "Acer Aspire",
     type: "laptop",
     category: "Laptop",
@@ -240,10 +240,10 @@ const sampleDevices = [
     blocked: false
   },
   
-  // Suresh Iyer's devices (user009)
+  // Anita Shah's devices (USER013)
   {
     id: "dev017",
-    userId: "user009",
+    userId: "USER013",
     name: "Xiaomi 13 Pro",
     type: "mobile",
     category: "Smartphone",
@@ -257,7 +257,7 @@ const sampleDevices = [
   },
   {
     id: "dev018",
-    userId: "user009",
+    userId: "USER013",
     name: "HP Envy",
     type: "laptop",
     category: "Laptop",
@@ -270,10 +270,10 @@ const sampleDevices = [
     blocked: false
   },
   
-  // Kavita Reddy's devices (user010)
+  // Vipin Nair's devices (USER014)
   {
     id: "dev019",
-    userId: "user010",
+    userId: "USER014",
     name: "Vivo X90",
     type: "mobile",
     category: "Smartphone",
@@ -287,7 +287,7 @@ const sampleDevices = [
   },
   {
     id: "dev020",
-    userId: "user010",
+    userId: "USER014",
     name: "Lenovo IdeaPad",
     type: "laptop",
     category: "Laptop",
@@ -300,10 +300,10 @@ const sampleDevices = [
     blocked: false
   },
   
-  // Arun Verma's devices (user011)
+  // Suresh Kumar's devices (USER015)
   {
     id: "dev021",
-    userId: "user011",
+    userId: "USER015",
     name: "Realme GT 2",
     type: "mobile",
     category: "Smartphone",
@@ -316,10 +316,10 @@ const sampleDevices = [
     blocked: false
   },
   
-  // Sneha Patel's devices (user012)
+  // Pooja Joshi's devices (USER016)
   {
     id: "dev022",
-    userId: "user012",
+    userId: "USER016",
     name: "Oppo Find X5",
     type: "mobile",
     category: "Smartphone",
@@ -333,7 +333,7 @@ const sampleDevices = [
   },
   {
     id: "dev023",
-    userId: "user012",
+    userId: "USER016",
     name: "Dell Inspiron",
     type: "laptop",
     category: "Laptop",
@@ -346,10 +346,10 @@ const sampleDevices = [
     blocked: false
   },
   
-  // Ankit Joshi's device (user013) - BLOCKED
+  // Ramesh Iyer's device (USER017)
   {
     id: "dev024",
-    userId: "user013",
+    userId: "USER017",
     name: "Asus ZenBook",
     type: "laptop",
     category: "Laptop",
@@ -359,13 +359,13 @@ const sampleDevices = [
     lastUsageDate: "3 days ago",
     dataUsage: "850 MB",
     online: false,
-    blocked: true
+    blocked: false
   },
   
-  // Meera Kapoor's devices (user014)
+  // Anita Kapoor's devices (USER018)
   {
     id: "dev025",
-    userId: "user014",
+    userId: "USER018",
     name: "Nothing Phone 2",
     type: "mobile",
     category: "Smartphone",
@@ -379,7 +379,7 @@ const sampleDevices = [
   },
   {
     id: "dev026",
-    userId: "user014",
+    userId: "USER018",
     name: "MSI Prestige",
     type: "laptop",
     category: "Laptop",
@@ -392,10 +392,10 @@ const sampleDevices = [
     blocked: false
   },
   
-  // Arjun Malhotra's devices (user015)
+  // Sita Kumari's device (USER019)
   {
     id: "dev027",
-    userId: "user015",
+    userId: "USER019",
     name: "Motorola Edge 40",
     type: "mobile",
     category: "Smartphone",
