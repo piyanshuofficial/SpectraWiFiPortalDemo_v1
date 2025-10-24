@@ -1,7 +1,7 @@
 // src/pages/DeviceManagement/DeviceList.js
 
 import React, { useState, useMemo, useEffect } from "react";
-import { FaDesktop, FaGlobeAmericas, FaBan, FaWifi, FaMobileAlt, FaLaptop } from "react-icons/fa";
+import { FaDesktop, FaGlobeAmericas, FaBan, FaWifi, FaMobileAlt, FaLaptop, FaTablet } from "react-icons/fa";
 import { useAuth } from "../../context/AuthContext";
 import { Permissions } from "../../utils/accessLevels";
 import { useLoading } from "../../context/LoadingContext";
@@ -14,193 +14,16 @@ import { toast } from "react-toastify";
 import "./DeviceList.css";
 import { PAGINATION } from "../../constants/appConstants";
 import SEGMENT_DEVICE_AVAILABILITY from "../../config/segmentDeviceConfig";
+import sampleDevices from "../../constants/sampleDevices";
+import sampleUsers from "../../constants/sampleUsers";
+import siteConfig from "../../config/siteConfig";
 
-const deviceStats = [
-  {
-    label: "Total Devices",
-    value: 3892,
-    Icon: FaDesktop,
-    colorClass: "stat-blue"
-  },
-  {
-    label: "Online Now",
-    value: 2145,
-    Icon: FaGlobeAmericas,
-    colorClass: "stat-green"
-  },
-  {
-    label: "Blocked",
-    value: 23,
-    Icon: FaBan,
-    colorClass: "stat-red"
-  },
-  {
-    label: "Access Points",
-    value: 48,
-    Icon: FaWifi,
-    colorClass: "stat-yellow"
-  }
-];
-
-const deviceTypes = [
-  { value: "all", label: "All Device Types" },
-  { value: "mobile", label: "Mobile" },
-  { value: "laptop", label: "Laptop" }
-];
-
-const statusOptions = [
-  { value: "all", label: "All Status" },
-  { value: "online", label: "Online" },
-  { value: "blocked", label: "Blocked" }
-];
-
-const initialDevices = [
-  {
-    id: 1,
-    name: "iPhone 14 Pro",
-    type: "mobile",
-    Icon: FaMobileAlt,
-    mac: "00:1B:44:11:3A:B7",
-    owner: "Amit Sharma",
-    ip: "192.168.1.142",
-    ago: "2 hours ago",
-    usage: "245 MB",
-    online: true
-  },
-  {
-    id: 2,
-    name: "MacBook Air",
-    type: "laptop",
-    Icon: FaLaptop,
-    mac: "00:1B:44:11:3A:C8",
-    owner: "Neeta Singh",
-    ip: "192.168.1.156",
-    ago: "1 hour ago",
-    usage: "1.2 GB",
-    online: true
-  },
-  {
-    id: 3,
-    name: "iPhone 13",
-    type: "mobile",
-    Icon: FaMobileAlt,
-    mac: "00:1B:44:11:3A:B8",
-    owner: "Rajesh Kumar",
-    ip: "192.168.1.143",
-    ago: "3 hours ago",
-    usage: "189 MB",
-    online: false
-  },
-  {
-    id: 4,
-    name: "Dell XPS 15",
-    type: "laptop",
-    Icon: FaLaptop,
-    mac: "00:1B:44:11:3A:C9",
-    owner: "Vikram Chatterjee",
-    ip: "192.168.1.157",
-    ago: "30 minutes ago",
-    usage: "890 MB",
-    online: true
-  },
-  {
-    id: 5,
-    name: "Samsung Galaxy S22",
-    type: "mobile",
-    Icon: FaMobileAlt,
-    mac: "00:1B:44:11:3A:B9",
-    owner: "Divya Nair",
-    ip: "192.168.1.144",
-    ago: "5 hours ago",
-    usage: "567 MB",
-    online: false
-  },
-  {
-    id: 6,
-    name: "HP Pavilion",
-    type: "laptop",
-    Icon: FaLaptop,
-    mac: "00:1B:44:11:3A:D0",
-    owner: "Sanjay Rao",
-    ip: "192.168.1.158",
-    ago: "15 minutes ago",
-    usage: "2.1 GB",
-    online: true,
-    blocked: true
-  },
-  {
-    id: 7,
-    name: "iPad Pro",
-    type: "mobile",
-    Icon: FaMobileAlt,
-    mac: "00:1B:44:11:3A:C0",
-    owner: "Rahul Desai",
-    ip: "192.168.1.145",
-    ago: "45 minutes ago",
-    usage: "432 MB",
-    online: true
-  },
-  {
-    id: 8,
-    name: "Lenovo ThinkPad",
-    type: "laptop",
-    Icon: FaLaptop,
-    mac: "00:1B:44:11:3A:D1",
-    owner: "Amit Sharma",
-    ip: "192.168.1.159",
-    ago: "10 minutes ago",
-    usage: "1.5 GB",
-    online: true
-  },
-  {
-    id: 9,
-    name: "iPhone 12 Mini",
-    type: "mobile",
-    Icon: FaMobileAlt,
-    mac: "00:1B:44:11:3A:C1",
-    owner: "Neeta Singh",
-    ip: "192.168.1.146",
-    ago: "6 hours ago",
-    usage: "234 MB",
-    online: false
-  },
-  {
-    id: 10,
-    name: "MacBook Pro 16",
-    type: "laptop",
-    Icon: FaLaptop,
-    mac: "00:1B:44:11:3A:D2",
-    owner: "Rajesh Kumar",
-    ip: "192.168.1.160",
-    ago: "20 minutes ago",
-    usage: "3.2 GB",
-    online: true
-  },
-  {
-    id: 11,
-    name: "Google Pixel 7",
-    type: "mobile",
-    Icon: FaMobileAlt,
-    mac: "00:1B:44:11:3A:C2",
-    owner: "Vikram Chatterjee",
-    ip: "192.168.1.147",
-    ago: "4 hours ago",
-    usage: "345 MB",
-    online: false
-  },
-  {
-    id: 12,
-    name: "Asus ROG",
-    type: "laptop",
-    Icon: FaLaptop,
-    mac: "00:1B:44:11:3A:D3",
-    owner: "Divya Nair",
-    ip: "192.168.1.161",
-    ago: "25 minutes ago",
-    usage: "2.8 GB",
-    online: true
-  }
-];
+const getDeviceIcon = (category) => {
+  const categoryLower = category.toLowerCase();
+  if (categoryLower.includes('tablet')) return FaTablet;
+  if (categoryLower.includes('phone') || categoryLower.includes('mobile')) return FaMobileAlt;
+  return FaLaptop;
+};
 
 const DeviceList = () => {
   const { currentUser } = useAuth();
@@ -219,22 +42,69 @@ const DeviceList = () => {
   const [blockingDeviceId, setBlockingDeviceId] = useState(null);
   const [viewingDeviceId, setViewingDeviceId] = useState(null);
   
-  //NEW: Segment selector for testing (matches UserList pattern)
   const [segmentFilter, setSegmentFilter] = useState("enterprise");
   
-  //NEW: Check segment-specific device availability
   const segmentDeviceConfig = SEGMENT_DEVICE_AVAILABILITY[segmentFilter] || {};
   const allowHuman = segmentDeviceConfig.allowHuman ?? false;
   const allowNonHuman = segmentDeviceConfig.allowNonHuman ?? false;
   const showRegisterDevice = allowHuman || allowNonHuman;
   
-  //NEW: Check user permissions
   const hasDevicePermission = rolePermissions.canManageDevices === true;
   
-  //NEW: Final button state - both permission AND segment availability required
   const canRegisterDevice = hasDevicePermission && showRegisterDevice;
 
-  // Load devices only once on mount
+  // Enrich devices with owner information from users
+  const enrichedDevices = useMemo(() => {
+    return sampleDevices.map(device => {
+      const owner = sampleUsers.find(user => user.id === device.userId);
+      return {
+        ...device,
+        Icon: getDeviceIcon(device.category),
+        owner: owner ? `${owner.firstName} ${owner.lastName}` : 'Unknown'
+      };
+    });
+  }, []);
+
+  // Device statistics from siteConfig
+  const deviceStats = [
+    {
+      label: "Total Devices",
+      value: siteConfig.devices.totalDevices,
+      Icon: FaDesktop,
+      colorClass: "stat-blue"
+    },
+    {
+      label: "Online Now",
+      value: siteConfig.devices.onlineDevices,
+      Icon: FaGlobeAmericas,
+      colorClass: "stat-green"
+    },
+    {
+      label: "Blocked",
+      value: siteConfig.devices.blockedDevices,
+      Icon: FaBan,
+      colorClass: "stat-red"
+    },
+    {
+      label: "Access Points",
+      value: siteConfig.devices.accessPoints,
+      Icon: FaWifi,
+      colorClass: "stat-yellow"
+    }
+  ];
+
+  const deviceTypes = useMemo(() => [
+    { value: "all", label: "All Device Types" },
+    { value: "mobile", label: "Mobile" },
+    { value: "laptop", label: "Laptop" }
+  ], []);
+
+  const statusOptions = useMemo(() => [
+    { value: "all", label: "All Status" },
+    { value: "online", label: "Online" },
+    { value: "blocked", label: "Blocked" }
+  ], []);
+
 useEffect(() => {
   let mounted = true;
   let timeoutId = null;
@@ -244,7 +114,7 @@ useEffect(() => {
     try {
       timeoutId = setTimeout(() => {
         if (mounted) {
-          setDevices(initialDevices);
+          setDevices(enrichedDevices);
           stopLoading('devices');
           setInitialLoad(false);
         }
@@ -264,7 +134,7 @@ useEffect(() => {
     mounted = false;
     if (timeoutId) clearTimeout(timeoutId);
   };
-}, []);
+}, [enrichedDevices, startLoading, stopLoading]);
 
   const filteredDevices = useMemo(() => {
     return devices.filter(dev => {
@@ -299,15 +169,22 @@ useEffect(() => {
       await new Promise(resolve => setTimeout(resolve, 800));
       
       const newDevice = {
-        id: devices.length + 1,
+        id: `dev${devices.length + 1}`.padStart(6, '0'),
+        userId: deviceInfo.mode === 'bindUser' ? deviceInfo.userId : 'system',
         name: deviceInfo.deviceName,
         type: deviceInfo.deviceCategory.toLowerCase().includes('mobile') ? 'mobile' : 'laptop',
-        Icon: deviceInfo.deviceCategory.toLowerCase().includes('mobile') ? FaMobileAlt : FaLaptop,
+        category: deviceInfo.deviceCategory,
+        Icon: getDeviceIcon(deviceInfo.deviceCategory),
         mac: deviceInfo.macAddress,
-        owner: deviceInfo.mode === 'bindUser' ? deviceInfo.userId : 'System',
+        owner: deviceInfo.mode === 'bindUser' ? 
+          (() => {
+            const user = sampleUsers.find(u => u.id === deviceInfo.userId);
+            return user ? `${user.firstName} ${user.lastName}` : 'Unknown';
+          })() : 'System',
         ip: `192.168.1.${Math.floor(Math.random() * 200) + 1}`,
-        ago: 'Just now',
-        usage: '0 MB',
+        additionDate: new Date().toISOString().split('T')[0],
+        lastUsageDate: 'Just now',
+        dataUsage: '0 MB',
         online: true,
         blocked: false
       };
@@ -366,7 +243,6 @@ const handleBlockDevice = async (device) => {
    const handleViewDetails = async (device) => {
     setViewingDeviceId(device.id);
     try {
-      // Simulate API call to fetch device details
       await new Promise(resolve => setTimeout(resolve, 400));
       toast.info(`Viewing details for ${device.name}`);
     } catch (error) {
@@ -376,7 +252,6 @@ const handleBlockDevice = async (device) => {
     }
   };
 
-  //NEW: Handle button click with proper messaging
   const handleRegisterDeviceClick = () => {
     if (!hasDevicePermission) {
       toast.error("You don't have permission to register devices. Please contact your administrator.");
@@ -391,7 +266,6 @@ const handleBlockDevice = async (device) => {
     setShowDeviceModal(true);
   };
 
-  // Show skeleton loader on initial load
   if (initialLoad) {
     return (
       <main className="device-mgmt-main">
@@ -404,7 +278,6 @@ const handleBlockDevice = async (device) => {
         </div>
 
         <SkeletonLoader variant="rect" height={60} style={{ marginBottom: '20px' }} />
-        <SkeletonLoader variant="rect" height={40} style={{ marginBottom: '16px' }} />
 
         <div className="device-card-list">
           {[...Array(6)].map((_, i) => (
@@ -423,7 +296,6 @@ const handleBlockDevice = async (device) => {
         fullPage={false}
       />
       
-      {/*NEW: Segment Selector (Testing Only) - Matches UserList pattern */}
       <div className="segment-selector-test">
         <label htmlFor="segment-test-select">Segment:</label>
         <select
@@ -452,7 +324,7 @@ const handleBlockDevice = async (device) => {
               <stat.Icon className="devsc-icon" />
             </div>
             <div className="devsc-valuecard">
-              <span className="devsc-value">{stat.value}</span>
+              <span className="devsc-value">{stat.value.toLocaleString()}</span>
               {stat.label === "Online Now" &&
                 <span className="devsc-dot green"></span>}
               {stat.label === "Blocked" &&
@@ -500,7 +372,7 @@ const handleBlockDevice = async (device) => {
         />
         <Button 
           type="button" 
-          className="device-mgmt-search-btn"
+          variant="secondary"
           onClick={handleSearch}
           aria-label="Execute search"
           disabled={isLoading('devices')}
@@ -508,7 +380,6 @@ const handleBlockDevice = async (device) => {
           Search
         </Button>
         
-        {/*UPDATED: Register Device button with permission & segment checks */}
         <Button
           variant="primary"
           onClick={handleRegisterDeviceClick}
@@ -532,14 +403,6 @@ const handleBlockDevice = async (device) => {
           Register Device
         </Button>
       </div>
-
-      <Pagination
-        totalItems={filteredDevices.length}
-        rowsPerPage={rowsPerPage}
-        currentPage={currentPage}
-        onPageChange={setCurrentPage}
-        onRowsPerPageChange={setRowsPerPage}
-      />
 
       <div className="device-card-list">
         {pagedDevices.length === 0 ? (
@@ -569,18 +432,17 @@ const handleBlockDevice = async (device) => {
                   </span>
                   <span>
                     Connected:{" "}
-                    <span className="device-link">{device.ago}</span>
+                    <span className="device-link">{device.lastUsageDate}</span>
                   </span>
                   <span>
                     Data Usage:{" "}
-                    <span className="device-link">{device.usage}</span>
+                    <span className="device-link">{device.dataUsage}</span>
                   </span>
                 </div>
               </div>
               <div className="device-card-actions">
                 <Button 
-                  className="details-btn" 
-                  variant="primary"
+                  variant="info"
                   onClick={() => handleViewDetails(device)}
                   aria-label={`View details for ${device.name}`}
                   loading={viewingDeviceId === device.id}
@@ -589,7 +451,6 @@ const handleBlockDevice = async (device) => {
                   Details
                 </Button>
                 <Button 
-                  className="block-btn" 
                   variant="danger"
                   onClick={() => handleBlockDevice(device)}
                   aria-label={`Block ${device.name}`}
@@ -619,16 +480,15 @@ const handleBlockDevice = async (device) => {
         />
       )}
 
-      {/*UPDATED: Pass segment to DeviceFormModal */}
       {showDeviceModal && (
         <DeviceFormModal
           open={showDeviceModal}
           onClose={() => setShowDeviceModal(false)}
           onSubmit={handleDeviceSubmit}
-          users={[]}
+          users={sampleUsers}
           devices={devices}
           segment={segmentFilter}
-          siteUserList={[]}
+          siteUserList={sampleUsers}
           submitting={submitting}
         />
       )}

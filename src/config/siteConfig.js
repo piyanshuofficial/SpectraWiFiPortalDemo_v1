@@ -1,24 +1,27 @@
 // src/config/siteConfig.js
-
 const siteConfig = {
-  siteName: "Sample Site",
+  siteName: "Mumbai Corporate Office",
+  siteId: "SITE-MUM-001",
   
-  // License Management
   licenses: {
-    maxLicenses: 100,
-    usedLicenses: 70,
+    maxLicenses: 250,
+    usedLicenses: 142,
+    availableLicenses: 108
   },
   
-  // Dashboard Metrics
-  metrics: {
-    activeUsers: 1234,
-    activeUsersDelta: 134.00,
-    licenseUsagePercent: 78,
-    licenseUsageDelta: 6.00,
-    dataUsageTB: 78,
-    dataUsageDelta: 1.00,
-    currentAlerts: 6,
-    alertsDelta: 8.00
+  devices: {
+    totalDevices: 3892,
+    onlineDevices: 2145,
+    blockedDevices: 23,
+    accessPoints: 48,
+    mobileDevices: 2234,
+    laptopDevices: 1658
+  },
+  
+  network: {
+    bandwidth: "1 Gbps",
+    uptime: "99.8%",
+    activeConnections: 2145
   }
 };
 
