@@ -53,18 +53,6 @@ const DeviceList = () => {
   
   const canRegisterDevice = hasDevicePermission && showRegisterDevice;
 
-  // Enrich devices with owner information from users
-  const enrichedDevices = useMemo(() => {
-    return sampleDevices.map(device => {
-      const owner = sampleUsers.find(user => user.id === device.userId);
-      return {
-        ...device,
-        Icon: getDeviceIcon(device.category),
-        owner: owner ? `${owner.firstName} ${owner.lastName}` : 'Unknown'
-      };
-    });
-  }, []);
-
   // Device statistics from siteConfig
   const deviceStats = [
     {
@@ -105,36 +93,28 @@ const DeviceList = () => {
     { value: "blocked", label: "Blocked" }
   ], []);
 
-useEffect(() => {
-  let mounted = true;
-  let timeoutId = null;
+  // ✅ FIXED: Simplified loading with direct state update
+  useEffect(() => {
+    const loadDevices = () => {
+      // Enrich devices with owner information
+      const enrichedData = sampleDevices.map(device => {
+        const owner = sampleUsers.find(user => user.id === device.userId);
+        return {
+          ...device,
+          Icon: getDeviceIcon(device.category),
+          owner: owner ? `${owner.firstName} ${owner.lastName}` : 'Unknown'
+        };
+      });
+      
+      setDevices(enrichedData);
+      setInitialLoad(false);
+    };
 
-  const loadDevices = async () => {
-    startLoading('devices');
-    try {
-      timeoutId = setTimeout(() => {
-        if (mounted) {
-          setDevices(enrichedDevices);
-          stopLoading('devices');
-          setInitialLoad(false);
-        }
-      }, 700);
-    } catch (error) {
-      if (mounted) {
-        toast.error("Failed to load devices");
-        stopLoading('devices');
-        setInitialLoad(false);
-      }
-    }
-  };
-
-  loadDevices();
-
-  return () => {
-    mounted = false;
-    if (timeoutId) clearTimeout(timeoutId);
-  };
-}, [enrichedDevices, startLoading, stopLoading]);
+    // Small delay to show loading state briefly
+    const timer = setTimeout(loadDevices, 300);
+    
+    return () => clearTimeout(timer);
+  }, []);
 
   const filteredDevices = useMemo(() => {
     return devices.filter(dev => {
@@ -169,10 +149,10 @@ useEffect(() => {
       await new Promise(resolve => setTimeout(resolve, 800));
       
       const newDevice = {
-        id: `dev${devices.length + 1}`.padStart(6, '0'),
+        id: `dev${String(devices.length + 1).padStart(3, '0')}`,
         userId: deviceInfo.mode === 'bindUser' ? deviceInfo.userId : 'system',
         name: deviceInfo.deviceName,
-        type: deviceInfo.deviceCategory.toLowerCase().includes('mobile') ? 'mobile' : 'laptop',
+        type: deviceInfo.deviceCategory.toLowerCase().includes('mobile') || deviceInfo.deviceCategory.toLowerCase().includes('tablet') || deviceInfo.deviceCategory.toLowerCase().includes('phone') ? 'mobile' : 'laptop',
         category: deviceInfo.deviceCategory,
         Icon: getDeviceIcon(deviceInfo.deviceCategory),
         mac: deviceInfo.macAddress,
@@ -199,38 +179,34 @@ useEffect(() => {
     }
   };
 
-const handleBlockDevice = async (device) => {
-  if (device.blocked) {
-    toast.info(`${device.name} is already blocked`);
-    return;
-  }
+  const handleBlockDevice = async (device) => {
+    if (device.blocked) {
+      toast.info(`${device.name} is already blocked`);
+      return;
+    }
 
-  if (!window.confirm(`Are you sure you want to block ${device.name}?`)) {
-    return;
-  }
+    if (!window.confirm(`Are you sure you want to block ${device.name}?`)) {
+      return;
+    }
 
-  setBlockingDeviceId(device.id);
-  let timeoutId = null;
-  try {
-    await new Promise(resolve => {
-      timeoutId = setTimeout(resolve, 600);
-    });
-    
-    setDevices(prev => 
-      prev.map(dev => 
-        dev.id === device.id 
-          ? { ...dev, blocked: true, online: false } 
-          : dev
-      )
-    );
-    toast.warn(`${device.name} has been blocked`);
-  } catch (error) {
-    toast.error(`Failed to block ${device.name}`);
-  } finally {
-    if (timeoutId) clearTimeout(timeoutId);
-    setBlockingDeviceId(null);
-  }
-};
+    setBlockingDeviceId(device.id);
+    try {
+      await new Promise(resolve => setTimeout(resolve, 600));
+      
+      setDevices(prev => 
+        prev.map(dev => 
+          dev.id === device.id 
+            ? { ...dev, blocked: true, online: false } 
+            : dev
+        )
+      );
+      toast.warn(`${device.name} has been blocked`);
+    } catch (error) {
+      toast.error(`Failed to block ${device.name}`);
+    } finally {
+      setBlockingDeviceId(null);
+    }
+  };
 
   const handleSearch = () => {
     if (searchText.trim()) {
@@ -240,7 +216,7 @@ const handleBlockDevice = async (device) => {
     }
   };
   
-   const handleViewDetails = async (device) => {
+  const handleViewDetails = async (device) => {
     setViewingDeviceId(device.id);
     try {
       await new Promise(resolve => setTimeout(resolve, 400));

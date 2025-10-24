@@ -22,7 +22,17 @@ import SkeletonLoader from "../components/Loading/SkeletonLoader";
 import "./Dashboard.css";
 
 const Dashboard = () => {
-  const metrics = siteConfig.metrics;
+  const metrics = {
+    activeUsers: siteConfig?.dashboard?.activeUsers || 850,
+    activeUsersDelta: 25,
+    licenseUsagePercent: Math.round((siteConfig?.licenses?.usedLicenses / siteConfig?.licenses?.maxLicenses) * 100) || 57,
+    licenseUsageDelta: 2,
+    dataUsageTB: 1.2,
+    dataUsageDelta: 0.05,
+    currentAlerts: 0,
+    alertsDelta: -2
+  };
+  
   const { currentUser } = useAuth();
   const { startLoading, stopLoading, isLoading } = useLoading();
   const rolePermissions = Permissions[currentUser.accessLevel]?.[currentUser.role] || {};
@@ -35,7 +45,6 @@ const Dashboard = () => {
 
   const darkMode = document.documentElement.getAttribute("data-theme") === "dark";
 
-  // ✅ UPDATED: Enhanced chart options with better tooltip configuration
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
@@ -70,18 +79,15 @@ const Dashboard = () => {
           size: 13,
         },
         callbacks: {
-          // ✅ Format tooltip title (day name)
           title: function(tooltipItems) {
             return tooltipItems[0].label;
           },
-          // ✅ Format tooltip label with value
           label: function(context) {
             let label = context.dataset.label || '';
             if (label) {
               label += ': ';
             }
             if (context.parsed.y !== null) {
-              // Format the value based on chart type
               if (context.chart.canvas.id === 'chart-network-usage') {
                 label += context.parsed.y + ' GB';
               } else if (context.chart.canvas.id === 'chart-license-usage') {
