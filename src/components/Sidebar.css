@@ -7,8 +7,8 @@
   background-repeat: no-repeat;
   background-position: left top;
   color: #fff;
-  width: var(--sidebar-width); /* 6.25rem = 100px */
-  min-width: var(--sidebar-width);
+  width: 100px;
+  min-width: 100px;
   min-height: 100vh;
   display: flex;
   flex-direction: column;

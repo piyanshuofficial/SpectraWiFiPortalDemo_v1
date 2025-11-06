@@ -24,7 +24,7 @@ const FooterBar = () => {
         <span className="footer-link" onClick={handleTermsClick}>
           Terms & Conditions
         </span>
-        <span className="footer-link-divider">|</span>
+        <span className="footer-link-divider"></span>
         <span className="footer-link" onClick={handlePrivacyClick}>
           Privacy Policy
         </span>
