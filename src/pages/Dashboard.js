@@ -292,7 +292,11 @@ const Dashboard = () => {
         rolePermissions,
         exportCanvasWidth: width,
         exportCanvasHeight: height,
-        reportId: reportId
+        reportId: reportId,
+        criteria: null,
+        addWatermark: false,
+        watermarkText: "CONFIDENTIAL",
+        disclaimerText: "This report contains confidential information. Data is subject to change. For internal use only."
       });
       
       toast.success("PDF exported successfully");
