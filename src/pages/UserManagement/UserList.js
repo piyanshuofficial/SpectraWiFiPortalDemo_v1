@@ -1,6 +1,6 @@
 // src/pages/UserManagement/UserList.js
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
 import UserFormModal from "./UserFormModal";
 import UserToolbar from "./UserToolbar";
 import UserDetailsModal from "./UserDetailsModal";
@@ -30,6 +30,122 @@ import { exportChartDataToCSV } from "../../utils/exportUtils";
 
 const MAX_LICENSES = siteConfig.licenses.maxLicenses;
 const USED_LICENSES = siteConfig.licenses.usedLicenses;
+
+// Memoized Policy Cell Component
+const PolicyCell = React.memo(({ userPolicy }) => {
+  if (!userPolicy) return <td className="policy-column">--</td>;
+  
+  return (
+    <td className="policy-column">
+      <div className="policy-row">
+        <span className="policy-icon speed"><FaTachometerAlt /></span>
+        <span className="policy-pill speed">{userPolicy.speed}</span>
+      </div>
+      <div className="policy-row">
+        <span className="policy-icon data"><FaDatabase /></span>
+        <span className="policy-pill data">{userPolicy.dataVolume}</span>
+      </div>
+      <div className="policy-row">
+        <span className="policy-icon device"><FaTabletAlt /></span>
+        <span className="policy-pill device">
+          {userPolicy.deviceLimit} Device{userPolicy.deviceLimit > 1 ? "s" : ""}
+        </span>
+      </div>
+    </td>
+  );
+});
+
+PolicyCell.displayName = 'PolicyCell';
+
+// Memoized User Table Row Component
+const UserTableRow = React.memo(({ 
+  user, 
+  visibleColumns, 
+  segmentSpecificFields,
+  segmentFilter,
+  rolePermissions,
+  onDetailsClick,
+  onEditClick,
+  onDeleteClick
+}) => {
+  const isBlocked = user.status === "Blocked" || user.status === "Restricted";
+  
+  return (
+    <tr>
+      {visibleColumns.includes("id") && <td>{user.id}</td>}
+      {visibleColumns.includes("firstName") && <td>{user.firstName} {user.lastName}</td>}
+      {visibleColumns.includes("mobile") && <td>{user.mobile}</td>}
+      {visibleColumns.includes("email") && <td>{user.email}</td>}
+      {(visibleColumns.includes("userPolicy") || visibleColumns.includes("policy")) && (
+        <PolicyCell userPolicy={user.userPolicy} />
+      )}
+      {visibleColumns.includes("devicesCount") && <td>{user.devicesCount}</td>}
+      {visibleColumns.includes("status") && (
+        <td><Badge variant={user.status.toLowerCase()} size="table">{user.status}</Badge></td>
+      )}
+      {visibleColumns.includes("registration") && <td>{user.registration}</td>}
+      {visibleColumns.includes("lastOnline") && <td>{user.lastOnline}</td>}
+      {segmentSpecificFields[segmentFilter]?.map((col) => (
+        visibleColumns.includes(col.key) ? <td key={col.key}>{user[col.key] || "-"}</td> : null
+      ))}
+      <td>
+        <Button
+          variant="info"
+          title="User Details"
+          aria-label="View User Details"
+          onClick={() => onDetailsClick(user)}
+        >
+          <FaInfoCircle />
+        </Button>
+        {rolePermissions.canEditUsers ? (
+          <>
+            <Button
+              variant="primary"
+              title={isBlocked ? "Cannot edit user with Blocked status" : "Edit User"}
+              aria-label={isBlocked ? "Edit User Disabled - Blocked Status" : "Edit User"}
+              onClick={() => onEditClick(user)}
+              disabled={isBlocked}
+            >
+              <FaEdit />
+            </Button>
+            <Button 
+              variant="danger" 
+              title="Delete User - Disabled" 
+              aria-label="Delete User Disabled" 
+              disabled
+            >
+              <FaTrash />
+            </Button>
+          </>
+        ) : (
+          <Button 
+            variant="primary" 
+            title="Edit User - Permission Required" 
+            aria-label="Edit Disabled, Permission Required" 
+            disabled
+          >
+            <FaEdit />
+          </Button>
+        )}
+      </td>
+    </tr>
+  );
+}, (prevProps, nextProps) => {
+  // Custom comparison function for optimization
+  return (
+    prevProps.user.id === nextProps.user.id &&
+    prevProps.user.status === nextProps.user.status &&
+    prevProps.user.firstName === nextProps.user.firstName &&
+    prevProps.user.lastName === nextProps.user.lastName &&
+    prevProps.user.mobile === nextProps.user.mobile &&
+    prevProps.user.email === nextProps.user.email &&
+    prevProps.visibleColumns.length === nextProps.visibleColumns.length &&
+    prevProps.segmentFilter === nextProps.segmentFilter &&
+    JSON.stringify(prevProps.user.userPolicy) === JSON.stringify(nextProps.user.userPolicy)
+  );
+});
+
+UserTableRow.displayName = 'UserTableRow';
 
 const UserList = () => {
   const { currentUser } = useAuth();
@@ -68,7 +184,6 @@ const UserList = () => {
     return [...commonColumns, ...segmentCols];
   }, [segmentFilter]);
 
-  // Simulate initial data load
   useEffect(() => {
     let mounted = true;
     let timeoutId = null;
@@ -119,11 +234,11 @@ const UserList = () => {
     }
   }, [location.search]);
 
-  const toggleColumnVisibility = (key) => {
+  const toggleColumnVisibility = useCallback((key) => {
     setVisibleColumns((prev) =>
       prev.includes(key) ? prev.filter((c) => c !== key) : [...prev, key]
     );
-  };
+  }, []);
 
   const filteredUsers = useMemo(() => {
     return users.filter((user) => {
@@ -194,27 +309,31 @@ const UserList = () => {
     visibleColumns,
   ]);
 
-  const onSortClick = (column) => {
-    if (sortColumn === column) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
-    } else {
-      setSortColumn(column);
-      setSortDirection("asc");
-    }
-  };
+  const onSortClick = useCallback((column) => {
+    setSortColumn(prevColumn => {
+      if (prevColumn === column) {
+        setSortDirection(prev => prev === "asc" ? "desc" : "asc");
+        return column;
+      } else {
+        setSortDirection("asc");
+        return column;
+      }
+    });
+  }, []);
 
-  const renderSortIndicator = (column) =>
+  const renderSortIndicator = useCallback((column) =>
     sortColumn === column ? (
       sortDirection === "asc" ? (
         <FaSortUp aria-label="sorted ascending" />
       ) : (
         <FaSortDown aria-label="sorted descending" />
       )
-    ) : null;
+    ) : null,
+  [sortColumn, sortDirection]);
 
   const activeFilterCount = Object.values(advancedFilters).filter(Boolean).length;
 
-  const handleUserSubmit = async (userObj) => {
+  const handleUserSubmit = useCallback(async (userObj) => {
     setSubmitting(true);
     let timeoutId = null;
     try {
@@ -224,10 +343,10 @@ const UserList = () => {
       
       const userWithActiveStatus = { ...userObj, status: "Active" };
       if (editingUser) {
-        setUsers(users.map((u) => (u.id === editingUser.id ? userWithActiveStatus : u)));
+        setUsers(users => users.map((u) => (u.id === editingUser.id ? userWithActiveStatus : u)));
         notifications.userUpdated();
       } else {
-        setUsers([userWithActiveStatus, ...users]);
+        setUsers(users => [userWithActiveStatus, ...users]);
         notifications.userAdded();
       }
       setShowFormModal(false);
@@ -238,13 +357,13 @@ const UserList = () => {
       if (timeoutId) clearTimeout(timeoutId);
       setSubmitting(false);
     }
-  };
+  }, [editingUser]);
 
-  const handleChangeStatus = (id, newStatus) => {
-    setUsers(users.map((u) => (u.id === id ? { ...u, status: newStatus } : u)));
-  };
+  const handleChangeStatus = useCallback((id, newStatus) => {
+    setUsers(users => users.map((u) => (u.id === id ? { ...u, status: newStatus } : u)));
+  }, []);
 
-  const handleDelete = async (id) => {
+  const handleDelete = useCallback(async (id) => {
     if (window.confirm("Are you sure you want to delete this user?")) {
       startLoading('users');
       let timeoutId = null;
@@ -252,7 +371,7 @@ const UserList = () => {
         await new Promise(resolve => {
           timeoutId = setTimeout(resolve, 500);
         });
-        setUsers(users.filter((u) => u.id !== id));
+        setUsers(users => users.filter((u) => u.id !== id));
         notifications.userDeleted();
       } catch (error) {
         notifications.operationFailed("delete user");
@@ -261,9 +380,9 @@ const UserList = () => {
         stopLoading('users');
       }
     }
-  };
+  }, [startLoading, stopLoading]);
 
-  const handleEditClick = (user) => {
+  const handleEditClick = useCallback((user) => {
     const isBlocked = user.status === "Blocked" || user.status === "Restricted";
     if (isBlocked) {
       notifications.showError("Cannot edit user with Blocked status");
@@ -271,16 +390,20 @@ const UserList = () => {
     }
     setEditingUser(user);
     setShowFormModal(true);
-  };
+  }, []);
 
-  const handleDeviceSubmit = (deviceInfo) => {
+  const handleDetailsClick = useCallback((user) => {
+    setDetailsUser(user);
+    setShowDetailsModal(true);
+  }, []);
+
+  const handleDeviceSubmit = useCallback((deviceInfo) => {
     notifications.deviceRegistered(deviceInfo.deviceName);
-    setDevices([deviceInfo, ...devices]);
+    setDevices(devices => [deviceInfo, ...devices]);
     setShowDeviceModal(false);
-  };
+  }, []);
 
-  // Export functionality
-  const handleExportUsers = async () => {
+  const handleExportUsers = useCallback(async () => {
     if (!rolePermissions.canViewReports) {
       notifications.noPermission("export reports");
       return;
@@ -294,18 +417,13 @@ const UserList = () => {
         timeoutId = setTimeout(resolve, 600);
       });
 
-      // Get visible column definitions
       const visibleColumnDefs = columns.filter(col => visibleColumns.includes(col.key));
-
-      // Prepare headers
       const headers = visibleColumnDefs.map(col => col.label);
 
-      // Prepare rows from filtered users
       const rows = sortedUsers.map(user => {
         return visibleColumnDefs.map(col => {
           const key = col.key;
           
-          // Handle special cases
           if (key === 'userPolicy' || key === 'policy') {
             if (user.userPolicy) {
               return `${user.userPolicy.speed} | ${user.userPolicy.dataVolume} | ${user.userPolicy.deviceLimit} Device(s) | ${user.userPolicy.dataCycleType}`;
@@ -317,17 +435,14 @@ const UserList = () => {
             return `${user.firstName} ${user.lastName}`;
           }
           
-          // Return the value or '--' for empty values
           return user[key] || '--';
         });
       });
 
-      // Generate filename with timestamp
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T')[0];
       const segmentName = segmentFilter.charAt(0).toUpperCase() + segmentFilter.slice(1);
       const filename = `Users_${segmentName}_${timestamp}.csv`;
 
-      // Export to CSV
       exportChartDataToCSV({ headers, rows }, filename);
       
       notifications.exportSuccess(`${sortedUsers.length} users`);
@@ -338,30 +453,8 @@ const UserList = () => {
       if (timeoutId) clearTimeout(timeoutId);
       setExportingCSV(false);
     }
-  };
+  }, [rolePermissions.canViewReports, columns, visibleColumns, sortedUsers, segmentFilter]);
 
-  const renderPolicyCell = (user) => (
-    <td className="policy-column">
-      {user.userPolicy ? (
-        <>
-          <div className="policy-row">
-            <span className="policy-icon speed"><FaTachometerAlt /></span>
-            <span className="policy-pill speed">{user.userPolicy.speed}</span>
-          </div>
-          <div className="policy-row">
-            <span className="policy-icon data"><FaDatabase /></span>
-            <span className="policy-pill data">{user.userPolicy.dataVolume}</span>
-          </div>
-          <div className="policy-row">
-            <span className="policy-icon device"><FaTabletAlt /></span>
-            <span className="policy-pill device">{user.userPolicy.deviceLimit} Device{user.userPolicy.deviceLimit > 1 ? "s" : ""}</span>
-          </div>
-        </>
-      ) : "--"}
-    </td>
-  );
-
-  // Show skeleton loader on initial load
   if (initialLoad) {
     return (
       <div className="user-list-container">
@@ -377,10 +470,8 @@ const UserList = () => {
 
   return (
     <div className="user-list-container">
-      {/* Loading overlay for operations */}
       <LoadingOverlay active={isLoading('users') || exportingCSV} message={exportingCSV ? "Exporting users..." : "Processing..."} />
       
-      {/* Segment Selector - Top Right Corner (Testing Only) */}
       <div className="segment-selector-test">
         <label htmlFor="segment-test-select">Segment:</label>
         <select
@@ -419,7 +510,6 @@ const UserList = () => {
         </div>
       </div>
 
-      {/* Compact Column Controls */}
       <div className="column-controls-compact">
         <div className="column-controls-left">
           <label htmlFor="rows-per-page-select" className="compact-label">
@@ -588,61 +678,19 @@ const UserList = () => {
                 </td>
               </tr>
             ) : (
-              pagedUsers.map((user) => {
-                const isBlocked = user.status === "Blocked" || user.status === "Restricted";
-                
-                return (
-                  <tr key={user.id}>
-                    {visibleColumns.includes("id") && <td>{user.id}</td>}
-                    {visibleColumns.includes("firstName") && <td>{user.firstName} {user.lastName}</td>}
-                    {visibleColumns.includes("mobile") && <td>{user.mobile}</td>}
-                    {visibleColumns.includes("email") && <td>{user.email}</td>}
-                    {(visibleColumns.includes("userPolicy") || visibleColumns.includes("policy")) && renderPolicyCell(user)}
-                    {visibleColumns.includes("devicesCount") && <td>{user.devicesCount}</td>}
-                    {visibleColumns.includes("status") && (
-                      <td><Badge variant={user.status.toLowerCase()} size="table">{user.status}</Badge></td>
-                    )}
-                    {visibleColumns.includes("registration") && <td>{user.registration}</td>}
-                    {visibleColumns.includes("lastOnline") && <td>{user.lastOnline}</td>}
-                    {segmentSpecificFields[segmentFilter]?.map((col) => (
-                      visibleColumns.includes(col.key) ? <td key={col.key}>{user[col.key] || "-"}</td> : null
-                    ))}
-                    <td>
-                      <Button
-                        variant="info"
-                        title="User Details"
-                        aria-label="View User Details"
-                        onClick={() => {
-                          setDetailsUser(user);
-                          setShowDetailsModal(true);
-                        }}
-                      >
-                        <FaInfoCircle />
-                      </Button>
-                      {rolePermissions.canEditUsers ? (
-                        <>
-                          <Button
-                            variant="primary"
-                            title={isBlocked ? "Cannot edit user with Blocked status" : "Edit User"}
-                            aria-label={isBlocked ? "Edit User Disabled - Blocked Status" : "Edit User"}
-                            onClick={() => handleEditClick(user)}
-                            disabled={isBlocked}
-                          >
-                            <FaEdit />
-                          </Button>
-                          <Button variant="danger" title="Delete User - Disabled" aria-label="Delete User Disabled" disabled>
-                            <FaTrash />
-                          </Button>
-                        </>
-                      ) : (
-                        <Button variant="primary" title="Edit User - Permission Required" aria-label="Edit Disabled, Permission Required" disabled>
-                          <FaEdit />
-                        </Button>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })
+              pagedUsers.map((user) => (
+                <UserTableRow
+                  key={user.id}
+                  user={user}
+                  visibleColumns={visibleColumns}
+                  segmentSpecificFields={segmentSpecificFields}
+                  segmentFilter={segmentFilter}
+                  rolePermissions={rolePermissions}
+                  onDetailsClick={handleDetailsClick}
+                  onEditClick={handleEditClick}
+                  onDeleteClick={handleDelete}
+                />
+              ))
             )}
           </tbody>
         </table>

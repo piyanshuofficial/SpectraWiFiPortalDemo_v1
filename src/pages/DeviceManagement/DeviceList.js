@@ -1,6 +1,6 @@
 // src/pages/DeviceManagement/DeviceList.js
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { FaDesktop, FaGlobeAmericas, FaBan, FaWifi, FaMobileAlt, FaLaptop, FaTablet } from "react-icons/fa";
 import { useAuth } from "../../context/AuthContext";
 import { Permissions } from "../../utils/accessLevels";
@@ -24,6 +24,94 @@ const getDeviceIcon = (category) => {
   if (categoryLower.includes('phone') || categoryLower.includes('mobile')) return FaMobileAlt;
   return FaLaptop;
 };
+
+// Memoized Summary Card Component
+const SummaryCard = React.memo(({ stat }) => (
+  <div className={`device-summary-card ${stat.colorClass}`}>
+    <div className="devsc-toprow">
+      <div className="devsc-title">{stat.label}</div>
+      <stat.Icon className="devsc-icon" />
+    </div>
+    <div className="devsc-valuecard">
+      <span className="devsc-value">{stat.value.toLocaleString()}</span>
+      {stat.label === "Online Now" && <span className="devsc-dot green"></span>}
+      {stat.label === "Blocked" && <span className="devsc-dot red"></span>}
+    </div>
+  </div>
+));
+
+SummaryCard.displayName = 'SummaryCard';
+
+// Memoized Device Card Component
+const DeviceCard = React.memo(({ 
+  device, 
+  onViewDetails, 
+  onBlock,
+  viewingDeviceId,
+  blockingDeviceId
+}) => (
+  <div className="device-card">
+    <div className="device-icon-bg">
+      <device.Icon className="device-main-icon" />
+    </div>
+    <div className="device-meta-col">
+      <div className="device-card-title">{device.name}</div>
+      <div className="device-detail">MAC: {device.mac}</div>
+      <div className="device-detail">Owner: {device.owner}</div>
+      <div className="device-card-info-row">
+        <span>
+          IP Address:{" "}
+          <span className="device-link">{device.ip}</span>
+        </span>
+        <span>
+          Connected:{" "}
+          <span className="device-link">{device.lastUsageDate}</span>
+        </span>
+        <span>
+          Data Usage:{" "}
+          <span className="device-link">{device.dataUsage}</span>
+        </span>
+      </div>
+    </div>
+    <div className="device-card-actions">
+      <Button 
+        variant="info"
+        onClick={() => onViewDetails(device)}
+        aria-label={`View details for ${device.name}`}
+        loading={viewingDeviceId === device.id}
+        disabled={blockingDeviceId === device.id}
+      >
+        Details
+      </Button>
+      <Button 
+        variant="danger"
+        onClick={() => onBlock(device)}
+        aria-label={`Block ${device.name}`}
+        disabled={device.blocked || viewingDeviceId === device.id}
+        loading={blockingDeviceId === device.id}
+      >
+        {device.blocked ? "Blocked" : "Block"}
+      </Button>
+    </div>
+    <span
+      className={`device-status-dot ${device.online ? "online" : "offline"}`}
+      title={device.online ? "Online" : "Offline"}
+      aria-label={device.online ? "Device is online" : "Device is offline"}
+    ></span>
+  </div>
+), (prevProps, nextProps) => {
+  // Custom comparison function for optimization
+  return (
+    prevProps.device.id === nextProps.device.id &&
+    prevProps.device.blocked === nextProps.device.blocked &&
+    prevProps.device.online === nextProps.device.online &&
+    prevProps.device.name === nextProps.device.name &&
+    prevProps.viewingDeviceId === nextProps.viewingDeviceId &&
+    prevProps.blockingDeviceId === nextProps.blockingDeviceId
+  );
+});
+
+DeviceCard.displayName = 'DeviceCard';
 
 const DeviceList = () => {
   const { currentUser } = useAuth();
@@ -166,7 +254,7 @@ const DeviceList = () => {
     setCurrentPage(1);
   }, [typeFilter, statusFilter, searchText, rowsPerPage, segmentFilter]);
 
-  const handleDeviceSubmit = async (deviceInfo) => {
+  const handleDeviceSubmit = useCallback(async (deviceInfo) => {
     setSubmitting(true);
     try {
       await new Promise(resolve => setTimeout(resolve, 800));
@@ -200,9 +288,9 @@ const DeviceList = () => {
     } finally {
       setSubmitting(false);
     }
-  };
+  }, [devices.length]);
 
-  const handleBlockDevice = async (device) => {
+  const handleBlockDevice = useCallback(async (device) => {
     if (device.blocked) {
       notifications.deviceAlreadyBlocked(device.name);
       return;
@@ -229,17 +317,17 @@ const DeviceList = () => {
     } finally {
       setBlockingDeviceId(null);
     }
-  };
+  }, []);
 
-  const handleSearch = () => {
+  const handleSearch = useCallback(() => {
     if (searchText.trim()) {
       notifications.showInfo(`Searching for: ${searchText}`);
     } else {
       notifications.showInfo("Enter search criteria");
     }
-  };
+  }, [searchText]);
   
-  const handleViewDetails = async (device) => {
+  const handleViewDetails = useCallback(async (device) => {
     setViewingDeviceId(device.id);
     try {
       await new Promise(resolve => setTimeout(resolve, 400));
@@ -249,9 +337,9 @@ const DeviceList = () => {
     } finally {
       setViewingDeviceId(null);
     }
-  };
+  }, []);
 
-  const handleRegisterDeviceClick = () => {
+  const handleRegisterDeviceClick = useCallback(() => {
     if (!hasDevicePermission) {
       notifications.noPermission("register devices");
       return;
@@ -263,7 +351,7 @@ const DeviceList = () => {
     }
     
     setShowDeviceModal(true);
-  };
+  }, [hasDevicePermission, showRegisterDevice, segmentFilter]);
 
   if (initialLoad) {
     return (
@@ -329,19 +417,7 @@ const DeviceList = () => {
 
       <div className="device-summary-cards">
         {segmentDeviceStats.map(stat => (
-          <div className={`device-summary-card ${stat.colorClass}`} key={stat.label}>
-            <div className="devsc-toprow">
-              <div className="devsc-title">{stat.label}</div>
-              <stat.Icon className="devsc-icon" />
-            </div>
-            <div className="devsc-valuecard">
-              <span className="devsc-value">{stat.value.toLocaleString()}</span>
-              {stat.label === "Online Now" &&
-                <span className="devsc-dot green"></span>}
-              {stat.label === "Blocked" &&
-                <span className="devsc-dot red"></span>}
-            </div>
-          </div>
+          <SummaryCard key={stat.label} stat={stat} />
         ))}
       </div>
 
@@ -428,55 +504,14 @@ const DeviceList = () => {
           </div>
         ) : (
           pagedDevices.map(device => (
-            <div className="device-card" key={device.id}>
-              <div className="device-icon-bg">
-                <device.Icon className="device-main-icon" />
-              </div>
-              <div className="device-meta-col">
-                <div className="device-card-title">{device.name}</div>
-                <div className="device-detail">MAC: {device.mac}</div>
-                <div className="device-detail">Owner: {device.owner}</div>
-                <div className="device-card-info-row">
-                  <span>
-                    IP Address:{" "}
-                    <span className="device-link">{device.ip}</span>
-                  </span>
-                  <span>
-                    Connected:{" "}
-                    <span className="device-link">{device.lastUsageDate}</span>
-                  </span>
-                  <span>
-                    Data Usage:{" "}
-                    <span className="device-link">{device.dataUsage}</span>
-                  </span>
-                </div>
-              </div>
-              <div className="device-card-actions">
-                <Button 
-                  variant="info"
-                  onClick={() => handleViewDetails(device)}
-                  aria-label={`View details for ${device.name}`}
-                  loading={viewingDeviceId === device.id}
-                  disabled={blockingDeviceId === device.id}
-                >
-                  Details
-                </Button>
-                <Button 
-                  variant="danger"
-                  onClick={() => handleBlockDevice(device)}
-                  aria-label={`Block ${device.name}`}
-                  disabled={device.blocked || viewingDeviceId === device.id}
-                  loading={blockingDeviceId === device.id}
-                >
-                  {device.blocked ? "Blocked" : "Block"}
-                </Button>
-              </div>
-              <span
-                className={`device-status-dot ${device.online ? "online" : "offline"}`}
-                title={device.online ? "Online" : "Offline"}
-                aria-label={device.online ? "Device is online" : "Device is offline"}
-              ></span>
-            </div>
+            <DeviceCard
+              key={device.id}
+              device={device}
+              onViewDetails={handleViewDetails}
+              onBlock={handleBlockDevice}
+              viewingDeviceId={viewingDeviceId}
+              blockingDeviceId={blockingDeviceId}
+            />
           ))
         )}
       </div>

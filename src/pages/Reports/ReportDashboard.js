@@ -179,12 +179,10 @@ const ReportDashboard = () => {
   }, []);
 
   const handleViewReport = useCallback((report) => {
-    // Check if report supports criteria
     if (report.supportsCriteria) {
       setReportForCriteria(report);
       setCriteriaModalOpen(true);
     } else {
-      // Show report immediately with no criteria
       setSelectedReport(report);
       setSelectedReportCriteria(null);
       addToRecent(report.id);
@@ -201,7 +199,6 @@ const ReportDashboard = () => {
   const handleGenerateReport = useCallback((criteria) => {
     if (!reportForCriteria) return;
 
-    // Filter/transform data based on criteria
     const filteredData = filterReportData(reportForCriteria.id, criteria);
     
     setSelectedReport(reportForCriteria);
@@ -217,14 +214,9 @@ const ReportDashboard = () => {
   }, [reportForCriteria, addToRecent]);
 
   const filterReportData = (reportId, criteria) => {
-    // TODO: Replace with actual API call
-    // const response = await fetchReport(reportId, criteria);
-    // For now, using filtered sample data
-    
     const rawData = sampleReportsData[reportId];
     if (!rawData) return null;
 
-    // Apply date range filter
     if (criteria.dateRange) {
       const { start, end } = criteria.dateRange;
       const startDate = new Date(start);
@@ -239,7 +231,6 @@ const ReportDashboard = () => {
       });
     }
 
-    // Apply month range filter
     if (criteria.monthRange) {
       const { start, end } = criteria.monthRange;
       
@@ -251,7 +242,6 @@ const ReportDashboard = () => {
       });
     }
 
-    // Apply policy filter
     if (criteria.policies && criteria.policies.length > 0) {
       return rawData.filter(item => {
         if (item.policy) {
@@ -976,7 +966,7 @@ const ReportDashboard = () => {
                     onClick={() => handleExportPDF(report)}
                     title="Download PDF"
                     aria-label={`Download ${report.name} PDF`}
-                    loading={exportingPDF && exportingReportId === selectedReport?.id}
+                    loading={exportingPDF && exportingReportId === report.id}
                     disabled={exportingCSV && exportingReportId === report.id}
                   >
                     <FaFilePdf style={{ marginRight: 6 }} />

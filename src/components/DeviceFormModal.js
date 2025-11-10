@@ -1,12 +1,13 @@
-//src/components/DeviceFormModal.js
+// src/components/DeviceFormModal.js
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import Modal from './Modal';
 import Button from './Button';
 import './DeviceFormModal.css';
 import SEGMENT_DEVICE_AVAILABILITY from '../config/segmentDeviceConfig';
 import { DATA_LIMITS, ANIMATION, DEVICE } from '../constants/appConstants';
 import { VALIDATION } from '../constants/appConstants';
+
 const HUMAN_DEVICE_CATEGORIES = [
   'Mobile',
   'Laptop',
@@ -121,7 +122,12 @@ function DeviceFormModal({
   const [errors, setErrors] = useState({});
   const firstInputRef = useRef(null);
 
-  const existingDeviceUserIds = devices.map(dev => dev.userId).filter(Boolean);
+  // Memoize existingDeviceUserIds to prevent unnecessary recalculations
+  const existingDeviceUserIds = useMemo(() => 
+    devices.map(dev => dev.userId).filter(Boolean),
+    [devices]
+  );
+
   const { allowHuman = true, allowNonHuman = true } = SEGMENT_DEVICE_AVAILABILITY[segment] || {};
 
   useEffect(() => {
@@ -146,7 +152,7 @@ function DeviceFormModal({
       setUserId(genId);
       setDeviceName(`${deviceCategory} ${genId}`);
     }
-  }, [mode, deviceCategory]);
+  }, [mode, deviceCategory, existingDeviceUserIds]);
 
   const filteredUsers = siteUserList.filter(user =>
     (user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||

@@ -172,22 +172,6 @@ export const getReportBranding = (reportId) => {
   return { color, colorKey };
 };
 
-export default {
-  PRIMARY_COLORS,
-  SUPPORTING_COLORS,
-  REPORT_COLOR_ASSIGNMENTS,
-  SEMANTIC_COLORS,
-  NEUTRAL_COLORS,
-  BACKGROUND_COLORS,
-  BADGE_COLORS,
-  CHART_COLORS,
-  POLICY_COLORS,
-  SHADOWS,
-  GRADIENTS,
-  withOpacity,
-  getReportBranding,
-};
-
 export const PINNED_REPORT_BRAND_COLORS = [
   "#9465AA",
   "#5B879F",
@@ -205,3 +189,26 @@ export const getRandomBrandColor = (previousColor = null) => {
   const randomIndex = Math.floor(Math.random() * availableColors.length);
   return availableColors[randomIndex];
 };
+
+// ============================================
+// DEFAULT EXPORT
+// ============================================
+const colorConstants = {
+  PRIMARY_COLORS,
+  SUPPORTING_COLORS,
+  REPORT_COLOR_ASSIGNMENTS,
+  SEMANTIC_COLORS,
+  NEUTRAL_COLORS,
+  BACKGROUND_COLORS,
+  BADGE_COLORS,
+  CHART_COLORS,
+  POLICY_COLORS,
+  SHADOWS,
+  GRADIENTS,
+  withOpacity,
+  getReportBranding,
+  PINNED_REPORT_BRAND_COLORS,
+  getRandomBrandColor,
+};
+
+export default colorConstants;

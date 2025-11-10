@@ -343,7 +343,10 @@ export const A11Y = {
   MIN_CONTRAST_RATIO: 4.5,
 };
 
-export default {
+// ============================================
+// DEFAULT EXPORT
+// ============================================
+const appConstants = {
   PAGINATION,
   DATE_TIME,
   TYPOGRAPHY,
@@ -367,3 +370,5 @@ export default {
   GRID,
   A11Y,
 };
+
+export default appConstants;

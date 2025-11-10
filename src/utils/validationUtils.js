@@ -1,6 +1,6 @@
 // src/utils/validationUtils.js
 
-import { VALIDATION, DATA_LIMITS } from '../constants/appConstants';
+import { VALIDATION } from '../constants/appConstants';
 
 // Validate if value is non empty string after trimming
 export const isRequired = (value) => {

@@ -139,7 +139,6 @@ const UserFormModal = ({
     }
     setErrors({});
     
-    // Focus timeout with cleanup
     focusTimeoutRef.current = setTimeout(() => {
       if (mounted && firstInputRef.current) {
         firstInputRef.current.focus();
@@ -153,7 +152,7 @@ const UserFormModal = ({
         focusTimeoutRef.current = null;
       }
     };
-  }, [user, segment]);
+  }, [user, segment, allowedCycleTypes, allowedSpeeds, allowedVolumes, allowedDeviceCounts, initialResidentType, initialMemberType]);
 
   function minCheckOutDate() {
     return form.checkInDate || DEFAULTS.checkInDate;

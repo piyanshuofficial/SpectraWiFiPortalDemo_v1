@@ -1,7 +1,7 @@
 // src/components/Sidebar.js
 
 import React, { useState, useEffect } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import {
   FaTachometerAlt,
   FaUsers,
@@ -57,6 +57,7 @@ const sidebarItems = [
 
 const Sidebar = () => {
   const { currentUser } = useAuth();
+  const location = useLocation();
   const rolePermissions = Permissions[currentUser.accessLevel]?.[currentUser.role] || {};
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -76,7 +77,7 @@ const Sidebar = () => {
   // Close mobile menu on route change
   useEffect(() => {
     setMobileOpen(false);
-  }, [window.location.pathname]);
+  }, [location.pathname]);
 
   // Prevent body scroll when mobile menu is open
   useEffect(() => {
@@ -130,7 +131,6 @@ const Sidebar = () => {
         
         <aside 
           className={`sidebar ${mobileOpen ? 'mobile-open' : ''}`}
-          role="complementary" 
           aria-label="Sidebar navigation"
         >
           <div className="sidebar-logo-area">
@@ -174,7 +174,6 @@ const Sidebar = () => {
       
       <aside 
         className={`sidebar ${mobileOpen ? 'mobile-open' : ''}`}
-        role="complementary" 
         aria-label="Sidebar navigation"
       >
         <div className="sidebar-logo-area">
