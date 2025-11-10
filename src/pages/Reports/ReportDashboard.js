@@ -7,7 +7,7 @@ import { useLoading } from "../../context/LoadingContext";
 import LoadingOverlay from "../../components/Loading/LoadingOverlay";
 import Button from "../../components/Button";
 import { FaEye, FaFileCsv, FaFilePdf, FaStar, FaRegStar, FaTimes, FaClock, FaSearch } from "react-icons/fa";
-import { toast } from "react-toastify";
+import notifications from "../../utils/notifications";
 import "./ReportDashboard.css";
 
 import { 
@@ -158,7 +158,7 @@ const ReportDashboard = () => {
         return prev.filter(id => id !== reportId);
       } else {
         if (prev.length >= MAX_PINNED_REPORTS) {
-          toast.warning(`Maximum ${MAX_PINNED_REPORTS} pinned reports allowed`);
+          notifications.showWarning(`Maximum ${MAX_PINNED_REPORTS} pinned reports allowed`);
           return prev;
         }
         return [...prev, reportId];
@@ -332,20 +332,24 @@ const ReportDashboard = () => {
 
   const handleDownloadCSV = async (report) => {
     if (!rolePermissions.canViewReports) {
-      toast.error("You don't have permission to export reports");
+      notifications.noPermission("export reports");
       return;
     }
 
     setExportingCSV(true);
     setExportingReportId(report.id);
+    let timeoutId = null;
     try {
-      await new Promise(resolve => setTimeout(resolve, 400));
+      await new Promise(resolve => {
+        timeoutId = setTimeout(resolve, 400);
+      });
       const { headers, rows } = getCSVData(report);
       await exportChartDataToCSV({ headers, rows }, generateFilename(report, 'csv'));
-      toast.success("CSV exported successfully");
+      notifications.exportSuccess("CSV");
     } catch (error) {
-      toast.error("Failed to export CSV");
+      notifications.exportFailed("CSV");
     } finally {
+      if (timeoutId) clearTimeout(timeoutId);
       setExportingCSV(false);
       setExportingReportId(null);
     }
@@ -353,14 +357,17 @@ const ReportDashboard = () => {
 
   const handleExportPDF = async (report) => {
     if (!rolePermissions.canViewReports) {
-      toast.error("You don't have permission to export reports");
+      notifications.noPermission("export reports");
       return;
     }
 
     setExportingPDF(true);
     setExportingReportId(report.id);
+    let timeoutId = null;
     try {
-      await new Promise(resolve => setTimeout(resolve, 1200));
+      await new Promise(resolve => {
+        timeoutId = setTimeout(resolve, 1200);
+      });
       
       const reportData = selectedReportCriteria 
         ? filterReportData(report.id, selectedReportCriteria)
@@ -615,11 +622,12 @@ const ReportDashboard = () => {
         disclaimerText: "This report contains confidential information. Data is subject to change. For internal use only."
       });
       
-      toast.success("PDF exported successfully");
+      notifications.exportSuccess("PDF");
     } catch (error) {
       console.error('PDF export error:', error);
-      toast.error("Failed to export PDF");
+      notifications.exportFailed("PDF");
     } finally {
+      if (timeoutId) clearTimeout(timeoutId);
       setExportingPDF(false);
       setExportingReportId(null);
     }
@@ -638,9 +646,6 @@ const ReportDashboard = () => {
       searchInputRef.current.focus();
     }
   };
-
-
-  
 
   const renderReportDetail = () => {
     if (!selectedReport) {
@@ -971,7 +976,7 @@ const ReportDashboard = () => {
                     onClick={() => handleExportPDF(report)}
                     title="Download PDF"
                     aria-label={`Download ${report.name} PDF`}
-                    loading={exportingPDF && exportingReportId === selectedReport.id}
+                    loading={exportingPDF && exportingReportId === selectedReport?.id}
                     disabled={exportingCSV && exportingReportId === report.id}
                   >
                     <FaFilePdf style={{ marginRight: 6 }} />

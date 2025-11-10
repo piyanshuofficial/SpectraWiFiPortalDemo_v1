@@ -7,7 +7,7 @@ import Badge from "../../components/Badge";
 import { segmentFieldConfig } from "../../config/segmentFieldConfig";
 import siteConfig from "../../config/siteConfig";
 import { isEmailValid, isRequired } from "../../utils/validationUtils";
-import { toast } from "react-toastify";
+import notifications from "../../utils/notifications";
 import "./UserFormModal.css";
 import UserLicenseBar from '../../components/common/UserLicenseBar';
 import { DATE_TIME, DATA_LIMITS, ANIMATION } from '../../constants/appConstants';
@@ -139,7 +139,7 @@ const UserFormModal = ({
     }
     setErrors({});
     
-    // ✅ FIX: Cleanup timeout for focus
+    // Focus timeout with cleanup
     focusTimeoutRef.current = setTimeout(() => {
       if (mounted && firstInputRef.current) {
         firstInputRef.current.focus();
@@ -237,7 +237,7 @@ const UserFormModal = ({
     e.preventDefault();
     
     if (licensesFull && !user) {
-      toast.error("Cannot add more users: all licenses are used. Please suspend or block an existing user or request additional licenses.");
+      notifications.licenseFull();
       return;
     }
     
@@ -252,7 +252,7 @@ const UserFormModal = ({
       
       await onSubmit(newUser);
     } else {
-      toast.error("Please fix errors before submitting");
+      notifications.validationError();
     }
   };
 
@@ -686,6 +686,7 @@ const UserFormModal = ({
             aria-label="Submit user form" 
             disabled={licensesFull && !user}
             loading={submitting}
+            title={licensesFull && !user ? "All licenses are currently in use" : (user ? "Update user" : "Add new user")}
           >
             {user ? "Update" : "Add"}
           </Button>
@@ -695,6 +696,7 @@ const UserFormModal = ({
             onClick={onClose} 
             aria-label="Cancel user form"
             disabled={submitting}
+            title="Cancel and close"
           >
             Cancel
           </Button>

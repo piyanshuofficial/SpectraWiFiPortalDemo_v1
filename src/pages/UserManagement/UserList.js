@@ -1,4 +1,5 @@
 // src/pages/UserManagement/UserList.js
+
 import React, { useState, useMemo, useEffect } from "react";
 import UserFormModal from "./UserFormModal";
 import UserToolbar from "./UserToolbar";
@@ -18,14 +19,14 @@ import { commonColumns, segmentSpecificFields } from "../../utils/columns";
 import sampleUsers from "../../constants/sampleUsers";
 import UserLicenseRing from '../../components/common/UserLicenseRing';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { toast } from "react-toastify";
+import notifications from "../../utils/notifications";
 import SEGMENT_DEVICE_AVAILABILITY from '../../config/segmentDeviceConfig';
 import siteConfig from '../../config/siteConfig';
 import { PAGINATION } from '../../constants/appConstants';
 import { useLoading } from "../../context/LoadingContext";
 import LoadingOverlay from "../../components/Loading/LoadingOverlay";
 import SkeletonLoader from "../../components/Loading/SkeletonLoader";
-
+import { exportChartDataToCSV } from "../../utils/exportUtils";
 
 const MAX_LICENSES = siteConfig.licenses.maxLicenses;
 const USED_LICENSES = siteConfig.licenses.usedLicenses;
@@ -40,6 +41,7 @@ const UserList = () => {
   const [devices, setDevices] = useState([]);
   const [initialLoad, setInitialLoad] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [exportingCSV, setExportingCSV] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [segmentFilter, setSegmentFilter] = useState("enterprise");
@@ -67,37 +69,37 @@ const UserList = () => {
   }, [segmentFilter]);
 
   // Simulate initial data load
-useEffect(() => {
-  let mounted = true;
-  let timeoutId = null;
+  useEffect(() => {
+    let mounted = true;
+    let timeoutId = null;
 
-  const loadInitialData = async () => {
-    startLoading('users');
-    try {
-      timeoutId = setTimeout(() => {
+    const loadInitialData = async () => {
+      startLoading('users');
+      try {
+        timeoutId = setTimeout(() => {
+          if (mounted) {
+            setUsers(sampleUsers);
+            setDevices([]);
+            stopLoading('users');
+            setInitialLoad(false);
+          }
+        }, 800);
+      } catch (error) {
         if (mounted) {
-          setUsers(sampleUsers);
-          setDevices([]);
+          notifications.operationFailed("load users");
           stopLoading('users');
           setInitialLoad(false);
         }
-      }, 800);
-    } catch (error) {
-      if (mounted) {
-        toast.error("Failed to load users");
-        stopLoading('users');
-        setInitialLoad(false);
       }
-    }
-  };
+    };
 
-  loadInitialData();
+    loadInitialData();
 
-  return () => {
-    mounted = false;
-    if (timeoutId) clearTimeout(timeoutId);
-  };
-}, []);
+    return () => {
+      mounted = false;
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, []);
 
   useEffect(() => {
     const defaultCols = columns
@@ -212,59 +214,59 @@ useEffect(() => {
 
   const activeFilterCount = Object.values(advancedFilters).filter(Boolean).length;
 
-const handleUserSubmit = async (userObj) => {
-  setSubmitting(true);
-  let timeoutId = null;
-  try {
-    await new Promise(resolve => {
-      timeoutId = setTimeout(resolve, 1000);
-    });
-    
-    const userWithActiveStatus = { ...userObj, status: "Active" };
-    if (editingUser) {
-      setUsers(users.map((u) => (u.id === editingUser.id ? userWithActiveStatus : u)));
-      toast.success("User updated successfully");
-    } else {
-      setUsers([userWithActiveStatus, ...users]);
-      toast.success("User added successfully");
+  const handleUserSubmit = async (userObj) => {
+    setSubmitting(true);
+    let timeoutId = null;
+    try {
+      await new Promise(resolve => {
+        timeoutId = setTimeout(resolve, 1000);
+      });
+      
+      const userWithActiveStatus = { ...userObj, status: "Active" };
+      if (editingUser) {
+        setUsers(users.map((u) => (u.id === editingUser.id ? userWithActiveStatus : u)));
+        notifications.userUpdated();
+      } else {
+        setUsers([userWithActiveStatus, ...users]);
+        notifications.userAdded();
+      }
+      setShowFormModal(false);
+      setEditingUser(null);
+    } catch (error) {
+      notifications.operationFailed(editingUser ? "update user" : "add user");
+    } finally {
+      if (timeoutId) clearTimeout(timeoutId);
+      setSubmitting(false);
     }
-    setShowFormModal(false);
-    setEditingUser(null);
-  } catch (error) {
-    toast.error("Failed to save user");
-  } finally {
-    if (timeoutId) clearTimeout(timeoutId);
-    setSubmitting(false);
-  }
-};
+  };
 
   const handleChangeStatus = (id, newStatus) => {
     setUsers(users.map((u) => (u.id === id ? { ...u, status: newStatus } : u)));
   };
 
-const handleDelete = async (id) => {
-  if (window.confirm("Are you sure you want to delete this user?")) {
-    startLoading('users');
-    let timeoutId = null;
-    try {
-      await new Promise(resolve => {
-        timeoutId = setTimeout(resolve, 500);
-      });
-      setUsers(users.filter((u) => u.id !== id));
-      toast.success("User deleted successfully");
-    } catch (error) {
-      toast.error("Failed to delete user");
-    } finally {
-      if (timeoutId) clearTimeout(timeoutId);
-      stopLoading('users');
+  const handleDelete = async (id) => {
+    if (window.confirm("Are you sure you want to delete this user?")) {
+      startLoading('users');
+      let timeoutId = null;
+      try {
+        await new Promise(resolve => {
+          timeoutId = setTimeout(resolve, 500);
+        });
+        setUsers(users.filter((u) => u.id !== id));
+        notifications.userDeleted();
+      } catch (error) {
+        notifications.operationFailed("delete user");
+      } finally {
+        if (timeoutId) clearTimeout(timeoutId);
+        stopLoading('users');
+      }
     }
-  }
-};
+  };
 
   const handleEditClick = (user) => {
     const isBlocked = user.status === "Blocked" || user.status === "Restricted";
     if (isBlocked) {
-      toast.error("Cannot edit user with Blocked status");
+      notifications.showError("Cannot edit user with Blocked status");
       return;
     }
     setEditingUser(user);
@@ -272,9 +274,70 @@ const handleDelete = async (id) => {
   };
 
   const handleDeviceSubmit = (deviceInfo) => {
-    toast.success(`Device "${deviceInfo.deviceName}" registered successfully`);
+    notifications.deviceRegistered(deviceInfo.deviceName);
     setDevices([deviceInfo, ...devices]);
     setShowDeviceModal(false);
+  };
+
+  // Export functionality
+  const handleExportUsers = async () => {
+    if (!rolePermissions.canViewReports) {
+      notifications.noPermission("export reports");
+      return;
+    }
+
+    setExportingCSV(true);
+    let timeoutId = null;
+
+    try {
+      await new Promise(resolve => {
+        timeoutId = setTimeout(resolve, 600);
+      });
+
+      // Get visible column definitions
+      const visibleColumnDefs = columns.filter(col => visibleColumns.includes(col.key));
+
+      // Prepare headers
+      const headers = visibleColumnDefs.map(col => col.label);
+
+      // Prepare rows from filtered users
+      const rows = sortedUsers.map(user => {
+        return visibleColumnDefs.map(col => {
+          const key = col.key;
+          
+          // Handle special cases
+          if (key === 'userPolicy' || key === 'policy') {
+            if (user.userPolicy) {
+              return `${user.userPolicy.speed} | ${user.userPolicy.dataVolume} | ${user.userPolicy.deviceLimit} Device(s) | ${user.userPolicy.dataCycleType}`;
+            }
+            return '--';
+          }
+          
+          if (key === 'firstName') {
+            return `${user.firstName} ${user.lastName}`;
+          }
+          
+          // Return the value or '--' for empty values
+          return user[key] || '--';
+        });
+      });
+
+      // Generate filename with timestamp
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T')[0];
+      const segmentName = segmentFilter.charAt(0).toUpperCase() + segmentFilter.slice(1);
+      const filename = `Users_${segmentName}_${timestamp}.csv`;
+
+      // Export to CSV
+      exportChartDataToCSV({ headers, rows }, filename);
+      
+      notifications.exportSuccess(`${sortedUsers.length} users`);
+    } catch (error) {
+      console.error('Export error:', error);
+      notifications.exportFailed("users");
+    } finally {
+      if (timeoutId) clearTimeout(timeoutId);
+      setExportingCSV(false);
+    }
   };
 
   const renderPolicyCell = (user) => (
@@ -297,7 +360,8 @@ const handleDelete = async (id) => {
       ) : "--"}
     </td>
   );
-    // Show skeleton loader on initial load
+
+  // Show skeleton loader on initial load
   if (initialLoad) {
     return (
       <div className="user-list-container">
@@ -310,10 +374,12 @@ const handleDelete = async (id) => {
       </div>
     );
   }
+
   return (
     <div className="user-list-container">
       {/* Loading overlay for operations */}
-      <LoadingOverlay active={isLoading('users')} message="Processing..." />
+      <LoadingOverlay active={isLoading('users') || exportingCSV} message={exportingCSV ? "Exporting users..." : "Processing..."} />
+      
       {/* Segment Selector - Top Right Corner (Testing Only) */}
       <div className="segment-selector-test">
         <label htmlFor="segment-test-select">Segment:</label>
@@ -340,7 +406,9 @@ const handleDelete = async (id) => {
             onStatusChange={e => setStatusFilter(e.target.value)}
             onAdd={rolePermissions.canEditUsers ? () => setShowFormModal(true) : undefined}
             disableAdd={!rolePermissions.canEditUsers}
-            onExport={() => toast.info("Export functionality to be implemented")}
+            onExport={handleExportUsers}
+            disableExport={!rolePermissions.canViewReports || exportingCSV}
+            exportLoading={exportingCSV}
             onAddDevice={showAddDevice ? () => setShowDeviceModal(true) : undefined}
             disableAddDevice={!showAddDevice}
             segment={segmentFilter}
@@ -604,15 +672,32 @@ const handleDelete = async (id) => {
       {showDetailsModal && detailsUser && (
         <UserDetailsModal
           user={detailsUser}
-          onClose={() => setShowDetailsModal(false)}
+          onClose={() => {
+            setShowDetailsModal(false);
+            setDetailsUser(null);
+          }}
           onEdit={(u) => {
-            setUsers(users.map((usr) => (usr.id === u.id ? u : usr)));
+            setEditingUser(u);
+            setShowDetailsModal(false);
+            setShowFormModal(true);
+          }}
+          onSendMessage={(user) => {
+            // Password resend notification is handled inside UserDetailsModal
+          }}
+          onSuspend={(user) => {
+            handleChangeStatus(user.id, "Suspended");
+            notifications.userSuspended(user.id);
             setShowDetailsModal(false);
           }}
-          onResendPassword={(id) => toast.info(`Resend password for ${id} not implemented`)}
-          onSuspend={(id) => {
-            handleChangeStatus(id, "Suspended");
-            toast.warn(`User ${id} suspended`);
+          onBlock={(user) => {
+            handleChangeStatus(user.id, "Blocked");
+            notifications.userBlocked(user.id);
+            setShowDetailsModal(false);
+          }}
+          onActivate={(user) => {
+            handleChangeStatus(user.id, "Active");
+            notifications.userActivated(user.id);
+            setShowDetailsModal(false);
           }}
         />
       )}

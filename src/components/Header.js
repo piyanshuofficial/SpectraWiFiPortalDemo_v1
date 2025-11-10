@@ -2,10 +2,11 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { FaBell, FaUserCircle } from 'react-icons/fa';
-import { toast, ToastContainer } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './Header.css';
-import { NOTIFICATIONS, ANIMATION } from '../constants/appConstants';
+import { NOTIFICATIONS } from '../constants/appConstants';
+import { showInfo } from '../utils/notifications';
 
 const siteName = "Sample Site Name";
 
@@ -31,36 +32,15 @@ const Header = () => {
   ];
 
   const handleChangePassword = () => {
-    toast.info("Change Password - backend integration pending.", {
-      position: NOTIFICATIONS.POSITION,
-      autoClose: NOTIFICATIONS.AUTO_CLOSE,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-    });
+    showInfo("Change Password - backend integration pending.");
   };
 
   const handleLogout = () => {
-    toast.info("Logout - backend integration pending.", {
-      position: NOTIFICATIONS.POSITION,
-      autoClose: NOTIFICATIONS.AUTO_CLOSE,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-    });
+    showInfo("Logout - backend integration pending.");
   };
 
   const handleBackToSpectraOne = () => {
-    toast.info("Back To SpectraOne - backend integration pending.", {
-      position: NOTIFICATIONS.POSITION,
-      autoClose: NOTIFICATIONS.AUTO_CLOSE,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-    });
+    showInfo("Back To SpectraOne - backend integration pending.");
   };
 
   return (

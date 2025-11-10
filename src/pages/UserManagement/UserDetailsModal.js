@@ -6,15 +6,7 @@ import Button from "../../components/Button";
 import Badge from "../../components/Badge";
 import "./UserDetailsModal.css";
 import { FaTachometerAlt, FaDatabase, FaTabletAlt } from "react-icons/fa";
-import { toast } from "react-toastify";
-import {
-  resendPassword,
-  editUser,
-  suspendUser,
-  blockUser,
-  activateUser,
-  closeModal,
-} from "../../utils/userActions";
+import notifications from "../../utils/notifications";
 
 const getUsageStats = (user) => [
   {
@@ -41,12 +33,12 @@ const getUsageStats = (user) => [
 
 const UserDetailsModal = ({
   user,
-  onClose = closeModal,
-  onEdit = editUser,
-  onSendMessage = resendPassword,
-  onSuspend = suspendUser,
-  onBlock = blockUser,
-  onActivate = activateUser,
+  onClose,
+  onEdit,
+  onSendMessage,
+  onSuspend,
+  onBlock,
+  onActivate,
 }) => {
   const isActive = user.status === "Active";
   const isSuspended = user.status === "Suspended";
@@ -57,10 +49,50 @@ const UserDetailsModal = ({
 
   const handleEditClick = () => {
     if (isBlocked) {
-      toast.error("Cannot edit user with Blocked status");
+      notifications.showError("Cannot edit user with Blocked status");
       return;
     }
-    onEdit(user);
+    // Close the details modal and trigger edit
+    if (onEdit) {
+      onEdit(user);
+    }
+  };
+
+  const handleSendMessage = () => {
+    if (onSendMessage) {
+      onSendMessage(user);
+      notifications.showInfo(`Password resend initiated for ${user.id}`);
+    }
+  };
+
+  const handleSuspend = () => {
+    if (!window.confirm(`Are you sure you want to suspend ${user.firstName} ${user.lastName}?`)) {
+      return;
+    }
+    
+    if (onSuspend) {
+      onSuspend(user);
+    }
+  };
+
+  const handleBlock = () => {
+    if (!window.confirm(`Are you sure you want to block ${user.firstName} ${user.lastName}? This action will immediately disconnect the user from the network.`)) {
+      return;
+    }
+    
+    if (onBlock) {
+      onBlock(user);
+    }
+  };
+
+  const handleActivate = () => {
+    if (!window.confirm(`Are you sure you want to activate ${user.firstName} ${user.lastName}?`)) {
+      return;
+    }
+    
+    if (onActivate) {
+      onActivate(user);
+    }
   };
 
   const renderPolicyDetails = (policy) => {
@@ -177,7 +209,8 @@ const UserDetailsModal = ({
             <Button
               variant="secondary"
               className="resend-password-btn"
-              onClick={() => onSendMessage(user)}
+              onClick={handleSendMessage}
+              title="Resend password credentials to user"
             >
               Resend Password
             </Button>
@@ -186,22 +219,35 @@ const UserDetailsModal = ({
             <Button
               variant="warning"
               className="suspend-user-btn"
-              onClick={() => onSuspend(user)}
+              onClick={handleSuspend}
+              title="Temporarily suspend user account"
             >
               Suspend User
             </Button>
           )}
           {isSuspended && (
-            <Button variant="success" onClick={() => onActivate(user)}>
+            <Button 
+              variant="success" 
+              onClick={handleActivate}
+              title="Reactivate user account"
+            >
               Activate User
             </Button>
           )}
           {(isActive || isSuspended) && (
-            <Button variant="danger" onClick={() => onBlock(user)}>
+            <Button 
+              variant="danger" 
+              onClick={handleBlock}
+              title="Block user permanently"
+            >
               Block User
             </Button>
           )}
-          <Button variant="secondary" onClick={onClose}>
+          <Button 
+            variant="secondary" 
+            onClick={onClose}
+            title="Close modal"
+          >
             Cancel
           </Button>
         </div>

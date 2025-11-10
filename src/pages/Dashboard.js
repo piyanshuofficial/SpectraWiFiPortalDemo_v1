@@ -5,7 +5,6 @@ import Card from "../components/Card";
 import Button from "../components/Button";
 import { Line, Bar, Pie } from "react-chartjs-2";
 import { FaUsers, FaUserFriends, FaChartPie, FaExclamationCircle, FaFileCsv, FaFilePdf, FaLifeRing } from "react-icons/fa";
-import { toast } from "react-toastify";
 import { useAuth } from "../context/AuthContext";
 import { useLoading } from "../context/LoadingContext";
 import { Permissions } from "../utils/accessLevels";
@@ -19,6 +18,7 @@ import siteConfig from "../config/siteConfig";
 import { ANIMATION, ACTIVITY } from '../constants/appConstants';
 import LoadingOverlay from "../components/Loading/LoadingOverlay";
 import SkeletonLoader from "../components/Loading/SkeletonLoader";
+import notifications from "../utils/notifications";
 import "./Dashboard.css";
 
 const Dashboard = () => {
@@ -139,7 +139,7 @@ const Dashboard = () => {
         }, 600);
       } catch (error) {
         if (mounted) {
-          toast.error("Failed to load dashboard");
+          notifications.operationFailed("load dashboard");
           stopLoading('dashboard');
           setInitialLoad(false);
         }
@@ -218,9 +218,9 @@ const Dashboard = () => {
         timeoutId = setTimeout(resolve, 500);
       });
       exportChartDataToCSV({ headers, rows }, filename);
-      toast.success("CSV exported successfully");
+      notifications.exportSuccess("CSV");
     } catch (error) {
-      toast.error("Failed to export CSV");
+      notifications.exportFailed("CSV");
     } finally {
       if (timeoutId) clearTimeout(timeoutId);
       setExportingCSV(false);
@@ -299,9 +299,9 @@ const Dashboard = () => {
         disclaimerText: "This report contains confidential information. Data is subject to change. For internal use only."
       });
       
-      toast.success("PDF exported successfully");
+      notifications.exportSuccess("PDF");
     } catch (error) {
-      toast.error("Failed to export PDF");
+      notifications.exportFailed("PDF");
     } finally {
       if (timeoutId) clearTimeout(timeoutId);
       setExportingPDF(false);
@@ -320,7 +320,7 @@ const Dashboard = () => {
 
   const handleQuickAction = (path, requiredPermission) => {
     if (requiredPermission && !rolePermissions[requiredPermission]) {
-      alert(`You don't have permission to access ${path.replace('/', '')}. Please contact your administrator.`);
+      notifications.noPermission(`access ${path.replace('/', '')}`);
       return;
     }
     navigate(path);

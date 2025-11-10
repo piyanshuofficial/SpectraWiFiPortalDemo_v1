@@ -10,7 +10,7 @@ import Pagination from "../../components/Pagination";
 import DeviceFormModal from "../../components/DeviceFormModal";
 import LoadingOverlay from "../../components/Loading/LoadingOverlay";
 import SkeletonLoader from "../../components/Loading/SkeletonLoader";
-import { toast } from "react-toastify";
+import notifications from "../../utils/notifications";
 import "./DeviceList.css";
 import { PAGINATION } from "../../constants/appConstants";
 import SEGMENT_DEVICE_AVAILABILITY from "../../config/segmentDeviceConfig";
@@ -193,10 +193,10 @@ const DeviceList = () => {
       };
       
       setDevices(prev => [newDevice, ...prev]);
-      toast.success(`Device "${deviceInfo.deviceName}" registered successfully`);
+      notifications.deviceRegistered(deviceInfo.deviceName);
       setShowDeviceModal(false);
     } catch (error) {
-      toast.error("Failed to register device");
+      notifications.operationFailed("register device");
     } finally {
       setSubmitting(false);
     }
@@ -204,7 +204,7 @@ const DeviceList = () => {
 
   const handleBlockDevice = async (device) => {
     if (device.blocked) {
-      toast.info(`${device.name} is already blocked`);
+      notifications.deviceAlreadyBlocked(device.name);
       return;
     }
 
@@ -223,9 +223,9 @@ const DeviceList = () => {
             : dev
         )
       );
-      toast.warn(`${device.name} has been blocked`);
+      notifications.deviceBlocked(device.name);
     } catch (error) {
-      toast.error(`Failed to block ${device.name}`);
+      notifications.operationFailed(`block ${device.name}`);
     } finally {
       setBlockingDeviceId(null);
     }
@@ -233,9 +233,9 @@ const DeviceList = () => {
 
   const handleSearch = () => {
     if (searchText.trim()) {
-      toast.info(`Searching for: ${searchText}`);
+      notifications.showInfo(`Searching for: ${searchText}`);
     } else {
-      toast.info("Enter search criteria");
+      notifications.showInfo("Enter search criteria");
     }
   };
   
@@ -243,9 +243,9 @@ const DeviceList = () => {
     setViewingDeviceId(device.id);
     try {
       await new Promise(resolve => setTimeout(resolve, 400));
-      toast.info(`Viewing details for ${device.name}`);
+      notifications.showInfo(`Viewing details for ${device.name}`);
     } catch (error) {
-      toast.error("Failed to load device details");
+      notifications.operationFailed("load device details");
     } finally {
       setViewingDeviceId(null);
     }
@@ -253,12 +253,12 @@ const DeviceList = () => {
 
   const handleRegisterDeviceClick = () => {
     if (!hasDevicePermission) {
-      toast.error("You don't have permission to register devices. Please contact your administrator.");
+      notifications.noPermission("register devices");
       return;
     }
     
     if (!showRegisterDevice) {
-      toast.error(`Device registration is not available for ${segmentFilter} segment.`);
+      notifications.showError(`Device registration is not available for ${segmentFilter} segment.`);
       return;
     }
     

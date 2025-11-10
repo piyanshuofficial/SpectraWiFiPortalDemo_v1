@@ -14,14 +14,15 @@ function UserToolbar({
   onAdd,
   disableAdd,
   onExport,
+  disableExport,
+  exportLoading,
   onAddDevice,
   segment = "enterprise"
 }) {
 
-
-const allowHuman = SEGMENTDEVICEAVAILABILITY[segment]?.allowHuman ?? false;
-const allowNonHuman = SEGMENTDEVICEAVAILABILITY[segment]?.allowNonHuman ?? false;
-const showAddDevice = allowHuman || allowNonHuman;
+  const allowHuman = SEGMENTDEVICEAVAILABILITY[segment]?.allowHuman ?? false;
+  const allowNonHuman = SEGMENTDEVICEAVAILABILITY[segment]?.allowNonHuman ?? false;
+  const showAddDevice = allowHuman || allowNonHuman;
 
   return (
     <div className="user-toolbar-content">
@@ -54,6 +55,9 @@ const showAddDevice = allowHuman || allowNonHuman;
               onClick={onExport}
               variant="secondary"
               aria-label="Export Users"
+              disabled={disableExport}
+              loading={exportLoading}
+              title={disableExport ? "Permission required to export users" : "Export users to CSV"}
             >
               <FaDownload style={{ marginRight: 6 }} />
               Export
