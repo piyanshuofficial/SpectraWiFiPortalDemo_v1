@@ -24,19 +24,17 @@ import enhancedSampleReports, {
 import sampleReportsData from "../../constants/sampleReportsData";
 import { exportChartDataToCSV } from "../../utils/exportUtils";
 import { exportReportPDF } from "../../utils/exportReportPDF";
-import { getStandardChartOptions } from "../../utils/commonChartOptions";
-import { EXPORT_CANVAS_SIZES } from "../../utils/exportConstants";
 
 import ReportCriteriaModal from "../../components/Reports/ReportCriteriaModal";
 import CriteriaDisplay from "../../components/Reports/CriteriaDisplay";
+import GenericReportRenderer from "../../components/Reports/GenericReportRenderer";
 
-import SiteMonthlyActiveUsers from "../../reports/SiteMonthlyActiveUsers";
-import MonthlyDataUsageSummary from "../../reports/MonthlyDataUsageSummary";
-import DailyAverageActiveUsers from "../../reports/DailyAverageActiveUsers";
-import PolicyWiseMonthlyAverageActiveUsers from "../../reports/PolicyWiseMonthlyAverageActiveUsers";
-import NetworkUsageReport from "../../reports/NetworkUsageReport";
-import LicenseUsageReport from "../../reports/LicenseUsageReport";
-import AlertsSummaryReport from "../../reports/AlertsSummaryReport";
+// Import centralized report configuration
+import { 
+  getReportDefinition,
+  getCSVConfig,
+  getChartConfig
+} from "../../config/reportDefinitions";
 
 const MAX_PINNED_REPORTS = 6;
 const MAX_RECENT_REPORTS = 5;
@@ -251,6 +249,7 @@ const ReportDashboard = () => {
     return rawData;
   }, []);
 
+  // ✅ NEW: Centralized CSV export using reportDefinitions
   const getCSVData = useCallback((report) => {
     const reportData = selectedReportCriteria 
       ? filterReportData(report.id, selectedReportCriteria)
@@ -258,43 +257,18 @@ const ReportDashboard = () => {
       
     if (!reportData) return { headers: [], rows: [] };
 
-    let headers = [];
-    let rows = [];
-
-    switch (report.id) {
-      case "site-monthly-active-users":
-        headers = ["Month", "Avg. Active Users", "New Users", "Churned Users", "Activations", "Deactivations", "Change vs Prev."];
-        rows = reportData.map(r => [r.month, r.avgActiveUsers, r.newUsers, r.churnedUsers, r.activations, r.deactivations, r.changeFromPrevMonth >= 0 ? `+${r.changeFromPrevMonth}` : `${r.changeFromPrevMonth}`]);
-        break;
-      case "monthly-data-usage-summary":
-        headers = ["Month", "Total Usage (GB)", "Peak Usage (GB)", "Avg Usage (GB)"];
-        rows = reportData.map(r => [r.month, r.totalUsageGB, r.peakUsageGB, r.avgUsageGB]);
-        break;
-      case "daily-average-active-users":
-        headers = ["Date", "Avg. Active Users"];
-        rows = reportData.map(r => [r.date, r.avgActiveUsers]);
-        break;
-      case "policy-wise-monthly-average-active-users":
-        headers = ["Month", "Policy", "Avg. Active Users"];
-        rows = reportData.map(r => [r.month, r.policy, r.avgActiveUsers]);
-        break;
-      case "network-usage-report":
-        headers = ["Day", "Network Usage (GB)"];
-        rows = reportData.map(r => [r.day, r.usageGB]);
-        break;
-      case "license-usage-report":
-        headers = ["License", "Usage"];
-        rows = reportData.map(r => [r.licenseType, r.usageCount]);
-        break;
-      case "alerts-summary-report":
-        headers = ["Alert Type", "Count"];
-        rows = reportData.map(r => [r.alertType, r.count]);
-        break;
-      default:
-        break;
+    // Get CSV config from centralized definitions
+    const csvConfig = getCSVConfig(report.id);
+    
+    if (csvConfig) {
+      return {
+        headers: csvConfig.headers,
+        rows: csvConfig.getRows(reportData)
+      };
     }
 
-    return { headers, rows };
+    // Fallback for reports without config
+    return { headers: [], rows: [] };
   }, [selectedReportCriteria, filterReportData]);
 
   const generateFilename = useCallback((report, extension) => {
@@ -342,6 +316,7 @@ const ReportDashboard = () => {
     }
   };
 
+  // ✅ NEW: Centralized PDF export using reportDefinitions
   const handleExportPDF = async (report) => {
     if (!rolePermissions.canViewReports) {
       notifications.noPermission("export reports");
@@ -366,230 +341,19 @@ const ReportDashboard = () => {
 
       const { headers, rows } = getCSVData(report);
       
+      // Get chart config from centralized definitions
+      const chartConfig = getChartConfig(report.id);
+      
       let chartData = null;
       let chartOptions = null;
       let chartType = "line";
-      let canvasSize = EXPORT_CANVAS_SIZES.line;
+      let canvasSize = { width: 900, height: 450 };
 
-      switch (report.id) {
-        case "network-usage-report":
-          chartType = "line";
-          canvasSize = EXPORT_CANVAS_SIZES.line;
-          chartData = {
-            labels: reportData.map((n) => n.day),
-            datasets: [{
-              label: "Network Usage (GB)",
-              data: reportData.map((n) => n.usageGB),
-              borderColor: "#004aad",
-              backgroundColor: "rgba(0,74,173,0.2)",
-              fill: true,
-              tension: 0.4,
-            }],
-          };
-          chartOptions = getStandardChartOptions({
-            type: chartType,
-            title: report.name,
-            xLabel: "Day",
-            yLabel: "Usage (GB)",
-            darkMode: false,
-            forExport: true,
-          });
-          break;
-
-        case "license-usage-report":
-          chartType = "bar";
-          canvasSize = EXPORT_CANVAS_SIZES.bar;
-          chartData = {
-            labels: reportData.map((d) => d.licenseType),
-            datasets: [{
-              label: "License Usage",
-              data: reportData.map((d) => d.usageCount),
-              backgroundColor: ["#004aad", "#3f51b5", "#7986cb", "#c5cae9"],
-              borderWidth: 1,
-            }],
-          };
-          chartOptions = getStandardChartOptions({
-            type: chartType,
-            title: report.name,
-            xLabel: "License",
-            yLabel: "Usage",
-            darkMode: false,
-            forExport: true,
-          });
-          break;
-
-        case "alerts-summary-report":
-          chartType = "pie";
-          canvasSize = EXPORT_CANVAS_SIZES.pie;
-          chartData = {
-            labels: reportData.map((a) => a.alertType),
-            datasets: [{
-              label: "Alerts",
-              data: reportData.map((a) => a.count),
-              backgroundColor: ["#4caf50", "#ff9800", "#f44336"],
-            }],
-          };
-          chartOptions = getStandardChartOptions({
-            type: chartType,
-            title: report.name,
-            xLabel: "",
-            yLabel: "",
-            darkMode: false,
-            forExport: true,
-          });
-          break;
-
-        case "site-monthly-active-users":
-          chartType = "bar";
-          canvasSize = EXPORT_CANVAS_SIZES.bar;
-          chartData = {
-            labels: reportData.map((d) => d.month),
-            datasets: [
-              {
-                type: "bar",
-                label: "New Users",
-                backgroundColor: "rgba(33,80,162,0.6)",
-                data: reportData.map((d) => d.newUsers),
-                yAxisID: "y",
-              },
-              {
-                type: "bar",
-                label: "Churned Users",
-                backgroundColor: "rgba(217,83,79,0.6)",
-                data: reportData.map((d) => d.churnedUsers),
-                yAxisID: "y",
-              },
-              {
-                type: "line",
-                label: "Avg Active Users",
-                borderColor: "#004aad",
-                borderWidth: 3,
-                fill: false,
-                data: reportData.map((d) => d.avgActiveUsers),
-                yAxisID: "y1",
-                tension: 0.3,
-                pointRadius: 4,
-              },
-            ],
-          };
-          chartOptions = {
-            ...getStandardChartOptions({
-              type: chartType,
-              title: report.name,
-              xLabel: "Month",
-              yLabel: "Users",
-              darkMode: false,
-              forExport: true,
-            }),
-            scales: {
-              y: {
-                type: "linear",
-                display: true,
-                position: "left",
-                title: { display: true, text: "Users" },
-                beginAtZero: true,
-              },
-              y1: {
-                type: "linear",
-                display: true,
-                position: "right",
-                title: { display: true, text: "Avg Active Users" },
-                grid: { drawOnChartArea: false },
-                beginAtZero: true,
-              },
-            },
-          };
-          break;
-
-        case "monthly-data-usage-summary":
-          chartType = "bar";
-          canvasSize = EXPORT_CANVAS_SIZES.bar;
-          chartData = {
-            labels: reportData.map((d) => d.month),
-            datasets: [
-              {
-                label: "Total Usage (GB)",
-                backgroundColor: "rgba(33,80,162,0.6)",
-                data: reportData.map((d) => d.totalUsageGB),
-              },
-              {
-                label: "Peak Usage (GB)",
-                backgroundColor: "rgba(217,83,79,0.6)",
-                data: reportData.map((d) => d.peakUsageGB),
-              },
-            ],
-          };
-          chartOptions = getStandardChartOptions({
-            type: chartType,
-            title: report.name,
-            xLabel: "Month",
-            yLabel: "Usage (GB)",
-            darkMode: false,
-            forExport: true,
-          });
-          break;
-
-        case "daily-average-active-users":
-          chartType = "line";
-          canvasSize = EXPORT_CANVAS_SIZES.line;
-          chartData = {
-            labels: reportData.map((d) => d.date),
-            datasets: [{
-              label: "Avg. Active Users",
-              data: reportData.map((d) => d.avgActiveUsers),
-              borderColor: "#2150a2",
-              backgroundColor: "rgba(33, 80, 162, 0.1)",
-              fill: true,
-              tension: 0.4,
-              pointRadius: 4,
-              borderWidth: 2,
-            }],
-          };
-          chartOptions = getStandardChartOptions({
-            type: chartType,
-            title: report.name,
-            xLabel: "Date",
-            yLabel: "Users",
-            darkMode: false,
-            forExport: true,
-          });
-          break;
-
-        case "policy-wise-monthly-average-active-users":
-          chartType = "bar";
-          canvasSize = EXPORT_CANVAS_SIZES.bar;
-          const uniquePolicies = [...new Set(reportData.map(d => d.policy))];
-          const months = [...new Set(reportData.map(d => d.month))];
-          const datasets = uniquePolicies.map((policy, idx) => ({
-            label: policy,
-            data: months.map(month => {
-              const record = reportData.find(d => d.month === month && d.policy === policy);
-              return record ? record.avgActiveUsers : 0;
-            }),
-            backgroundColor: idx % 2 === 0 ? "rgba(33, 80, 162, 0.7)" : "rgba(49, 120, 115, 0.7)"
-          }));
-          chartData = {
-            labels: months,
-            datasets: datasets,
-          };
-          chartOptions = {
-            ...getStandardChartOptions({
-              type: chartType,
-              title: report.name,
-              xLabel: "Month",
-              yLabel: "Avg. Active Users",
-              darkMode: false,
-              forExport: true,
-            }),
-            scales: {
-              x: { stacked: true, title: { display: true, text: "Month" } },
-              y: { stacked: true, beginAtZero: true, title: { display: true, text: "Avg. Active Users" } }
-            }
-          };
-          break;
-
-        default:
-          break;
+      if (chartConfig) {
+        chartType = chartConfig.type;
+        canvasSize = chartConfig.canvasSize;
+        chartData = chartConfig.getData(reportData);
+        chartOptions = chartConfig.getOptions(report.name);
       }
 
       await exportReportPDF({
@@ -634,6 +398,7 @@ const ReportDashboard = () => {
     }
   };
 
+  // ✅ NEW: Simplified render using GenericReportRenderer
   const renderReportDetail = () => {
     if (!selectedReport) {
       return (
@@ -696,34 +461,7 @@ const ReportDashboard = () => {
 
         <div className="report-content-wrapper">
           {hasData ? (
-            <>
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}></div>
-              {(() => {
-                switch (selectedReport.id) {
-                  case "site-monthly-active-users":
-                    return <SiteMonthlyActiveUsers data={reportData} />;
-                  case "monthly-data-usage-summary":
-                    return <MonthlyDataUsageSummary data={reportData} />;
-                  case "daily-average-active-users":
-                    return <DailyAverageActiveUsers data={reportData} />;
-                  case "policy-wise-monthly-average-active-users":
-                    return <PolicyWiseMonthlyAverageActiveUsers data={reportData} />;
-                  case "network-usage-report":
-                    return <NetworkUsageReport data={reportData} />;
-                  case "license-usage-report":
-                    return <LicenseUsageReport data={reportData} />;
-                  case "alerts-summary-report":
-                    return <AlertsSummaryReport data={reportData} />;
-                  default:
-                    return (
-                      <div className="report-placeholder">
-                        <p>{selectedReport.description}</p>
-                        <p className="report-placeholder-note">Full report visualization coming soon...</p>
-                      </div>
-                    );
-                }
-              })()}
-            </>
+            <GenericReportRenderer reportId={selectedReport.id} data={reportData} />
           ) : (
             <div className="report-placeholder">
               <p>{selectedReport.description}</p>
