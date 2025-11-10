@@ -1,6 +1,13 @@
 // src/config/reportDefinitions.js
 
-
+// Import all existing report components
+import SiteMonthlyActiveUsers from "../reports/SiteMonthlyActiveUsers";
+import DailyAverageActiveUsers from "../reports/DailyAverageActiveUsers";
+import PolicyWiseMonthlyAverageActiveUsers from "../reports/PolicyWiseMonthlyAverageActiveUsers";
+import MonthlyDataUsageSummary from "../reports/MonthlyDataUsageSummary";
+import NetworkUsageReport from "../reports/NetworkUsageReport";
+import LicenseUsageReport from "../reports/LicenseUsageReport";
+import AlertsSummaryReport from "../reports/AlertsSummaryReport";
 
 /**
  * Export canvas sizes for PDF generation
@@ -62,15 +69,10 @@ const getStandardChartOptions = ({ type, title, xLabel, yLabel, darkMode = false
 
 /**
  * Centralized Report Definitions
- * 
- * Each report can have:
- * - chart: Chart configuration { type, canvasSize, getData, getOptions }
- * - csv: CSV export configuration { headers, getRows }
- * - table: Table configuration { columns, getRows }
  */
-
 export const REPORT_DEFINITIONS = {
   "site-monthly-active-users": {
+    component: SiteMonthlyActiveUsers,
     chart: {
       type: "bar",
       canvasSize: EXPORT_CANVAS_SIZES.bar,
@@ -159,6 +161,7 @@ export const REPORT_DEFINITIONS = {
   },
 
   "daily-average-active-users": {
+    component: DailyAverageActiveUsers,
     chart: {
       type: "line",
       canvasSize: EXPORT_CANVAS_SIZES.line,
@@ -195,6 +198,7 @@ export const REPORT_DEFINITIONS = {
   },
 
   "policy-wise-monthly-average-active-users": {
+    component: PolicyWiseMonthlyAverageActiveUsers,
     chart: {
       type: "bar",
       canvasSize: EXPORT_CANVAS_SIZES.bar,
@@ -238,6 +242,7 @@ export const REPORT_DEFINITIONS = {
   },
 
   "monthly-data-usage-summary": {
+    component: MonthlyDataUsageSummary,
     chart: {
       type: "bar",
       canvasSize: EXPORT_CANVAS_SIZES.bar,
@@ -276,6 +281,7 @@ export const REPORT_DEFINITIONS = {
   },
 
   "network-usage-report": {
+    component: NetworkUsageReport,
     chart: {
       type: "line",
       canvasSize: EXPORT_CANVAS_SIZES.line,
@@ -312,6 +318,7 @@ export const REPORT_DEFINITIONS = {
   },
 
   "license-usage-report": {
+    component: LicenseUsageReport,
     chart: {
       type: "bar",
       canvasSize: EXPORT_CANVAS_SIZES.bar,
@@ -348,6 +355,7 @@ export const REPORT_DEFINITIONS = {
   },
 
   "alerts-summary-report": {
+    component: AlertsSummaryReport,
     chart: {
       type: "pie",
       canvasSize: EXPORT_CANVAS_SIZES.pie,
@@ -382,37 +390,37 @@ export const REPORT_DEFINITIONS = {
 /**
  * Get report definition by ID
  */
-export const getReportDefinition = (reportId) => {
+export function getReportDefinition(reportId) {
   return REPORT_DEFINITIONS[reportId] || null;
-};
+}
 
 /**
  * Check if report has custom component
  */
-export const hasCustomComponent = (reportId) => {
+export function hasCustomComponent(reportId) {
   return REPORT_DEFINITIONS[reportId]?.component !== undefined;
-};
+}
 
 /**
  * Get CSV configuration for report
  */
-export const getCSVConfig = (reportId) => {
+export function getCSVConfig(reportId) {
   const definition = REPORT_DEFINITIONS[reportId];
   return definition?.csv || null;
-};
+}
 
 /**
  * Get chart configuration for report
  */
-export const getChartConfig = (reportId) => {
+export function getChartConfig(reportId) {
   const definition = REPORT_DEFINITIONS[reportId];
   return definition?.chart || null;
-};
+}
 
 /**
  * Get table configuration for report
  */
-export const getTableConfig = (reportId) => {
+export function getTableConfig(reportId) {
   const definition = REPORT_DEFINITIONS[reportId];
   return definition?.table || null;
-};
+}
