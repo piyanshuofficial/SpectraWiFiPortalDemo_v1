@@ -1,0 +1,264 @@
+/* src/components/common/ReportTable.css */
+
+.report-table-container {
+  width: 100%;
+  overflow-x: auto;
+  margin-top: var(--space-2xl);
+  background: #fff;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-lg);
+}
+
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-sm-plus);
+  table-layout: auto;
+  background: #fff;
+}
+
+/* ===== TABLE HEADER ===== */
+.report-table thead {
+  background: linear-gradient(135deg, #004aad 0%, #2563c9 100%);
+  color: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.report-table thead th {
+  padding: var(--space-md) var(--space-lg);
+  text-align: left;
+  font-weight: 600;
+  font-size: var(--font-base);
+  letter-spacing: 0.025em;
+  white-space: nowrap;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.report-table thead th:first-child {
+  border-top-left-radius: var(--radius-base);
+}
+
+.report-table thead th:last-child {
+  border-top-right-radius: var(--radius-base);
+}
+
+/* ===== TABLE BODY ===== */
+.report-table tbody tr {
+  border-bottom: 1px solid #e5e7eb;
+  transition: background-color var(--transition-fast);
+}
+
+.report-table tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+.report-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.report-table tbody td {
+  padding: var(--space-md) var(--space-lg);
+  color: #374151;
+  font-size: var(--font-sm-plus);
+  line-height: var(--line-height-normal);
+  white-space: nowrap;
+}
+
+/* ===== ALTERNATING ROW COLORS (Optional) ===== */
+.report-table tbody tr:nth-child(even) {
+  background-color: #f9fafb;
+}
+
+.report-table tbody tr:nth-child(even):hover {
+  background-color: #f3f4f6;
+}
+
+/* ===== CELL ALIGNMENT ===== */
+.report-table tbody td:first-child {
+  font-weight: 500;
+  color: #1f2937;
+}
+
+/* Right-align numeric columns (assumes last few columns are numeric) */
+.report-table tbody td:nth-last-child(-n+3) {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.report-table thead th:nth-last-child(-n+3) {
+  text-align: right;
+}
+
+/* ===== RESPONSIVE BEHAVIOR ===== */
+@media (max-width: 768px) {
+  .report-table-container {
+    padding: var(--space-sm);
+    margin-top: var(--space-lg);
+  }
+
+  .report-table {
+    font-size: var(--font-sm);
+  }
+
+  .report-table thead th,
+  .report-table tbody td {
+    padding: var(--space-sm) var(--space-md);
+  }
+
+  .report-table thead th {
+    font-size: var(--font-sm);
+  }
+
+  .report-table tbody td {
+    font-size: var(--font-xs);
+  }
+}
+
+@media (max-width: 480px) {
+  .report-table-container {
+    padding: var(--space-xs);
+  }
+
+  .report-table thead th,
+  .report-table tbody td {
+    padding: var(--space-xs) var(--space-sm);
+    font-size: var(--font-xs);
+  }
+}
+
+/* ===== EMPTY STATE ===== */
+.report-table tbody tr.empty-row td {
+  text-align: center;
+  padding: var(--space-3xl) var(--space-lg);
+  color: #6b7280;
+  font-style: italic;
+}
+
+/* ===== LOADING STATE ===== */
+.report-table.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.report-table.loading tbody tr {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* ===== PRINT STYLES ===== */
+@media print {
+  .report-table-container {
+    box-shadow: none;
+    padding: 0;
+    margin-top: var(--space-md);
+  }
+
+  .report-table thead {
+    background: #004aad !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .report-table tbody tr:hover {
+    background-color: transparent;
+  }
+
+  .report-table tbody tr:nth-child(even) {
+    background-color: #f9fafb !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
+/* ===== DARK MODE SUPPORT ===== */
+[data-theme="dark"] .report-table-container {
+  background: #1f2937;
+}
+
+[data-theme="dark"] .report-table {
+  background: #1f2937;
+}
+
+[data-theme="dark"] .report-table thead {
+  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+}
+
+[data-theme="dark"] .report-table tbody tr {
+  border-bottom-color: #374151;
+}
+
+[data-theme="dark"] .report-table tbody tr:hover {
+  background-color: #374151;
+}
+
+[data-theme="dark"] .report-table tbody tr:nth-child(even) {
+  background-color: #2d3748;
+}
+
+[data-theme="dark"] .report-table tbody tr:nth-child(even):hover {
+  background-color: #374151;
+}
+
+[data-theme="dark"] .report-table tbody td {
+  color: #d1d5db;
+}
+
+[data-theme="dark"] .report-table tbody td:first-child {
+  color: #f3f4f6;
+}
+
+/* ===== ACCESSIBILITY ===== */
+.report-table:focus-within {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+.report-table tbody tr:focus-within {
+  background-color: #dbeafe;
+}
+
+[data-theme="dark"] .report-table tbody tr:focus-within {
+  background-color: #1e40af;
+}
+
+/* ===== SCROLLBAR STYLING ===== */
+.report-table-container::-webkit-scrollbar {
+  height: 8px;
+}
+
+.report-table-container::-webkit-scrollbar-track {
+  background: #f1f3f7;
+  border-radius: var(--radius-sm);
+}
+
+.report-table-container::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: var(--radius-sm);
+}
+
+.report-table-container::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+[data-theme="dark"] .report-table-container::-webkit-scrollbar-track {
+  background: #1f2937;
+}
+
+[data-theme="dark"] .report-table-container::-webkit-scrollbar-thumb {
+  background: #4b5563;
+}
+
+[data-theme="dark"] .report-table-container::-webkit-scrollbar-thumb:hover {
+  background: #6b7280;
+}
