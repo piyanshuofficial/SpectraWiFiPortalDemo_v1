@@ -31,7 +31,6 @@ import GenericReportRenderer from "../../components/Reports/GenericReportRendere
 
 // Import centralized report configuration
 import { 
-  getReportDefinition,
   getCSVConfig,
   getChartConfig
 } from "../../config/reportDefinitions";
@@ -249,7 +248,6 @@ const ReportDashboard = () => {
     return rawData;
   }, []);
 
-  // ✅ NEW: Centralized CSV export using reportDefinitions
   const getCSVData = useCallback((report) => {
     const reportData = selectedReportCriteria 
       ? filterReportData(report.id, selectedReportCriteria)
@@ -257,7 +255,6 @@ const ReportDashboard = () => {
       
     if (!reportData) return { headers: [], rows: [] };
 
-    // Get CSV config from centralized definitions
     const csvConfig = getCSVConfig(report.id);
     
     if (csvConfig) {
@@ -267,7 +264,6 @@ const ReportDashboard = () => {
       };
     }
 
-    // Fallback for reports without config
     return { headers: [], rows: [] };
   }, [selectedReportCriteria, filterReportData]);
 
@@ -316,7 +312,6 @@ const ReportDashboard = () => {
     }
   };
 
-  // ✅ NEW: Centralized PDF export using reportDefinitions
   const handleExportPDF = async (report) => {
     if (!rolePermissions.canViewReports) {
       notifications.noPermission("export reports");
@@ -341,16 +336,13 @@ const ReportDashboard = () => {
 
       const { headers, rows } = getCSVData(report);
       
-      // Get chart config from centralized definitions
       const chartConfig = getChartConfig(report.id);
       
       let chartData = null;
       let chartOptions = null;
-      let chartType = "line";
       let canvasSize = { width: 900, height: 450 };
 
       if (chartConfig) {
-        chartType = chartConfig.type;
         canvasSize = chartConfig.canvasSize;
         chartData = chartConfig.getData(reportData);
         chartOptions = chartConfig.getOptions(report.name);
@@ -398,7 +390,6 @@ const ReportDashboard = () => {
     }
   };
 
-  // ✅ NEW: Simplified render using GenericReportRenderer
   const renderReportDetail = () => {
     if (!selectedReport) {
       return (
