@@ -1,13 +1,5 @@
 // src/config/reportDefinitions.js
 
-// Import all existing report components
-import SiteMonthlyActiveUsers from "../reports/SiteMonthlyActiveUsers";
-import DailyAverageActiveUsers from "../reports/DailyAverageActiveUsers";
-import PolicyWiseMonthlyAverageActiveUsers from "../reports/PolicyWiseMonthlyAverageActiveUsers";
-import MonthlyDataUsageSummary from "../reports/MonthlyDataUsageSummary";
-import NetworkUsageReport from "../reports/NetworkUsageReport";
-import LicenseUsageReport from "../reports/LicenseUsageReport";
-import AlertsSummaryReport from "../reports/AlertsSummaryReport";
 
 /**
  * Export canvas sizes for PDF generation
@@ -72,7 +64,6 @@ const getStandardChartOptions = ({ type, title, xLabel, yLabel, darkMode = false
  */
 export const REPORT_DEFINITIONS = {
   "site-monthly-active-users": {
-    component: SiteMonthlyActiveUsers,
     chart: {
       type: "bar",
       canvasSize: EXPORT_CANVAS_SIZES.bar,
@@ -161,7 +152,6 @@ export const REPORT_DEFINITIONS = {
   },
 
   "daily-average-active-users": {
-    component: DailyAverageActiveUsers,
     chart: {
       type: "line",
       canvasSize: EXPORT_CANVAS_SIZES.line,
@@ -198,7 +188,6 @@ export const REPORT_DEFINITIONS = {
   },
 
   "policy-wise-monthly-average-active-users": {
-    component: PolicyWiseMonthlyAverageActiveUsers,
     chart: {
       type: "bar",
       canvasSize: EXPORT_CANVAS_SIZES.bar,
@@ -242,7 +231,6 @@ export const REPORT_DEFINITIONS = {
   },
 
   "monthly-data-usage-summary": {
-    component: MonthlyDataUsageSummary,
     chart: {
       type: "bar",
       canvasSize: EXPORT_CANVAS_SIZES.bar,
@@ -281,7 +269,6 @@ export const REPORT_DEFINITIONS = {
   },
 
   "network-usage-report": {
-    component: NetworkUsageReport,
     chart: {
       type: "line",
       canvasSize: EXPORT_CANVAS_SIZES.line,
@@ -318,7 +305,6 @@ export const REPORT_DEFINITIONS = {
   },
 
   "license-usage-report": {
-    component: LicenseUsageReport,
     chart: {
       type: "bar",
       canvasSize: EXPORT_CANVAS_SIZES.bar,
@@ -355,7 +341,6 @@ export const REPORT_DEFINITIONS = {
   },
 
   "alerts-summary-report": {
-    component: AlertsSummaryReport,
     chart: {
       type: "pie",
       canvasSize: EXPORT_CANVAS_SIZES.pie,
