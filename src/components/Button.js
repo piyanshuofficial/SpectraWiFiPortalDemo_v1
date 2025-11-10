@@ -31,12 +31,10 @@ const Button = ({
       style={style}
       {...rest}
     >
-      {loading ? (
+      {loading && (
         <span className="btn-loader" aria-hidden="true"></span>
-      ) : null}
-      <span className={loading ? 'btn-content-loading' : ''}>
-        {children}
-      </span>
+      )}
+      {children}
     </button>
   );
 };
