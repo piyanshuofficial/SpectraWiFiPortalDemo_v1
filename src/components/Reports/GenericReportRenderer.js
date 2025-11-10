@@ -1,6 +1,7 @@
 // src/components/Reports/GenericReportRenderer.js
 
 import React from "react";
+import PropTypes from 'prop-types';
 import { Bar, Line, Pie } from "react-chartjs-2";
 import ChartContainer from "../common/ChartContainer";
 import ReportTable from "../common/ReportTable";
@@ -85,6 +86,11 @@ const GenericReportRenderer = ({ reportId, data }) => {
       )}
     </div>
   );
+};
+
+GenericReportRenderer.propTypes = {
+  reportId: PropTypes.string.isRequired,
+  data: PropTypes.array.isRequired,
 };
 
 export default GenericReportRenderer;
