@@ -1,9 +1,8 @@
 // src/pages/UserManagement/UserFormModal.js
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import Modal from "../../components/Modal";
 import Button from "../../components/Button";
-import Badge from "../../components/Badge";
 import { segmentFieldConfig } from "../../config/segmentFieldConfig";
 import siteConfig from "../../config/siteConfig";
 import { isEmailValid, isRequired } from "../../utils/validationUtils";
@@ -59,20 +58,21 @@ const UserFormModal = ({
   segment,
   submitting = false 
 }) => {
-  const allowedCycleTypes = ["Daily", "Monthly"];
-  const allowedSpeeds = segment === "enterprise" ? ["10 Mbps", "25 Mbps", "50 Mbps"] : ["5 Mbps", "10 Mbps", "15 Mbps"];
-  const allowedVolumes = segment === "enterprise" ? ["50 GB", "100 GB", "200 GB"] : ["10 GB", "25 GB", "50 GB"];
-  const allowedDeviceCounts = ["1", "2", "3", "4", "5"];
+  const allowedCycleTypes = useMemo(() => ["Daily", "Monthly"], []);
+  const allowedSpeeds = useMemo(() => 
+    segment === "enterprise" ? ["10 Mbps", "25 Mbps", "50 Mbps"] : ["5 Mbps", "10 Mbps", "15 Mbps"],
+    [segment]
+  );
+  const allowedVolumes = useMemo(() => 
+    segment === "enterprise" ? ["50 GB", "100 GB", "200 GB"] : ["10 GB", "25 GB", "50 GB"],
+    [segment]
+  );
+  const allowedDeviceCounts = useMemo(() => ["1", "2", "3", "4", "5"], []);
+  
   const isCycleTypeStatic = user && user.segment === "hotel";
   
-  let initialResidentType = "";
-  let initialMemberType = "";
-
-  if (segment === "coLiving") {
-    initialResidentType = "Long-Term";
-  } else if (segment === "coWorking") {
-    initialMemberType = "Permanent";
-  }
+  const initialResidentType = useMemo(() => segment === "coLiving" ? "Long-Term" : "", [segment]);
+  const initialMemberType = useMemo(() => segment === "coWorking" ? "Permanent" : "", [segment]);
 
   const [form, setForm] = useState({
     id: "",
@@ -127,8 +127,8 @@ const UserFormModal = ({
     } else {
       setForm(prev => ({
         ...prev,
-        residentType: user?.residentType || initialResidentType,
-        memberType: user?.memberType || initialMemberType,
+        residentType: initialResidentType,
+        memberType: initialMemberType,
         checkInDate: (segment === "coLiving" || segment === "hotel") ? DEFAULTS.checkInDate : "",
         checkOutDate: (segment === "coLiving" || segment === "hotel") ? DEFAULTS.checkOutDate : "",
         checkInTime: (segment === "coLiving" || segment === "hotel") ? DEFAULTS.checkInTime : "",

@@ -11,8 +11,7 @@ import notifications from "../../utils/notifications";
 import "./ReportDashboard.css";
 
 import { 
-  PINNED_REPORT_BRAND_COLORS, 
-  getRandomBrandColor 
+  PINNED_REPORT_BRAND_COLORS
 } from "../../constants/colorConstants";
 
 import enhancedSampleReports, { 
@@ -62,7 +61,7 @@ const hexToRgba = (hex, alpha) => {
 
 const ReportDashboard = () => {
   const { currentUser } = useAuth();
-  const { startLoading, stopLoading, isLoading } = useLoading();
+  const { isLoading } = useLoading();
   const rolePermissions = Permissions[currentUser.accessLevel]?.[currentUser.role] || {};
   
   const [activeCategory, setActiveCategory] = useState(null);
@@ -199,8 +198,6 @@ const ReportDashboard = () => {
   const handleGenerateReport = useCallback((criteria) => {
     if (!reportForCriteria) return;
 
-    const filteredData = filterReportData(reportForCriteria.id, criteria);
-    
     setSelectedReport(reportForCriteria);
     setSelectedReportCriteria(criteria);
     addToRecent(reportForCriteria.id);
@@ -213,7 +210,7 @@ const ReportDashboard = () => {
     }, 100);
   }, [reportForCriteria, addToRecent]);
 
-  const filterReportData = (reportId, criteria) => {
+  const filterReportData = useCallback((reportId, criteria) => {
     const rawData = sampleReportsData[reportId];
     if (!rawData) return null;
 
@@ -252,9 +249,9 @@ const ReportDashboard = () => {
     }
 
     return rawData;
-  };
+  }, []);
 
-  const getCSVData = (report) => {
+  const getCSVData = useCallback((report) => {
     const reportData = selectedReportCriteria 
       ? filterReportData(report.id, selectedReportCriteria)
       : sampleReportsData[report.id];
@@ -298,9 +295,9 @@ const ReportDashboard = () => {
     }
 
     return { headers, rows };
-  };
+  }, [selectedReportCriteria, filterReportData]);
 
-  const generateFilename = (report, extension) => {
+  const generateFilename = useCallback((report, extension) => {
     let filename = report.name.replace(/\s+/g, '_');
     
     if (selectedReportCriteria) {
@@ -318,7 +315,7 @@ const ReportDashboard = () => {
     filename += `_${timestamp}`;
     
     return `${filename}.${extension}`;
-  };
+  }, [selectedReportCriteria]);
 
   const handleDownloadCSV = async (report) => {
     if (!rolePermissions.canViewReports) {

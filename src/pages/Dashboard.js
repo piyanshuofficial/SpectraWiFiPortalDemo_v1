@@ -1,6 +1,6 @@
 // src/pages/Dashboard.js
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import Card from "../components/Card";
 import Button from "../components/Button";
 import { Line, Bar, Pie } from "react-chartjs-2";
@@ -34,7 +34,7 @@ const Dashboard = () => {
   };
   
   const { currentUser } = useAuth();
-  const { startLoading, stopLoading, isLoading } = useLoading();
+  const { startLoading, stopLoading } = useLoading();
   const rolePermissions = Permissions[currentUser.accessLevel]?.[currentUser.role] || {};
   const navigate = useNavigate();
   
@@ -154,6 +154,7 @@ const Dashboard = () => {
         clearTimeout(timeoutId);
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const renderDashboardForSegment = () => (
