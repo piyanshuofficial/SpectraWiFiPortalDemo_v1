@@ -115,7 +115,7 @@ DeviceCard.displayName = 'DeviceCard';
 
 const DeviceList = () => {
   const { currentUser } = useAuth();
-  const { startLoading, stopLoading, isLoading } = useLoading();
+  const { isLoading } = useLoading();
   const rolePermissions = Permissions[currentUser.accessLevel]?.[currentUser.role] || {};
 
   const [devices, setDevices] = useState([]);

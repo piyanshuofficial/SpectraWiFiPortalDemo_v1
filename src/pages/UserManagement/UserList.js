@@ -18,7 +18,7 @@ import { Permissions } from "../../utils/accessLevels";
 import { commonColumns, segmentSpecificFields } from "../../utils/columns";
 import sampleUsers from "../../constants/sampleUsers";
 import UserLicenseRing from '../../components/common/UserLicenseRing';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import notifications from "../../utils/notifications";
 import SEGMENT_DEVICE_AVAILABILITY from '../../config/segmentDeviceConfig';
 import siteConfig from '../../config/siteConfig';
@@ -150,7 +150,6 @@ UserTableRow.displayName = 'UserTableRow';
 const UserList = () => {
   const { currentUser } = useAuth();
   const location = useLocation();
-  const navigate = useNavigate();
   const { startLoading, stopLoading, isLoading } = useLoading();
   const rolePermissions = Permissions[currentUser.accessLevel]?.[currentUser.role] || {};
   const [users, setUsers] = useState(sampleUsers);
@@ -214,6 +213,7 @@ const UserList = () => {
       mounted = false;
       if (timeoutId) clearTimeout(timeoutId);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
