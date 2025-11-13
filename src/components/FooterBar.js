@@ -104,7 +104,7 @@ const PRIVACY_POLICY_HTML = (
     <li>Our use of your personal information will be restricted for the purposes enumerated in this Privacy Policy read with Terms of Use;</li>
     <li>We use cookies and when you visit our Site, cookies may be left in your computer to enable us to track your usage and customize the content displayed to you to suit your behavior;</li>
     <li>We also use cookies for authentication, Portal management and security purposes;</li>
-    <li>We have a detailed Cookie Policy which is displayed at <a href="https://home.spectra.co/cookie-policy" target="_blank">https://home.spectra.co/cookie-policy</a>.</li>
+    <li>We have a detailed Cookie Policy which is displayed at <a href="https://home.spectra.co/cookie-policy" target="_blank rel=noreferrer">https://home.spectra.co/cookie-policy</a>.</li>
     <li>We use appropriate security measures to safeguard your information and to protect against unauthorized access to and unlawful interception of Personal Information. However, no internet site can fully eliminate security risks;</li>
     <li>We do not make your e-mail addresses available to any third party. We do not trade or sell your Personal Information in any manner, except as enumerated herein; and</li>
     <li>We may disclose aggregated information about the use of the Site, but it will never contain Personal Information. We do not disclose Personal Information to third parties in the normal course of operations, except in situations where we are legally obligated to disclose information to the government or other third parties,</li>
