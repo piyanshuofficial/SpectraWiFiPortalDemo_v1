@@ -24,3 +24,11 @@
   position: relative;
   padding: var(--space-xl) var(--space-2xl);
 }
+
+.btn-close {
+  font-size: 2rem;
+  background: none;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+}
