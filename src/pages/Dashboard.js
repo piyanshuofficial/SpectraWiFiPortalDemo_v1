@@ -5,9 +5,8 @@ import Card from "../components/Card";
 import Button from "../components/Button";
 import { Line, Bar, Pie } from "react-chartjs-2";
 import { FaUsers, FaUserFriends, FaChartPie, FaExclamationCircle, FaFileCsv, FaFilePdf, FaLifeRing } from "react-icons/fa";
-import { useAuth } from "../context/AuthContext";
+import { usePermissions } from "../hooks/usePermissions";
 import { useLoading } from "../context/LoadingContext";
-import { Permissions } from "../utils/accessLevels";
 import sampleReportsData from "../constants/sampleReportsData";
 import { getStandardChartOptions } from "../utils/commonChartOptions";
 import { EXPORT_CANVAS_SIZES } from "../utils/exportConstants";
@@ -33,9 +32,8 @@ const Dashboard = () => {
     alertsDelta: -2
   };
   
-  const { currentUser } = useAuth();
+  const { hasPermission } = usePermissions();
   const { startLoading, stopLoading } = useLoading();
-  const rolePermissions = Permissions[currentUser.accessLevel]?.[currentUser.role] || {};
   const navigate = useNavigate();
   
   const [initialLoad, setInitialLoad] = useState(true);
@@ -125,37 +123,36 @@ const Dashboard = () => {
   const safeNumber = (value, fallback = 0) => typeof value === "number" && !isNaN(value) ? value : fallback;
 
   useEffect(() => {
-    let mounted = true;
-    let timeoutId = null;
+  let mounted = true;
+  let timeoutId = null;
 
-    const loadDashboard = async () => {
-      startLoading('dashboard');
-      try {
-        timeoutId = setTimeout(() => {
-          if (mounted) {
-            stopLoading('dashboard');
-            setInitialLoad(false);
-          }
-        }, 600);
-      } catch (error) {
+  const loadDashboard = async () => {
+    startLoading('dashboard');
+    try {
+      timeoutId = setTimeout(() => {
         if (mounted) {
-          notifications.operationFailed("load dashboard");
           stopLoading('dashboard');
           setInitialLoad(false);
         }
+      }, 600);
+    } catch (error) {
+      if (mounted) {
+        notifications.operationFailed("load dashboard");
+        stopLoading('dashboard');
+        setInitialLoad(false);
       }
-    };
+    }
+  };
 
-    loadDashboard();
+  loadDashboard();
 
-    return () => {
-      mounted = false;
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  return () => {
+    mounted = false;
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+  };
+}, []); // ✅ EMPTY ARRAY - Run only once on mount
 
   const renderDashboardForSegment = () => (
     <>
@@ -290,7 +287,7 @@ const Dashboard = () => {
         chartData,
         chartOptions: exportChartOptions,
         filename,
-        rolePermissions,
+        rolePermissions: { canViewReports: hasPermission('canViewReports') },
         exportCanvasWidth: width,
         exportCanvasHeight: height,
         reportId: reportId,
@@ -320,7 +317,7 @@ const Dashboard = () => {
   };
 
   const handleQuickAction = (path, requiredPermission) => {
-    if (requiredPermission && !rolePermissions[requiredPermission]) {
+    if (requiredPermission && !hasPermission(requiredPermission)) {
       notifications.noPermission(`access ${path.replace('/', '')}`);
       return;
     }
@@ -362,7 +359,7 @@ const Dashboard = () => {
 
   const accessibleQuickActions = quickActions.filter(action => {
     if (!action.permission) return true;
-    return rolePermissions[action.permission] === true;
+    return hasPermission(action.permission);
   });
 
   if (initialLoad) {

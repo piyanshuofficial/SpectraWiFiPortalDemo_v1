@@ -13,8 +13,10 @@ import {
   FaTachometerAlt, FaDatabase, FaTabletAlt
 } from "react-icons/fa";
 import "./UserManagement.css";
-import { useAuth } from "../../context/AuthContext";
-import { Permissions } from "../../utils/accessLevels";
+import { usePermissions } from "../../hooks/usePermissions";
+import { useSort } from "../../hooks/useSort";
+import { useFilter } from "../../hooks/useFilter";
+import { useTableState } from "../../hooks/useTableState";
 import { commonColumns, segmentSpecificFields } from "../../utils/columns";
 import sampleUsers from "../../constants/sampleUsers";
 import UserLicenseRing from '../../components/common/UserLicenseRing';
@@ -31,7 +33,6 @@ import { exportChartDataToCSV } from "../../utils/exportUtils";
 const MAX_LICENSES = siteConfig.licenses.maxLicenses;
 const USED_LICENSES = siteConfig.licenses.usedLicenses;
 
-// Memoized Policy Cell Component
 const PolicyCell = React.memo(({ userPolicy }) => {
   if (!userPolicy) return <td className="policy-column">--</td>;
   
@@ -57,13 +58,12 @@ const PolicyCell = React.memo(({ userPolicy }) => {
 
 PolicyCell.displayName = 'PolicyCell';
 
-// Memoized User Table Row Component
 const UserTableRow = React.memo(({ 
   user, 
   visibleColumns, 
   segmentSpecificFields,
   segmentFilter,
-  rolePermissions,
+  hasEditPermission,
   onDetailsClick,
   onEditClick,
   onDeleteClick
@@ -97,7 +97,7 @@ const UserTableRow = React.memo(({
         >
           <FaInfoCircle />
         </Button>
-        {rolePermissions.canEditUsers ? (
+        {hasEditPermission ? (
           <>
             <Button
               variant="primary"
@@ -131,7 +131,6 @@ const UserTableRow = React.memo(({
     </tr>
   );
 }, (prevProps, nextProps) => {
-  // Custom comparison function for optimization
   return (
     prevProps.user.id === nextProps.user.id &&
     prevProps.user.status === nextProps.user.status &&
@@ -148,29 +147,21 @@ const UserTableRow = React.memo(({
 UserTableRow.displayName = 'UserTableRow';
 
 const UserList = () => {
-  const { currentUser } = useAuth();
+  const { canEditUsers, canViewReports } = usePermissions();
   const location = useLocation();
   const { startLoading, stopLoading, isLoading } = useLoading();
-  const rolePermissions = Permissions[currentUser.accessLevel]?.[currentUser.role] || {};
+  
   const [users, setUsers] = useState(sampleUsers);
   const [devices, setDevices] = useState([]);
   const [initialLoad, setInitialLoad] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [exportingCSV, setExportingCSV] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
   const [segmentFilter, setSegmentFilter] = useState("enterprise");
   const [advancedFilterVisible, setAdvancedFilterVisible] = useState(false);
-  const [advancedFilters, setAdvancedFilters] = useState({});
-  const [sortColumn, setSortColumn] = useState(null);
-  const [sortDirection, setSortDirection] = useState("asc");
-  const [visibleColumns, setVisibleColumns] = useState([]);
   const [editingUser, setEditingUser] = useState(null);
   const [showFormModal, setShowFormModal] = useState(false);
   const [detailsUser, setDetailsUser] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(PAGINATION.DEFAULT_ROWS_PER_PAGE);
   const [showDeviceModal, setShowDeviceModal] = useState(false);
 
   const segmentDeviceConfig = SEGMENT_DEVICE_AVAILABILITY[segmentFilter] || {};
@@ -182,6 +173,91 @@ const UserList = () => {
     const segmentCols = segmentSpecificFields[segmentFilter] || [];
     return [...commonColumns, ...segmentCols];
   }, [segmentFilter]);
+
+  const {
+    currentPage,
+    setCurrentPage,
+    rowsPerPage,
+    setRowsPerPage,
+    visibleColumns,
+    toggleColumn: toggleColumnVisibility,
+    setVisibleColumns,
+    resetToPage1
+  } = useTableState(PAGINATION.DEFAULT_ROWS_PER_PAGE);
+
+  const userFilterFunction = useCallback((user, { searchTerm, statusFilter, advancedFilters = {} }) => {
+  // Add default parameter ^^^^^^^^^^^^ here
+  if (segmentFilter !== "all" && user.segment !== segmentFilter) return false;
+  if (statusFilter && user.status !== statusFilter) return false;
+  
+  const searchLower = searchTerm.toLowerCase().trim();
+  if (searchLower) {
+    const allSearchFields = [
+      user.id,
+      user.firstName,
+      user.lastName,
+      user.mobile,
+      user.email,
+      user.userPolicy ? `${user.userPolicy.speed} ${user.userPolicy.dataVolume} ${user.userPolicy.deviceLimit} ${user.userPolicy.dataCycleType}` : "",
+      user.status,
+      user.registration,
+      user.lastOnline,
+      user.location,
+      ...columns.filter((c) => c.optional).map((c) => user[c.key] || ""),
+    ];
+    if (!allSearchFields.some((f) => f?.toString().toLowerCase().includes(searchLower))) {
+      return false;
+    }
+  }
+  
+  // Add safety check for advancedFilters
+  if (advancedFilters && typeof advancedFilters === 'object') {
+    for (const [key, value] of Object.entries(advancedFilters)) {
+      if (value) {
+        const userVal =
+          key === "policy" || key === "userPolicy"
+            ? user.userPolicy ? `${user.userPolicy.speed} ${user.userPolicy.dataVolume} ${user.userPolicy.deviceLimit} ${user.userPolicy.dataCycleType}` : ""
+            : (user[key] || "").toString().toLowerCase();
+        if (!userVal.includes(value.toLowerCase())) {
+          return false;
+        }
+      }
+    }
+  }
+  return true;
+}, [segmentFilter, columns]);
+
+  const {
+    filteredData: filteredUsers,
+    searchTerm,
+    setSearchTerm,
+    filters,
+    setFilter,
+    setFilters,
+    clearFilters,
+    activeFilterCount
+  } = useFilter(users, userFilterFunction);
+
+  const statusFilter = filters.statusFilter || "";
+  const advancedFilters = filters.advancedFilters || {};
+
+  const {
+    sortedData: sortedUsers,
+    sortColumn,
+    sortDirection,
+    handleSort: onSortClick,
+    getSortIndicator
+  } = useSort(filteredUsers, null, 'asc');
+
+  const renderSortIndicator = useCallback((column) => {
+    const direction = getSortIndicator(column);
+    if (!direction) return null;
+    return direction === 'asc' ? (
+      <FaSortUp aria-label="sorted ascending" />
+    ) : (
+      <FaSortDown aria-label="sorted descending" />
+    );
+  }, [getSortIndicator]);
 
   useEffect(() => {
     let mounted = true;
@@ -213,8 +289,7 @@ const UserList = () => {
       mounted = false;
       if (timeoutId) clearTimeout(timeoutId);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [startLoading, stopLoading]);
 
   useEffect(() => {
     const defaultCols = columns
@@ -225,7 +300,7 @@ const UserList = () => {
       )
       .map((col) => col.key);
     setVisibleColumns(defaultCols);
-  }, [segmentFilter, columns]);
+  }, [segmentFilter, columns, setVisibleColumns]);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -234,104 +309,21 @@ const UserList = () => {
     }
   }, [location.search]);
 
-  const toggleColumnVisibility = useCallback((key) => {
-    setVisibleColumns((prev) =>
-      prev.includes(key) ? prev.filter((c) => c !== key) : [...prev, key]
-    );
-  }, []);
-
-  const filteredUsers = useMemo(() => {
-    return users.filter((user) => {
-      if (segmentFilter !== "all" && user.segment !== segmentFilter) return false;
-      if (statusFilter && user.status !== statusFilter) return false;
-      const searchLower = searchTerm.toLowerCase().trim();
-      const allSearchFields = [
-        user.id,
-        user.firstName,
-        user.lastName,
-        user.mobile,
-        user.email,
-        user.userPolicy ? `${user.userPolicy.speed} ${user.userPolicy.dataVolume} ${user.userPolicy.deviceLimit} ${user.userPolicy.dataCycleType}` : "",
-        user.status,
-        user.registration,
-        user.lastOnline,
-        user.location,
-        ...columns.filter((c) => c.optional).map((c) => user[c.key] || ""),
-      ];
-      if (
-        searchLower &&
-        !allSearchFields.some((f) => f?.toString().toLowerCase().includes(searchLower))
-      ) {
-        return false;
-      }
-      for (const [key, value] of Object.entries(advancedFilters)) {
-        if (value) {
-          const userVal =
-            key === "policy" || key === "userPolicy"
-              ? user.userPolicy ? `${user.userPolicy.speed} ${user.userPolicy.dataVolume} ${user.userPolicy.deviceLimit} ${user.userPolicy.dataCycleType}` : ""
-              : (user[key] || "").toString().toLowerCase();
-          if (!userVal.includes(value.toLowerCase())) {
-            return false;
-          }
-        }
-      }
-      return true;
-    });
-  }, [users, searchTerm, statusFilter, segmentFilter, advancedFilters, columns]);
-
-  const sortedUsers = useMemo(() => {
-    if (!sortColumn) return filteredUsers;
-    return [...filteredUsers].sort((a, b) => {
-      const valA = a[sortColumn];
-      const valB = b[sortColumn];
-      if (valA === undefined || valA === null) return 1;
-      if (valB === undefined || valB === null) return -1;
-      const isNumber = typeof valA === "number" && typeof valB === "number";
-      if (isNumber) {
-        return sortDirection === "asc" ? valA - valB : valB - valA;
-      }
-      return sortDirection === "asc"
-        ? valA.toString().localeCompare(valB.toString())
-        : valB.toString().localeCompare(valA.toString());
-    });
-  }, [filteredUsers, sortColumn, sortDirection]);
-
   const pagedUsers = useMemo(() => {
     const startIndex = (currentPage - 1) * rowsPerPage;
     return sortedUsers.slice(startIndex, startIndex + rowsPerPage);
   }, [sortedUsers, currentPage, rowsPerPage]);
 
-  useEffect(() => setCurrentPage(1), [
+  useEffect(() => {
+    resetToPage1();
+  }, [
     filteredUsers,
     rowsPerPage,
     sortColumn,
     sortDirection,
     visibleColumns,
+    resetToPage1
   ]);
-
-  const onSortClick = useCallback((column) => {
-    setSortColumn(prevColumn => {
-      if (prevColumn === column) {
-        setSortDirection(prev => prev === "asc" ? "desc" : "asc");
-        return column;
-      } else {
-        setSortDirection("asc");
-        return column;
-      }
-    });
-  }, []);
-
-  const renderSortIndicator = useCallback((column) =>
-    sortColumn === column ? (
-      sortDirection === "asc" ? (
-        <FaSortUp aria-label="sorted ascending" />
-      ) : (
-        <FaSortDown aria-label="sorted descending" />
-      )
-    ) : null,
-  [sortColumn, sortDirection]);
-
-  const activeFilterCount = Object.values(advancedFilters).filter(Boolean).length;
 
   const handleUserSubmit = useCallback(async (userObj) => {
     setSubmitting(true);
@@ -404,7 +396,7 @@ const UserList = () => {
   }, []);
 
   const handleExportUsers = useCallback(async () => {
-    if (!rolePermissions.canViewReports) {
+    if (!canViewReports) {
       notifications.noPermission("export reports");
       return;
     }
@@ -453,7 +445,7 @@ const UserList = () => {
       if (timeoutId) clearTimeout(timeoutId);
       setExportingCSV(false);
     }
-  }, [rolePermissions.canViewReports, columns, visibleColumns, sortedUsers, segmentFilter]);
+  }, [canViewReports, columns, visibleColumns, sortedUsers, segmentFilter]);
 
   if (initialLoad) {
     return (
@@ -494,11 +486,11 @@ const UserList = () => {
             searchValue={searchTerm}
             onSearchChange={e => setSearchTerm(e.target.value)}
             statusFilter={statusFilter}
-            onStatusChange={e => setStatusFilter(e.target.value)}
-            onAdd={rolePermissions.canEditUsers ? () => setShowFormModal(true) : undefined}
-            disableAdd={!rolePermissions.canEditUsers}
+            onStatusChange={e => setFilter('statusFilter', e.target.value)}
+            onAdd={canEditUsers ? () => setShowFormModal(true) : undefined}
+            disableAdd={!canEditUsers}
             onExport={handleExportUsers}
-            disableExport={!rolePermissions.canViewReports || exportingCSV}
+            disableExport={!canViewReports || exportingCSV}
             exportLoading={exportingCSV}
             onAddDevice={showAddDevice ? () => setShowDeviceModal(true) : undefined}
             disableAddDevice={!showAddDevice}
@@ -558,86 +550,92 @@ const UserList = () => {
           ? `Hide Advanced Filters${activeFilterCount > 0 ? ` (${activeFilterCount})` : ""}`
           : `Show Advanced Filters${activeFilterCount > 0 ? ` (${activeFilterCount})` : ""}`}
       </button>
-
-      {advancedFilterVisible && (
-        <form
-          id="advanced-filters-panel"
-          className="advanced-filters-panel"
-          autoComplete="off"
-          onSubmit={(e) => e.preventDefault()}
-          spellCheck={false}
-        >
-          <div className="advanced-filters-grid">
-            {columns
-              .filter((c) => c.optional)
-              .map((col) => (
-                <div key={col.key}>
-                  <label htmlFor={`filter-${col.key}`} className="advanced-filter-label">
-                    {col.label}
-                  </label>
-                  {col.key === "userPolicy" ? (
-                    <input
-                      id={`filter-${col.key}`}
-                      type="text"
-                      value={advancedFilters[col.key] || ""}
-                      onChange={(e) =>
-                        setAdvancedFilters((prev) => ({
-                          ...prev,
-                          [col.key]: e.target.value,
-                        }))
-                      }
-                      placeholder={`Filter by ${col.label}`}
-                      aria-label={`Filter by ${col.label}`}
-                      autoComplete="off"
-                    />
-                  ) : col.key === "status" ? (
-                    <select
-                      id={`filter-${col.key}`}
-                      value={advancedFilters[col.key] || ""}
-                      onChange={(e) =>
-                        setAdvancedFilters((prev) => ({
-                          ...prev,
-                          [col.key]: e.target.value,
-                        }))
-                      }
-                      aria-label={`Filter by ${col.label}`}
-                    >
-                      <option value="">Any</option>
-                      {["Active", "Suspended", "Blocked"].map((opt) => (
-                        <option key={opt} value={opt}>
-                          {opt}
-                        </option>
-                      ))}
-                    </select>
-                  ) : (
-                    <input
-                      id={`filter-${col.key}`}
-                      type="text"
-                      value={advancedFilters[col.key] || ""}
-                      onChange={(e) =>
-                        setAdvancedFilters((prev) => ({
-                          ...prev,
-                          [col.key]: e.target.value,
-                        }))
-                      }
-                      placeholder={`Filter by ${col.label}`}
-                      aria-label={`Filter by ${col.label}`}
-                      autoComplete="off"
-                    />
-                  )}
-                </div>
-              ))}
+{advancedFilterVisible && (
+  <form
+    id="advanced-filters-panel"
+    className="advanced-filters-panel"
+    autoComplete="off"
+    onSubmit={(e) => e.preventDefault()}
+    spellCheck={false}
+  >
+    <div className="advanced-filters-grid">
+      {columns
+        .filter((c) => c.optional)
+        .map((col) => (
+          <div key={col.key}>
+            <label htmlFor={`filter-${col.key}`} className="advanced-filter-label">
+              {col.label}
+            </label>
+            {col.key === "userPolicy" ? (
+              <input
+                id={`filter-${col.key}`}
+                type="text"
+                value={(advancedFilters && advancedFilters[col.key]) || ""}
+                onChange={(e) => {
+                  const currentFilters = filters.advancedFilters || {};
+                  setFilter('advancedFilters', {
+                    ...currentFilters,
+                    [col.key]: e.target.value,
+                  });
+                }}
+                placeholder={`Filter by ${col.label}`}
+                aria-label={`Filter by ${col.label}`}
+                autoComplete="off"
+              />
+            ) : col.key === "status" ? (
+              <select
+                id={`filter-${col.key}`}
+                value={(advancedFilters && advancedFilters[col.key]) || ""}
+                onChange={(e) => {
+                  const currentFilters = filters.advancedFilters || {};
+                  setFilter('advancedFilters', {
+                    ...currentFilters,
+                    [col.key]: e.target.value,
+                  });
+                }}
+                aria-label={`Filter by ${col.label}`}
+              >
+                <option value="">Any</option>
+                {["Active", "Suspended", "Blocked"].map((opt) => (
+                  <option key={opt} value={opt}>
+                    {opt}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <input
+                id={`filter-${col.key}`}
+                type="text"
+                value={(advancedFilters && advancedFilters[col.key]) || ""}
+                onChange={(e) => {
+                  const currentFilters = filters.advancedFilters || {};
+                  setFilter('advancedFilters', {
+                    ...currentFilters,
+                    [col.key]: e.target.value,
+                  });
+                }}
+                placeholder={`Filter by ${col.label}`}
+                aria-label={`Filter by ${col.label}`}
+                autoComplete="off"
+              />
+            )}
           </div>
-          <div className="advanced-filter-actions">
-            <button type="button" className="btn btn-secondary" onClick={() => setAdvancedFilters({})}>
-              Clear All
-            </button>
-            <button type="button" className="btn btn-secondary" onClick={() => setAdvancedFilterVisible(false)}>
-              Hide Filters
-            </button>
-          </div>
-        </form>
-      )}
+        ))}
+    </div>
+    <div className="advanced-filter-actions">
+      <button 
+        type="button" 
+        className="btn btn-secondary" 
+        onClick={() => setFilter('advancedFilters', {})}
+      >
+        Clear All
+      </button>
+      <button type="button" className="btn btn-secondary" onClick={() => setAdvancedFilterVisible(false)}>
+        Hide Filters
+      </button>
+    </div>
+  </form>
+)}
 
       <div className="user-table-outer">
         <table className="user-table" role="table">
@@ -685,7 +683,7 @@ const UserList = () => {
                   visibleColumns={visibleColumns}
                   segmentSpecificFields={segmentSpecificFields}
                   segmentFilter={segmentFilter}
-                  rolePermissions={rolePermissions}
+                  hasEditPermission={canEditUsers}
                   onDetailsClick={handleDetailsClick}
                   onEditClick={handleEditClick}
                   onDeleteClick={handleDelete}
@@ -730,7 +728,6 @@ const UserList = () => {
             setShowFormModal(true);
           }}
           onSendMessage={(user) => {
-            // Password resend notification is handled inside UserDetailsModal
           }}
           onSuspend={(user) => {
             handleChangeStatus(user.id, "Suspended");

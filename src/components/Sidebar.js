@@ -11,8 +11,7 @@ import {
   FaBars,
   FaTimes,
 } from "react-icons/fa";
-import { useAuth } from "../context/AuthContext";
-import { Permissions } from "../utils/accessLevels";
+import { usePermissions } from "../hooks/usePermissions";
 import { preloadRoute } from "../config/routes";
 import logoMark from "../assets/images/spectra-logo-white.png";
 import "./Sidebar.css";
@@ -56,13 +55,11 @@ const sidebarItems = [
 ];
 
 const Sidebar = () => {
-  const { currentUser } = useAuth();
+  const { hasPermission } = usePermissions();
   const location = useLocation();
-  const rolePermissions = Permissions[currentUser.accessLevel]?.[currentUser.role] || {};
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
-  // Detect mobile viewport
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth <= 900);
@@ -74,12 +71,10 @@ const Sidebar = () => {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Close mobile menu on route change
   useEffect(() => {
     setMobileOpen(false);
   }, [location.pathname]);
 
-  // Prevent body scroll when mobile menu is open
   useEffect(() => {
     if (mobileOpen && isMobile) {
       document.body.style.overflow = 'hidden';
@@ -92,13 +87,11 @@ const Sidebar = () => {
     };
   }, [mobileOpen, isMobile]);
 
-  // Filter sidebar items based on permissions
   const accessibleItems = sidebarItems.filter(item => {
     if (!item.permission) return true;
-    return rolePermissions[item.permission] === true;
+    return hasPermission(item.permission);
   });
 
-  // Preload route on hover for instant navigation
   const handleMouseEnter = (path) => {
     preloadRoute(path);
   };
@@ -111,7 +104,6 @@ const Sidebar = () => {
     setMobileOpen(false);
   };
 
-  // If no accessible items, show minimal sidebar
   if (accessibleItems.length === 0) {
     return (
       <>

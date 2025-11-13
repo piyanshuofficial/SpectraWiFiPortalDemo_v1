@@ -38,5 +38,4 @@ export const Permissions = {
       canManageDevices: false,
     },
   },
-  // Placeholders for future access levels
 };

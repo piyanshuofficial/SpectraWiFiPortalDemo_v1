@@ -52,7 +52,6 @@ const UserDetailsModal = ({
       notifications.showError("Cannot edit user with Blocked status");
       return;
     }
-    // Close the details modal and trigger edit
     if (onEdit) {
       onEdit(user);
     }
@@ -64,6 +63,8 @@ const UserDetailsModal = ({
       notifications.showInfo(`Password resend initiated for ${user.id}`);
     }
   };
+
+  // src/pages/UserManagement/UserDetailsModal.js (continued)
 
   const handleSuspend = () => {
     if (!window.confirm(`Are you sure you want to suspend ${user.firstName} ${user.lastName}?`)) {

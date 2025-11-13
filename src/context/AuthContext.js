@@ -6,7 +6,6 @@ import { AccessLevels, Roles } from "../utils/accessLevels";
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  // Default to Site-level Admin user for demo
   const [currentUser, setCurrentUser] = useState({
     role: Roles.ADMIN,
     accessLevel: AccessLevels.SITE,

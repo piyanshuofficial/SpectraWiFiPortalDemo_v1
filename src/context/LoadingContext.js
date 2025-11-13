@@ -1,6 +1,6 @@
 // src/context/LoadingContext.js
 
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useCallback } from 'react';
 
 const LoadingContext = createContext();
 
@@ -11,20 +11,37 @@ export const LoadingProvider = ({ children }) => {
     devices: false,
     reports: false,
     export: false,
+    dashboard: false,
   });
 
-  const setLoading = (key, value) => {
+  const setLoading = useCallback((key, value) => {
     setLoadingStates(prev => ({
       ...prev,
       [key]: value
     }));
-  };
+  }, []);
 
-  const startLoading = (key) => setLoading(key, true);
-  const stopLoading = (key) => setLoading(key, false);
+  const startLoading = useCallback((key) => {
+    setLoadingStates(prev => ({
+      ...prev,
+      [key]: true
+    }));
+  }, []);
 
-  const isLoading = (key) => loadingStates[key] || false;
-  const isAnyLoading = () => Object.values(loadingStates).some(val => val === true);
+  const stopLoading = useCallback((key) => {
+    setLoadingStates(prev => ({
+      ...prev,
+      [key]: false
+    }));
+  }, []);
+
+  const isLoading = useCallback((key) => {
+    return loadingStates[key] || false;
+  }, [loadingStates]);
+
+  const isAnyLoading = useCallback(() => {
+    return Object.values(loadingStates).some(val => val === true);
+  }, [loadingStates]);
 
   return (
     <LoadingContext.Provider value={{ 

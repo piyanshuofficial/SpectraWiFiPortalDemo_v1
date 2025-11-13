@@ -2,8 +2,9 @@
 
 import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { FaDesktop, FaGlobeAmericas, FaBan, FaWifi, FaMobileAlt, FaLaptop, FaTablet } from "react-icons/fa";
-import { useAuth } from "../../context/AuthContext";
-import { Permissions } from "../../utils/accessLevels";
+import { usePermissions } from "../../hooks/usePermissions";
+import { useFilter } from "../../hooks/useFilter";
+import { useTableState } from "../../hooks/useTableState";
 import { useLoading } from "../../context/LoadingContext";
 import Button from "../../components/Button";
 import Pagination from "../../components/Pagination";
@@ -25,7 +26,6 @@ const getDeviceIcon = (category) => {
   return FaLaptop;
 };
 
-// Memoized Summary Card Component
 const SummaryCard = React.memo(({ stat }) => (
   <div className={`device-summary-card ${stat.colorClass}`}>
     <div className="devsc-toprow">
@@ -42,7 +42,6 @@ const SummaryCard = React.memo(({ stat }) => (
 
 SummaryCard.displayName = 'SummaryCard';
 
-// Memoized Device Card Component
 const DeviceCard = React.memo(({ 
   device, 
   onViewDetails, 
@@ -100,7 +99,6 @@ const DeviceCard = React.memo(({
     ></span>
   </div>
 ), (prevProps, nextProps) => {
-  // Custom comparison function for optimization
   return (
     prevProps.device.id === nextProps.device.id &&
     prevProps.device.blocked === nextProps.device.blocked &&
@@ -114,47 +112,74 @@ const DeviceCard = React.memo(({
 DeviceCard.displayName = 'DeviceCard';
 
 const DeviceList = () => {
-  const { currentUser } = useAuth();
+  const { hasPermission } = usePermissions();
   const { isLoading } = useLoading();
-  const rolePermissions = Permissions[currentUser.accessLevel]?.[currentUser.role] || {};
 
   const [devices, setDevices] = useState([]);
-  const [typeFilter, setTypeFilter] = useState("all");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [searchText, setSearchText] = useState("");
   const [showDeviceModal, setShowDeviceModal] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(PAGINATION.DEVICE_LIST_DEFAULT);
   const [initialLoad, setInitialLoad] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [blockingDeviceId, setBlockingDeviceId] = useState(null);
   const [viewingDeviceId, setViewingDeviceId] = useState(null);
-  
   const [segmentFilter, setSegmentFilter] = useState("enterprise");
   
+  const {
+    currentPage,
+    setCurrentPage,
+    rowsPerPage,
+    setRowsPerPage,
+    resetToPage1
+  } = useTableState(PAGINATION.DEVICE_LIST_DEFAULT);
+
   const segmentDeviceConfig = SEGMENT_DEVICE_AVAILABILITY[segmentFilter] || {};
   const allowHuman = segmentDeviceConfig.allowHuman ?? false;
   const allowNonHuman = segmentDeviceConfig.allowNonHuman ?? false;
   const showRegisterDevice = allowHuman || allowNonHuman;
   
-  const hasDevicePermission = rolePermissions.canManageDevices === true;
-  
+  const hasDevicePermission = hasPermission('canManageDevices');
   const canRegisterDevice = hasDevicePermission && showRegisterDevice;
 
-  // Get current site info based on selected segment
   const currentSite = siteConfig.segmentSites[segmentFilter] || siteConfig.segmentSites.enterprise;
 
-  // Get users for the selected segment
   const segmentUsers = useMemo(() => {
     return sampleUsers.filter(user => user.segment === segmentFilter);
   }, [segmentFilter]);
 
-  // Get user IDs for the selected segment
   const segmentUserIds = useMemo(() => {
     return new Set(segmentUsers.map(user => user.id));
   }, [segmentUsers]);
 
-  // Device statistics - calculated from segment-filtered devices
+  const deviceFilterFunction = useCallback((device, { searchTerm, typeFilter, statusFilter }) => {
+    if (!segmentUserIds.has(device.userId)) return false;
+    if (typeFilter && typeFilter !== "all" && device.type !== typeFilter) return false;
+    if (statusFilter === "online" && !device.online) return false;
+    if (statusFilter === "blocked" && device.blocked !== true) return false;
+    if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase();
+      if (
+        !(
+          device.name.toLowerCase().includes(searchLower) ||
+          device.mac.toLowerCase().includes(searchLower) ||
+          device.owner.toLowerCase().includes(searchLower)
+        )
+      ) {
+        return false;
+      }
+    }
+    return true;
+  }, [segmentUserIds]);
+
+  const {
+    filteredData: filteredDevices,
+    searchTerm,
+    setSearchTerm,
+    filters,
+    setFilter
+  } = useFilter(devices, deviceFilterFunction);
+
+  const typeFilter = filters.typeFilter || "all";
+  const statusFilter = filters.statusFilter || "all";
+
   const segmentDeviceStats = useMemo(() => {
     const segmentDevices = devices.filter(device => segmentUserIds.has(device.userId));
     const onlineDevices = segmentDevices.filter(d => d.online).length;
@@ -202,7 +227,6 @@ const DeviceList = () => {
 
   useEffect(() => {
     const loadDevices = () => {
-      // Enrich devices with owner information
       const enrichedData = sampleDevices.map(device => {
         const owner = sampleUsers.find(user => user.id === device.userId);
         return {
@@ -222,37 +246,14 @@ const DeviceList = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  // Filter devices by segment first, then by other filters
-  const filteredDevices = useMemo(() => {
-    return devices.filter(dev => {
-      // First filter by segment - only show devices belonging to users of selected segment
-      if (!segmentUserIds.has(dev.userId)) return false;
-      
-      // Then apply other filters
-      if (typeFilter !== "all" && dev.type !== typeFilter) return false;
-      if (statusFilter === "online" && !dev.online) return false;
-      if (statusFilter === "blocked" && dev.blocked !== true) return false;
-      if (
-        searchText &&
-        !(
-          dev.name.toLowerCase().includes(searchText.toLowerCase()) ||
-          dev.mac.toLowerCase().includes(searchText.toLowerCase()) ||
-          dev.owner.toLowerCase().includes(searchText.toLowerCase())
-        )
-      )
-        return false;
-      return true;
-    });
-  }, [devices, segmentUserIds, typeFilter, statusFilter, searchText]);
-
   const pagedDevices = useMemo(() => {
     const startIndex = (currentPage - 1) * rowsPerPage;
     return filteredDevices.slice(startIndex, startIndex + rowsPerPage);
   }, [filteredDevices, currentPage, rowsPerPage]);
 
   useEffect(() => {
-    setCurrentPage(1);
-  }, [typeFilter, statusFilter, searchText, rowsPerPage, segmentFilter]);
+    resetToPage1();
+  }, [typeFilter, statusFilter, searchTerm, rowsPerPage, segmentFilter, resetToPage1]);
 
   const handleDeviceSubmit = useCallback(async (deviceInfo) => {
     setSubmitting(true);
@@ -320,12 +321,12 @@ const DeviceList = () => {
   }, []);
 
   const handleSearch = useCallback(() => {
-    if (searchText.trim()) {
-      notifications.showInfo(`Searching for: ${searchText}`);
+    if (searchTerm.trim()) {
+      notifications.showInfo(`Searching for: ${searchTerm}`);
     } else {
       notifications.showInfo("Enter search criteria");
     }
-  }, [searchText]);
+  }, [searchTerm]);
   
   const handleViewDetails = useCallback(async (device) => {
     setViewingDeviceId(device.id);
@@ -424,7 +425,7 @@ const DeviceList = () => {
       <div className="device-mgmt-toolbar">
         <select
           value={typeFilter}
-          onChange={e => setTypeFilter(e.target.value)}
+          onChange={e => setFilter('typeFilter', e.target.value)}
           className="device-mgmt-select"
           aria-label="Filter by device type"
           disabled={isLoading('devices')}
@@ -437,7 +438,7 @@ const DeviceList = () => {
         </select>
         <select
           value={statusFilter}
-          onChange={e => setStatusFilter(e.target.value)}
+          onChange={e => setFilter('statusFilter', e.target.value)}
           className="device-mgmt-select"
           aria-label="Filter by device status"
           disabled={isLoading('devices')}
@@ -451,8 +452,8 @@ const DeviceList = () => {
         <input
           className="device-mgmt-search"
           type="text"
-          value={searchText}
-          onChange={e => setSearchText(e.target.value)}
+          value={searchTerm}
+          onChange={e => setSearchTerm(e.target.value)}
           placeholder="Search by name, MAC, or owner..."
           aria-label="Search devices"
           disabled={isLoading('devices')}
