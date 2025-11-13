@@ -122,7 +122,7 @@ const Dashboard = () => {
 
   const safeNumber = (value, fallback = 0) => typeof value === "number" && !isNaN(value) ? value : fallback;
 
-  useEffect(() => {
+useEffect(() => {
   let mounted = true;
   let timeoutId = null;
 
@@ -152,7 +152,8 @@ const Dashboard = () => {
       clearTimeout(timeoutId);
     }
   };
-}, []); // ✅ EMPTY ARRAY - Run only once on mount
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, []);
 
   const renderDashboardForSegment = () => (
     <>

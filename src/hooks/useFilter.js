@@ -1,6 +1,6 @@
 // src/hooks/useFilter.js
 
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 
 /**
  * Custom hook for managing table filtering

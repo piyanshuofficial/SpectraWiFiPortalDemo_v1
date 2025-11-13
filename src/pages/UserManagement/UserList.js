@@ -233,8 +233,6 @@ const UserList = () => {
     setSearchTerm,
     filters,
     setFilter,
-    setFilters,
-    clearFilters,
     activeFilterCount
   } = useFilter(users, userFilterFunction);
 

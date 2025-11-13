@@ -1,6 +1,6 @@
 // src/hooks/useTableState.js
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { PAGINATION } from '../constants/appConstants';
 
 /**
