@@ -1,8 +1,8 @@
 // src/components/Loading/LoadingOverlay.js
 
 import React from 'react';
-import Spinner from './Spinner';
-import './LoadingOverlay.css';
+import Spinner from '@components/Loading/Spinner';
+import '@components/Loading/LoadingOverlay.css';
 
 /**
  * Full-page or container loading overlay
@@ -23,10 +23,15 @@ const LoadingOverlay = ({
       role="alert"
       aria-busy="true"
       aria-live="assertive"
+      aria-label={message}
     >
       <div className="loading-overlay-content">
         <Spinner size="lg" color="primary" />
-        {message && <p className="loading-overlay-message">{message}</p>}
+        {message && (
+          <p className="loading-overlay-message" aria-live="polite">
+            {message}
+          </p>
+        )}
       </div>
     </div>
   );

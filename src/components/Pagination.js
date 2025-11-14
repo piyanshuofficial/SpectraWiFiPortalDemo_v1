@@ -7,14 +7,14 @@ import {
   FaAngleRight,
   FaAngleDoubleRight,
 } from "react-icons/fa";
-import { PAGINATION, COMPONENT_SIZES } from "../constants/appConstants";
+import { PAGINATION, COMPONENT_SIZES } from "@constants/appConstants";
 
 const Pagination = ({
   totalItems,
   rowsPerPage,
-  currentPage,
   onPageChange,
   onRowsPerPageChange,
+  currentPage,
 }) => {
   const totalPages = Math.ceil(totalItems / rowsPerPage);
 
@@ -28,8 +28,8 @@ const Pagination = ({
           key={i}
           onClick={() => onPageChange(i)}
           aria-current={currentPage === i ? "page" : undefined}
+          aria-label={`${currentPage === i ? 'Current page, ' : ''}Page ${i}`}
           className={`pagination-btn ${currentPage === i ? "active" : ""}`}
-          aria-label={`Go to page ${i}`}
           type="button"
           style={{
             border: "1px solid #c8d2e8",
@@ -57,18 +57,23 @@ const Pagination = ({
   };
 
   return (
-    <nav className="pagination-bar" role="navigation" aria-label="Pagination Navigation" style={{
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      gap: "12px",
-      background: "transparent",
-      padding: "6px 0 0 0",
-      marginBottom: "8px",
-      boxShadow: "none",
-      borderRadius: "0",
-      width: "100%"
-    }}>
+    <nav 
+      className="pagination-bar" 
+      role="navigation" 
+      aria-label="Pagination Navigation"
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        gap: "12px",
+        background: "transparent",
+        padding: "6px 0 0 0",
+        marginBottom: "8px",
+        boxShadow: "none",
+        borderRadius: "0",
+        width: "100%"
+      }}
+    >
       <div className="pagination-left" style={{
         display: "flex",
         alignItems: "center",
@@ -86,7 +91,7 @@ const Pagination = ({
         <select
           id="rows-per-page-select"
           className="rows-per-page-select"
-          aria-label="Rows per page selector"
+          aria-label="Select number of rows per page"
           value={rowsPerPage}
           onChange={e => onRowsPerPageChange(Number(e.target.value))}
           style={{
@@ -112,11 +117,16 @@ const Pagination = ({
         display: "flex",
         alignItems: "center"
       }}>
-        <div className="pagination-buttons" style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "4px"
-        }}>
+        <div 
+          className="pagination-buttons" 
+          role="group"
+          aria-label="Pagination controls"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "4px"
+          }}
+        >
           <button
             onClick={() => onPageChange(1)}
             disabled={currentPage === 1}
@@ -139,7 +149,7 @@ const Pagination = ({
               justifyContent: "center"
             }}
           >
-            <FaAngleDoubleLeft />
+            <FaAngleDoubleLeft aria-hidden="true" />
           </button>
           <button
             onClick={() => onPageChange(currentPage - 1)}
@@ -163,7 +173,7 @@ const Pagination = ({
               justifyContent: "center"
             }}
           >
-            <FaAngleLeft />
+            <FaAngleLeft aria-hidden="true" />
           </button>
           {createPageButtons()}
           <button
@@ -188,7 +198,7 @@ const Pagination = ({
               justifyContent: "center"
             }}
           >
-            <FaAngleRight />
+            <FaAngleRight aria-hidden="true" />
           </button>
           <button
             onClick={() => onPageChange(totalPages)}
@@ -212,7 +222,7 @@ const Pagination = ({
               justifyContent: "center"
             }}
           >
-            <FaAngleDoubleRight />
+            <FaAngleDoubleRight aria-hidden="true" />
           </button>
         </div>
       </div>

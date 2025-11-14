@@ -1,7 +1,7 @@
 // src/components/Reports/CriteriaDisplay.js
 import React from 'react';
 import { FaEdit } from 'react-icons/fa';
-import './CriteriaDisplay.css';
+import '@components/Reports/CriteriaDisplay.css';
 
 const CriteriaDisplay = ({ criteria, criteriaFields, onChangeCriteria }) => {
   if (!criteria || Object.keys(criteria).length === 0) {
@@ -52,7 +52,7 @@ const CriteriaDisplay = ({ criteria, criteriaFields, onChangeCriteria }) => {
   };
 
   return (
-    <div className="criteria-display">
+    <div className="criteria-display" role="region" aria-label="Applied report criteria">
       <div className="criteria-display-title">
         <div className="criteria-display-header">
           <span>Applied Criteria</span>
@@ -61,10 +61,9 @@ const CriteriaDisplay = ({ criteria, criteriaFields, onChangeCriteria }) => {
           <button 
             className="change-criteria-btn"
             onClick={onChangeCriteria}
-            title="Change report criteria"
             aria-label="Change report criteria"
           >
-            <FaEdit />
+            <FaEdit aria-hidden="true" />
             Change Criteria
           </button>
         )}
@@ -76,7 +75,7 @@ const CriteriaDisplay = ({ criteria, criteriaFields, onChangeCriteria }) => {
 
           return (
             <div key={field.name} className="criteria-item">
-              <span className="criteria-icon">{getIcon(field.type)}</span>
+              <span className="criteria-icon" aria-hidden="true">{getIcon(field.type)}</span>
               <span className="criteria-label">{field.label}:</span>
               <span className="criteria-value">{formatValue(field, value)}</span>
             </div>

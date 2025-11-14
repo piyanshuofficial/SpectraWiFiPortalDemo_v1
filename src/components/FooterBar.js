@@ -1,172 +1,172 @@
+// src/components/FooterBar.js
+
 import React, { useState } from 'react';
-import './FooterBar.css';
-import PolicyModal from '../components/PolicyModal';
-import bgImage from '../assets/images/banner-element.png';
+import '@components/FooterBar.css';
+import PolicyModal from '@components/PolicyModal';
+import bgImage from '@assets/images/banner-element.png';
 
 const PRIVACY_POLICY_HTML = (
   <div>
+    <h2 style={{ fontWeight: "bold", textDecoration: "underline" }}>Corporate Restructuring</h2>
+    <p>
+      On happening of any merger, demerger or other forms of Corporate Restructuring, as the case may be, we may have to share your personal information with our potential business partner or Investor or Acquirer or Acquiree to continue to provide the services.
+    </p>
 
+    <h2 style={{ fontWeight: "bold" }}>Consent</h2>
+    <ul>
+      <li>
+        You have expressly consented to use of your personal information by us including our associates and partners in the manner detailed herein by your action by registering or using our Portal, which you are advised to do after reading and consenting to agree with the terms only;
+      </li>
+      <li>
+        We use third party payment gateways for monetary transactions and they may collect certain details for processing your financial transactions to identification and verification purpose. We hereby clarify that we do not collect your banking or credit card details in any manner whatsoever and we do not take any responsibility for the data shared by you with the Payment Service Provider;
+      </li>
+      <li>
+        You hereby consent to use of your contact details for reaching out to you for business/promotional purpose by us or our affiliates;
+      </li>
+      <li>
+        When you sign up with us for an online account, register to receive marketing communications from us, fill in one of our forms (whether online or offline) or otherwise expressly provide us with your personal data, we may collect and store any personal data that you provide to us and may use it to personalize and improve your experience on our digital platforms, provide products and services you request from us, and carry out profiling and market research.
+      </li>
+      <li>
+        You hereby consent to security checks for verification and Identification purposes whether by us or through third party service providers.
+      </li>
+    </ul>
+
+    <h2 style={{ fontWeight: "bold", textDecoration: "underline" }}>Data Security and Confidentiality</h2>
+    <ul>
+      <li>We use adequate security measures including SSL certification for protection of your data and maintaining its confidentiality.</li>
+      <li>We comply with ISO 27001 standards to keep your data safe and secure.</li>
+      <li>We take reasonable measures to protect your information from unauthorized access, disclosure, alteration, or destruction. However, no method of data transmission over the internet or electronic storage is completely secure, and we cannot guarantee absolute security.</li>
+    </ul>
+
+    <p>
+      Shyam Spectra Private Limited (hereinafter referred to as "Company/we/us/our"), which also includes its affiliates, associates and partners) is the author and publisher of the internet resource spectra.co "Portal" including website, sub-domains, and microsites) as well as the software and applications or other platforms provided by us, including but not limited to the mobile application 'SpectraOne' (together with the Portal, referred to as the "Services").
+    </p>
+    <p>
+      This privacy policy ("Privacy Policy") explains how we collect, use, share, disclose and protect the Personal information of the Users, including the Users (referred to as "you", "your" or "Users" in this Privacy Policy.
+    </p>
+    <p>
+      We created this Privacy Policy to demonstrate our commitment to the protection of your privacy and your personal information. Your use of and access to the Services is subject to this Privacy Policy and our Terms of Use. Any term used but not defined in this Privacy Policy shall have the meaning attributed to it in our Terms of Use.
+    </p>
+    <p>
+      If you do not consent to our usage of your personal information, please refrain from using the services. Please take note that you are well within your rights to not provide us with certain information, withdraw your consent for collection/use of your personal information, or request for temporary suspension or permanent deletion of certain information though we hereby advise you that this may cause you to not be able to avail full access/use of the services and will also mean that we may exercise our right to refrain from providing our services to you. We will not be liable/responsible for any breach of privacy owing to User's negligence.
+    </p>
+    <p>
+      By using the services or by otherwise providing us with your information, you will be deemed to have read, understood, and agreed to the practices and policies outlined in this Privacy Policy and agree to be bound by the Privacy Policy. You hereby consent to our use, sharing, and disclosure of your information as described in this Privacy Policy concerning Your uses of any of our products and/or services. If You use the services on behalf of someone else or an entity (such as your employer), you represent that you are authorized by such individual or entity to (i) accept this Privacy Policy on such individual's or entity's behalf, and (ii) consent on behalf of such individual or entity to our collection, use and disclosure of such individual's or entity's information as described in this Privacy Policy.
+    </p>
     
-  <h2 style={{ fontWeight: "bold", textDecoration: "underline" }}>Corporate Restructuring</h2>
-  <p>
-    On happening of any merger, demerger or other forms of Corporate Restructuring, as the case may be, we may have to share your personal information with our potential business partner or Investor or Acquirer or Acquiree to continue to provide the services.
-  </p>
-
-  <h2 style={{ fontWeight: "bold" }}>Consent</h2>
-  <ul>
-    <li>
-      You have expressly consented to use of your personal information by us including our associates and partners in the manner detailed herein by your action by registering or using our Portal, which you are advised to do after reading and consenting to agree with the terms only;
-    </li>
-    <li>
-      We use third party payment gateways for monetary transactions and they may collect certain details for processing your financial transactions to identification and verification purpose. We hereby clarify that we do not collect your banking or credit card details in any manner whatsoever and we do not take any responsibility for the data shared by you with the Payment Service Provider;
-    </li>
-    <li>
-      You hereby consent to use of your contact details for reaching out to you for business/promotional purpose by us or our affiliates;
-    </li>
-    <li>
-      When you sign up with us for an online account, register to receive marketing communications from us, fill in one of our forms (whether online or offline) or otherwise expressly provide us with your personal data, we may collect and store any personal data that you provide to us and may use it to personalize and improve your experience on our digital platforms, provide products and services you request from us, and carry out profiling and market research.
-    </li>
-    <li>
-      You hereby consent to security checks for verification and Identification purposes whether by us or through third party service providers.
-    </li>
-  </ul>
-
-  <h2 style={{ fontWeight: "bold", textDecoration: "underline" }}>Data Security and Confidentiality</h2>
-  <ul>
-    <li>We use adequate security measures including SSL certification for protection of your data and maintaining its confidentiality.</li>
-    <li>We comply with ISO 27001 standards to keep your data safe and secure.</li>
-    <li>We take reasonable measures to protect your information from unauthorized access, disclosure, alteration, or destruction. However, no method of data transmission over the internet or electronic storage is completely secure, and we cannot guarantee absolute security.</li>
-  </ul>
-
-  <p>
-    Shyam Spectra Private Limited (hereinafter referred to as “Company/we/us/our”), which also includes its affiliates, associates and partners) is the author and publisher of the internet resource spectra.co “Portal” including website, sub-domains, and microsites) as well as the software and applications or other platforms provided by us, including but not limited to the mobile application ‘SpectraOne’ (together with the Portal, referred to as the “Services”).
-  </p>
-  <p>
-    This privacy policy ("Privacy Policy") explains how we collect, use, share, disclose and protect the Personal information of the Users, including the Users (referred to as “you”, “your” or “Users” in this Privacy Policy.
-  </p>
-  <p>
-    We created this Privacy Policy to demonstrate our commitment to the protection of your privacy and your personal information. Your use of and access to the Services is subject to this Privacy Policy and our Terms of Use. Any term used but not defined in this Privacy Policy shall have the meaning attributed to it in our Terms of Use.
-  </p>
-  <p>
-    If you do not consent to our usage of your personal information, please refrain from using the services. Please take note that you are well within your rights to not provide us with certain information, withdraw your consent for collection/use of your personal information, or request for temporary suspension or permanent deletion of certain information though we hereby advise you that this may cause you to not be able to avail full access/use of the services and will also mean that we may exercise our right to refrain from providing our services to you. We will not be liable/responsible for any breach of privacy owing to User’s negligence.
-  </p>
-  <p>
-    By using the services or by otherwise providing us with your information, you will be deemed to have read, understood, and agreed to the practices and policies outlined in this Privacy Policy and agree to be bound by the Privacy Policy. You hereby consent to our use, sharing, and disclosure of your information as described in this Privacy Policy concerning Your uses of any of our products and/or services. If You use the services on behalf of someone else or an entity (such as your employer), you represent that you are authorized by such individual or entity to (i) accept this Privacy Policy on such individual’s or entity’s behalf, and (ii) consent on behalf of such individual or entity to our collection, use and disclosure of such individual’s or entity’s information as described in this Privacy Policy.
-  </p>
-  
-  <h3 style={{ textDecoration: "underline" }}>Collection of Personal Information and Use</h3>
-  <h4 style={{ fontWeight: "bold" }}>Personal Information:</h4>
-  <p>
-    The personal information we collect includes but is not limited to information such as your name, father’s name, mother’s name, spouse’s name, age, date of birth, mailing address, billing address, telephone numbers, email addresses, PAN Card details and other information such as Office address, Installation address. Our servers may collect your Internet Protocol address (IP address, your computer's operating system, name of the domain you used to access the Internet, the website you came from and the website you visit next, Financial information (such as credit card or bank account numbers) in connection with a transaction, which we do not collect or store at our Website as we are using a payment gateway service provider.
-  </p>
-  <p>
-    We also use Information given by You for using Our Services by signing Consumer Acquisition Form (CAF) and Know-Your-Customer Documents (KYC) provided by You. In addition to Your information provided in CAF and KYC documents, we may also collect certain information automatically through software/other means. For example, we may collect:
-  </p>
-  <h4 style={{ fontWeight: "bold" }}>Device information :</h4>
-  <p>
-    such as Your hardware model, IMEI number and other unique device identifiers, MAC address, IP address, operating system version, and settings of the device You use to access the Services.
-  </p>
-  <h4 style={{ fontWeight: "bold" }}>Login information :</h4>
-  <p>
-    such as the time and duration of Your use of our Product, search query terms You enter through the Product, and any other information.
-  </p>
-  <h4 style={{ fontWeight: "bold" }}>Location information :</h4>
-  <p>
-    such as Your device’s GPS signal or information about nearby Wi-Fi access points and cell towers that may be transmitted to us when You use certain Services.
-  </p>
-  <h4 style={{ fontWeight: "bold" }}>Other information :</h4>
-  <p>
-    about Your use of the Services, such as the app You use, the website You visit, and how You interact with content offered through a Service.
-  </p>
-  <p>
-    You are hereby informed, we never collect Sensitive Personal Information (“SPI”) as defined under the provisions of Information Technology (Reasonable security practices and procedures and sensitive personal data or information) Rules, 2011]. Please take note that we will not use your SPI or disclose such SPI to any third party except for any financial information that you choose to provide while making payment for any Services on the Portal or as written under this policy. We hereby clarify that we do not collect your banking or credit card details in any manner whatsoever and we do not take any responsibility for the data shared by you with the Payment Service Provider;
-  </p>
-  <p>
-    We will collect and store each User’s personal information to provide you with relevant information at the time of the next visit and facilitate you in keeping track of Services availed by you.
-  </p>
-  <h3 style={{ textDecoration: "underline" }}>Use of Personal Information :</h3>
-  <ul>
-    <li>We may use the information submitted by you to send your promotional messages or emails or notifications for administrative purposes. You can also manage your communication preferences and opt out of promotional emails.</li>
-    <li>We use the referral information shared by you to contact the referred persons and you will be eligible for referral awards in accordance with our referral programs, if any;</li>
-    <li>We may use software or other programs to track Portal usage, and community member’s behaviour and gather statistics for our business purposes;</li>
-    <li>We take reasonable measures to protect your information from unauthorized access, disclosure, alteration, or destruction. You understand that data shared with us is subject to security risks despite our best efforts to safeguard the data;</li>
-    <li>Your SpectraOne Account is secured by your login id & password, and we advise you to keep them secure. It is your responsibility to protect your login information and in case you fail to do so, you are liable for the consequences of your action. We advise you to refrain from disclosing your login details to anyone. You are requested to contact us immediately if you have reason to suspect any breach of security including compromise of your login information;</li>
-    <li>Our Site including Applications may contain links to third party websites. Such third party websites are governed by their own terms of use and privacy policy. We advise you to read the Terms of Use or Privacy Policy of such Websites before accessing their services or submitting your personal details.</li>
-    <li>We have a policy of not sharing Your Personal Information with any third parties except our affiliates, advertisers and partners. We reserve the right to use your information and display the name, user id and state from where you are participating while disclosing/advertising the result of any content on our Portal;</li>
-    <li>We may use your personal information for legal or administrative authority to meet our legal obligations or for data analysis, and government requests or to enforce terms of service.</li>
-    <li>We may keep records of electronic communications and telephone calls received and made for making appointments or other purposes for the purpose of administration of Services, customer support, research and development. This analysis helps us improve our services and tailor them to user needs.</li>
-    <li>You represent to us that you are above the age of 18 and are in a contracting capacity to access our platform and share your personal information with us. Any misrepresentation to that effect, shall authorize us to take relevant steps to stop provision of the Services and any other actions in accordance with the law. You shall always be liable for any consequences due to misrepresentation and shall indemnify the Company, its Directors accordingly.</li>
-    <li>Please note, if you don’t choose to provide us with the requested data, we will be unable to offer you our products or services.</li>
-  </ul>
-  <h3 style={{ fontWeight: "bold", textDecoration: "underline" }}>Treatment of Personal Information:</h3>
-  <ul>
-    <li>We respect your confidentiality and keep all the Personal Information secure and we wish to assure you that we will not share, distribute, trade, sell or rent your Personal Information to any third party without your consent;</li>
-    <li>Our use of your personal information will be restricted for the purposes enumerated in this Privacy Policy read with Terms of Use;</li>
-    <li>We use cookies and when you visit our Site, cookies may be left in your computer to enable us to track your usage and customize the content displayed to you to suit your behavior;</li>
-    <li>We also use cookies for authentication, Portal management and security purposes;</li>
-    <li>We have a detailed Cookie Policy which is displayed at <a href="https://home.spectra.co/cookie-policy" target="_blank rel=noreferrer">https://home.spectra.co/cookie-policy</a>.</li>
-    <li>We use appropriate security measures to safeguard your information and to protect against unauthorized access to and unlawful interception of Personal Information. However, no internet site can fully eliminate security risks;</li>
-    <li>We do not make your e-mail addresses available to any third party. We do not trade or sell your Personal Information in any manner, except as enumerated herein; and</li>
-    <li>We may disclose aggregated information about the use of the Site, but it will never contain Personal Information. We do not disclose Personal Information to third parties in the normal course of operations, except in situations where we are legally obligated to disclose information to the government or other third parties,</li>
-  </ul>
-  <h3 style={{ fontWeight: "bold", textDecoration: "underline" }}>PROHIBITED ACTIONS</h3>
-  <p>
-    While visiting or using our application or digital platform, you agree not to, by any means (including hacking, cracking or defacing any portion of the website/applications/portals/platforms) indulge in illegal or unauthorized activities including the following:
-  </p>
-  <ol>
-    <li>Restrict or inhibit any authorized user from using an application or digital platform.</li>
-    <li>Use the application or digital platform for unlawful purposes.</li>
-    <li>Harvest or collect information about an application or digital platform’s users without their express consent.</li>
-    <li>"Frame" or "mirror" any part of the application or digital platform without our prior authorization.</li>
-    <li>Engage in spamming or flooding.</li>
-    <li>Transmit any software or other materials that contain any virus, or other harmful or disruptive component.</li>
-    <li>
-      Use any device, application, or process to retrieve, index, "data mine" or in any way reproduce or circumvent the navigational structure or presentation of the application or digital platform.
-    </li>
-    <li>
-      Permit or help anyone without access to the application or digital platform to use the application or digital platform through your username and password or otherwise.
-    </li>
-  </ol>
-  <p>
-    You shall always be liable for any consequences due to illegal or unauthorized activities and shall indemnify the Company, its Directors accordingly.
-  </p>
-  <h3 style={{ fontWeight: "bold", textDecoration: "underline" }}>Changes to Policy</h3>
-  <ul>
-    <li>
-      We reserve the right to change, modify, add or delete portions of the terms of this privacy policy, at our sole discretion from time to time. We encourage you to review the Privacy Policy periodically for any changes and Your continued use of the App after changes indicate your acceptance of the updated Privacy Policy.
-    </li>
-    <li>
-      We will notify about changes either through a notice/banner displayed on our Portal or by sending you an email about the new policy. You have the right to refuse to continue with us if you do not like any of the changes.
-    </li>
-  </ul>
-  <h3 style={{ fontWeight: "bold", textDecoration: "underline" }}>Applicable Law and Jurisdiction:</h3>
-  <ul>
-    <li>You hereby give your consent for applicability of the jurisdiction of Indian Laws applicable to the state of New Delhi and jurisdiction of New Delhi Courts.</li>
-    <li>All disputes/issues relating to this policy shall be resolved in accordance with our Terms of Use.</li>
-  </ul>
-  <h3 style={{ fontWeight: "bold", textDecoration: "underline" }}>Grievance Officer and its Contact:</h3>
-  <ul>
-    <li>
-      We have appointed a grievance officer to look after your queries and grievances if any, who can be reached <a href="mailto:appeal@spectra.co">appeal@spectra.co</a>.
-    </li>
-    <li>
-      We are committed to safeguarding your personal information collected and handled by us and look forward to your continued support for the same. In case of any feedback or concern regarding protection of your personal information, you can contact us at <a href="mailto:support@spectra.co">support@spectra.co</a>
-    </li>
-    <li>
-      We will do our best to respond promptly and in any event within one month of the following:
-      <ul>
-        <li>Receipt of your request;</li>
-        <li>You can also ask for temporary suspension of your account.</li>
-        <li>We will act on your request and will do the needful after verifying that such request was made by you only and not by any unauthorized person.</li>
-      </ul>
-      Further to assist us in dealing with your request, please provide your full name, address, email address, mobile no. and some document for identification.
-    </li>
-  </ul>
-  <h4 style={{ fontWeight: "bold" }}>Registered office address :</h4>
-  <p style={{ fontWeight: "bold" }}>
-    A-60, Naraina Industrial Area,<br />
-    Phase-1, New Delhi -110028
-  </p>
+    <h3 style={{ textDecoration: "underline" }}>Collection of Personal Information and Use</h3>
+    <h4 style={{ fontWeight: "bold" }}>Personal Information:</h4>
+    <p>
+      The personal information we collect includes but is not limited to information such as your name, father's name, mother's name, spouse's name, age, date of birth, mailing address, billing address, telephone numbers, email addresses, PAN Card details and other information such as Office address, Installation address. Our servers may collect your Internet Protocol address (IP address, your computer's operating system, name of the domain you used to access the Internet, the website you came from and the website you visit next, Financial information (such as credit card or bank account numbers) in connection with a transaction, which we do not collect or store at our Website as we are using a payment gateway service provider.
+    </p>
+    <p>
+      We also use Information given by You for using Our Services by signing Consumer Acquisition Form (CAF) and Know-Your-Customer Documents (KYC) provided by You. In addition to Your information provided in CAF and KYC documents, we may also collect certain information automatically through software/other means. For example, we may collect:
+    </p>
+    <h4 style={{ fontWeight: "bold" }}>Device information :</h4>
+    <p>
+      such as Your hardware model, IMEI number and other unique device identifiers, MAC address, IP address, operating system version, and settings of the device You use to access the Services.
+    </p>
+    <h4 style={{ fontWeight: "bold" }}>Login information :</h4>
+    <p>
+      such as the time and duration of Your use of our Product, search query terms You enter through the Product, and any other information.
+    </p>
+    <h4 style={{ fontWeight: "bold" }}>Location information :</h4>
+    <p>
+      such as Your device's GPS signal or information about nearby Wi-Fi access points and cell towers that may be transmitted to us when You use certain Services.
+    </p>
+    <h4 style={{ fontWeight: "bold" }}>Other information :</h4>
+    <p>
+      about Your use of the Services, such as the app You use, the website You visit, and how You interact with content offered through a Service.
+    </p>
+    <p>
+      You are hereby informed, we never collect Sensitive Personal Information ("SPI") as defined under the provisions of Information Technology (Reasonable security practices and procedures and sensitive personal data or information) Rules, 2011]. Please take note that we will not use your SPI or disclose such SPI to any third party except for any financial information that you choose to provide while making payment for any Services on the Portal or as written under this policy. We hereby clarify that we do not collect your banking or credit card details in any manner whatsoever and we do not take any responsibility for the data shared by you with the Payment Service Provider;
+    </p>
+    <p>
+      We will collect and store each User's personal information to provide you with relevant information at the time of the next visit and facilitate you in keeping track of Services availed by you.
+    </p>
+    <h3 style={{ textDecoration: "underline" }}>Use of Personal Information :</h3>
+    <ul>
+      <li>We may use the information submitted by you to send your promotional messages or emails or notifications for administrative purposes. You can also manage your communication preferences and opt out of promotional emails.</li>
+      <li>We use the referral information shared by you to contact the referred persons and you will be eligible for referral awards in accordance with our referral programs, if any;</li>
+      <li>We may use software or other programs to track Portal usage, and community member's behaviour and gather statistics for our business purposes;</li>
+      <li>We take reasonable measures to protect your information from unauthorized access, disclosure, alteration, or destruction. You understand that data shared with us is subject to security risks despite our best efforts to safeguard the data;</li>
+      <li>Your SpectraOne Account is secured by your login id & password, and we advise you to keep them secure. It is your responsibility to protect your login information and in case you fail to do so, you are liable for the consequences of your action. We advise you to refrain from disclosing your login details to anyone. You are requested to contact us immediately if you have reason to suspect any breach of security including compromise of your login information;</li>
+      <li>Our Site including Applications may contain links to third party websites. Such third party websites are governed by their own terms of use and privacy policy. We advise you to read the Terms of Use or Privacy Policy of such Websites before accessing their services or submitting your personal details.</li>
+      <li>We have a policy of not sharing Your Personal Information with any third parties except our affiliates, advertisers and partners. We reserve the right to use your information and display the name, user id and state from where you are participating while disclosing/advertising the result of any content on our Portal;</li>
+      <li>We may use your personal information for legal or administrative authority to meet our legal obligations or for data analysis, and government requests or to enforce terms of service.</li>
+      <li>We may keep records of electronic communications and telephone calls received and made for making appointments or other purposes for the purpose of administration of Services, customer support, research and development. This analysis helps us improve our services and tailor them to user needs.</li>
+      <li>You represent to us that you are above the age of 18 and are in a contracting capacity to access our platform and share your personal information with us. Any misrepresentation to that effect, shall authorize us to take relevant steps to stop provision of the Services and any other actions in accordance with the law. You shall always be liable for any consequences due to misrepresentation and shall indemnify the Company, its Directors accordingly.</li>
+      <li>Please note, if you don't choose to provide us with the requested data, we will be unable to offer you our products or services.</li>
+    </ul>
+    <h3 style={{ fontWeight: "bold", textDecoration: "underline" }}>Treatment of Personal Information:</h3>
+    <ul>
+      <li>We respect your confidentiality and keep all the Personal Information secure and we wish to assure you that we will not share, distribute, trade, sell or rent your Personal Information to any third party without your consent;</li>
+      <li>Our use of your personal information will be restricted for the purposes enumerated in this Privacy Policy read with Terms of Use;</li>
+      <li>We use cookies and when you visit our Site, cookies may be left in your computer to enable us to track your usage and customize the content displayed to you to suit your behavior;</li>
+      <li>We also use cookies for authentication, Portal management and security purposes;</li>
+      <li>We have a detailed Cookie Policy which is displayed at <a href="https://home.spectra.co/cookie-policy" target="_blank" rel="noreferrer">https://home.spectra.co/cookie-policy</a>.</li>
+      <li>We use appropriate security measures to safeguard your information and to protect against unauthorized access to and unlawful interception of Personal Information. However, no internet site can fully eliminate security risks;</li>
+      <li>We do not make your e-mail addresses available to any third party. We do not trade or sell your Personal Information in any manner, except as enumerated herein; and</li>
+      <li>We may disclose aggregated information about the use of the Site, but it will never contain Personal Information. We do not disclose Personal Information to third parties in the normal course of operations, except in situations where we are legally obligated to disclose information to the government or other third parties,</li>
+    </ul>
+    <h3 style={{ fontWeight: "bold", textDecoration: "underline" }}>PROHIBITED ACTIONS</h3>
+    <p>
+      While visiting or using our application or digital platform, you agree not to, by any means (including hacking, cracking or defacing any portion of the website/applications/portals/platforms) indulge in illegal or unauthorized activities including the following:
+    </p>
+    <ol>
+      <li>Restrict or inhibit any authorized user from using an application or digital platform.</li>
+      <li>Use the application or digital platform for unlawful purposes.</li>
+      <li>Harvest or collect information about an application or digital platform's users without their express consent.</li>
+      <li>"Frame" or "mirror" any part of the application or digital platform without our prior authorization.</li>
+      <li>Engage in spamming or flooding.</li>
+      <li>Transmit any software or other materials that contain any virus, or other harmful or disruptive component.</li>
+      <li>
+        Use any device, application, or process to retrieve, index, "data mine" or in any way reproduce or circumvent the navigational structure or presentation of the application or digital platform.
+      </li>
+      <li>
+        Permit or help anyone without access to the application or digital platform to use the application or digital platform through your username and password or otherwise.
+      </li>
+    </ol>
+    <p>
+      You shall always be liable for any consequences due to illegal or unauthorized activities and shall indemnify the Company, its Directors accordingly.
+    </p>
+    <h3 style={{ fontWeight: "bold", textDecoration: "underline" }}>Changes to Policy</h3>
+    <ul>
+      <li>
+        We reserve the right to change, modify, add or delete portions of the terms of this privacy policy, at our sole discretion from time to time. We encourage you to review the Privacy Policy periodically for any changes and Your continued use of the App after changes indicate your acceptance of the updated Privacy Policy.
+      </li>
+      <li>
+        We will notify about changes either through a notice/banner displayed on our Portal or by sending you an email about the new policy. You have the right to refuse to continue with us if you do not like any of the changes.
+      </li>
+    </ul>
+    <h3 style={{ fontWeight: "bold", textDecoration: "underline" }}>Applicable Law and Jurisdiction:</h3>
+    <ul>
+      <li>You hereby give your consent for applicability of the jurisdiction of Indian Laws applicable to the state of New Delhi and jurisdiction of New Delhi Courts.</li>
+      <li>All disputes/issues relating to this policy shall be resolved in accordance with our Terms of Use.</li>
+    </ul>
+    <h3 style={{ fontWeight: "bold", textDecoration: "underline" }}>Grievance Officer and its Contact:</h3>
+    <ul>
+      <li>
+        We have appointed a grievance officer to look after your queries and grievances if any, who can be reached <a href="mailto:appeal@spectra.co">appeal@spectra.co</a>.
+      </li>
+      <li>
+        We are committed to safeguarding your personal information collected and handled by us and look forward to your continued support for the same. In case of any feedback or concern regarding protection of your personal information, you can contact us at <a href="mailto:support@spectra.co">support@spectra.co</a>
+      </li>
+      <li>
+        We will do our best to respond promptly and in any event within one month of the following:
+        <ul>
+          <li>Receipt of your request;</li>
+          <li>You can also ask for temporary suspension of your account.</li>
+          <li>We will act on your request and will do the needful after verifying that such request was made by you only and not by any unauthorized person.</li>
+        </ul>
+        Further to assist us in dealing with your request, please provide your full name, address, email address, mobile no. and some document for identification.
+      </li>
+    </ul>
+    <h4 style={{ fontWeight: "bold" }}>Registered office address :</h4>
+    <p style={{ fontWeight: "bold" }}>
+      A-60, Naraina Industrial Area,<br />
+      Phase-1, New Delhi -110028
+    </p>
   </div>
 );
 

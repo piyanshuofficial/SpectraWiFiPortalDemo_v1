@@ -1,13 +1,14 @@
 // src/components/Reports/ReportCriteriaModal.js
-import React, { useState, useEffect } from 'react';
-import DateRangePicker from './DateRangePicker';
-import './ReportCriteriaModal.css';
+import React, { useState, useEffect, useRef } from 'react';
+import DateRangePicker from '@components/Reports/DateRangePicker';
+import '@components/Reports/ReportCriteriaModal.css';
 
 const ReportCriteriaModal = ({ open, report, onClose, onGenerate }) => {
   const [criteria, setCriteria] = useState({
     startDate: '',
     endDate: '',
   });
+  const modalRef = useRef();
 
   useEffect(() => {
     const today = new Date();
@@ -19,6 +20,21 @@ const ReportCriteriaModal = ({ open, report, onClose, onGenerate }) => {
       endDate: lastMonthEnd.toISOString().split('T')[0],
     });
   }, []);
+
+  useEffect(() => {
+    if (open && modalRef.current) {
+      modalRef.current.focus();
+    }
+
+    const handleEscape = (e) => {
+      if (e.key === 'Escape' && open) {
+        onClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [open, onClose]);
 
   const handleStartDateChange = (e) => {
     setCriteria({ ...criteria, startDate: e.target.value });
@@ -56,19 +72,35 @@ const ReportCriteriaModal = ({ open, report, onClose, onGenerate }) => {
   }
 
   return (
-    <div className="criteria-modal-overlay" onClick={handleOverlayClick}>
-      <div className="criteria-modal">
+    <div 
+      className="criteria-modal-overlay" 
+      onClick={handleOverlayClick}
+      role="presentation"
+    >
+      <div 
+        ref={modalRef}
+        className="criteria-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="criteria-modal-title"
+        aria-describedby="criteria-modal-subtitle"
+        tabIndex={-1}
+      >
         <div className="criteria-modal-header">
-          <h2 className="criteria-modal-title">{report.name}</h2>
-          <p className="criteria-modal-subtitle">Select criteria to generate report</p>
+          <h2 id="criteria-modal-title" className="criteria-modal-title">
+            {report.name}
+          </h2>
+          <p id="criteria-modal-subtitle" className="criteria-modal-subtitle">
+            Select criteria to generate report
+          </p>
         </div>
 
         <form onSubmit={handleSubmit}>
           <div className="criteria-modal-body">
-            <div className="criteria-form-section">
-              <label className="criteria-section-label">
-                Date Range <span className="required-asterisk">*</span>
-              </label>
+            <fieldset className="criteria-form-section">
+              <legend className="criteria-section-label">
+                Date Range <span className="required-asterisk" aria-label="required">*</span>
+              </legend>
               <DateRangePicker
                 startDate={criteria.startDate}
                 endDate={criteria.endDate}
@@ -76,7 +108,7 @@ const ReportCriteriaModal = ({ open, report, onClose, onGenerate }) => {
                 onEndDateChange={handleEndDateChange}
                 quickSelects={['Today', 'Last 7 Days', 'Last 30 Days', 'This Month', 'Last Month']}
               />
-            </div>
+            </fieldset>
           </div>
 
           <div className="criteria-modal-footer">
@@ -84,6 +116,7 @@ const ReportCriteriaModal = ({ open, report, onClose, onGenerate }) => {
               type="button" 
               className="btn btn-cancel"
               onClick={onClose}
+              aria-label="Cancel and close dialog"
             >
               Cancel
             </button>
@@ -91,6 +124,7 @@ const ReportCriteriaModal = ({ open, report, onClose, onGenerate }) => {
               type="submit" 
               className="btn btn-primary"
               disabled={!isValid}
+              aria-label={isValid ? "Generate report with selected criteria" : "Please select valid date range"}
             >
               Generate Report
             </button>

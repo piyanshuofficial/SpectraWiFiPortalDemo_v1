@@ -4,9 +4,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { FaBell, FaUserCircle } from 'react-icons/fa';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import './Header.css';
-import { NOTIFICATIONS } from '../constants/appConstants';
-import { showInfo } from '../utils/notifications';
+import '@components/Header.css';
+import { NOTIFICATIONS } from '@constants/appConstants';
+import { showInfo } from '@utils/notifications';
 
 const siteName = "Sample Site Name";
 
@@ -55,6 +55,7 @@ const Header = () => {
               onClick={handleBackToSpectraOne}
               onKeyPress={e => e.key === "Enter" && handleBackToSpectraOne()}
               style={{ cursor: "pointer" }}
+              aria-label="Navigate back to SpectraOne"
             >
               Back To SpectraOne
             </span>
@@ -71,16 +72,19 @@ const Header = () => {
               aria-expanded={notifOpen}
               role="button"
               title="Notifications"
+              aria-label={`Notifications. ${notifications.length} unread`}
               onClick={() => setNotifOpen(!notifOpen)}
               onKeyPress={e => e.key === 'Enter' && setNotifOpen(!notifOpen)}
             >
-              <FaBell />
-              <span className="notification-badge">{notifications.length}</span>
+              <FaBell aria-hidden="true" />
+              <span className="notification-badge" aria-label={`${notifications.length} unread notifications`}>
+                {notifications.length}
+              </span>
               {notifOpen && (
                 <div className="notification-panel">
                   <div className="notification-panel-header">
                     <span className="notif-title">Recent Notifications</span>
-                    <span className="notif-count-badge">
+                    <span className="notif-count-badge" aria-hidden="true">
                       {String(notifications.length).padStart(2, '0')}
                     </span>
                   </div>
@@ -108,12 +112,13 @@ const Header = () => {
               aria-haspopup="true"
               aria-expanded={profileOpen}
               title="User account"
+              aria-label="User account menu"
               ref={profileRef}
               onClick={() => setProfileOpen(v => !v)}
               onKeyPress={e => e.key === 'Enter' && setProfileOpen(v => !v)}
               style={{ position: "relative" }}
             >
-              <FaUserCircle />
+              <FaUserCircle aria-hidden="true" />
               {profileOpen && (
                 <div className="profile-menu-dropdown">
                   <div

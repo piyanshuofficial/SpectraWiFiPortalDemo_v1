@@ -1,9 +1,9 @@
 // src/components/Reports/ReportCriteriaForm.js
 
 import React from 'react';
-import DateRangePicker from './DateRangePicker';
-import MonthRangePicker from './MonthRangePicker';
-import './ReportCriteriaForm.css';
+import DateRangePicker from '@components/Reports/DateRangePicker';
+import MonthRangePicker from '@components/Reports/MonthRangePicker';
+import '@components/Reports/ReportCriteriaForm.css';
 
 /**
  * Report Criteria Form Component
@@ -15,7 +15,7 @@ import './ReportCriteriaForm.css';
 const ReportCriteriaForm = ({ report, criteria, errors, onChange }) => {
   if (!report.criteriaFields || report.criteriaFields.length === 0) {
     return (
-      <div className="no-criteria">
+      <div className="no-criteria" role="status">
         <p>This report uses default criteria</p>
       </div>
     );
@@ -48,11 +48,12 @@ const ReportCriteriaForm = ({ report, criteria, errors, onChange }) => {
       case 'dropdown':
         return (
           <div key={field.name} className="form-field">
-            <label className="form-label">
+            <label htmlFor={`field-${field.name}`} className="form-label">
               {field.label}
-              {field.required && <span className="required-mark">*</span>}
+              {field.required && <span className="required-mark" aria-label="required">*</span>}
             </label>
             <select
+              id={`field-${field.name}`}
               className={`form-select ${errors[field.name] ? 'form-select-error' : ''}`}
               value={criteria[field.name] || field.defaultValue || ''}
               onChange={(e) => onChange(field.name, e.target.value)}
@@ -75,18 +76,24 @@ const ReportCriteriaForm = ({ report, criteria, errors, onChange }) => {
 
       case 'multiSelect':
         return (
-          <div key={field.name} className="form-field">
-            <label className="form-label">
+          <fieldset key={field.name} className="form-field">
+            <legend className="form-label">
               {field.label}
-              {field.required && <span className="required-mark">*</span>}
-            </label>
-            <div className="multi-select-wrapper">
+              {field.required && <span className="required-mark" aria-label="required">*</span>}
+            </legend>
+            <div 
+              className="multi-select-wrapper"
+              role="group"
+              aria-labelledby={`${field.name}-legend`}
+            >
               {field.options.map(option => {
                 const selectedValues = criteria[field.name] || field.defaultValue || [];
                 const isSelected = selectedValues.includes(option);
+                const optionId = `${field.name}-${option.replace(/\s+/g, '-')}`;
                 return (
-                  <label key={option} className="checkbox-label">
+                  <label key={option} htmlFor={optionId} className="checkbox-label">
                     <input
+                      id={optionId}
                       type="checkbox"
                       checked={isSelected}
                       onChange={(e) => {
@@ -95,6 +102,7 @@ const ReportCriteriaForm = ({ report, criteria, errors, onChange }) => {
                           : selectedValues.filter(v => v !== option);
                         onChange(field.name, newValues);
                       }}
+                      aria-describedby={errors[field.name] ? `${field.name}-error` : undefined}
                     />
                     <span>{option}</span>
                   </label>
@@ -102,9 +110,11 @@ const ReportCriteriaForm = ({ report, criteria, errors, onChange }) => {
               })}
             </div>
             {errors[field.name] && (
-              <span className="form-error" role="alert">{errors[field.name]}</span>
+              <span id={`${field.name}-error`} className="form-error" role="alert">
+                {errors[field.name]}
+              </span>
             )}
-          </div>
+          </fieldset>
         );
 
       default:
@@ -113,9 +123,9 @@ const ReportCriteriaForm = ({ report, criteria, errors, onChange }) => {
   };
 
   return (
-    <div className="report-criteria-form">
+    <form className="report-criteria-form">
       {report.criteriaFields.map(field => renderField(field))}
-    </div>
+    </form>
   );
 };
 

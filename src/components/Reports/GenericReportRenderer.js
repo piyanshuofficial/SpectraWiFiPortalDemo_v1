@@ -3,9 +3,9 @@
 import React from "react";
 import PropTypes from 'prop-types';
 import { Bar, Line, Pie } from "react-chartjs-2";
-import ChartContainer from "../common/ChartContainer";
-import ReportTable from "../common/ReportTable";
-import { getReportDefinition } from "../../config/reportDefinitions";
+import ChartContainer from "@components/common/ChartContainer";
+import ReportTable from "@components/common/ReportTable";
+import { getReportDefinition } from "@config/reportDefinitions";
 
 /**
  * Generic Report Renderer
@@ -19,7 +19,7 @@ const GenericReportRenderer = ({ reportId, data }) => {
   
   if (!definition) {
     return (
-      <div className="report-placeholder">
+      <div className="report-placeholder" role="alert">
         <p>Report configuration not found for: {reportId}</p>
       </div>
     );
@@ -32,7 +32,7 @@ const GenericReportRenderer = ({ reportId, data }) => {
 
   if (!data) {
     return (
-      <div className="report-placeholder">
+      <div className="report-placeholder" role="status">
         <p>No data available for: {reportId}</p>
       </div>
     );
@@ -75,7 +75,7 @@ const GenericReportRenderer = ({ reportId, data }) => {
       )}
 
       {!chart && !table && (
-        <div className="report-placeholder">
+        <div className="report-placeholder" role="status">
           <p>No visualization configured for this report</p>
         </div>
       )}

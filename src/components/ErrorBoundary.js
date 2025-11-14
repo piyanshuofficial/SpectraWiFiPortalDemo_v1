@@ -53,6 +53,7 @@ class ErrorBoundary extends React.Component {
           }}
           role="alert"
           aria-live="assertive"
+          aria-atomic="true"
         >
           <div
             style={{
@@ -84,10 +85,15 @@ class ErrorBoundary extends React.Component {
                 marginBottom: "2rem",
                 lineHeight: 1.6
               }}
+              id="error-boundary-description"
             >
               We encountered an error while loading this page. This might be due to a network issue or a temporary problem with the application.
             </p>
-            <div style={{ display: "flex", gap: "1rem", justifyContent: "center" }}>
+            <div 
+              style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}
+              role="group"
+              aria-labelledby="error-boundary-title"
+            >
               <button
                 onClick={this.handleReload}
                 style={{
@@ -101,7 +107,6 @@ class ErrorBoundary extends React.Component {
                   cursor: "pointer",
                   transition: "background 0.2s"
                 }}
-                title="Reload the page"
                 aria-label="Reload the page to try again"
                 onMouseEnter={e => (e.target.style.backgroundColor = "#003a90")}
                 onMouseLeave={e => (e.target.style.backgroundColor = "#004aad")}
@@ -121,7 +126,6 @@ class ErrorBoundary extends React.Component {
                   cursor: "pointer",
                   transition: "background 0.2s"
                 }}
-                title="Go to dashboard"
                 aria-label="Go to dashboard"
                 onMouseEnter={e => (e.target.style.backgroundColor = "#dbe5ff")}
                 onMouseLeave={e => (e.target.style.backgroundColor = "#f0f4ff")}
@@ -132,7 +136,10 @@ class ErrorBoundary extends React.Component {
 
             {process.env.NODE_ENV !== "production" && this.state.error && (
               <details style={{ marginTop: "2rem", textAlign: "left", fontSize: "0.875rem", color: "#666" }}>
-                <summary style={{ cursor: "pointer", fontWeight: 600 }}>
+                <summary 
+                  style={{ cursor: "pointer", fontWeight: 600 }}
+                  aria-label="View error details (development mode only)"
+                >
                   Error Details (Development Only)
                 </summary>
                 <pre style={{
@@ -141,7 +148,8 @@ class ErrorBoundary extends React.Component {
                   backgroundColor: "#f5f5f5",
                   borderRadius: "4px",
                   overflow: "auto",
-                  maxHeight: "200px"
+                  maxHeight: "200px",
+                  fontSize: "0.75rem"
                 }}>
                   {this.state.error.toString()}
                   {this.state.errorInfo ? ("\n" + this.state.errorInfo.componentStack) : null}

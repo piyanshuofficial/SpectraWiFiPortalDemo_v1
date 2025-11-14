@@ -1,6 +1,6 @@
 // src/components/Reports/DateRangePicker.js
 import React from 'react';
-import './DateRangePicker.css';
+import '@components/Reports/DateRangePicker.css';
 
 const DateRangePicker = ({ 
   startDate, 
@@ -52,10 +52,11 @@ const DateRangePicker = ({
             value={startDate}
             onChange={onStartDateChange}
             className="date-input"
+            aria-label="Select start date"
           />
         </div>
 
-        <div className="date-separator">to</div>
+        <div className="date-separator" aria-hidden="true">to</div>
 
         <div className="date-input-group">
           <label htmlFor="end-date">End Date</label>
@@ -65,20 +66,26 @@ const DateRangePicker = ({
             value={endDate}
             onChange={onEndDateChange}
             className="date-input"
+            aria-label="Select end date"
           />
         </div>
       </div>
 
       {quickSelects && quickSelects.length > 0 && (
         <div className="quick-select-container">
-          <span className="quick-select-label">Quick Select:</span>
-          <div className="quick-select-buttons">
+          <span className="quick-select-label" id="quick-select-label">Quick Select:</span>
+          <div 
+            className="quick-select-buttons"
+            role="group"
+            aria-labelledby="quick-select-label"
+          >
             {quickSelects.map((option) => (
               <button
                 key={option}
                 type="button"
                 onClick={() => handleQuickSelect(option)}
                 className="quick-select-btn"
+                aria-label={`Select ${option.toLowerCase()}`}
               >
                 {option}
               </button>

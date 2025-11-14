@@ -11,10 +11,10 @@ import {
   FaBars,
   FaTimes,
 } from "react-icons/fa";
-import { usePermissions } from "../hooks/usePermissions";
-import { preloadRoute } from "../config/routes";
-import logoMark from "../assets/images/spectra-logo-white.png";
-import "./Sidebar.css";
+import { usePermissions } from "@hooks/usePermissions";
+import { preloadRoute } from "@config/routes";
+import logoMark from "@assets/images/spectra-logo-white.png";
+import "@components/Sidebar.css";
 
 const sidebarItems = [
   { 
@@ -111,32 +111,39 @@ const Sidebar = () => {
           <button 
             className="mobile-menu-toggle"
             onClick={toggleMobileMenu}
-            aria-label="Toggle navigation menu"
+            aria-label={mobileOpen ? "Close navigation menu" : "Open navigation menu"}
+            aria-expanded={mobileOpen}
           >
-            {mobileOpen ? <FaTimes /> : <FaBars />}
+            {mobileOpen ? <FaTimes aria-hidden="true" /> : <FaBars aria-hidden="true" />}
           </button>
         )}
         
         {mobileOpen && isMobile && (
-          <div className="sidebar-overlay" onClick={closeMobileMenu} />
+          <div 
+            className="sidebar-overlay" 
+            onClick={closeMobileMenu}
+            role="presentation"
+            aria-hidden="true"
+          />
         )}
         
         <aside 
           className={`sidebar ${mobileOpen ? 'mobile-open' : ''}`}
-          aria-label="Sidebar navigation"
+          role="navigation"
+          aria-label="Main navigation"
         >
           <div className="sidebar-logo-area">
             <img
               src={logoMark}
-              alt="Spectra mark"
+              alt="Spectra logo"
               className="sidebar-logo-img"
               draggable={false}
             />
           </div>
-          <nav aria-label="Main Navigation">
+          <nav aria-label="Main navigation">
             <ul className="sidebar-nav">
               <li className="sidebar-nav-li sidebar-no-access">
-                <div className="sidebar-nav-item">
+                <div className="sidebar-nav-item" role="status">
                   <span className="sidebar-nav-label">No Access</span>
                 </div>
               </li>
@@ -156,27 +163,33 @@ const Sidebar = () => {
           aria-label={mobileOpen ? "Close navigation menu" : "Open navigation menu"}
           aria-expanded={mobileOpen}
         >
-          {mobileOpen ? <FaTimes /> : <FaBars />}
+          {mobileOpen ? <FaTimes aria-hidden="true" /> : <FaBars aria-hidden="true" />}
         </button>
       )}
       
       {mobileOpen && isMobile && (
-        <div className="sidebar-overlay" onClick={closeMobileMenu} />
+        <div 
+          className="sidebar-overlay" 
+          onClick={closeMobileMenu}
+          role="presentation"
+          aria-hidden="true"
+        />
       )}
       
       <aside 
         className={`sidebar ${mobileOpen ? 'mobile-open' : ''}`}
-        aria-label="Sidebar navigation"
+        role="navigation"
+        aria-label="Main navigation"
       >
         <div className="sidebar-logo-area">
           <img
             src={logoMark}
-            alt="Spectra mark"
+            alt="Spectra logo"
             className="sidebar-logo-img"
             draggable={false}
           />
         </div>
-        <nav aria-label="Main Navigation">
+        <nav aria-label="Main navigation">
           <ul className="sidebar-nav">
             {accessibleItems.map(({ to, icon: Icon, label, aria }) => (
               <li key={to} className="sidebar-nav-li">
@@ -191,7 +204,7 @@ const Sidebar = () => {
                   onFocus={() => handleMouseEnter(to)}
                   onClick={closeMobileMenu}
                 >
-                  <span className="sidebar-nav-icon">
+                  <span className="sidebar-nav-icon" aria-hidden="true">
                     <Icon />
                   </span>
                   <span className="sidebar-nav-label">{label}</span>

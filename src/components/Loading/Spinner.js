@@ -1,7 +1,7 @@
 // src/components/Loading/Spinner.js
 
 import React from 'react';
-import './Spinner.css';
+import '@components/Loading/Spinner.css';
 
 /**
  * Reusable Spinner component
@@ -23,7 +23,8 @@ const Spinner = ({
       aria-label="Loading"
       {...props}
     >
-      <span className="spinner-inner" />
+      <span className="spinner-inner" aria-hidden="true" />
+      <span className="sr-only">Loading...</span>
     </div>
   );
 };

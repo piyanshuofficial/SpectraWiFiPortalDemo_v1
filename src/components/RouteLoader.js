@@ -1,7 +1,7 @@
 // src/components/RouteLoader.js
 
 import React from 'react';
-import Spinner from './Loading/Spinner';
+import Spinner from '@components/Loading/Spinner';
 
 /**
  * Loading component shown while route chunks are loading
@@ -30,6 +30,7 @@ const RouteLoader = ({ message = 'Loading page...' }) => {
           fontWeight: '500',
           color: '#555'
         }}
+        aria-live="polite"
       >
         {message}
       </p>

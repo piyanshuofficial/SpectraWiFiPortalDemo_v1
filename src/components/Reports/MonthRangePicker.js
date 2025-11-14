@@ -1,6 +1,6 @@
 // src/components/Reports/MonthRangePicker.js
 import React from 'react';
-import './MonthRangePicker.css';
+import '@components/Reports/MonthRangePicker.css';
 
 const MonthRangePicker = ({ field, value, error, onChange }) => {
   const { start = '', end = '' } = value || {};
@@ -47,15 +47,16 @@ const MonthRangePicker = ({ field, value, error, onChange }) => {
 
   return (
     <div className="month-range-picker">
-      <label className="form-label">
+      <label className="form-label" id={`${field.name}-label`}>
         {field.label}
-        {field.required && <span className="required-mark">*</span>}
+        {field.required && <span className="required-mark" aria-label="required">*</span>}
       </label>
 
       <div className="month-range-inputs">
         <div className="month-input-group">
-          <label className="month-sublabel">Start Month</label>
+          <label htmlFor={`${field.name}-start`} className="month-sublabel">Start Month</label>
           <input
+            id={`${field.name}-start`}
             type="month"
             className={`form-input ${error ? 'form-input-error' : ''}`}
             value={start}
@@ -63,15 +64,16 @@ const MonthRangePicker = ({ field, value, error, onChange }) => {
             max={end || undefined}
             aria-required={field.required}
             aria-invalid={!!error}
-            aria-label="Start month"
+            aria-describedby={error ? `${field.name}-error` : undefined}
           />
         </div>
 
-        <div className="month-range-separator">to</div>
+        <div className="month-range-separator" aria-hidden="true">to</div>
 
         <div className="month-input-group">
-          <label className="month-sublabel">End Month</label>
+          <label htmlFor={`${field.name}-end`} className="month-sublabel">End Month</label>
           <input
+            id={`${field.name}-end`}
             type="month"
             className={`form-input ${error ? 'form-input-error' : ''}`}
             value={end}
@@ -79,27 +81,32 @@ const MonthRangePicker = ({ field, value, error, onChange }) => {
             min={start || undefined}
             aria-required={field.required}
             aria-invalid={!!error}
-            aria-label="End month"
+            aria-describedby={error ? `${field.name}-error` : undefined}
           />
         </div>
       </div>
 
       <div className="preset-buttons">
-        <span className="preset-label">Quick Select:</span>
-        {['Last 3 Months', 'Last 6 Months', 'This Year', 'Last Year'].map(preset => (
-          <button
-            key={preset}
-            type="button"
-            className="preset-btn"
-            onClick={() => applyPreset(preset)}
-          >
-            {preset}
-          </button>
-        ))}
+        <span className="preset-label" id="preset-label">Quick Select:</span>
+        <div role="group" aria-labelledby="preset-label">
+          {['Last 3 Months', 'Last 6 Months', 'This Year', 'Last Year'].map(preset => (
+            <button
+              key={preset}
+              type="button"
+              className="preset-btn"
+              onClick={() => applyPreset(preset)}
+              aria-label={`Select ${preset.toLowerCase()}`}
+            >
+              {preset}
+            </button>
+          ))}
+        </div>
       </div>
 
       {error && (
-        <span className="form-error" role="alert">{error}</span>
+        <span className="form-error" id={`${field.name}-error`} role="alert">
+          {error}
+        </span>
       )}
     </div>
   );
