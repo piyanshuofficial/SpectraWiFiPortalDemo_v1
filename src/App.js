@@ -2,13 +2,13 @@
 
 import React, { Suspense, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import AppLayout from './components/AppLayout';
-import ErrorBoundary from './components/ErrorBoundary';
-import RouteLoader from './components/RouteLoader';
-import { useAuth } from './context/AuthContext';
-import { Permissions } from './utils/accessLevels';
-import { routes } from './config/routes';
-import "./components/Badge.css";
+import AppLayout from '@components/AppLayout';
+import ErrorBoundary from '@components/ErrorBoundary';
+import RouteLoader from '@components/RouteLoader';
+import { useAuth } from '@context/AuthContext';
+import { Permissions } from '@utils/accessLevels';
+import { routes } from '@config/routes';
+import '@components/Badge.css';
 
 /**
  * PrivateRoute wrapper with permission checks
@@ -34,10 +34,17 @@ const PrivateRoute = ({ requiredPermission, children, fallbackMessage }) => {
   
   if (!hasPermission) {
     return (
-      <div className="permission-denied-container" role="alert">
+      <div 
+        className="permission-denied-container" 
+        role="alert"
+        aria-live="assertive"
+        aria-atomic="true"
+      >
         <div className="permission-denied-content">
-          <h2>Access Denied</h2>
-          <p>{fallbackMessage || "You don't have permission to access this page."}</p>
+          <h2 id="access-denied-heading">Access Denied</h2>
+          <p aria-describedby="access-denied-heading">
+            {fallbackMessage || "You don't have permission to access this page."}
+          </p>
           <p className="permission-denied-help">
             Please contact your administrator to request access.
           </p>
@@ -45,6 +52,7 @@ const PrivateRoute = ({ requiredPermission, children, fallbackMessage }) => {
             className="btn btn-primary"
             onClick={() => window.location.href = '/dashboard'}
             style={{ marginTop: '20px' }}
+            aria-label="Return to dashboard page"
           >
             Return to Dashboard
           </button>

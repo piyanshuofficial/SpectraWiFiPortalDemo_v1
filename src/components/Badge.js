@@ -10,7 +10,29 @@ const Badge = ({ children, variant, size = "table" }) => {
   // Compose final CSS class names
   const className = `badge ${baseClass} badge-${variant}`;
 
-  return <span className={className}>{children}</span>;
+  // Get screen reader friendly text for variant
+  const getAriaLabel = () => {
+    const variantLabels = {
+      active: "Status: Active",
+      suspended: "Status: Suspended",
+      blocked: "Status: Blocked",
+      success: "Status: Success",
+      warning: "Status: Warning",
+      danger: "Status: Danger",
+      secondary: "Status: Secondary"
+    };
+    return variantLabels[variant] || children;
+  };
+
+  return (
+    <span 
+      className={className}
+      role="status"
+      aria-label={getAriaLabel()}
+    >
+      {children}
+    </span>
+  );
 };
 
 Badge.propTypes = {

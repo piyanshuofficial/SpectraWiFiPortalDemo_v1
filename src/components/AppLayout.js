@@ -1,10 +1,10 @@
 // src/components/AppLayout.js
 
 import React from "react";
-import Sidebar from "./Sidebar";
-import Header from "./Header";
-import FooterBar from "./FooterBar";
-import "./AppLayout.css";
+import Sidebar from "@components/Sidebar";
+import Header from "@components/Header";
+import FooterBar from "@components/FooterBar";
+import "@components/AppLayout.css";
 
 const AppLayout = ({ children }) => {
   return (
@@ -12,7 +12,9 @@ const AppLayout = ({ children }) => {
       <Sidebar />
       <div className="main-wrapper">
         <Header />
-        <main className="main-content" role="main">{children}</main>
+        <main className="main-content" role="main" aria-label="Main content">
+          {children}
+        </main>
         <FooterBar />
       </div>
     </>

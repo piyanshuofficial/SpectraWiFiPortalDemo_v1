@@ -13,7 +13,6 @@
       "@hooks/*": ["hooks/*"],
       "@reports/*": ["reports/*"],
       "@layouts/*": ["layouts/*"],
-      "@services/*": ["services/*"],
       "@modals/*": ["components/modals/*"]
     }
   },
