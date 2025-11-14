@@ -7,7 +7,7 @@ import { Line, Bar, Pie } from "react-chartjs-2";
 import { FaUsers, FaUserFriends, FaChartPie, FaExclamationCircle, FaFileCsv, FaFilePdf, FaLifeRing } from "react-icons/fa";
 import { usePermissions } from "../hooks/usePermissions";
 import { useLoading } from "../context/LoadingContext";
-import sampleReportsData from "../constants/sampleReportsData";
+import siteSampleData from "../constants/siteSampleData";
 import { getStandardChartOptions } from "../utils/commonChartOptions";
 import { EXPORT_CANVAS_SIZES } from "../utils/exportConstants";
 import { exportChartDataToCSV } from "../utils/exportUtils";
@@ -116,9 +116,9 @@ const Dashboard = () => {
     }
   };
 
-  const networkData = sampleReportsData["network-usage-report"];
-  const licenseData = sampleReportsData["license-usage-report"];
-  const alertsData = sampleReportsData["alerts-summary-report"];
+  const networkData = siteSampleData.getSiteReportData("network-usage-report");
+  const licenseData = siteSampleData.getSiteReportData("license-usage-report");
+  const alertsData = siteSampleData.getSiteReportData("alerts-summary-report");
 
   const safeNumber = (value, fallback = 0) => typeof value === "number" && !isNaN(value) ? value : fallback;
 

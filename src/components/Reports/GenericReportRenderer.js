@@ -12,6 +12,7 @@ import { getReportDefinition } from "../../config/reportDefinitions";
  * 
  * Renders any report using configuration from reportDefinitions.js
  * Falls back to custom component if defined
+ * Data is now sourced from centralized userSampleData or siteSampleData
  */
 const GenericReportRenderer = ({ reportId, data }) => {
   const definition = getReportDefinition(reportId);
@@ -24,13 +25,11 @@ const GenericReportRenderer = ({ reportId, data }) => {
     );
   }
 
-  // If custom component exists, use it (backward compatibility)
   if (definition.component) {
     const CustomComponent = definition.component;
     return <CustomComponent data={data} />;
   }
 
-  // Otherwise, render generically using chart and table config
   if (!data) {
     return (
       <div className="report-placeholder">
@@ -41,7 +40,6 @@ const GenericReportRenderer = ({ reportId, data }) => {
 
   const { chart, table } = definition;
 
-  // Get chart component based on type
   const getChartComponent = (type) => {
     switch (type) {
       case "bar": return Bar;
@@ -53,7 +51,6 @@ const GenericReportRenderer = ({ reportId, data }) => {
 
   return (
     <div style={{ padding: '1.25rem' }}>
-      {/* Render Chart */}
       {chart && (
         <ChartContainer height={400} minHeight={400}>
           {(() => {
@@ -70,7 +67,6 @@ const GenericReportRenderer = ({ reportId, data }) => {
         </ChartContainer>
       )}
 
-      {/* Render Table */}
       {table && (
         <ReportTable 
           columns={table.columns} 
@@ -78,7 +74,6 @@ const GenericReportRenderer = ({ reportId, data }) => {
         />
       )}
 
-      {/* Fallback if neither chart nor table is configured */}
       {!chart && !table && (
         <div className="report-placeholder">
           <p>No visualization configured for this report</p>

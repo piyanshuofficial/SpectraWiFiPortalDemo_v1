@@ -26,7 +26,6 @@ function calculateSummaryStats(rows) {
   
   const numericColumns = [];
   
-  // Find numeric columns (skip first column which is usually label/date)
   for (let colIndex = 1; colIndex < rows[0].length; colIndex++) {
     const isNumeric = rows.every(row => {
       const val = String(row[colIndex]).replace(/[^0-9.-]/g, '');
@@ -39,7 +38,6 @@ function calculateSummaryStats(rows) {
   
   if (numericColumns.length === 0) return null;
   
-  // Calculate totals for numeric columns
   const totals = {};
   numericColumns.forEach(colIndex => {
     const sum = rows.reduce((acc, row) => {
@@ -66,7 +64,6 @@ function generateExecutiveInsights(rows, headers) {
   
   const insights = [];
   
-  // Find numeric columns
   for (let colIndex = 1; colIndex < rows[0].length && colIndex < headers.length; colIndex++) {
     const values = rows.map(row => {
       const val = parseFloat(String(row[colIndex]).replace(/[^0-9.-]/g, ''));
@@ -80,7 +77,6 @@ function generateExecutiveInsights(rows, headers) {
       
       const headerName = String(headers[colIndex]);
       
-      // Add insights for this metric
       if (values.length > 1) {
         insights.push("Average " + headerName + ": " + avg);
         insights.push("Peak " + headerName + ": " + max);
@@ -138,7 +134,6 @@ function addWatermark(doc, pageWidth, pageHeight, text) {
   doc.setFont("helvetica", "bold");
   doc.setFontSize(60);
   
-  // Rotate and center the watermark
   const angle = -45;
   doc.text(text, pageWidth / 2, pageHeight / 2, {
     align: "center",
@@ -158,28 +153,23 @@ function addFooter(doc, pageWidth, pageHeight) {
   const currentPage = doc.internal.getCurrentPageInfo().pageNumber;
   const totalPages = doc.internal.getNumberOfPages();
   
-  // Draw footer separator line
   doc.setDrawColor("#e0e0e0");
   doc.setLineWidth(0.5);
   doc.line(40, pageHeight - 35, pageWidth - 40, pageHeight - 35);
   
-  // Left side - Company info
   doc.setFontSize(8);
   doc.setTextColor("#666");
   doc.setFont("helvetica", "normal");
   doc.text("SpectraOne", 40, pageHeight - 22);
   
-  // Center - Confidentiality notice
   doc.setFont("helvetica", "bold");
   doc.setTextColor("#d32f2f");
   doc.text("CONFIDENTIAL", pageWidth / 2, pageHeight - 22, { align: "center" });
   
-  // Right side - Page numbers
   doc.setFont("helvetica", "normal");
   doc.setTextColor("#666");
   doc.text("Page " + currentPage + " of " + totalPages, pageWidth - 40, pageHeight - 22, { align: "right" });
   
-  // Bottom line - Copyright
   doc.setFontSize(7);
   doc.setTextColor("#999");
   doc.text("© 2025 Shyam Spectra Private Limited. All rights reserved.", pageWidth / 2, pageHeight - 10, { align: "center" });
@@ -187,6 +177,7 @@ function addFooter(doc, pageWidth, pageHeight) {
 
 /**
  * Export report data to PDF with chart visualization
+ * Data sourced from centralized userSampleData or siteSampleData
  * @param {object} params - Export parameters
  * @param {string} params.title - Report title
  * @param {array} params.headers - Table column headers
@@ -221,30 +212,22 @@ export async function exportReportPDF({
   disclaimerText = null,
   includeExecutiveSummary = true
 }) {
-  // Permission check
   if (!rolePermissions.canViewReports) {
     alert("You do not have permission to export reports.");
     return;
   }
 
-  // Detect mobile device
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768;
   
-  // Adjust canvas size for mobile
   const finalWidth = isMobile ? Math.min(exportCanvasWidth, 600) : exportCanvasWidth;
   const finalHeight = isMobile ? Math.min(exportCanvasHeight, 400) : exportCanvasHeight;
 
-  // Get random brand color for header
   const color = getRandomBrandColor();
   
-  // Initialize PDF document
   const doc = new jsPDF(EXPORT.PDF_ORIENTATION, "pt", EXPORT.PDF_PAGE_SIZE);
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
 
-  // ============================================
-  // SET PDF METADATA
-  // ============================================
   const currentDate = new Date();
   doc.setProperties({
     title: title || "Report",
@@ -255,18 +238,13 @@ export async function exportReportPDF({
     creationDate: currentDate
   });
 
-  // Table margins (must match for alignment)
   const tableMarginLeft = 40;
   const tableMarginRight = 40;
   const tableWidth = pageWidth - tableMarginLeft - tableMarginRight;
 
-  // ============================================
-  // HEADER: Colored banner with SPECTRA logo
-  // ============================================
   doc.setFillColor(color);
   doc.rect(0, 0, pageWidth, 90, "F");
 
-  // Register and use Spectra font for header
   doc.addFileToVFS("Spectra-Regular.ttf", SPECTRA_TTF_BASE64);
   doc.addFont("Spectra-Regular.ttf", "spectra", "normal");
   doc.setFont("spectra", "normal");
@@ -274,16 +252,12 @@ export async function exportReportPDF({
   doc.setFontSize(48);
   doc.text("SPECTRA", pageWidth / 2, 60, { align: "center" });
 
-  // ============================================
-  // TITLE SECTION with improved spacing
-  // ============================================
   doc.setFont("helvetica", "bold");
   doc.setTextColor(color);
   doc.setFontSize(20);
   const titleStr = String(title || "Report");
   doc.text(titleStr, pageWidth / 2, 120, { align: "center" });
 
-  // Report metadata with better formatting
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
   doc.setTextColor("#666");
@@ -298,30 +272,23 @@ export async function exportReportPDF({
   });
   doc.text("Generated on " + reportDate + " at " + reportTime, pageWidth / 2, 140, { align: "center" });
 
-  // Thin separator line
   doc.setDrawColor("#e0e0e0");
   doc.setLineWidth(0.5);
   doc.line(80, 150, pageWidth - 80, 150);
 
-  // ============================================
-  // CRITERIA SECTION (if criteria provided)
-  // ============================================
   let contentStartY = 165;
   const criteriaText = formatCriteriaForPDF(criteria);
   
   if (criteriaText) {
-    // Criteria box with light blue background
     const criteriaBoxHeight = 35;
     doc.setFillColor("#e3f2fd");
     doc.roundedRect(tableMarginLeft, contentStartY, tableWidth, criteriaBoxHeight, 3, 3, "F");
     
-    // Criteria icon and label
     doc.setFont("helvetica", "bold");
     doc.setFontSize(9);
     doc.setTextColor("#1976d2");
     doc.text("FILTERS APPLIED:", tableMarginLeft + 12, contentStartY + 14);
     
-    // Criteria details
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
     doc.setTextColor("#555");
@@ -330,31 +297,24 @@ export async function exportReportPDF({
     contentStartY += criteriaBoxHeight + 15;
   }
 
-  // ============================================
-  // EXECUTIVE SUMMARY SECTION (if enabled)
-  // ============================================
   if (includeExecutiveSummary) {
     const insights = generateExecutiveInsights(rows, headers);
     
     if (insights && insights.length > 0) {
       const insightBoxHeight = 25 + (insights.length * 15);
       
-      // Executive summary box with gradient effect
       doc.setFillColor("#f0f7ff");
       doc.roundedRect(tableMarginLeft, contentStartY, tableWidth, insightBoxHeight, 3, 3, "F");
       
-      // Border
       doc.setDrawColor(color);
       doc.setLineWidth(1);
       doc.roundedRect(tableMarginLeft, contentStartY, tableWidth, insightBoxHeight, 3, 3, "S");
       
-      // Title
       doc.setFont("helvetica", "bold");
       doc.setFontSize(11);
       doc.setTextColor(color);
       doc.text("KEY INSIGHTS", tableMarginLeft + 12, contentStartY + 18);
       
-      // Insights
       doc.setFont("helvetica", "normal");
       doc.setFontSize(9);
       doc.setTextColor("#333");
@@ -369,18 +329,13 @@ export async function exportReportPDF({
     }
   }
 
-  // ============================================
-  // CHART SECTION WITH HEADER
-  // ============================================
   let tableStartY = contentStartY;
   if (chartData && chartOptions) {
-    // Add section header for chart
     doc.setFont("helvetica", "bold");
     doc.setFontSize(13);
     doc.setTextColor("#333");
     doc.text("Visual Analysis", tableMarginLeft, contentStartY);
     
-    // Underline
     doc.setDrawColor(color);
     doc.setLineWidth(2);
     doc.line(tableMarginLeft, contentStartY + 3, tableMarginLeft + 100, contentStartY + 3);
@@ -407,24 +362,17 @@ export async function exportReportPDF({
     }
   }
 
-  // ============================================
-  // DATA SECTION HEADER
-  // ============================================
   doc.setFont("helvetica", "bold");
   doc.setFontSize(13);
   doc.setTextColor("#333");
   doc.text("Detailed Data", tableMarginLeft, tableStartY);
   
-  // Underline
   doc.setDrawColor(color);
   doc.setLineWidth(2);
   doc.line(tableMarginLeft, tableStartY + 3, tableMarginLeft + 85, tableStartY + 3);
   
   tableStartY += 20;
 
-  // ============================================
-  // SUMMARY SECTION (if data has numeric values)
-  // ============================================
   const safeRows = rows.map(row => 
     row.map(cell => String(cell !== null && cell !== undefined ? cell : ""))
   );
@@ -432,23 +380,19 @@ export async function exportReportPDF({
   const summaryStats = calculateSummaryStats(safeRows);
   
   if (summaryStats) {
-    // Summary box background - match table width
     doc.setFillColor("#f5f5f5");
     doc.roundedRect(tableMarginLeft, tableStartY, tableWidth, 50, 3, 3, "F");
     
-    // Summary title
     doc.setFont("helvetica", "bold");
     doc.setFontSize(11);
     doc.setTextColor("#333");
     doc.text("Report Summary", tableMarginLeft + 15, tableStartY + 20);
     
-    // Summary details
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
     doc.setTextColor("#666");
     doc.text("Total Records: " + summaryStats.totalRows, tableMarginLeft + 15, tableStartY + 38);
     
-    // Add data range info if available - RIGHT ALIGNED
     if (safeRows.length > 0) {
       const firstDate = safeRows[0][0];
       const lastDate = safeRows[safeRows.length - 1][0];
@@ -459,9 +403,6 @@ export async function exportReportPDF({
     tableStartY += 65;
   }
 
-  // ============================================
-  // DATA TABLE SECTION
-  // ============================================
   const safeHeaders = headers.map(h => String(h || ""));
 
   autoTable(doc, {
@@ -496,67 +437,53 @@ export async function exportReportPDF({
       0: { fontStyle: "bold", fillColor: "#f9f9f9" }
     },
     margin: { left: tableMarginLeft, right: tableMarginRight },
-    didDrawPage: function(data) {
-      // Add watermark if enabled
+    didDrawPage: function() {
       if (shouldAddWatermark) {
         addWatermark(doc, pageWidth, pageHeight, watermarkText);
       }
       
-      // Add footer to every page
       addFooter(doc, pageWidth, pageHeight);
     }
   });
 
-  // ============================================
-  // DISCLAIMER/NOTES SECTION (if provided)
-  // ============================================
   if (disclaimerText) {
     const finalY = doc.lastAutoTable.finalY || tableStartY + 100;
     
-    // Add some spacing
     const disclaimerStartY = finalY + 30;
     
-    // Check if we need a new page
     if (disclaimerStartY > pageHeight - 100) {
       doc.addPage();
       
-      // Add footer to new page
       addFooter(doc, pageWidth, pageHeight);
       
       const newDisclaimerY = 60;
       
-      // Disclaimer box
       doc.setFillColor("#fff9e6");
       doc.setDrawColor("#ffc107");
       doc.setLineWidth(1);
       doc.roundedRect(tableMarginLeft, newDisclaimerY, tableWidth, 70, 3, 3, "FD");
       
-      // Disclaimer title
       doc.setFont("helvetica", "bold");
       doc.setFontSize(10);
       doc.setTextColor("#ff6f00");
       doc.text("IMPORTANT NOTICE", tableMarginLeft + 12, newDisclaimerY + 18);
       
-      // Disclaimer text
       doc.setFont("helvetica", "normal");
       doc.setFontSize(8);
       doc.setTextColor("#555");
       const disclaimerLines = doc.splitTextToSize(disclaimerText, tableWidth - 30);
       doc.text(disclaimerLines, tableMarginLeft + 12, newDisclaimerY + 35);
     } else {
-      // Disclaimer box
       doc.setFillColor("#fff9e6");
       doc.setDrawColor("#ffc107");
       doc.setLineWidth(1);
       doc.roundedRect(tableMarginLeft, disclaimerStartY, tableWidth, 70, 3, 3, "FD");
       
-      // Disclaimer title
       doc.setFont("helvetica", "bold");
       doc.setFontSize(10);
       doc.setTextColor("#ff6f00");
       doc.text("IMPORTANT NOTICE", tableMarginLeft + 12, disclaimerStartY + 18);
       
-      // Disclaimer text
       doc.setFont("helvetica", "normal");
       doc.setFontSize(8);
       doc.setTextColor("#555");
@@ -565,6 +492,5 @@ export async function exportReportPDF({
     }
   }
 
-  // Save PDF file
   doc.save(filename);
 }

@@ -21,7 +21,8 @@ import enhancedSampleReports, {
   searchReports,
   getCommonReports 
 } from "../../constants/enhancedSampleReports";
-import sampleReportsData from "../../constants/sampleReportsData";
+import userSampleData from "../../constants/userSampleData";
+import siteSampleData from "../../constants/siteSampleData";
 import { exportChartDataToCSV } from "../../utils/exportUtils";
 import { exportReportPDF } from "../../utils/exportReportPDF";
 
@@ -29,7 +30,6 @@ import ReportCriteriaModal from "../../components/Reports/ReportCriteriaModal";
 import CriteriaDisplay from "../../components/Reports/CriteriaDisplay";
 import GenericReportRenderer from "../../components/Reports/GenericReportRenderer";
 
-// Import centralized report configuration
 import { 
   getCSVConfig,
   getChartConfig
@@ -174,6 +174,18 @@ const ReportDashboard = () => {
     });
   }, []);
 
+  const getReportData = useCallback((reportId) => {
+    if (userSampleData.isUserReport(reportId)) {
+      return userSampleData.getUserReportData(reportId);
+    }
+    
+    if (siteSampleData.isSiteReport(reportId)) {
+      return siteSampleData.getSiteReportData(reportId);
+    }
+    
+    return null;
+  }, []);
+
   const handleViewReport = useCallback((report) => {
     if (report.supportsCriteria) {
       setReportForCriteria(report);
@@ -208,7 +220,7 @@ const ReportDashboard = () => {
   }, [reportForCriteria, addToRecent]);
 
   const filterReportData = useCallback((reportId, criteria) => {
-    const rawData = sampleReportsData[reportId];
+    const rawData = getReportData(reportId);
     if (!rawData) return null;
 
     if (criteria.dateRange) {
@@ -246,12 +258,12 @@ const ReportDashboard = () => {
     }
 
     return rawData;
-  }, []);
+  }, [getReportData]);
 
   const getCSVData = useCallback((report) => {
     const reportData = selectedReportCriteria 
       ? filterReportData(report.id, selectedReportCriteria)
-      : sampleReportsData[report.id];
+      : getReportData(report.id);
       
     if (!reportData) return { headers: [], rows: [] };
 
@@ -265,7 +277,7 @@ const ReportDashboard = () => {
     }
 
     return { headers: [], rows: [] };
-  }, [selectedReportCriteria, filterReportData]);
+  }, [selectedReportCriteria, filterReportData, getReportData]);
 
   const generateFilename = useCallback((report, extension) => {
     let filename = report.name.replace(/\s+/g, '_');
@@ -328,7 +340,7 @@ const ReportDashboard = () => {
       
       const reportData = selectedReportCriteria 
         ? filterReportData(report.id, selectedReportCriteria)
-        : sampleReportsData[report.id];
+        : getReportData(report.id);
         
       if (!reportData) {
         throw new Error('Report data not found');
@@ -401,7 +413,7 @@ const ReportDashboard = () => {
 
     const reportData = selectedReportCriteria 
       ? filterReportData(selectedReport.id, selectedReportCriteria)
-      : sampleReportsData[selectedReport.id];
+      : getReportData(selectedReport.id);
       
     const hasData = !!reportData;
 

@@ -5,6 +5,13 @@ import DateRangePicker from './DateRangePicker';
 import MonthRangePicker from './MonthRangePicker';
 import './ReportCriteriaForm.css';
 
+/**
+ * Report Criteria Form Component
+ * 
+ * Handles user input for report criteria/filters
+ * Works with centralized data from userSampleData and siteSampleData
+ * Criteria is used to filter report data before rendering
+ */
 const ReportCriteriaForm = ({ report, criteria, errors, onChange }) => {
   if (!report.criteriaFields || report.criteriaFields.length === 0) {
     return (

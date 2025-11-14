@@ -4,6 +4,7 @@ import Papa from 'papaparse';
 
 /**
  * Unified CSV export function for table or chart data
+ * Works with centralized data from userSampleData and siteSampleData
  * @param {object} data - Data to export (headers/rows or labels/datasets)
  * @param {string} filename - Output filename
  * @returns {Promise<void>}
@@ -14,13 +15,11 @@ export const exportChartDataToCSV = async (data, filename = 'chart-data.csv') =>
       let csv = '';
 
       if (data.headers && data.rows) {
-        // Table data export
         csv = Papa.unparse({
           fields: data.headers,
           data: data.rows,
         });
       } else if (data.labels && data.datasets) {
-        // Chart data export
         const csvData = data.labels.map((label, i) => {
           const row = [label];
           data.datasets.forEach(dataset => row.push(dataset.data[i]));
