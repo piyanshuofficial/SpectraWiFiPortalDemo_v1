@@ -2,17 +2,26 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { FaBookOpen, FaVideo, FaQuestionCircle } from 'react-icons/fa';
+import SkeletonLoader from '../../components/Loading/SkeletonLoader';
 import { ANIMATION } from '../../constants/appConstants';
 import './KnowledgeHome.css';
 
 const KnowledgeHome = () => {
-  // State and ref for highlight
   const [supportHighlight, setSupportHighlight] = useState(false);
+  const [initialLoad, setInitialLoad] = useState(true);
   const helpSectionRef = useRef(null);
 
-  // Allow dashboard to trigger highlight and scroll via hash or custom event
   useEffect(() => {
-    // Listen for a custom event to trigger highlight and scroll
+    const loadContent = () => {
+      setInitialLoad(false);
+    };
+
+    const timer = setTimeout(loadContent, 300);
+    
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
     const handler = (e) => {
       if (e.detail === 'highlight-support') {
         setSupportHighlight(true);
@@ -25,7 +34,6 @@ const KnowledgeHome = () => {
     };
     window.addEventListener('triggerSupportHighlight', handler);
 
-    // Optional: support old-style hash in URL
     if (window.location.hash === '#support-highlight') {
       setSupportHighlight(true);
       setTimeout(() => {
@@ -38,10 +46,45 @@ const KnowledgeHome = () => {
     return () => window.removeEventListener('triggerSupportHighlight', handler);
   }, []);
 
-  // Remove highlight on click
   const handleHighlightRemove = () => {
     setSupportHighlight(false);
   };
+
+  if (initialLoad) {
+    return (
+      <main className="knowledge-center-main">
+        <SkeletonLoader variant="rect" height={40} width="40%" style={{ marginBottom: '30px' }} />
+
+        <SkeletonLoader variant="rect" height={50} style={{ marginBottom: '30px' }} />
+
+        <div className="knowledge-feature-cards">
+          {[...Array(3)].map((_, i) => (
+            <SkeletonLoader key={i} variant="card" />
+          ))}
+        </div>
+
+        <div className="knowledge-blocks-row">
+          {[...Array(2)].map((_, i) => (
+            <SkeletonLoader key={i} variant="card" />
+          ))}
+        </div>
+
+        <div className="knowledge-blocks-row">
+          {[...Array(2)].map((_, i) => (
+            <SkeletonLoader key={i} variant="card" />
+          ))}
+        </div>
+
+        <div className="knowledge-blocks-row">
+          {[...Array(2)].map((_, i) => (
+            <SkeletonLoader key={i} variant="card" />
+          ))}
+        </div>
+
+        <SkeletonLoader variant="card" style={{ marginTop: '30px' }} />
+      </main>
+    );
+  }
 
   return (
     <main className="knowledge-center-main">
@@ -198,7 +241,6 @@ const KnowledgeHome = () => {
         </div>
       </div>
 
-      {/* Help Section: scroll target and highlight */}
       <div
         ref={helpSectionRef}
         className={`knowledge-help-row${supportHighlight ? ' support-highlight' : ''}`}

@@ -5,6 +5,7 @@ import { useAuth } from "../../context/AuthContext";
 import { Permissions } from "../../utils/accessLevels";
 import { useLoading } from "../../context/LoadingContext";
 import LoadingOverlay from "../../components/Loading/LoadingOverlay";
+import SkeletonLoader from "../../components/Loading/SkeletonLoader";
 import Button from "../../components/Button";
 import { FaEye, FaFileCsv, FaFilePdf, FaStar, FaRegStar, FaTimes, FaClock, FaSearch } from "react-icons/fa";
 import notifications from "../../utils/notifications";
@@ -73,36 +74,45 @@ const ReportDashboard = () => {
   const [exportingReportId, setExportingReportId] = useState(null);
   const [criteriaModalOpen, setCriteriaModalOpen] = useState(false);
   const [reportForCriteria, setReportForCriteria] = useState(null);
+  const [initialLoad, setInitialLoad] = useState(true);
 
   const searchInputRef = useRef(null);
   const categories = useMemo(() => getCategories(), []);
 
   useEffect(() => {
-    try {
-      const savedPinned = localStorage.getItem(LOCAL_STORAGE_KEYS.PINNED);
-      const savedRecent = localStorage.getItem(LOCAL_STORAGE_KEYS.RECENT);
-      
-      let pinnedIds = [];
-      
-      if (savedPinned) {
-        pinnedIds = JSON.parse(savedPinned);
-      } else {
-        const commonReports = getCommonReports().slice(0, MAX_PINNED_REPORTS);
-        pinnedIds = commonReports.map(r => r.id);
+    const loadReports = () => {
+      try {
+        const savedPinned = localStorage.getItem(LOCAL_STORAGE_KEYS.PINNED);
+        const savedRecent = localStorage.getItem(LOCAL_STORAGE_KEYS.RECENT);
+        
+        let pinnedIds = [];
+        
+        if (savedPinned) {
+          pinnedIds = JSON.parse(savedPinned);
+        } else {
+          const commonReports = getCommonReports().slice(0, MAX_PINNED_REPORTS);
+          pinnedIds = commonReports.map(r => r.id);
+        }
+        
+        setPinnedReports(pinnedIds);
+        
+        if (savedRecent) {
+          setRecentReports(JSON.parse(savedRecent));
+        }
+      } catch (error) {
+        console.error('Error loading saved report preferences:', error);
       }
-      
-      setPinnedReports(pinnedIds);
-      
-      if (savedRecent) {
-        setRecentReports(JSON.parse(savedRecent));
-      }
-    } catch (error) {
-      console.error('Error loading saved report preferences:', error);
-    }
 
-    if (categories.length > 0) {
-      setActiveCategory(categories[0]);
-    }
+      if (categories.length > 0) {
+        setActiveCategory(categories[0]);
+      }
+      
+      setInitialLoad(false);
+    };
+
+    const timer = setTimeout(loadReports, 300);
+    
+    return () => clearTimeout(timer);
   }, [categories]);
 
   useEffect(() => {
@@ -475,6 +485,31 @@ const ReportDashboard = () => {
       </div>
     );
   };
+
+  if (initialLoad) {
+    return (
+      <div className="report-dashboard-container" role="region" aria-label="Reports Dashboard">
+        <div className="pinned-shortcuts-section">
+          <SkeletonLoader variant="rect" height={30} width="40%" style={{ marginBottom: '20px' }} />
+          <div className="shortcuts-grid">
+            {[...Array(6)].map((_, i) => (
+              <SkeletonLoader key={i} variant="card" />
+            ))}
+          </div>
+        </div>
+
+        <SkeletonLoader variant="rect" height={50} style={{ marginBottom: '20px' }} />
+
+        <SkeletonLoader variant="rect" height={40} style={{ marginBottom: '20px' }} />
+
+        <div className="reports-grid">
+          {[...Array(9)].map((_, i) => (
+            <SkeletonLoader key={i} variant="card" />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="report-dashboard-container" role="region" aria-label="Reports Dashboard">
