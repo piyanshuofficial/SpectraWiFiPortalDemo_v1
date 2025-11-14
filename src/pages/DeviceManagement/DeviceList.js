@@ -15,8 +15,7 @@ import notifications from "../../utils/notifications";
 import "./DeviceList.css";
 import { PAGINATION } from "../../constants/appConstants";
 import SEGMENT_DEVICE_AVAILABILITY from "../../config/segmentDeviceConfig";
-import sampleDevices from "../../constants/sampleDevices";
-import sampleUsers from "../../constants/sampleUsers";
+import userSampleData from "../../constants/userSampleData";
 import siteConfig from "../../config/siteConfig";
 
 const getDeviceIcon = (category) => {
@@ -142,14 +141,14 @@ const DeviceList = () => {
   const currentSite = siteConfig.segmentSites[segmentFilter] || siteConfig.segmentSites.enterprise;
 
   const segmentUsers = useMemo(() => {
-    return sampleUsers.filter(user => user.segment === segmentFilter);
+    return (userSampleData.users || []).filter(user => user.segment === segmentFilter);
   }, [segmentFilter]);
 
   const segmentUserIds = useMemo(() => {
     return new Set(segmentUsers.map(user => user.id));
   }, [segmentUsers]);
 
-  const deviceFilterFunction = useCallback((device, { searchTerm, typeFilter, statusFilter }) => {
+  const deviceFilterFunction = useCallback((device, { searchTerm = '', typeFilter = 'all', statusFilter = 'all' }) => {
     if (!segmentUserIds.has(device.userId)) return false;
     if (typeFilter && typeFilter !== "all" && device.type !== typeFilter) return false;
     if (statusFilter === "online" && !device.online) return false;
@@ -227,6 +226,9 @@ const DeviceList = () => {
 
   useEffect(() => {
     const loadDevices = () => {
+      const sampleDevices = userSampleData.devices || [];
+      const sampleUsers = userSampleData.users || [];
+      
       const enrichedData = sampleDevices.map(device => {
         const owner = sampleUsers.find(user => user.id === device.userId);
         return {
@@ -260,6 +262,7 @@ const DeviceList = () => {
     try {
       await new Promise(resolve => setTimeout(resolve, 800));
       
+      const sampleUsers = userSampleData.users || [];
       const newDevice = {
         id: `dev${String(devices.length + 1).padStart(3, '0')}`,
         userId: deviceInfo.mode === 'bindUser' ? deviceInfo.userId : 'system',

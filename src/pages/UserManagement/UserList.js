@@ -18,7 +18,7 @@ import { useSort } from "../../hooks/useSort";
 import { useFilter } from "../../hooks/useFilter";
 import { useTableState } from "../../hooks/useTableState";
 import { commonColumns, segmentSpecificFields } from "../../utils/columns";
-import sampleUsers from "../../constants/sampleUsers";
+import userSampleData from "../../constants/userSampleData";
 import UserLicenseRing from '../../components/common/UserLicenseRing';
 import { useLocation } from 'react-router-dom';
 import notifications from "../../utils/notifications";
@@ -85,7 +85,7 @@ const UserTableRow = React.memo(({
       )}
       {visibleColumns.includes("registration") && <td>{user.registration}</td>}
       {visibleColumns.includes("lastOnline") && <td>{user.lastOnline}</td>}
-      {segmentSpecificFields[segmentFilter]?.map((col) => (
+      {(segmentSpecificFields || []).map((col) => (
         visibleColumns.includes(col.key) ? <td key={col.key}>{user[col.key] || "-"}</td> : null
       ))}
       <td>
@@ -151,7 +151,7 @@ const UserList = () => {
   const location = useLocation();
   const { startLoading, stopLoading, isLoading } = useLoading();
   
-  const [users, setUsers] = useState(sampleUsers);
+  const [users, setUsers] = useState([]);
   const [devices, setDevices] = useState([]);
   const [initialLoad, setInitialLoad] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -171,7 +171,7 @@ const UserList = () => {
 
   const columns = useMemo(() => {
     const segmentCols = segmentSpecificFields[segmentFilter] || [];
-    return [...commonColumns, ...segmentCols];
+    return [...commonColumns, ...segmentCols].filter(col => col && col.key);
   }, [segmentFilter]);
 
   const {
@@ -185,47 +185,45 @@ const UserList = () => {
     resetToPage1
   } = useTableState(PAGINATION.DEFAULT_ROWS_PER_PAGE);
 
-  const userFilterFunction = useCallback((user, { searchTerm, statusFilter, advancedFilters = {} }) => {
-  // Add default parameter ^^^^^^^^^^^^ here
-  if (segmentFilter !== "all" && user.segment !== segmentFilter) return false;
-  if (statusFilter && user.status !== statusFilter) return false;
-  
-  const searchLower = searchTerm.toLowerCase().trim();
-  if (searchLower) {
-    const allSearchFields = [
-      user.id,
-      user.firstName,
-      user.lastName,
-      user.mobile,
-      user.email,
-      user.userPolicy ? `${user.userPolicy.speed} ${user.userPolicy.dataVolume} ${user.userPolicy.deviceLimit} ${user.userPolicy.dataCycleType}` : "",
-      user.status,
-      user.registration,
-      user.lastOnline,
-      user.location,
-      ...columns.filter((c) => c.optional).map((c) => user[c.key] || ""),
-    ];
-    if (!allSearchFields.some((f) => f?.toString().toLowerCase().includes(searchLower))) {
-      return false;
+  const userFilterFunction = useCallback((user, { searchTerm = '', statusFilter = '', advancedFilters = {} }) => {
+    if (segmentFilter !== "all" && user.segment !== segmentFilter) return false;
+    if (statusFilter && user.status !== statusFilter) return false;
+    
+    const searchLower = searchTerm.toLowerCase().trim();
+    if (searchLower) {
+      const allSearchFields = [
+        user.id,
+        user.firstName,
+        user.lastName,
+        user.mobile,
+        user.email,
+        user.userPolicy ? `${user.userPolicy.speed} ${user.userPolicy.dataVolume} ${user.userPolicy.deviceLimit} ${user.userPolicy.dataCycleType}` : "",
+        user.status,
+        user.registration,
+        user.lastOnline,
+        user.location,
+        ...columns.filter((c) => c.optional).map((c) => user[c.key] || ""),
+      ];
+      if (!allSearchFields.some((f) => f?.toString().toLowerCase().includes(searchLower))) {
+        return false;
+      }
     }
-  }
-  
-  // Add safety check for advancedFilters
-  if (advancedFilters && typeof advancedFilters === 'object') {
-    for (const [key, value] of Object.entries(advancedFilters)) {
-      if (value) {
-        const userVal =
-          key === "policy" || key === "userPolicy"
-            ? user.userPolicy ? `${user.userPolicy.speed} ${user.userPolicy.dataVolume} ${user.userPolicy.deviceLimit} ${user.userPolicy.dataCycleType}` : ""
-            : (user[key] || "").toString().toLowerCase();
-        if (!userVal.includes(value.toLowerCase())) {
-          return false;
+    
+    if (advancedFilters && typeof advancedFilters === 'object') {
+      for (const [key, value] of Object.entries(advancedFilters)) {
+        if (value) {
+          const userVal =
+            key === "policy" || key === "userPolicy"
+              ? user.userPolicy ? `${user.userPolicy.speed} ${user.userPolicy.dataVolume} ${user.userPolicy.deviceLimit} ${user.userPolicy.dataCycleType}` : ""
+              : (user[key] || "").toString().toLowerCase();
+          if (!userVal.includes(value.toLowerCase())) {
+            return false;
+          }
         }
       }
     }
-  }
-  return true;
-}, [segmentFilter, columns]);
+    return true;
+  }, [segmentFilter, columns]);
 
   const {
     filteredData: filteredUsers,
@@ -266,7 +264,7 @@ const UserList = () => {
       try {
         timeoutId = setTimeout(() => {
           if (mounted) {
-            setUsers(sampleUsers);
+            setUsers(userSampleData.users || []);
             setDevices([]);
             stopLoading('users');
             setInitialLoad(false);
@@ -445,6 +443,8 @@ const UserList = () => {
     }
   }, [canViewReports, columns, visibleColumns, sortedUsers, segmentFilter]);
 
+  const segmentSpecificCols = segmentSpecificFields[segmentFilter] || [];
+
   if (initialLoad) {
     return (
       <div className="user-list-container">
@@ -548,92 +548,93 @@ const UserList = () => {
           ? `Hide Advanced Filters${activeFilterCount > 0 ? ` (${activeFilterCount})` : ""}`
           : `Show Advanced Filters${activeFilterCount > 0 ? ` (${activeFilterCount})` : ""}`}
       </button>
-{advancedFilterVisible && (
-  <form
-    id="advanced-filters-panel"
-    className="advanced-filters-panel"
-    autoComplete="off"
-    onSubmit={(e) => e.preventDefault()}
-    spellCheck={false}
-  >
-    <div className="advanced-filters-grid">
-      {columns
-        .filter((c) => c.optional)
-        .map((col) => (
-          <div key={col.key}>
-            <label htmlFor={`filter-${col.key}`} className="advanced-filter-label">
-              {col.label}
-            </label>
-            {col.key === "userPolicy" ? (
-              <input
-                id={`filter-${col.key}`}
-                type="text"
-                value={(advancedFilters && advancedFilters[col.key]) || ""}
-                onChange={(e) => {
-                  const currentFilters = filters.advancedFilters || {};
-                  setFilter('advancedFilters', {
-                    ...currentFilters,
-                    [col.key]: e.target.value,
-                  });
-                }}
-                placeholder={`Filter by ${col.label}`}
-                aria-label={`Filter by ${col.label}`}
-                autoComplete="off"
-              />
-            ) : col.key === "status" ? (
-              <select
-                id={`filter-${col.key}`}
-                value={(advancedFilters && advancedFilters[col.key]) || ""}
-                onChange={(e) => {
-                  const currentFilters = filters.advancedFilters || {};
-                  setFilter('advancedFilters', {
-                    ...currentFilters,
-                    [col.key]: e.target.value,
-                  });
-                }}
-                aria-label={`Filter by ${col.label}`}
-              >
-                <option value="">Any</option>
-                {["Active", "Suspended", "Blocked"].map((opt) => (
-                  <option key={opt} value={opt}>
-                    {opt}
-                  </option>
-                ))}
-              </select>
-            ) : (
-              <input
-                id={`filter-${col.key}`}
-                type="text"
-                value={(advancedFilters && advancedFilters[col.key]) || ""}
-                onChange={(e) => {
-                  const currentFilters = filters.advancedFilters || {};
-                  setFilter('advancedFilters', {
-                    ...currentFilters,
-                    [col.key]: e.target.value,
-                  });
-                }}
-                placeholder={`Filter by ${col.label}`}
-                aria-label={`Filter by ${col.label}`}
-                autoComplete="off"
-              />
-            )}
+
+      {advancedFilterVisible && (
+        <form
+          id="advanced-filters-panel"
+          className="advanced-filters-panel"
+          autoComplete="off"
+          onSubmit={(e) => e.preventDefault()}
+          spellCheck={false}
+        >
+          <div className="advanced-filters-grid">
+            {columns
+              .filter((c) => c && c.optional)
+              .map((col) => (
+                <div key={col.key}>
+                  <label htmlFor={`filter-${col.key}`} className="advanced-filter-label">
+                    {col.label}
+                  </label>
+                  {col.key === "userPolicy" ? (
+                    <input
+                      id={`filter-${col.key}`}
+                      type="text"
+                      value={(advancedFilters && advancedFilters[col.key]) || ""}
+                      onChange={(e) => {
+                        const currentFilters = filters.advancedFilters || {};
+                        setFilter('advancedFilters', {
+                          ...currentFilters,
+                          [col.key]: e.target.value,
+                        });
+                      }}
+                      placeholder={`Filter by ${col.label}`}
+                      aria-label={`Filter by ${col.label}`}
+                      autoComplete="off"
+                    />
+                  ) : col.key === "status" ? (
+                    <select
+                      id={`filter-${col.key}`}
+                      value={(advancedFilters && advancedFilters[col.key]) || ""}
+                      onChange={(e) => {
+                        const currentFilters = filters.advancedFilters || {};
+                        setFilter('advancedFilters', {
+                          ...currentFilters,
+                          [col.key]: e.target.value,
+                        });
+                      }}
+                      aria-label={`Filter by ${col.label}`}
+                    >
+                      <option value="">Any</option>
+                      {["Active", "Suspended", "Blocked"].map((opt) => (
+                        <option key={opt} value={opt}>
+                          {opt}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      id={`filter-${col.key}`}
+                      type="text"
+                      value={(advancedFilters && advancedFilters[col.key]) || ""}
+                      onChange={(e) => {
+                        const currentFilters = filters.advancedFilters || {};
+                        setFilter('advancedFilters', {
+                          ...currentFilters,
+                          [col.key]: e.target.value,
+                        });
+                      }}
+                      placeholder={`Filter by ${col.label}`}
+                      aria-label={`Filter by ${col.label}`}
+                      autoComplete="off"
+                    />
+                  )}
+                </div>
+              ))}
           </div>
-        ))}
-    </div>
-    <div className="advanced-filter-actions">
-      <button 
-        type="button" 
-        className="btn btn-secondary" 
-        onClick={() => setFilter('advancedFilters', {})}
-      >
-        Clear All
-      </button>
-      <button type="button" className="btn btn-secondary" onClick={() => setAdvancedFilterVisible(false)}>
-        Hide Filters
-      </button>
-    </div>
-  </form>
-)}
+          <div className="advanced-filter-actions">
+            <button 
+              type="button" 
+              className="btn btn-secondary" 
+              onClick={() => setFilter('advancedFilters', {})}
+            >
+              Clear All
+            </button>
+            <button type="button" className="btn btn-secondary" onClick={() => setAdvancedFilterVisible(false)}>
+              Hide Filters
+            </button>
+          </div>
+        </form>
+      )}
 
       <div className="user-table-outer">
         <table className="user-table" role="table">
@@ -679,7 +680,7 @@ const UserList = () => {
                   key={user.id}
                   user={user}
                   visibleColumns={visibleColumns}
-                  segmentSpecificFields={segmentSpecificFields}
+                  segmentSpecificFields={segmentSpecificCols}
                   segmentFilter={segmentFilter}
                   hasEditPermission={canEditUsers}
                   onDetailsClick={handleDetailsClick}

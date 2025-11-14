@@ -283,4 +283,13 @@ const appConstants = {
   A11Y,
 };
 
+export const SEGMENT_LABELS = {
+  enterprise: 'Enterprise',
+  coLiving: 'Co-Living',
+  coWorking: 'Co-Working',
+  hotel: 'Hotel',
+  pg: 'PG',
+  miscellaneous: 'Miscellaneous'
+};
+
 export default appConstants;

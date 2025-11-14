@@ -23,7 +23,7 @@ export const siteConfig = {
   // Default site (can be overridden based on segment)
   siteName: "Mumbai Corporate Office",
   siteId: "SITE-MUM-ENT-001",
-  company: "Spectra Technologies",
+  company: "Comet Technologies",
   segment: "Enterprise",
   accessLevel: "Site",
   
@@ -33,34 +33,34 @@ export const siteConfig = {
       siteName: "Mumbai Corporate Office",
       siteId: "SITE-MUM-ENT-001",
       location: "Mumbai, Maharashtra",
-      address: "Spectra Business Park, Andheri East, Mumbai - 400069"
+      address: "Modern Business Park, Andheri East, Mumbai - 400069"
     },
     coLiving: {
-      siteName: "Spectra Urban Living - Bangalore",
+      siteName: "Urban Living - Bangalore",
       siteId: "SITE-BLR-COL-002",
       location: "Bangalore, Karnataka",
       address: "Koramangala, Bangalore - 560034"
     },
     coWorking: {
-      siteName: "Spectra WorkHub - Pune",
+      siteName: "Nest WorkHub - Pune",
       siteId: "SITE-PUN-COW-003",
       location: "Pune, Maharashtra",
       address: "Hinjewadi IT Park, Pune - 411057"
     },
     hotel: {
-      siteName: "Spectra Grand Hotel - Goa",
+      siteName: "Grand Hotel - Goa",
       siteId: "SITE-GOA-HTL-004",
       location: "Goa",
       address: "Calangute Beach Road, Goa - 403516"
     },
     pg: {
-      siteName: "Spectra PG Residency - Chennai",
+      siteName: "PG Residency - Chennai",
       siteId: "SITE-CHN-PGR-005",
       location: "Chennai, Tamil Nadu",
       address: "Adyar, Chennai - 600020"
     },
     miscellaneous: {
-      siteName: "Spectra Community Hub - Delhi",
+      siteName: "Community Hub - Delhi",
       siteId: "SITE-DEL-MIS-006",
       location: "Delhi",
       address: "Connaught Place, New Delhi - 110001"
