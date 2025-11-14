@@ -5,14 +5,18 @@
       "@components/*": ["components/*"],
       "@pages/*": ["pages/*"],
       "@utils/*": ["utils/*"],
-      "@config/*": ["config/*"],
       "@constants/*": ["constants/*"],
       "@context/*": ["context/*"],
+      "@config/*": ["config/*"],
       "@styles/*": ["styles/*"],
+      "@assets/*": ["assets/*"],
+      "@hooks/*": ["hooks/*"],
       "@reports/*": ["reports/*"],
-      "@assets/*": ["assets/*"]
+      "@layouts/*": ["layouts/*"],
+      "@services/*": ["services/*"],
+      "@modals/*": ["components/modals/*"]
     }
   },
-  "include": ["src/**/*"],
+  "include": ["src"],
   "exclude": ["node_modules", "build"]
 }
