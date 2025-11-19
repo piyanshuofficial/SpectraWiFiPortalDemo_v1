@@ -20,8 +20,8 @@ const sidebarItems = [
   { 
     to: "/dashboard", 
     icon: FaTachometerAlt, 
-    label: "Dashboard", 
-    aria: "Dashboard",
+    label: "Wi-Fi Dashboard", 
+    aria: "Wi-Fi Dashboard",
     permission: "canViewReports"
   },
   { 

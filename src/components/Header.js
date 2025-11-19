@@ -55,9 +55,9 @@ const Header = () => {
               onClick={handleBackToSpectraOne}
               onKeyPress={e => e.key === "Enter" && handleBackToSpectraOne()}
               style={{ cursor: "pointer" }}
-              aria-label="Navigate back to SpectraOne"
+              aria-label="Navigate back to Site Dashboard"
             >
-              Back To SpectraOne
+              Back To Site Dashboard
             </span>
           </div>
           <div className="header-center">
