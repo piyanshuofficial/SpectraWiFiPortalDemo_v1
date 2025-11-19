@@ -202,6 +202,169 @@ function DeviceFormModal({
         macAddress: macAddress.trim().toUpperCase()
       };
     }
+
+    // ========================================
+    // TODO: Backend Integration - Device Registration/Update
+    // ========================================
+    // This is where device data needs to be persisted to backend
+    // 
+    // API Endpoint:
+    // - Create: POST /api/devices/register
+    // - Update: PUT /api/devices/{deviceId}/update
+    // 
+    // Request Payload:
+    // {
+    //   mode: 'bindUser' | 'deviceUser',
+    //   userId: string, // Human user ID or device user ID
+    //   deviceCategory: string,
+    //   deviceName: string,
+    //   macAddress: string (uppercase, format: AA:BB:CC:DD:EE:FF),
+    //   siteId: string,
+    //   segment: string,
+    //   registeredBy: currentUserId,
+    //   timestamp: ISO8601
+    // }
+    // 
+    // Backend Processing:
+    // 
+    // 1. MAC Address Validation:
+    //    - Check uniqueness across site (or cluster if roaming enabled)
+    //    - Query: SELECT * FROM devices WHERE mac_address = ? AND site_id = ?
+    //    - If exists and not same device being edited: Return 409 Conflict
+    //    - Validate MAC format and check against random MAC patterns
+    //    - Query OUI database to get vendor/manufacturer info
+    // 
+    // 2. Device User Creation (if mode === 'deviceUser'):
+    //    - Create a "Device User" account in UMP
+    //    - Do NOT provision in AAA (device users don't authenticate)
+    //    - Generate device credentials for MAC binding
+    //    - Set user_category = 'device'
+    //    - Assign to appropriate device policy
+    // 
+    // 3. MAC Binding in Network:
+    //    - If mode === 'bindUser':
+    //      * Add MAC to existing user's allowed devices list in AAA
+    //      * Check against user's device limit policy
+    //      * Update NAS (Network Access Server) with MAC whitelist
+    //      * Configure firewall rules for MAC-based access
+    //    - If mode === 'deviceUser':
+    //      * Create new account-MAC binding in AAA
+    //      * Set device-specific network policies
+    //      * Configure VLAN assignment for device category
+    //      * Set bandwidth limits based on device type
+    // 
+    // 4. Database Operations:
+    //    - Insert/Update devices table:
+    //      * device_id (UUID)
+    //      * user_id (human or device user)
+    //      * mac_address
+    //      * device_name
+    //      * device_category
+    //      * vendor (from OUI lookup)
+    //      * registered_at
+    //      * registered_by
+    //      * site_id
+    //      * status ('active')
+    //    - Update user's device count if binding to human user
+    // 
+    // 5. Network Controller Updates:
+    //    - Send MAC update to wireless controller
+    //    - Endpoint: POST /controller/api/add-client-mac
+    //    - Clear any existing authentication cache for this MAC
+    //    - Trigger RADIUS attribute update
+    // 
+    // 6. Audit Trail:
+    //    - Create detailed audit log:
+    //      * action: 'device_registered' | 'device_updated'
+    //      * device_mac: string
+    //      * device_name: string
+    //      * bound_to_user: userId
+    //      * mode: 'bindUser' | 'deviceUser'
+    //      * admin_user: currentUserId
+    //      * timestamp
+    //      * ip_address
+    // 
+    // 7. Validation Checks:
+    //    - Verify user exists and is Active
+    //    - Check user hasn't exceeded device limit
+    //    - Confirm site has device registration capability enabled
+    //    - Validate segment allows selected device category
+    // 
+    // Response Format:
+    // {
+    //   success: true,
+    //   data: {
+    //     deviceId: string,
+    //     macAddress: string,
+    //     bindingStatus: 'success' | 'pending',
+    //     userId: string,
+    //     vendor: string, // from OUI lookup
+    //     message: 'Device registered successfully'
+    //   }
+    // }
+    // 
+    // Error Handling:
+    // - 400: Validation error (invalid MAC format, missing fields)
+    // - 409: MAC address already registered
+    // - 422: User device limit exceeded
+    // - 500: Network controller communication failure
+    // - 503: AAA system unavailable
+    // 
+    // Implementation Example:
+    // try {
+    //   const apiEndpoint = device 
+    //     ? `/api/devices/${device.id}/update` 
+    //     : '/api/devices/register';
+    //   const method = device ? 'PUT' : 'POST';
+    //   
+    //   const response = await fetch(apiEndpoint, {
+    //     method,
+    //     headers: {
+    //       'Content-Type': 'application/json',
+    //       'Authorization': `Bearer ${authToken}`
+    //     },
+    //     body: JSON.stringify({
+    //       ...deviceData,
+    //       siteId: currentSiteId,
+    //       segment: segment,
+    //       registeredBy: currentUser.id
+    //     })
+    //   });
+    //   
+    //   const result = await response.json();
+    //   
+    //   if (!response.ok) {
+    //     if (response.status === 409) {
+    //       setErrors({ macAddress: 'MAC address already registered' });
+    //       return;
+    //     }
+    //     throw new Error(result.message);
+    //   }
+    //   
+    //   // Success - pass enriched data to parent
+    //   await onSubmit({
+    //     ...deviceData,
+    //     deviceId: result.data.deviceId,
+    //     vendor: result.data.vendor
+    //   });
+    //   
+    // } catch (error) {
+    //   console.error('Device registration error:', error);
+    //   notifications.operationFailed('register device');
+    // }
+    // 
+    // Real-time Updates:
+    // - After successful registration, broadcast via WebSocket:
+    //   { type: 'DEVICE_REGISTERED', deviceId, mac, userId, siteId }
+    // - Update device count in monitoring dashboard
+    // - Refresh network topology visualization if displayed
+    // 
+    // Monitoring Integration:
+    // - Start tracking device in monitoring system
+    // - POST /api/monitoring/add-device
+    // - Track: connection status, bandwidth usage, location (AP)
+    // ========================================
+    
     await onSubmit(deviceData);
   }
 
@@ -279,6 +442,36 @@ function DeviceFormModal({
                       onChange={e => {
                         setSearchTerm(e.target.value);
                         setSelectedUser(null);
+                        
+                        // ========================================
+                        // TODO: Backend Integration - Real-time User Search
+                        // ========================================
+                        // Implement server-side user search with debouncing
+                        // 
+                        // For large user lists (>1000), client-side filtering is insufficient
+                        // Implement debounced API call for search:
+                        // 
+                        // useEffect(() => {
+                        //   const searchTimer = setTimeout(async () => {
+                        //     if (searchTerm.length >= 3) {
+                        //       const response = await fetch(
+                        //         `/api/users/search?q=${encodeURIComponent(searchTerm)}&siteId=${siteId}&segment=${segment}&limit=50`
+                        //       );
+                        //       const result = await response.json();
+                        //       setFilteredUsers(result.data.users);
+                        //     }
+                        //   }, 300); // Debounce 300ms
+                        //   
+                        //   return () => clearTimeout(searchTimer);
+                        // }, [searchTerm]);
+                        // 
+                        // Backend should implement:
+                        // - Full-text search across name, email, userId
+                        // - Filter by Active status only (no devices for Blocked users)
+                        // - Return device count with each user
+                        // - Highlight if user at device limit
+                        // - Order by relevance/match score
+                        // ========================================
                       }}
                       autoComplete="off"
                       className={errors.selectedUser ? 'error' : ''}
@@ -422,6 +615,67 @@ function DeviceFormModal({
                     let val = e.target.value.replace(/[^a-fA-F0-9]/g, '').toUpperCase().slice(0,12);
                     let pretty = val.match(/.{1,2}/g)?.join(':') || '';
                     setMacAddress(pretty);
+                    
+                    // ========================================
+                    // TODO: Backend Integration - Real-time MAC Validation
+                    // ========================================
+                    // Implement real-time MAC address validation as user types
+                    // 
+                    // Debounced API call to check MAC uniqueness:
+                    // 
+                    // useEffect(() => {
+                    //   const validateTimer = setTimeout(async () => {
+                    //     if (macAddress.length === 17) { // Full MAC entered
+                    //       try {
+                    //         const response = await fetch(
+                    //           `/api/devices/validate-mac?mac=${macAddress}&siteId=${siteId}`
+                    //         );
+                    //         const result = await response.json();
+                    //         
+                    //         if (!result.data.isAvailable) {
+                    //           setErrors(prev => ({
+                    //             ...prev,
+                    //             macAddress: `MAC already registered to ${result.data.existingDevice.name}`
+                    //           }));
+                    //         } else {
+                    //           // Clear error if MAC is available
+                    //           setErrors(prev => {
+                    //             const { macAddress, ...rest } = prev;
+                    //             return rest;
+                    //           });
+                    //           
+                    //           // Optionally fetch vendor info from OUI database
+                    //           if (result.data.vendor) {
+                    //             // Display vendor info to user
+                    //             // e.g., "Apple, Inc." for Apple devices
+                    //           }
+                    //         }
+                    //       } catch (error) {
+                    //         console.error('MAC validation error:', error);
+                    //       }
+                    //     }
+                    //   }, 500); // Debounce 500ms
+                    //   
+                    //   return () => clearTimeout(validateTimer);
+                    // }, [macAddress]);
+                    // 
+                    // Backend validation should check:
+                    // 1. MAC uniqueness in site (or cluster if roaming enabled)
+                    // 2. Detect random MAC patterns (iOS Privacy, Android MAC randomization)
+                    // 3. Lookup OUI to get device manufacturer
+                    // 4. Check against MAC blacklist (if any)
+                    // 
+                    // Response format:
+                    // {
+                    //   success: true,
+                    //   data: {
+                    //     isAvailable: boolean,
+                    //     vendor: string, // e.g., "Apple, Inc."
+                    //     isRandomMAC: boolean,
+                    //     existingDevice: { name, userId } // if not available
+                    //   }
+                    // }
+                    // ========================================
                   }}
                   maxLength={DATA_LIMITS.MAC_ADDRESS_LENGTH}
                   placeholder={VALIDATION.MAC_ADDRESS_FORMAT}
