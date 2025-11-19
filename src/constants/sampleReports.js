@@ -1,5 +1,17 @@
 // src/constants/sampleReports.js
 
+/**
+ * Basic Report Metadata - API Format Aligned
+ * 
+ * MissingForAPI:
+ * - None - this is frontend metadata only
+ * 
+ * FrontendOnly:
+ * - All fields (type, category, status, isCommon, createdDate)
+ * - Used for UI display and filtering only
+ * - Actual report data comes from userSampleData/siteSampleData
+ */
+
 const sampleReports = [
   {
     id: "site-monthly-active-users",
@@ -37,8 +49,6 @@ const sampleReports = [
     category: "Policy",
     isCommon: true,
   },
-
-  // New reports aligned with main dashboard charts
   {
     id: "network-usage-report",
     name: "Network Usage (GB)",

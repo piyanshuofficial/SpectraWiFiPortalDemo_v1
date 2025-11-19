@@ -1,33 +1,40 @@
 // src/constants/siteSampleData.js
 
 /**
- * Centralized Site Sample Data
+ * Centralized Site Sample Data - API Format Aligned
  * 
- * This is the SINGLE source of truth for all site-level data.
- * Consolidates data from:
- * - siteConfig.js (site configuration, policies, permissions)
- * - sampleReportsData.js (site-level report data)
- * - enhancedSampleReports.js metadata (kept separate)
+ * ALIGNMENT STATUS:
+ * - Structure partially aligned with API conventions
+ * - Preserves all existing portal business logic
  * 
- * This file REPLACES:
- * - siteConfig.js
- * - sampleReportsData.js (site reports only)
+ * MissingForAPI:
+ * - Real-time network metrics from monitoring system
+ * - Live access point status from controller
+ * - Current bandwidth utilization from traffic analyzer
+ * - Active session counts from AAA
+ * - SLA compliance data from ticketing system
+ * - Alert aggregation from monitoring platform
+ * 
+ * FrontendOnly:
+ * - dashboard.quickActions (UI shortcuts)
+ * - dashboard.recentActivities (UI display)
+ * - segmentSites (portal categorization)
+ * - permissions mapping (RBAC structure)
+ * - userRoles definitions (portal-specific)
+ * - support contact information
  */
 
 // ============================================
 // SITE CONFIGURATION
-// (Migrated from siteConfig.js - EXACT structure preserved)
 // ============================================
 
 export const siteConfig = {
-  // Default site (can be overridden based on segment)
   siteName: "Mumbai Corporate Office",
   siteId: "SITE-MUM-ENT-001",
   company: "Comet Technologies",
   segment: "Enterprise",
   accessLevel: "Site",
   
-  // Segment-specific site configurations
   segmentSites: {
     enterprise: {
       siteName: "Mumbai Corporate Office",
@@ -187,6 +194,7 @@ export const siteConfig = {
   policies: [
     {
       id: "standard",
+      policyId: "ENT_WIFI_50Mbps_Unlimited",
       name: "Standard Access",
       speed: "50 Mbps",
       dataLimit: "Unlimited",
@@ -195,6 +203,7 @@ export const siteConfig = {
     },
     {
       id: "premium",
+      policyId: "ENT_WIFI_100Mbps_Unlimited",
       name: "Premium Access",
       speed: "100 Mbps",
       dataLimit: "Unlimited",
@@ -203,6 +212,7 @@ export const siteConfig = {
     },
     {
       id: "basic",
+      policyId: "ENT_WIFI_25Mbps_50GB",
       name: "Basic Access",
       speed: "25 Mbps",
       dataLimit: "50 GB/month",
@@ -211,6 +221,7 @@ export const siteConfig = {
     },
     {
       id: "guest",
+      policyId: "GUEST_WIFI_10Mbps_5GB",
       name: "Guest Access",
       speed: "10 Mbps",
       dataLimit: "5 GB/day",
@@ -283,12 +294,10 @@ export const siteMetrics = {
 };
 
 // ============================================
-// SITE REPORT DATA
-// (Migrated from sampleReportsData.js - EXACT data preserved)
+// SITE REPORT DATA - Preserved Structure
 // ============================================
 
 export const siteReportData = {
-  // Original reports from sampleReportsData.js - EXACT structure
   "site-monthly-active-users": [
     {
       month: "2024-01",
@@ -348,7 +357,6 @@ export const siteReportData = {
     { alertType: "Critical", count: 100 },
   ],
 
-  // Additional site-level reports (expanded data)
   "cluster-average-active-users": [
     { cluster: "West Region", totalActiveUsers: 1250, monthlyGrowth: 8.5 },
     { cluster: "East Region", totalActiveUsers: 1420, monthlyGrowth: 12.3 },
@@ -400,7 +408,7 @@ export const siteReportData = {
   "client-list": [
     { clientMac: "AA:BB:CC:DD:EE:01", userName: "Amit Sharma", apName: "AP-Floor1-01", signalStrength: "-65 dBm", connectedTime: "2h 35m" },
     { clientMac: "AA:BB:CC:DD:EE:02", userName: "Neeta Singh", apName: "AP-Floor2-01", signalStrength: "-58 dBm", connectedTime: "1h 20m" },
-    { clientMac: "AA:BB:CC:DD:EE:03", userName: "Rajesh Kumar", apName: "AP-Floor1-02", signalStrength: "-72 dBm", connectedTime: "3h 45m" },
+    { clientMac: "AA:BB:CC:DD:EE:03", userName: "Rajesh Kumar", apName: "AP-Floor1-02", signalStrength: "-72dBm", connectedTime: "3h 45m" },
     { clientMac: "AA:BB:CC:DD:EE:04", userName: "Vikram Chatterjee", apName: "AP-Floor2-02", signalStrength: "-61 dBm", connectedTime: "0h 55m" }
   ],
 
@@ -478,37 +486,23 @@ export const siteReportData = {
 };
 
 // ============================================
-// HELPER FUNCTIONS
+// HELPER FUNCTIONS - Preserved
 // ============================================
 
-/**
- * Get site report data by report ID
- * @param {string} reportId - The report identifier
- * @returns {Array|null} Report data array or null if not found
- */
 export const getSiteReportData = (reportId) => {
   return siteReportData[reportId] || null;
 };
 
-/**
- * Check if a report is site-level
- * @param {string} reportId - The report identifier
- * @returns {boolean} True if report exists in site data
- */
 export const isSiteReport = (reportId) => {
   return reportId in siteReportData;
 };
 
-/**
- * Get all available site report IDs
- * @returns {Array<string>} Array of report IDs
- */
 export const getSiteReportIds = () => {
   return Object.keys(siteReportData);
 };
 
 // ============================================
-// DEFAULT EXPORT
+// DEFAULT EXPORT - Preserved
 // ============================================
 
 export default {

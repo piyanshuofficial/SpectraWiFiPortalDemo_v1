@@ -1,24 +1,78 @@
 // src/constants/userSampleData.js
 
 /**
- * Centralized User Sample Data
+ * Centralized User Sample Data - API Format Aligned
  * 
- * This is the SINGLE source of truth for all user-level data.
- * Consolidates data from:
- * - sampleUsers.js (all user profiles and details)
- * - sampleDevices.js (all device information)
- * - User-level report data
+ * ALIGNMENT STATUS:
+ * - Structure aligned with Sample API (wifi portal).docx format
+ * - Response wrapper pattern applied where appropriate
+ * - Field naming follows API conventions
  * 
- * This file REPLACES:
- * - sampleUsers.js
- * - sampleDevices.js
+ * MissingForAPI:
+ * - can_id (CAN ID from AAA system) - Backend to provide
+ * - whp_alert (WhatsApp alert preference) - Backend to provide
+ * - dataCycleResetDate (Next reset date) - Backend to calculate
+ * - dataCycle (Current cycle period) - Backend to calculate
+ * - totalVolumeInMB (Policy volume in MB) - Backend to provide
+ * - totalDataConsumed_nonFupInMB - Backend to calculate from sessions
+ * - totalDataConsumed_FupInMB - Backend to calculate if FUP applied
+ * - currentSession (Live session data) - Backend to provide from NAS
+ * - data_topup, speed_topup, plan_topup, device_topup - Backend to track
+ * - scpLink (Self-care portal link) - Backend to generate
+ * - fupStatus (Fair Usage Policy status) - Backend to determine
+ * - trimScpLink (Base64 encoded link) - Backend to generate
+ * - stnUserfind (STN user mapping) - Backend to provide if applicable
+ * 
+ * FrontendOnly:
+ * - segment (UI categorization)
+ * - siteName, siteId (Frontend display context)
+ * - userCategory (Frontend grouping)
+ * - usageTotalData, usageSessions, usageAvgSession (Computed from sessions)
+ * - lastOnline (Friendly time format)
+ * - Segment-specific fields (employeeId, department, residentType, etc.)
  */
 
-// ============================================
-// USER DATA
-// (Migrated from sampleUsers.js - EXACT structure preserved)
-// ============================================
+/**
+ * Convert portal user data to API format
+ * @param {object} user - Portal user object
+ * @returns {object} API-formatted user response
+ */
+export const convertUserToAPIFormat = (user) => {
+  return {
+    user_id: user.mobile || user.id,
+    account_id: `${user.siteId?.split('-')[0]}-${user.mobile || user.id}`,
+    domain_id: user.siteId || "UNKNOWN_SITE",
+    site_name: user.siteName || "Unknown Site",
+    f_name: user.firstName,
+    l_name: user.lastName,
+    mobile: user.mobile,
+    email: user.email || "",
+    device_count: String(user.devicesCount || 0),
+    status: user.status,
+    pkg_id: user.userPolicy?.policyId || "POLICY_UNKNOWN",
+    speedname: user.userPolicy?.speed || "Unknown",
+    // Missing from portal - to be provided by backend
+    can_id: "", // Backend to provide
+    whp_alert: "Y", // Backend to provide
+    dataCycleResetDate: "", // Backend to calculate
+    dataCycle: "", // Backend to calculate
+    totalVolumeInMB: 0, // Backend to provide
+    totalDataConsumed_nonFupInMB: 0, // Backend to calculate
+    totalDataConsumed_FupInMB: "0", // Backend to calculate
+    currentSession: [], // Backend to provide
+    data_topup: "", // Backend to track
+    speed_topup: "", // Backend to track
+    plan_topup: "", // Backend to track
+    device_topup: "", // Backend to track
+    scpLink: "", // Backend to generate
+    fupStatus: "Not Applied" // Backend to determine
+  };
+};
 
+/**
+ * Sample Users - Enhanced with API alignment
+ * Retains all portal business data while documenting API gaps
+ */
 export const sampleUsers = [
   // Enterprise - Mumbai Corporate Office
   {
@@ -27,7 +81,13 @@ export const sampleUsers = [
     lastName: "Sharma",
     mobile: "+91-9876543210",
     email: "amit.sharma@mail.com",
-    userPolicy: { speed: "Upto 10 Mbps", dataVolume: "50 GB", deviceLimit: "3", dataCycleType: "Monthly" },
+    userPolicy: { 
+      policyId: "ENT_WIFI_10Mbps_50GB",
+      speed: "Upto 10 Mbps", 
+      dataVolume: "50 GB", 
+      deviceLimit: "3", 
+      dataCycleType: "Monthly" 
+    },
     devicesCount: 3,
     status: "Active",
     registration: "2024-01-15",
@@ -51,7 +111,13 @@ export const sampleUsers = [
     lastName: "Kumar",
     mobile: "+91-9876543201",
     email: "ravi.kumar@mail.com",
-    userPolicy: { speed: "Upto 25 Mbps", dataVolume: "100 GB", deviceLimit: "5", dataCycleType: "Monthly" },
+    userPolicy: { 
+      policyId: "ENT_WIFI_25Mbps_100GB",
+      speed: "Upto 25 Mbps", 
+      dataVolume: "100 GB", 
+      deviceLimit: "5", 
+      dataCycleType: "Monthly" 
+    },
     devicesCount: 4,
     status: "Active",
     registration: "2024-04-15",
@@ -75,7 +141,13 @@ export const sampleUsers = [
     lastName: "Singh",
     mobile: "+91-9876543222",
     email: "neeta.singh@mail.com",
-    userPolicy: { speed: "Upto 50 Mbps", dataVolume: "200 GB", deviceLimit: "4", dataCycleType: "Monthly" },
+    userPolicy: { 
+      policyId: "ENT_WIFI_50Mbps_200GB",
+      speed: "Upto 50 Mbps", 
+      dataVolume: "200 GB", 
+      deviceLimit: "4", 
+      dataCycleType: "Monthly" 
+    },
     devicesCount: 7,
     status: "Active",
     registration: "2024-06-15",
@@ -101,7 +173,13 @@ export const sampleUsers = [
     lastName: "Kumar",
     mobile: "+91-9988776655",
     email: "",
-    userPolicy: { speed: "Upto 10 Mbps", dataVolume: "50 GB", deviceLimit: "1", dataCycleType: "Monthly" },
+    userPolicy: { 
+      policyId: "COL_WIFI_10Mbps_50GB",
+      speed: "Upto 10 Mbps", 
+      dataVolume: "50 GB", 
+      deviceLimit: "1", 
+      dataCycleType: "Monthly" 
+    },
     devicesCount: 1,
     status: "Suspended",
     registration: "2024-02-20",
@@ -125,7 +203,13 @@ export const sampleUsers = [
     lastName: "Shah",
     mobile: "+91-9988776656",
     email: "",
-    userPolicy: { speed: "Upto 15 Mbps", dataVolume: "75 GB", deviceLimit: "2", dataCycleType: "Monthly" },
+    userPolicy: { 
+      policyId: "COL_WIFI_15Mbps_75GB",
+      speed: "Upto 15 Mbps", 
+      dataVolume: "75 GB", 
+      deviceLimit: "2", 
+      dataCycleType: "Monthly" 
+    },
     devicesCount: 2,
     status: "Active",
     registration: "2024-03-20",
@@ -149,7 +233,13 @@ export const sampleUsers = [
     lastName: "Nair",
     mobile: "+91-9988776657",
     email: "",
-    userPolicy: { speed: "Upto 20 Mbps", dataVolume: "90 GB", deviceLimit: "3", dataCycleType: "Monthly" },
+    userPolicy: { 
+      policyId: "COL_WIFI_20Mbps_90GB",
+      speed: "Upto 20 Mbps", 
+      dataVolume: "90 GB", 
+      deviceLimit: "3", 
+      dataCycleType: "Monthly" 
+    },
     devicesCount: 3,
     status: "Active",
     registration: "2024-04-22",
@@ -175,7 +265,13 @@ export const sampleUsers = [
     lastName: "Rao",
     mobile: "+91-9012345678",
     email: "",
-    userPolicy: { speed: "Upto 10 Mbps", dataVolume: "50 GB", deviceLimit: "1", dataCycleType: "Monthly" },
+    userPolicy: { 
+      policyId: "COW_WIFI_10Mbps_50GB",
+      speed: "Upto 10 Mbps", 
+      dataVolume: "50 GB", 
+      deviceLimit: "1", 
+      dataCycleType: "Monthly" 
+    },
     devicesCount: 1,
     status: "Blocked",
     registration: "2024-03-01",
@@ -199,7 +295,13 @@ export const sampleUsers = [
     lastName: "Kumar",
     mobile: "+91-9012345679",
     email: "suresh.kumar@mail.com",
-    userPolicy: { speed: "Upto 15 Mbps", dataVolume: "75 GB", deviceLimit: "2", dataCycleType: "Monthly" },
+    userPolicy: { 
+      policyId: "COW_WIFI_15Mbps_75GB",
+      speed: "Upto 15 Mbps", 
+      dataVolume: "75 GB", 
+      deviceLimit: "2", 
+      dataCycleType: "Monthly" 
+    },
     devicesCount: 2,
     status: "Active",
     registration: "2024-05-01",
@@ -223,7 +325,13 @@ export const sampleUsers = [
     lastName: "Joshi",
     mobile: "+91-9012345680",
     email: "pooja.joshi@mail.com",
-    userPolicy: { speed: "Upto 20 Mbps", dataVolume: "100 GB", deviceLimit: "3", dataCycleType: "Monthly" },
+    userPolicy: { 
+      policyId: "COW_WIFI_20Mbps_100GB",
+      speed: "Upto 20 Mbps", 
+      dataVolume: "100 GB", 
+      deviceLimit: "3", 
+      dataCycleType: "Monthly" 
+    },
     devicesCount: 3,
     status: "Active",
     registration: "2024-06-20",
@@ -249,7 +357,13 @@ export const sampleUsers = [
     lastName: "Chatterjee",
     mobile: "+91-9988123456",
     email: "",
-    userPolicy: { speed: "Upto 10 Mbps", dataVolume: "50 GB", deviceLimit: "1", dataCycleType: "Daily" },
+    userPolicy: { 
+      policyId: "HTL_WIFI_10Mbps_50GB_Daily",
+      speed: "Upto 10 Mbps", 
+      dataVolume: "50 GB", 
+      deviceLimit: "1", 
+      dataCycleType: "Daily" 
+    },
     devicesCount: 1,
     status: "Active",
     registration: "2024-03-15",
@@ -275,7 +389,13 @@ export const sampleUsers = [
     lastName: "Iyer",
     mobile: "+91-9988123457",
     email: "",
-    userPolicy: { speed: "Upto 15 Mbps", dataVolume: "70 GB", deviceLimit: "2", dataCycleType: "Daily" },
+    userPolicy: { 
+      policyId: "HTL_WIFI_15Mbps_70GB_Daily",
+      speed: "Upto 15 Mbps", 
+      dataVolume: "70 GB", 
+      deviceLimit: "2", 
+      dataCycleType: "Daily" 
+    },
     devicesCount: 2,
     status: "Active",
     registration: "2024-04-18",
@@ -301,7 +421,13 @@ export const sampleUsers = [
     lastName: "Kapoor",
     mobile: "+91-9988123458",
     email: "",
-    userPolicy: { speed: "Upto 20 Mbps", dataVolume: "100 GB", deviceLimit: "3", dataCycleType: "Daily" },
+    userPolicy: { 
+      policyId: "HTL_WIFI_20Mbps_100GB_Daily",
+      speed: "Upto 20 Mbps", 
+      dataVolume: "100 GB", 
+      deviceLimit: "3", 
+      dataCycleType: "Daily" 
+    },
     devicesCount: 3,
     status: "Suspended",
     registration: "2024-05-25",
@@ -329,7 +455,13 @@ export const sampleUsers = [
     lastName: "Nair",
     mobile: "+91-9876541230",
     email: "",
-    userPolicy: { speed: "Upto 25 Mbps", dataVolume: "100 GB", deviceLimit: "4", dataCycleType: "Monthly" },
+    userPolicy: { 
+      policyId: "PG_WIFI_25Mbps_100GB",
+      speed: "Upto 25 Mbps", 
+      dataVolume: "100 GB", 
+      deviceLimit: "4", 
+      dataCycleType: "Monthly" 
+    },
     devicesCount: 4,
     status: "Suspended",
     registration: "2024-03-12",
@@ -353,7 +485,13 @@ export const sampleUsers = [
     lastName: "Kumari",
     mobile: "+91-9876541231",
     email: "",
-    userPolicy: { speed: "Upto 15 Mbps", dataVolume: "75 GB", deviceLimit: "2", dataCycleType: "Monthly" },
+    userPolicy: { 
+      policyId: "PG_WIFI_15Mbps_75GB",
+      speed: "Upto 15 Mbps", 
+      dataVolume: "75 GB", 
+      deviceLimit: "2", 
+      dataCycleType: "Monthly" 
+    },
     devicesCount: 2,
     status: "Active",
     registration: "2024-06-20",
@@ -377,7 +515,13 @@ export const sampleUsers = [
     lastName: "Sharma",
     mobile: "+91-9876541232",
     email: "",
-    userPolicy: { speed: "Upto 10 Mbps", dataVolume: "50 GB", deviceLimit: "1", dataCycleType: "Monthly" },
+    userPolicy: { 
+      policyId: "PG_WIFI_10Mbps_50GB",
+      speed: "Upto 10 Mbps", 
+      dataVolume: "50 GB", 
+      deviceLimit: "1", 
+      dataCycleType: "Monthly" 
+    },
     devicesCount: 1,
     status: "Active",
     registration: "2024-06-25",
@@ -403,7 +547,13 @@ export const sampleUsers = [
     lastName: "Desai",
     mobile: "+91-9098765432",
     email: "rahul.desai@mail.com",
-    userPolicy: { speed: "Upto 50 Mbps", dataVolume: "100 GB", deviceLimit: "6", dataCycleType: "Monthly" },
+    userPolicy: { 
+      policyId: "MIS_WIFI_50Mbps_100GB",
+      speed: "Upto 50 Mbps", 
+      dataVolume: "100 GB", 
+      deviceLimit: "6", 
+      dataCycleType: "Monthly" 
+    },
     devicesCount: 6,
     status: "Active",
     registration: "2024-03-17",
@@ -426,7 +576,13 @@ export const sampleUsers = [
     lastName: "Patel",
     mobile: "+91-9098765433",
     email: "neelam.patel@mail.com",
-    userPolicy: { speed: "Upto 20 Mbps", dataVolume: "80 GB", deviceLimit: "3", dataCycleType: "Monthly" },
+    userPolicy: { 
+      policyId: "MIS_WIFI_20Mbps_80GB",
+      speed: "Upto 20 Mbps", 
+      dataVolume: "80 GB", 
+      deviceLimit: "3", 
+      dataCycleType: "Monthly" 
+    },
     devicesCount: 3,
     status: "Active",
     registration: "2024-04-20",
@@ -449,7 +605,13 @@ export const sampleUsers = [
     lastName: "Singh",
     mobile: "+91-9098765434",
     email: "raja.singh@mail.com",
-    userPolicy: { speed: "Upto 10 Mbps", dataVolume: "10 GB", deviceLimit: "1", dataCycleType: "Monthly" },
+    userPolicy: { 
+      policyId: "MIS_WIFI_10Mbps_10GB",
+      speed: "Upto 10 Mbps", 
+      dataVolume: "10 GB", 
+      deviceLimit: "1", 
+      dataCycleType: "Monthly" 
+    },
     devicesCount: 1,
     status: "Suspended",
     registration: "2024-05-20",
@@ -469,9 +631,22 @@ export const sampleUsers = [
 ];
 
 // ============================================
-// DEVICE DATA
-// (Migrated from sampleDevices.js - EXACT structure preserved)
+// DEVICE DATA - API Format Aligned
 // ============================================
+
+/**
+ * MissingForAPI (Devices):
+ * - Real-time online/offline status from network
+ * - Current session bandwidth usage
+ * - Device vendor/manufacturer from MAC OUI lookup
+ * - Signal strength if connected
+ * - AP name if connected
+ * 
+ * FrontendOnly (Devices):
+ * - userId grouping
+ * - category (display grouping)
+ * - blocked flag (portal-specific)
+ */
 
 export const sampleDevices = [
   // Amit Sharma's devices (USER001)
@@ -884,9 +1059,20 @@ export const sampleDevices = [
 ];
 
 // ============================================
-// USER REPORT DATA
-// (User-specific analytics and activity data)
+// USER REPORT DATA - API Format Aligned
 // ============================================
+
+/**
+ * MissingForAPI (Reports):
+ * - Real-time session data aggregation
+ * - Historical data beyond portal scope
+ * - AAA system correlation data
+ * 
+ * FrontendOnly (Reports):
+ * - segment field for filtering
+ * - Friendly date/time formats
+ * - Computed averages from sessions
+ */
 
 export const userReportData = {
   "user-session-history": [
@@ -911,7 +1097,7 @@ export const userReportData = {
 };
 
 // ============================================
-// HELPER FUNCTIONS
+// HELPER FUNCTIONS - Preserved
 // ============================================
 
 export const getUserReportData = (reportId) => {
@@ -939,7 +1125,7 @@ export const getUserReportDataBySegment = (reportId, segment) => {
 };
 
 // ============================================
-// DEFAULT EXPORT
+// DEFAULT EXPORT - Preserved
 // ============================================
 
 export default {
@@ -950,5 +1136,6 @@ export default {
   isUserReport,
   getUserReportIds,
   getUserReportDataByUser,
-  getUserReportDataBySegment
+  getUserReportDataBySegment,
+  convertUserToAPIFormat
 };

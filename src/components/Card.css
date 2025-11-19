@@ -60,6 +60,7 @@
 .card-trend {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   margin-top: var(--space-sm);
   font-weight: 600;
   font-size: var(--font-sm);
@@ -73,7 +74,11 @@
   color: #f44336;
 }
 
+/* UPDATED: Trend Indicator Alignment Fix */
 .trend-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
   white-space: nowrap;
 }
 
@@ -81,6 +86,8 @@
   width: 3.75rem; /* 60px */
   height: 1rem;   /* 16px */
   margin-left: auto;
+  display: flex;
+  align-items: center;
 }
 
 /* Responsive adjustments using rem */
@@ -97,4 +104,41 @@
   .card-content {
     font-size: var(--font-sm);
   }
+}
+
+/* UPDATED: Icon styling for proper alignment */
+.trend-arrow {
+  font-size: 0.75rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.trend-up .trend-arrow {
+  color: #4caf50;
+}
+
+.trend-down .trend-arrow {
+  color: #f44336;
+}
+
+/* UPDATED: Trend text styling */
+.trend-text {
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.trend-up .trend-text {
+  color: #4caf50;
+}
+
+.trend-down .trend-text {
+  color: #f44336;
+}
+
+/* Keep for backward compatibility if needed */
+.trend-value {
+  font-size: 0.875rem;
+  font-weight: 500;
 }

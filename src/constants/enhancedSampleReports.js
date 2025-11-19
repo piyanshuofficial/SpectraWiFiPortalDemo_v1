@@ -1,8 +1,17 @@
 // src/constants/enhancedSampleReports.js
 
 /**
- * Enhanced report data structure with categories, subcategories, and metadata
- * Supports hundreds of reports with rich filtering and search capabilities
+ * Enhanced Report Metadata with Categories and Filtering - API Format Aligned
+ * 
+ * MissingForAPI:
+ * - None - this is frontend metadata for UI organization
+ * 
+ * FrontendOnly:
+ * - All fields (category, subcategory, description, keywords, etc.)
+ * - criteriaFields structure (UI form generation)
+ * - exportFormats, hasChart, hasTable (UI capabilities)
+ * - Used exclusively for reports dashboard filtering and display
+ * - Actual report data sourced from userSampleData/siteSampleData
  */
 
 const enhancedSampleReports = [
@@ -938,16 +947,13 @@ const enhancedSampleReports = [
 ];
 
 /**
- * Get unique categories from reports
+ * Helper Functions - Preserved
  */
 export const getCategories = () => {
   const categories = new Set(enhancedSampleReports.map(r => r.category));
   return Array.from(categories).sort();
 };
 
-/**
- * Get subcategories for a specific category
- */
 export const getSubcategories = (category) => {
   const subcategories = new Set(
     enhancedSampleReports
@@ -957,9 +963,6 @@ export const getSubcategories = (category) => {
   return Array.from(subcategories).sort();
 };
 
-/**
- * Get reports by category and optional subcategory
- */
 export const getReportsByCategory = (category, subcategory = null) => {
   return enhancedSampleReports.filter(r => {
     if (r.category !== category) return false;
@@ -968,9 +971,6 @@ export const getReportsByCategory = (category, subcategory = null) => {
   });
 };
 
-/**
- * Search reports by keyword
- */
 export const searchReports = (searchTerm) => {
   if (!searchTerm || searchTerm.trim() === '') return enhancedSampleReports;
   
@@ -986,9 +986,6 @@ export const searchReports = (searchTerm) => {
   });
 };
 
-/**
- * Get common/frequently accessed reports
- */
 export const getCommonReports = () => {
   return enhancedSampleReports.filter(r => r.isCommon);
 };
