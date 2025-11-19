@@ -230,6 +230,16 @@ const UserFormModal = ({
       ...prev,
       [name]: null,
     }));
+
+    // ========================================
+    // TODO: Backend Integration - Real-time Field Validation
+    // ========================================
+    // Placeholder for backend validation as user types
+    // Example: Check if User ID already exists in database
+    // Example: Validate mobile number format against AAA system
+    // Example: Verify email uniqueness across all sites
+    // Implementation needed: Debounced API call to validate field
+    // ========================================
   };
 
   const handleSubmit = async e => {
@@ -249,7 +259,77 @@ const UserFormModal = ({
         password: randomPassword(),
       };
       
+      // ========================================
+      // TODO: Backend Integration - User Creation/Update
+      // ========================================
+      // Before calling onSubmit, integrate with backend API
+      // 
+      // For NEW USER:
+      // 1. POST request to /api/users/create
+      // 2. Payload should include: user data, segment, siteId, policy details
+      // 3. Backend should:
+      //    - Create user in UMP (User Management Portal)
+      //    - Provision in AAA (Alepo) with generated password
+      //    - Update license count in database
+      //    - Create audit log entry
+      //    - Send welcome SMS/email with credentials
+      // 4. Response should include: userId, accountId, can_id, provision status
+      // 
+      // For UPDATE USER:
+      // 1. PUT request to /api/users/{userId}/update
+      // 2. Backend should:
+      //    - Update user details in UMP
+      //    - Sync changes to AAA system
+      //    - Update policy if changed (call Alepo API)
+      //    - Create audit log entry for changes
+      //    - Send notification if critical fields changed
+      // 3. Handle special cases:
+      //    - Check-in/Check-out date changes (schedule auto-deactivation)
+      //    - Policy changes (update AAA immediately)
+      //    - Segment-specific field updates
+      // 
+      // Error Handling:
+      // - Network failures: Retry logic with exponential backoff
+      // - Validation errors from backend: Display to user
+      // - AAA provisioning failures: Rollback UMP changes
+      // - License conflicts: Check availability before submit
+      // 
+      // Example API call structure:
+      // ```
+      // const apiEndpoint = user ? `/api/users/${user.id}` : '/api/users/create';
+      // const method = user ? 'PUT' : 'POST';
+      // const response = await fetch(apiEndpoint, {
+      //   method,
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({
+      //     ...newUser,
+      //     siteId: siteConfig.siteId,
+      //     segment,
+      //     action: user ? 'update' : 'create'
+      //   })
+      // });
+      // const result = await response.json();
+      // if (result.success) {
+      //   // Proceed with onSubmit
+      // }
+      // ```
+      // ========================================
+      
       await onSubmit(newUser);
+
+      // ========================================
+      // TODO: Backend Integration - Post-Submit Actions
+      // ========================================
+      // After successful user creation/update:
+      // 1. Update license count in real-time (WebSocket or polling)
+      // 2. Trigger background jobs:
+      //    - Auto-deactivation scheduling (if applicable)
+      //    - Welcome email/SMS queue
+      //    - Analytics tracking
+      // 3. Sync with external systems:
+      //    - Update CRM if integrated
+      //    - Push to monitoring dashboard
+      // ========================================
     } else {
       notifications.validationError();
     }
@@ -264,6 +344,13 @@ const UserFormModal = ({
         
         <div className="user-form-license-container">
           <UserLicenseBar current={USED_LICENSES} total={MAX_LICENSES} width={280} height={24} />
+          {/* ========================================
+              TODO: Backend Integration - Real-time License Count
+              ========================================
+              Replace static USED_LICENSES with live data from backend
+              Implementation: WebSocket connection or polling /api/licenses/current
+              Update every 5-10 seconds or on user events
+              ======================================== */}
         </div>
 
         <div className="user-form-scrollable-content">
@@ -282,6 +369,13 @@ const UserFormModal = ({
               required 
             />
             {errors.id && <div className="error-message" id="id-error" role="alert">{errors.id}</div>}
+            {/* ========================================
+                TODO: Backend Integration - User ID Uniqueness Check
+                ========================================
+                Implement real-time validation API call
+                Endpoint: GET /api/users/check-id?userId={value}&siteId={siteId}
+                Show inline error if ID already exists
+                ======================================== */}
           </div>
 
           <div className="user-form-row">
@@ -330,6 +424,13 @@ const UserFormModal = ({
               disabled={submitting}
             />
             {errors.mobile && <div className="error-message" id="mobile-error" role="alert">{errors.mobile}</div>}
+            {/* ========================================
+                TODO: Backend Integration - Mobile Number Validation
+                ========================================
+                Implement real-time mobile validation
+                Endpoint: POST /api/users/validate-mobile
+                Check for: format, uniqueness, carrier verification
+                ======================================== */}
           </div>
 
           <div className="user-form-row">
@@ -363,6 +464,15 @@ const UserFormModal = ({
                 <option key={type} value={type}>{type}</option>
               ))}
             </select>
+            {/* ========================================
+                TODO: Backend Integration - Policy Configuration Sync
+                ========================================
+                Fetch allowed cycle types from backend based on:
+                - Site configuration
+                - Segment rules
+                - Commercial agreements
+                Endpoint: GET /api/sites/{siteId}/policy-options
+                ======================================== */}
           </div>
 
           <div className="user-form-row">
@@ -499,6 +609,14 @@ const UserFormModal = ({
                   disabled={isCoLivingLongTerm || submitting}
                 />
                 {errors.checkInDate && <div className="error-message" id="checkInDate-error" role="alert">{errors.checkInDate}</div>}
+                {/* ========================================
+                    TODO: Backend Integration - Auto-deactivation Scheduling
+                    ========================================
+                    When check-out date is set, schedule auto-deactivation job
+                    Endpoint: POST /api/users/{userId}/schedule-deactivation
+                    Payload: { checkOutDate, checkOutTime, userId, siteId }
+                    Backend should create cron job or scheduled task
+                    ======================================== */}
               </div>
 
               <div className="user-form-row">

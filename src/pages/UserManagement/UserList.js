@@ -262,6 +262,45 @@ const UserList = () => {
     const loadInitialData = async () => {
       startLoading('users');
       try {
+        // ========================================
+        // TODO: Backend Integration - Fetch Users from Database
+        // ========================================
+        // Replace sample data with actual API call
+        // Endpoint: GET /api/users?siteId={siteId}&segment={segment}
+        // 
+        // Query parameters:
+        // - siteId: Current site identifier
+        // - segment: Selected segment filter (enterprise, coLiving, etc.)
+        // - page: Current page number (for pagination)
+        // - limit: Items per page
+        // 
+        // Response should include:
+        // {
+        //   success: true,
+        //   data: {
+        //     users: [...], // Array of user objects with all fields
+        //     totalCount: number,
+        //     currentLicenses: number,
+        //     maxLicenses: number,
+        //     permissions: {...}
+        //   }
+        // }
+        // 
+        // Implementation:
+        // const response = await fetch(`/api/users?siteId=${siteConfig.siteId}&segment=${segmentFilter}`);
+        // const result = await response.json();
+        // if (result.success) {
+        //   setUsers(result.data.users);
+        //   // Update license counts in state/context
+        // }
+        // 
+        // Error handling:
+        // - Network failures: Show error notification, retry option
+        // - 401 Unauthorized: Redirect to login
+        // - 403 Forbidden: Show permission error
+        // - 500 Server Error: Show generic error, log to monitoring
+        // ========================================
+        
         timeoutId = setTimeout(() => {
           if (mounted) {
             setUsers(userSampleData.users || []);
@@ -270,6 +309,40 @@ const UserList = () => {
             setInitialLoad(false);
           }
         }, 800);
+
+        // ========================================
+        // TODO: Backend Integration - Establish WebSocket Connection
+        // ========================================
+        // After initial data load, establish WebSocket for real-time updates
+        // 
+        // Connection setup:
+        // const ws = new WebSocket(`wss://api.example.com/ws/users/${siteConfig.siteId}`);
+        // 
+        // ws.onmessage = (event) => {
+        //   const update = JSON.parse(event.data);
+        //   switch(update.type) {
+        //     case 'USER_CREATED':
+        //       setUsers(prev => [update.data, ...prev]);
+        //       break;
+        //     case 'USER_UPDATED':
+        //       setUsers(prev => prev.map(u => u.id === update.data.id ? update.data : u));
+        //       break;
+        //     case 'USER_STATUS_CHANGED':
+        //       setUsers(prev => prev.map(u => u.id === update.userId ? {...u, status: update.newStatus} : u));
+        //       break;
+        //     case 'LICENSE_COUNT_CHANGED':
+        //       // Update license count in UI
+        //       break;
+        //   }
+        // };
+        // 
+        // ws.onerror = (error) => {
+        //   console.error('WebSocket error:', error);
+        //   // Implement reconnection logic with exponential backoff
+        // };
+        // 
+        // Store ws reference for cleanup
+        // ========================================
       } catch (error) {
         if (mounted) {
           notifications.operationFailed("load users");
@@ -284,6 +357,21 @@ const UserList = () => {
     return () => {
       mounted = false;
       if (timeoutId) clearTimeout(timeoutId);
+      
+      // ========================================
+      // TODO: Backend Integration - Cleanup on Unmount
+      // ========================================
+      // Close WebSocket connection
+      // Cancel any pending API requests
+      // Clear polling intervals if any
+      // 
+      // if (wsConnection) {
+      //   wsConnection.close();
+      // }
+      // if (abortController) {
+      //   abortController.abort();
+      // }
+      // ========================================
     };
   }, [startLoading, stopLoading]);
 
@@ -296,6 +384,26 @@ const UserList = () => {
       )
       .map((col) => col.key);
     setVisibleColumns(defaultCols);
+    
+    // ========================================
+    // TODO: Backend Integration - Load User Column Preferences
+    // ========================================
+    // Fetch saved column preferences from backend
+    // Endpoint: GET /api/users/{userId}/preferences/columns
+    // 
+    // const loadColumnPreferences = async () => {
+    //   try {
+    //     const response = await fetch(`/api/users/${currentUserId}/preferences/columns`);
+    //     const result = await response.json();
+    //     if (result.success && result.data.visibleColumns) {
+    //       setVisibleColumns(result.data.visibleColumns);
+    //     }
+    //   } catch (error) {
+    //     // Use default columns if fetch fails
+    //   }
+    // };
+    // loadColumnPreferences();
+    // ========================================
   }, [segmentFilter, columns, setVisibleColumns]);
 
   useEffect(() => {
@@ -325,6 +433,85 @@ const UserList = () => {
     setSubmitting(true);
     let timeoutId = null;
     try {
+      // ========================================
+      // TODO: Backend Integration - Save User to Database
+      // ========================================
+      // API call to create or update user
+      // 
+      // Endpoint: 
+      // - Create: POST /api/users
+      // - Update: PUT /api/users/{userId}
+      // 
+      // Request payload:
+      // {
+      //   ...userObj,
+      //   siteId: siteConfig.siteId,
+      //   segment: segmentFilter,
+      //   createdBy: currentUser.id,
+      //   timestamp: new Date().toISOString()
+      // }
+      // 
+      // Backend processing steps:
+      // 1. Validate all fields against business rules
+      // 2. Check license availability (atomic operation with lock)
+      // 3. Begin database transaction
+      // 4. Create/update user record in UMP database
+      // 5. Provision in AAA (Alepo) system:
+      //    - Create account with generated password
+      //    - Apply policy configurations
+      //    - Set bandwidth limits
+      // 6. If AAA provisioning fails, rollback database transaction
+      // 7. Generate welcome credentials (SMS/Email)
+      // 8. Create audit log entry
+      // 9. Update license count
+      // 10. Commit transaction
+      // 
+      // Response format:
+      // {
+      //   success: true,
+      //   data: {
+      //     userId: string,
+      //     accountId: string,
+      //     can_id: string,
+      //     provisionStatus: 'success' | 'pending',
+      //     message: string
+      //   }
+      // }
+      // 
+      // Error responses to handle:
+      // - 400: Validation error (display field errors)
+      // - 409: License limit reached (show license full error)
+      // - 422: Duplicate user ID (prompt for different ID)
+      // - 500: Server error (generic error, log to monitoring)
+      // - 503: AAA system unavailable (queue for retry)
+      // 
+      // Implementation example:
+      // const endpoint = editingUser ? `/api/users/${editingUser.id}` : '/api/users';
+      // const method = editingUser ? 'PUT' : 'POST';
+      // 
+      // const response = await fetch(endpoint, {
+      //   method,
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //     'Authorization': `Bearer ${authToken}`
+      //   },
+      //   body: JSON.stringify({
+      //     ...userObj,
+      //     siteId: siteConfig.siteId,
+      //     segment: segmentFilter
+      //   })
+      // });
+      // 
+      // const result = await response.json();
+      // 
+      // if (!response.ok) {
+      //   throw new Error(result.message || 'Operation failed');
+      // }
+      // 
+      // // Update local state with response data
+      // const updatedUser = { ...userObj, ...result.data };
+      // ========================================
+      
       await new Promise(resolve => {
         timeoutId = setTimeout(resolve, 1000);
       });
@@ -333,22 +520,213 @@ const UserList = () => {
       if (editingUser) {
         setUsers(users => users.map((u) => (u.id === editingUser.id ? userWithActiveStatus : u)));
         notifications.userUpdated();
+        
+        // ========================================
+        // TODO: Backend Integration - Post-Update Actions
+        // ========================================
+        // After successful user update:
+        // 
+        // 1. Broadcast update to other connected clients:
+        //    WebSocket message: { type: 'USER_UPDATED', data: updatedUser }
+        // 
+        // 2. If policy changed, trigger immediate AAA sync:
+        //    POST /api/users/{userId}/sync-policy
+        // 
+        // 3. Update cached data in Redis:
+        //    Key: `user:${userId}`
+        //    TTL: 300 seconds
+        // 
+        // 4. Refresh dashboard metrics:
+        //    POST /api/metrics/refresh
+        // 
+        // 5. If check-in/check-out dates changed:
+        //    - Cancel existing scheduled deactivation
+        //    - Create new scheduled job
+        //    POST /api/users/{userId}/reschedule-deactivation
+        // ========================================
       } else {
         setUsers(users => [userWithActiveStatus, ...users]);
         notifications.userAdded();
+        
+        // ========================================
+        // TODO: Backend Integration - Post-Creation Actions
+        // ========================================
+        // After successful user creation:
+        // 
+        // 1. Update license count display:
+        //    Fetch latest count: GET /api/licenses/current
+        //    Or receive via WebSocket update
+        // 
+        // 2. Queue welcome message:
+        //    POST /api/notifications/queue
+        //    Payload: { type: 'welcome', userId, channel: ['sms', 'email'] }
+        // 
+        // 3. Add to real-time monitoring:
+        //    POST /api/monitoring/add-user
+        //    Track: session status, bandwidth usage, device connections
+        // 
+        // 4. Update site statistics:
+        //    Increment: total users, active users for segment
+        //    WebSocket broadcast: { type: 'SITE_STATS_CHANGED' }
+        // 
+        // 5. Trigger analytics event:
+        //    POST /api/analytics/event
+        //    Event: { type: 'user_created', segment, timestamp }
+        // ========================================
       }
       setShowFormModal(false);
       setEditingUser(null);
     } catch (error) {
       notifications.operationFailed(editingUser ? "update user" : "add user");
+      
+      // ========================================
+      // TODO: Backend Integration - Error Recovery & Rollback
+      // ========================================
+      // Implement comprehensive error recovery:
+      // 
+      // 1. If partial database update occurred:
+      //    POST /api/users/{userId}/rollback
+      //    Backend: Execute compensating transaction
+      // 
+      // 2. If AAA provisioned but database failed:
+      //    POST /api/aaa/deprovision/{userId}
+      //    Clean up AAA account to maintain consistency
+      // 
+      // 3. Log detailed error for debugging:
+      //    POST /api/errors/log
+      //    Payload: {
+      //      operation: 'user_create/update',
+      //      error: error.message,
+      //      stack: error.stack,
+      //      context: { userId, siteId, segment },
+      //      timestamp
+      //    }
+      // 
+      // 4. Revert UI changes:
+      //    Remove optimistically added user from state
+      //    Or reload users list from backend
+      // 
+      // 5. Show detailed error to user:
+      //    - Network error: "Connection lost. Please try again."
+      //    - Validation error: Display specific field errors
+      //    - License full: "All licenses in use. Free up or request more."
+      //    - AAA error: "Provisioning failed. Contact support."
+      // ========================================
     } finally {
       if (timeoutId) clearTimeout(timeoutId);
       setSubmitting(false);
     }
-  }, [editingUser]);
+  }, [editingUser, segmentFilter]);
 
   const handleChangeStatus = useCallback((id, newStatus) => {
+    // ========================================
+    // TODO: Backend Integration - Update User Status
+    // ========================================
+    // API call to change user status in database and AAA system
+    // Endpoint: PUT /api/users/{userId}/status
+    // 
+    // Request payload:
+    // {
+    //   status: newStatus, // 'Active' | 'Suspended' | 'Blocked'
+    //   reason: 'admin_action',
+    //   changedBy: currentUser.id,
+    //   timestamp: new Date().toISOString()
+    // }
+    // 
+    // Backend processing based on status:
+    // 
+    // ACTIVE:
+    // - Update database status
+    // - Enable account in AAA
+    // - Restore device MAC bindings
+    // - Increment active license count
+    // - Send reactivation notification to user
+    // 
+    // SUSPENDED:
+    // - Update database status
+    // - Keep AAA account but disable authentication
+    // - Maintain device registrations
+    // - Keep license allocated
+    // - Send suspension notification to user
+    // - Schedule auto-reactivation if temporary
+    // 
+    // BLOCKED:
+    // - Update database status to 'Blocked'
+    // - Disable AAA account completely
+    // - Call AAA API to disconnect all active sessions immediately
+    // - Clear device MAC bindings from firewall
+    // - Free up license (decrement used count)
+    // - Send blocking notification to user (if policy allows)
+    // - Mark all scheduled tasks for this user as cancelled
+    // 
+    // Response format:
+    // {
+    //   success: true,
+    //   data: {
+    //     userId: string,
+    //     previousStatus: string,
+    //     newStatus: string,
+    //     activeSessions: number, // disconnected sessions
+    //     licenseUpdated: boolean
+    //   }
+    // }
+    // 
+    // AAA Integration:
+    // - For Blocked: Call Alepo API to force disconnect
+    //   POST /alepo/api/disconnect-user
+    //   Payload: { accountId: user.accountId, reason: 'admin_block' }
+    // 
+    // - Update user attributes in AAA:
+    //   PUT /alepo/api/user-attributes
+    //   Set: enabled=false, blocked=true, disconnect_reason
+    // 
+    // Implementation example:
+    // const response = await fetch(`/api/users/${id}/status`, {
+    //   method: 'PUT',
+    //   headers: {
+    //     'Content-Type': 'application/json',
+    //     'Authorization': `Bearer ${authToken}`
+    //   },
+    //   body: JSON.stringify({ status: newStatus, reason: 'admin_action' })
+    // });
+    // 
+    // const result = await response.json();
+    // if (result.success) {
+    //   // Update UI
+    //   // Show notification with session disconnect count
+    // }
+    // ========================================
+    
     setUsers(users => users.map((u) => (u.id === id ? { ...u, status: newStatus } : u)));
+    
+    // ========================================
+    // TODO: Backend Integration - Post-Status Change Broadcast
+    // ========================================
+    // After status change, broadcast update to all connected clients:
+    // 
+    // WebSocket message:
+    // {
+    //   type: 'USER_STATUS_CHANGED',
+    //   userId: id,
+    //   newStatus: newStatus,
+    //   timestamp: new Date().toISOString()
+    // }
+    // 
+    // Update monitoring dashboard:
+    // POST /api/monitoring/user-status-change
+    // 
+    // Update license count if applicable:
+    // If Blocked: Broadcast license availability increase
+    // If reactivated from Blocked: Broadcast license decrease
+    // 
+    // Trigger analytics event:
+    // POST /api/analytics/event
+    // Event: { type: 'user_status_change', userId, from, to, reason }
+    // 
+    // Update SLA metrics:
+    // If Blocked: Increment blocked_users counter
+    // Track status change frequency for audit reports
+    // ========================================
   }, []);
 
   const handleDelete = useCallback(async (id) => {
@@ -356,11 +734,109 @@ const UserList = () => {
       startLoading('users');
       let timeoutId = null;
       try {
+        // ========================================
+        // TODO: Backend Integration - Delete User (Soft Delete Recommended)
+        // ========================================
+        // API call to mark user as deleted
+        // Endpoint: DELETE /api/users/{userId}
+        // 
+        // Backend processing:
+        // 1. Begin database transaction
+        // 2. Soft delete user (set deleted_at timestamp, keep data)
+        // 3. Update status to 'Deleted' (for audit trail)
+        // 4. Deactivate in AAA but retain for compliance/audit
+        //    - Do NOT hard delete from AAA
+        //    - Set account status to 'archived'
+        //    - Keep authentication logs
+        // 5. Remove device associations:
+        //    - Clear MAC bindings from NAS
+        //    - Archive device records (don't delete)
+        // 6. Archive session history (move to cold storage)
+        // 7. Free up license:
+        //    - Decrement used license count
+        //    - Update license pool availability
+        // 8. Cancel scheduled tasks:
+        //    - Auto-deactivation jobs
+        //    - Billing reminders
+        //    - Notification queues
+        // 9. Create detailed audit log entry:
+        //    - Who deleted (admin user)
+        //    - When deleted
+        //    - Reason (if provided)
+        //    - User's full state before deletion
+        // 10. Commit transaction
+        // 
+        // Response format:
+        // {
+        //   success: true,
+        //   data: {
+        //     userId: string,
+        //     deletedAt: ISO8601,
+        //     archivedData: boolean,
+        //     licenseFreed: boolean
+        //   }
+        // }
+        // 
+        // IMPORTANT NOTES:
+        // 1. Per FRD requirements, user deletion should be disabled in UI
+        // 2. This placeholder is for backend implementation reference
+        // 3. Consider implementing "Restrict" status instead of delete
+        // 4. Retain data for minimum 7 years for compliance
+        // 5. Implement data retention policies according to regulations
+        // 
+        // Hard Delete (Only if absolutely required by policy):
+        // - Must have explicit admin confirmation
+        // - Archive full user record before deletion
+        // - Notify compliance team
+        // - Log to immutable audit trail
+        // 
+        // Implementation example:
+        // const response = await fetch(`/api/users/${id}`, {
+        //   method: 'DELETE',
+        //   headers: {
+        //     'Content-Type': 'application/json',
+        //     'Authorization': `Bearer ${authToken}`
+        //   },
+        //   body: JSON.stringify({ 
+        //     reason: 'admin_request',
+        //     confirmedBy: currentUser.id 
+        //   })
+        // });
+        // ========================================
+        
         await new Promise(resolve => {
           timeoutId = setTimeout(resolve, 500);
         });
         setUsers(users => users.filter((u) => u.id !== id));
         notifications.userDeleted();
+        
+        // ========================================
+        // TODO: Backend Integration - Post-Deletion Actions
+        // ========================================
+        // After successful deletion:
+        // 
+        // 1. Update license count display:
+        //    Fetch latest: GET /api/licenses/current
+        //    Or via WebSocket: { type: 'LICENSE_FREED', count: 1 }
+        // 
+        // 2. Broadcast deletion to all connected clients:
+        //    WebSocket: { type: 'USER_DELETED', userId: id }
+        // 
+        // 3. Update analytics dashboards:
+        //    POST /api/analytics/event
+        //    Event: { type: 'user_deleted', segment, timestamp }
+        // 
+        // 4. Clear cached data:
+        //    Redis: DEL user:{userId}
+        //    Invalidate related caches
+        // 
+        // 5. Update site metrics:
+        //    Decrement: total_users, segment_users counts
+        // 
+        // 6. Compliance notification:
+        //    If required by policy, send data deletion confirmation
+        //    POST /api/compliance/data-deletion-notice
+        // ========================================
       } catch (error) {
         notifications.operationFailed("delete user");
       } finally {
@@ -381,11 +857,68 @@ const UserList = () => {
   }, []);
 
   const handleDetailsClick = useCallback((user) => {
+    // ========================================
+    // TODO: Backend Integration - Fetch Full User Details
+    // ========================================
+    // When user details modal opens, fetch complete user data
+    // Endpoint: GET /api/users/{userId}/details
+    // 
+    // This should include:
+    // - All user fields
+    // - Current session data (if active)
+    // - Device list with online status
+    // - Usage statistics (current month)
+    // - Recent activity log (last 10 actions)
+    // - Policy details
+    // - Scheduled actions (deactivation, etc.)
+    // 
+    // Response format:
+    // {
+    //   success: true,
+    //   data: {
+    //     user: {...},
+    //     currentSession: {...} | null,
+    //     devices: [...],
+    //     usageStats: {...},
+    //     recentActivity: [...],
+    //     scheduledActions: [...]
+    //   }
+    // }
+    // 
+    // Implementation:
+    // const fetchUserDetails = async () => {
+    //   const response = await fetch(`/api/users/${user.id}/details`);
+    //   const result = await response.json();
+    //   setDetailsUser(result.data.user);
+    // };
+    // fetchUserDetails();
+    // ========================================
+    
     setDetailsUser(user);
     setShowDetailsModal(true);
   }, []);
 
   const handleDeviceSubmit = useCallback((deviceInfo) => {
+    // ========================================
+    // TODO: Backend Integration - Register Device
+    // ========================================
+    // This callback receives device data from DeviceFormModal
+    // Need to call backend API to persist device registration
+    // Endpoint: POST /api/devices/register
+    // 
+    // See DeviceFormModal.js for detailed integration requirements
+    // 
+    // Quick reference:
+    // - Validate MAC address uniqueness
+    // - Bind to user or register as device user
+    // - Update AAA system with MAC binding
+    // - Create audit log entry
+    // 
+    // After successful registration:
+    // - Update devices state
+    // - Broadcast to monitoring system
+    // ========================================
+    
     notifications.deviceRegistered(deviceInfo.deviceName);
     setDevices(devices => [deviceInfo, ...devices]);
     setShowDeviceModal(false);
@@ -401,6 +934,71 @@ const UserList = () => {
     let timeoutId = null;
 
     try {
+      // ========================================
+      // TODO: Backend Integration - Server-Side Export for Large Datasets
+      // ========================================
+      // For production with large user counts (>1000), implement server-side export
+      // Client-side export (current implementation) works for small datasets
+      // 
+      // Server-side export flow:
+      // Endpoint: POST /api/reports/users/export
+      // 
+      // Request payload:
+      // {
+      //   filters: {
+      //     segment: segmentFilter,
+      //     status: statusFilter,
+      //     search: searchTerm,
+      //     advancedFilters: {...}
+      //   },
+      //   columns: visibleColumns,
+      //   format: 'csv',
+      //   sort: {
+      //     column: sortColumn,
+      //     direction: sortDirection
+      //   }
+      // }
+      // 
+      // Backend processing:
+      // 1. Validate user has export permission
+      // 2. Apply filters to database query
+      // 3. Fetch data in batches (prevent memory issues)
+      // 4. Generate CSV file on server
+      // 5. Store temporarily in S3 or local storage
+      // 6. Return download URL with expiration
+      // 7. Schedule cleanup job for temp file (expire after 1 hour)
+      // 
+      // Response format:
+      // {
+      //   success: true,
+      //   data: {
+      //     downloadUrl: 'https://...',
+      //     expiresAt: ISO8601,
+      //     recordCount: number,
+      //     fileSize: string
+      //   }
+      // }
+      // 
+      // Client implementation:
+      // const response = await fetch('/api/reports/users/export', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({ filters, columns, format: 'csv' })
+      // });
+      // const result = await response.json();
+      // if (result.success) {
+      //   window.open(result.data.downloadUrl, '_blank');
+      // }
+      // 
+      // Benefits of server-side export:
+      // - Handles millions of records
+      // - Reduces client memory usage
+      // - Faster processing with database optimization
+      // - Consistent formatting
+      // - Better error handling
+      // - Export audit logging
+      // ========================================
+      
       await new Promise(resolve => {
         timeoutId = setTimeout(resolve, 600);
       });
@@ -434,6 +1032,43 @@ const UserList = () => {
       exportChartDataToCSV({ headers, rows }, filename);
       
       notifications.exportSuccess(`${sortedUsers.length} users`);
+      
+      // ========================================
+      // TODO: Backend Integration - Log Export Action for Audit
+      // ========================================
+      // Create audit trail of export action
+      // Endpoint: POST /api/audit/export
+      // 
+      // Payload:
+      // {
+      //   action: 'user_list_export',
+      //   userId: currentUser.id,
+      //   filters: {
+      //     segment: segmentFilter,
+      //     status: statusFilter,
+      //     search: searchTerm
+      //   },
+      //   recordCount: sortedUsers.length,
+      //   columns: visibleColumns,
+      //   format: 'csv',
+      //   filename: filename,
+      //   timestamp: new Date().toISOString(),
+      //   ipAddress: userIpAddress,
+      //   userAgent: navigator.userAgent
+      // }
+      // 
+      // Backend should:
+      // 1. Create audit log entry
+      // 2. Track export frequency per user
+      // 3. Alert if unusual export patterns detected
+      // 4. Maintain compliance report of all data exports
+      // 
+      // Implementation:
+      // fetch('/api/audit/export', {
+      //   method: 'POST',
+      //   body: JSON.stringify({ ...auditData })
+      // }).catch(err => console.error('Audit log failed:', err));
+      // ========================================
     } catch (error) {
       console.error('Export error:', error);
       notifications.exportFailed("users");
@@ -441,7 +1076,47 @@ const UserList = () => {
       if (timeoutId) clearTimeout(timeoutId);
       setExportingCSV(false);
     }
-  }, [canViewReports, columns, visibleColumns, sortedUsers, segmentFilter]);
+  }, [canViewReports, columns, visibleColumns, sortedUsers, segmentFilter, statusFilter, searchTerm]);
+
+  // ========================================
+  // TODO: Backend Integration - Column Customization Persistence
+  // ========================================
+  // When user toggles columns visibility, save preferences
+  // Triggered by: toggleColumnVisibility function
+  // 
+  // Implement auto-save with debouncing:
+  // useEffect(() => {
+  //   const saveTimeout = setTimeout(() => {
+  //     fetch(`/api/users/${currentUser.id}/preferences/columns`, {
+  //       method: 'PUT',
+  //       headers: { 'Content-Type': 'application/json' },
+  //       body: JSON.stringify({ 
+  //         visibleColumns,
+  //         segment: segmentFilter 
+  //       })
+  //     });
+  //   }, 1000); // Debounce 1 second
+  //   
+  //   return () => clearTimeout(saveTimeout);
+  // }, [visibleColumns, segmentFilter]);
+  // 
+  // Also save: rowsPerPage, sortColumn, sortDirection
+  // Load on mount from: GET /api/users/{userId}/preferences/table-config
+  // ========================================
+
+  // ========================================
+  // TODO: Backend Integration - Pagination Preference
+  // ========================================
+  // Save rows per page selection
+  // useEffect(() => {
+  //   localStorage.setItem('userListRowsPerPage', rowsPerPage);
+  //   // Also save to backend for cross-device sync
+  //   fetch(`/api/users/${currentUser.id}/preferences/pagination`, {
+  //     method: 'PUT',
+  //     body: JSON.stringify({ rowsPerPage })
+  //   });
+  // }, [rowsPerPage]);
+  // ========================================
 
   const segmentSpecificCols = segmentSpecificFields[segmentFilter] || [];
 
@@ -497,6 +1172,22 @@ const UserList = () => {
         </div>
         <div className="user-license-ring-header">
           <UserLicenseRing current={USED_LICENSES} total={MAX_LICENSES} size={160} ringWidth={16} />
+          {/* ========================================
+              TODO: Backend Integration - Real-time License Count
+              ========================================
+              Replace USED_LICENSES constant with live data
+              Option 1: WebSocket updates
+              Option 2: Poll every 10 seconds
+              
+              useEffect(() => {
+                const ws = new WebSocket('wss://api.../ws/licenses');
+                ws.onmessage = (e) => {
+                  const data = JSON.parse(e.data);
+                  setLicenseCount(data.used);
+                };
+                return () => ws.close();
+              }, []);
+              ======================================== */}
         </div>
       </div>
 
@@ -727,6 +1418,7 @@ const UserList = () => {
             setShowFormModal(true);
           }}
           onSendMessage={(user) => {
+            // Placeholder - actual implementation in UserDetailsModal
           }}
           onSuspend={(user) => {
             handleChangeStatus(user.id, "Suspended");
