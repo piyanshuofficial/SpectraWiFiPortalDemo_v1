@@ -52,6 +52,40 @@ export const showSuccess = (message, options = {}) => {
  * @param {object} options - Optional toast configuration overrides
  */
 export const showError = (message, options = {}) => {
+  // ========================================
+  // TODO: Backend Integration - Error Logging and Tracking
+  // ========================================
+  // When critical errors occur, log them to backend for monitoring
+  // 
+  // For error notifications, send to error tracking service:
+  // if (options.critical || options.logToBackend) {
+  //   fetch('/api/errors/log', {
+  //     method: 'POST',
+  //     headers: { 'Content-Type': 'application/json' },
+  //     body: JSON.stringify({
+  //       level: 'error',
+  //       message: message,
+  //       context: options.context || {},
+  //       userId: currentUser?.id,
+  //       timestamp: new Date().toISOString(),
+  //       userAgent: navigator.userAgent,
+  //       url: window.location.href
+  //     })
+  //   }).catch(err => console.error('Error logging failed:', err));
+  // }
+  // 
+  // Integration with monitoring tools:
+  // - Sentry for error tracking
+  // - DataDog for APM
+  // - Custom analytics platform
+  // 
+  // Track error patterns:
+  // - Frequency by error type
+  // - User impact (which users affected)
+  // - Time-based trends
+  // - Correlation with deployments
+  // ========================================
+  
   return toast.error(message, { ...EXTENDED_CONFIG.error, ...options });
 };
 
@@ -127,6 +161,47 @@ export const dismissToast = (toastId) => {
  * @param {object} options - Optional toast configuration overrides
  */
 export const showPromise = (promise, { pending, success, error }, options = {}) => {
+  // ========================================
+  // TODO: Backend Integration - Operation Status Tracking
+  // ========================================
+  // Track long-running operations in backend for better UX
+  // 
+  // For operations that take >3 seconds:
+  // const operationId = generateUUID();
+  // 
+  // // Start operation on backend
+  // fetch('/api/operations/start', {
+  //   method: 'POST',
+  //   body: JSON.stringify({
+  //     operationId,
+  //     type: 'bulk_user_import',
+  //     userId: currentUser.id,
+  //     startedAt: new Date().toISOString()
+  //   })
+  // });
+  // 
+  // // Poll for status
+  // const pollInterval = setInterval(async () => {
+  //   const response = await fetch(`/api/operations/${operationId}/status`);
+  //   const result = await response.json();
+  //   
+  //   if (result.data.status === 'completed') {
+  //     clearInterval(pollInterval);
+  //     updateToast(toastId, { render: success, type: 'success' });
+  //   } else if (result.data.status === 'failed') {
+  //     clearInterval(pollInterval);
+  //     updateToast(toastId, { render: error, type: 'error' });
+  //   }
+  //   // Show progress: "Processing 450/1000 users..."
+  // }, 2000);
+  // 
+  // Benefits:
+  // - Accurate progress tracking
+  // - Resume capability after page reload
+  // - Better error recovery
+  // - User can navigate away and return
+  // ========================================
+  
   return toast.promise(
     promise,
     {

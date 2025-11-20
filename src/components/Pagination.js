@@ -20,6 +20,73 @@ const Pagination = ({
 
   if (totalPages === 0) return null;
 
+  // ========================================
+  // TODO: Backend Integration - Server-Side Pagination
+  // ========================================
+  // Current Implementation: Client-side pagination (all data loaded)
+  // This works for small datasets but needs backend pagination for scale
+  // 
+  // For production with large user counts (>1000), implement:
+  // 
+  // When page changes:
+  // const handlePageChange = async (newPage) => {
+  //   try {
+  //     const response = await fetch(
+  //       `/api/users?page=${newPage}&limit=${rowsPerPage}&siteId=${siteId}&segment=${segment}&sort=${sortBy}&order=${sortOrder}`
+  //     );
+  //     const result = await response.json();
+  //     
+  //     if (result.success) {
+  //       // Update parent component with new page data
+  //       onPageDataReceived(result.data.users);
+  //       onPageChange(newPage);
+  //     }
+  //   } catch (error) {
+  //     console.error('Pagination error:', error);
+  //     notifications.operationFailed('load page');
+  //   }
+  // };
+  // 
+  // Backend Endpoint: GET /api/users
+  // Query Parameters:
+  // - page: page number (1-based)
+  // - limit: items per page
+  // - siteId: current site
+  // - segment: filter by segment
+  // - sort: sort column
+  // - order: asc/desc
+  // - search: search term (optional)
+  // - filters: JSON encoded filters (optional)
+  // 
+  // Response Format:
+  // {
+  //   success: true,
+  //   data: {
+  //     users: [...], // Current page items
+  //     pagination: {
+  //       currentPage: number,
+  //       totalPages: number,
+  //       totalItems: number,
+  //       itemsPerPage: number,
+  //       hasNextPage: boolean,
+  //       hasPrevPage: boolean
+  //     }
+  //   }
+  // }
+  // 
+  // Benefits:
+  // - Reduced memory usage on client
+  // - Faster initial load
+  // - Better performance with large datasets
+  // - Lower bandwidth usage
+  // 
+  // Implementation Notes:
+  // - Use database LIMIT/OFFSET for efficient queries
+  // - Cache recent pages in Redis for faster navigation
+  // - Implement cursor-based pagination for real-time data
+  // - Handle race conditions when data changes during navigation
+  // ========================================
+
   const createPageButtons = () => {
     const buttons = [];
     for (let i = 1; i <= totalPages; i++) {
@@ -93,7 +160,34 @@ const Pagination = ({
           className="rows-per-page-select"
           aria-label="Select number of rows per page"
           value={rowsPerPage}
-          onChange={e => onRowsPerPageChange(Number(e.target.value))}
+          onChange={e => {
+            const newRowsPerPage = Number(e.target.value);
+            onRowsPerPageChange(newRowsPerPage);
+            
+            // ========================================
+            // TODO: Backend Integration - Save Rows Per Page Preference
+            // ========================================
+            // Save user's rows per page preference to backend
+            // 
+            // Debounced save to avoid excessive API calls:
+            // const savePreference = debounce(async (value) => {
+            //   try {
+            //     await fetch(`/api/users/${currentUserId}/preferences/pagination`, {
+            //       method: 'PUT',
+            //       headers: { 'Content-Type': 'application/json' },
+            //       body: JSON.stringify({ rowsPerPage: value })
+            //     });
+            //   } catch (error) {
+            //     console.error('Failed to save preference:', error);
+            //   }
+            // }, 1000);
+            // 
+            // savePreference(newRowsPerPage);
+            // 
+            // Also save to localStorage for immediate persistence:
+            // localStorage.setItem('userListRowsPerPage', newRowsPerPage);
+            // ========================================
+          }}
           style={{
             borderRadius: "4px",
             border: "1px solid #cfd7ea",

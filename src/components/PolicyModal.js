@@ -21,6 +21,72 @@ const PolicyModal = ({ open, title, children, onClose, bgImage }) => {
     return () => document.removeEventListener('keydown', handleEscape);
   }, [open, onClose]);
 
+  // ========================================
+  // TODO: Backend Integration - Policy Modal Content Loading
+  // ========================================
+  // PolicyModal is used to display policy details and documentation
+  // Current: Static content passed via children prop
+  // 
+  // For production, implement dynamic content loading:
+  // 
+  // useEffect(() => {
+  //   if (open && policyId) {
+  //     const fetchPolicyDetails = async () => {
+  //       try {
+  //         const response = await fetch(`/api/policies/${policyId}/details`);
+  //         const result = await response.json();
+  //         
+  //         if (result.success) {
+  //           setPolicyData(result.data.policy);
+  //           // Policy data includes:
+  //           // - Speed limits
+  //           // - Data volume allocations
+  //           // - Device limits
+  //           // - FUP details
+  //           // - Terms and conditions
+  //           // - Segment-specific restrictions
+  //         }
+  //       } catch (error) {
+  //         console.error('Failed to load policy details:', error);
+  //       }
+  //     };
+  //     
+  //     fetchPolicyDetails();
+  //   }
+  // }, [open, policyId]);
+  // 
+  // Backend Endpoint: GET /api/policies/{policyId}/details
+  // 
+  // Response Format:
+  // {
+  //   success: true,
+  //   data: {
+  //     policy: {
+  //       id: string,
+  //       name: string,
+  //       description: string,
+  //       speed: string,
+  //       dataVolume: string,
+  //       deviceLimit: number,
+  //       dataCycleType: string,
+  //       fupEnabled: boolean,
+  //       fupThreshold: string,
+  //       fupSpeed: string,
+  //       allowedSegments: string[],
+  //       terms: string,
+  //       effectiveDate: ISO8601,
+  //       expiryDate: ISO8601 | null
+  //     }
+  //   }
+  // }
+  // 
+  // Use Cases:
+  // - Display policy comparison
+  // - Show policy change impact
+  // - Help admins choose appropriate policy
+  // - Display user's current policy details
+  // ========================================
+
   if (!open) return null;
 
   return (

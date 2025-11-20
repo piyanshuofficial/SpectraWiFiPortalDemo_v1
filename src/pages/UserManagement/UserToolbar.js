@@ -24,6 +24,58 @@ function UserToolbar({
   const allowNonHuman = SEGMENTDEVICEAVAILABILITY[segment]?.allowNonHuman ?? false;
   const showAddDevice = allowHuman || allowNonHuman;
 
+  // ========================================
+  // TODO: Backend Integration - Search Debouncing
+  // ========================================
+  // Implement debounced search to reduce server load
+  // Current: Client-side filtering only
+  // 
+  // For large user datasets (>1000 users), implement server-side search:
+  // 
+  // useEffect(() => {
+  //   const searchTimer = setTimeout(async () => {
+  //     if (searchValue.length >= 3) {
+  //       try {
+  //         const response = await fetch(
+  //           `/api/users/search?q=${encodeURIComponent(searchValue)}&siteId=${siteId}&segment=${segment}&limit=50`
+  //         );
+  //         const result = await response.json();
+  //         // Update parent component with search results
+  //         onSearchResults(result.data.users);
+  //       } catch (error) {
+  //         console.error('Search failed:', error);
+  //       }
+  //     }
+  //   }, 300); // Debounce 300ms
+  //   
+  //   return () => clearTimeout(searchTimer);
+  // }, [searchValue]);
+  // 
+  // Backend Endpoint: GET /api/users/search
+  // Query Parameters:
+  // - q: search term (min 3 chars)
+  // - siteId: current site
+  // - segment: filter by segment
+  // - limit: max results (default 50)
+  // 
+  // Backend should implement full-text search on:
+  // - User ID
+  // - First/Last Name
+  // - Email
+  // - Mobile Number
+  // - Policy details
+  // 
+  // Response Format:
+  // {
+  //   success: true,
+  //   data: {
+  //     users: [...],
+  //     totalMatches: number,
+  //     searchTerm: string
+  //   }
+  // }
+  // ========================================
+
   return (
     <div className="user-toolbar-content">
       <div className="user-toolbar">
