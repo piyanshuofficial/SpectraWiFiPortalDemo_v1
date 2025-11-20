@@ -30,6 +30,90 @@ const GenericReportRenderer = ({ reportId, data }) => {
     return <CustomComponent data={data} />;
   }
 
+  // ========================================
+  // TODO: Backend Integration - Fetch Report Data with Filters
+  // ========================================
+  // Currently receives data as prop from parent component (ReportDashboard)
+  // For production, implement server-side filtering and aggregation
+  // 
+  // This component should trigger data fetch when:
+  // 1. Report first loads
+  // 2. Criteria/filters change
+  // 3. User requests data refresh
+  // 
+  // Implementation approach:
+  // useEffect(() => {
+  //   const fetchReportData = async () => {
+  //     try {
+  //       setLoading(true);
+  //       
+  //       const response = await fetch('/api/reports/data', {
+  //         method: 'POST',
+  //         headers: { 'Content-Type': 'application/json' },
+  //         body: JSON.stringify({
+  //           reportId: reportId,
+  //           filters: criteriaFilters, // dateRange, policies, etc.
+  //           aggregation: definition.aggregation,
+  //           groupBy: definition.groupBy,
+  //           orderBy: definition.orderBy
+  //         })
+  //       });
+  //       
+  //       const result = await response.json();
+  //       
+  //       if (result.success) {
+  //         setReportData(result.data.rows);
+  //         setMetadata(result.data.metadata);
+  //       }
+  //     } catch (error) {
+  //       console.error('Report data fetch error:', error);
+  //       setError('Failed to load report data');
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+  //   
+  //   fetchReportData();
+  // }, [reportId, criteriaFilters]);
+  // 
+  // Backend Processing:
+  // 1. Validate report access permissions
+  // 2. Parse and validate filter criteria
+  // 3. Build optimized database query with:
+  //    - WHERE clauses for filters
+  //    - GROUP BY for aggregations
+  //    - ORDER BY for sorting
+  //    - LIMIT/OFFSET for pagination
+  // 4. Execute query against appropriate data source:
+  //    - User/session data from UMP database
+  //    - Usage data from AAA accounting records
+  //    - Network data from monitoring system
+  // 5. Post-process results:
+  //    - Format dates/times
+  //    - Calculate derived metrics
+  //    - Apply business logic transformations
+  // 6. Return structured response
+  // 
+  // Response format:
+  // {
+  //   success: true,
+  //   data: {
+  //     rows: [...],
+  //     metadata: {
+  //       totalRows: number,
+  //       generatedAt: ISO8601,
+  //       filters: {...},
+  //       aggregations: {...}
+  //     }
+  //   }
+  // }
+  // 
+  // Caching Strategy:
+  // - Cache report results for 5 minutes (Redis)
+  // - Invalidate cache on data updates
+  // - Use cache key: `report:${reportId}:${hash(filters)}`
+  // ========================================
+
   if (!data) {
     return (
       <div className="report-placeholder" role="status">

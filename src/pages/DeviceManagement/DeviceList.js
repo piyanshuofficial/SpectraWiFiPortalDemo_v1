@@ -225,7 +225,109 @@ const DeviceList = () => {
   ], []);
 
   useEffect(() => {
+    let mounted = true;
+    let timeoutId = null;
+
     const loadDevices = () => {
+      // ========================================
+      // TODO: Backend Integration - Fetch Devices from Database
+      // ========================================
+      // Replace sample data with actual API call to retrieve device list
+      // 
+      // API Endpoint: GET /api/devices
+      // Query Parameters:
+      // - siteId: Current site identifier
+      // - segment: Selected segment filter (enterprise, coLiving, etc.)
+      // - includeOffline: true/false
+      // - page: Current page number (for pagination)
+      // - limit: Items per page
+      // 
+      // Response Format:
+      // {
+      //   success: true,
+      //   data: {
+      //     devices: [
+      //       {
+      //         id: string,
+      //         userId: string, // Human user ID or device user ID
+      //         name: string,
+      //         type: 'mobile' | 'laptop',
+      //         category: string,
+      //         mac: string,
+      //         ip: string,
+      //         additionDate: ISO8601,
+      //         lastUsageDate: ISO8601,
+      //         dataUsage: string,
+      //         online: boolean,
+      //         blocked: boolean,
+      //         vendor: string, // from OUI lookup
+      //         currentAP: string | null, // if online
+      //         signalStrength: string | null, // if online
+      //         owner: {
+      //           id: string,
+      //           name: string,
+      //           segment: string
+      //         }
+      //       }
+      //     ],
+      //     totalCount: number,
+      //     onlineCount: number,
+      //     blockedCount: number,
+      //     stats: {
+      //       totalDevices: number,
+      //       mobileDevices: number,
+      //       laptopDevices: number,
+      //       accessPoints: number
+      //     }
+      //   }
+      // }
+      // 
+      // Backend Processing:
+      // 1. Fetch devices from database with site/segment filters
+      // 2. Query network monitoring system for real-time online status
+      // 3. Join with users table to get owner information
+      // 4. Calculate aggregate statistics
+      // 5. Enrich with MAC vendor information from OUI database
+      // 6. Include current AP and signal strength for online devices
+      // 
+      // Implementation Example:
+      // const fetchDevices = async () => {
+      //   try {
+      //     const response = await fetch(
+      //       `/api/devices?siteId=${siteConfig.siteId}&segment=${segmentFilter}&includeOffline=true`
+      //     );
+      //     const result = await response.json();
+      //     
+      //     if (result.success) {
+      //       const enrichedDevices = result.data.devices.map(device => ({
+      //         ...device,
+      //         Icon: getDeviceIcon(device.category),
+      //         owner: device.owner.name,
+      //         ownerSegment: device.owner.segment
+      //       }));
+      //       
+      //       setDevices(enrichedDevices);
+      //       // Update stats if needed
+      //     }
+      //   } catch (error) {
+      //     console.error('Failed to load devices:', error);
+      //     notifications.operationFailed("load devices");
+      //   }
+      // };
+      // 
+      // Error Handling:
+      // - Network failures: Retry with exponential backoff
+      // - 401: Redirect to login
+      // - 403: Show permission error
+      // - 500: Display error, log to monitoring
+      // 
+      // Performance Considerations:
+      // - Implement pagination at database level for large device lists
+      // - Cache online status for 30 seconds to reduce monitoring system load
+      // - Use database indexes on: site_id, user_id, mac_address, online status
+      // - Consider lazy loading device details (load basic info first, enrich on scroll)
+      // ========================================
+      
       const sampleDevices = userSampleData.devices || [];
       const sampleUsers = userSampleData.users || [];
       
@@ -243,10 +345,140 @@ const DeviceList = () => {
       setInitialLoad(false);
     };
 
-    const timer = setTimeout(loadDevices, 300);
+    timeoutId = setTimeout(loadDevices, 300);
     
-    return () => clearTimeout(timer);
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+      
+      // ========================================
+      // TODO: Backend Integration - Cleanup on Unmount
+      // ========================================
+      // Close WebSocket connections for real-time device status updates
+      // Cancel any pending API requests
+      // Clear polling intervals if any
+      // 
+      // if (wsConnection) {
+      //   wsConnection.close();
+      // }
+      // if (abortController) {
+      //   abortController.abort();
+      // }
+      // if (pollingInterval) {
+      //   clearInterval(pollingInterval);
+      // }
+      // ========================================
+    };
   }, []);
+
+  // ========================================
+  // TODO: Backend Integration - Real-time Device Status Updates
+  // ========================================
+  // Implement WebSocket or polling to keep device online/offline status current
+  // 
+  // Option 1: WebSocket Connection
+  // useEffect(() => {
+  //   const ws = new WebSocket(`wss://api.example.com/ws/devices/${siteConfig.siteId}`);
+  //   
+  //   ws.onmessage = (event) => {
+  //     const update = JSON.parse(event.data);
+  //     
+  //     switch(update.type) {
+  //       case 'DEVICE_ONLINE':
+  //         setDevices(prev => prev.map(d => 
+  //           d.mac === update.mac 
+  //             ? { ...d, online: true, currentAP: update.ap, ip: update.ip }
+  //             : d
+  //         ));
+  //         break;
+  //         
+  //       case 'DEVICE_OFFLINE':
+  //         setDevices(prev => prev.map(d => 
+  //           d.mac === update.mac 
+  //             ? { ...d, online: false, currentAP: null, lastUsageDate: update.lastSeen }
+  //             : d
+  //         ));
+  //         break;
+  //         
+  //       case 'DEVICE_BLOCKED':
+  //         setDevices(prev => prev.map(d => 
+  //           d.id === update.deviceId 
+  //             ? { ...d, blocked: true, online: false }
+  //             : d
+  //         ));
+  //         break;
+  //         
+  //       case 'DEVICE_REGISTERED':
+  //         // Add newly registered device to list
+  //         fetchDeviceDetails(update.deviceId).then(newDevice => {
+  //           setDevices(prev => [newDevice, ...prev]);
+  //         });
+  //         break;
+  //         
+  //       case 'DATA_USAGE_UPDATE':
+  //         setDevices(prev => prev.map(d => 
+  //           d.mac === update.mac 
+  //             ? { ...d, dataUsage: update.dataUsage }
+  //             : d
+  //         ));
+  //         break;
+  //     }
+  //   };
+  //   
+  //   ws.onerror = (error) => {
+  //     console.error('Device status WebSocket error:', error);
+  //     // Implement reconnection logic
+  //   };
+  //   
+  //   ws.onclose = () => {
+  //     console.log('Device status WebSocket closed, attempting reconnect...');
+  //     // Implement reconnection with exponential backoff
+  //   };
+  //   
+  //   return () => {
+  //     ws.close();
+  //   };
+  // }, [siteConfig.siteId]);
+  // 
+  // Option 2: Polling (fallback if WebSocket unavailable)
+  // useEffect(() => {
+  //   const pollDeviceStatus = async () => {
+  //     try {
+  //       const response = await fetch(`/api/devices/status-delta?since=${lastUpdateTimestamp}`);
+  //       const result = await response.json();
+  //       
+  //       if (result.success && result.data.changes.length > 0) {
+  //         // Update only devices that have changed
+  //         setDevices(prev => {
+  //           const updated = [...prev];
+  //           result.data.changes.forEach(change => {
+  //             const index = updated.findIndex(d => d.id === change.deviceId);
+  //             if (index !== -1) {
+  //               updated[index] = { ...updated[index], ...change.updates };
+  //             }
+  //           });
+  //           return updated;
+  //         });
+  //         setLastUpdateTimestamp(result.data.timestamp);
+  //       }
+  //     } catch (error) {
+  //       console.error('Device status poll error:', error);
+  //     }
+  //   };
+  //   
+  //   // Poll every 10 seconds
+  //   const intervalId = setInterval(pollDeviceStatus, 10000);
+  //   
+  //   return () => clearInterval(intervalId);
+  // }, [lastUpdateTimestamp]);
+  // 
+  // Backend Requirements:
+  // - Monitor NAS (Network Access Server) for client associations
+  // - Track RADIUS authentication/deauthentication events
+  // - Query wireless controller for connected clients
+  // - Aggregate device status from multiple sources
+  // - Publish updates via WebSocket or provide delta endpoint
+  // - Include: online status, current AP, IP address, data usage
+  // ========================================
 
   const pagedDevices = useMemo(() => {
     const startIndex = (currentPage - 1) * rowsPerPage;

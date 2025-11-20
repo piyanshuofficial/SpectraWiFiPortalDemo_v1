@@ -40,6 +40,112 @@ const UserDetailsModal = ({
   onBlock,
   onActivate,
 }) => {
+  // ========================================
+  // TODO: Backend Integration - Fetch Full User Details on Modal Open
+  // ========================================
+  // When modal opens, fetch comprehensive user data from backend
+  // 
+  // Current Limitation:
+  // - Modal receives user object from parent component
+  // - May contain stale or incomplete data
+  // - Real-time session status not available
+  // 
+  // Required Implementation:
+  // useEffect(() => {
+  //   const fetchFullUserDetails = async () => {
+  //     try {
+  //       const response = await fetch(`/api/users/${user.id}/details`);
+  //       const result = await response.json();
+  //       
+  //       if (result.success) {
+  //         // Update user data with fresh information
+  //         setUserData(result.data.user);
+  //         setCurrentSession(result.data.currentSession);
+  //         setDevices(result.data.devices);
+  //         setUsageStats(result.data.usageStats);
+  //         setRecentActivity(result.data.recentActivity);
+  //       }
+  //     } catch (error) {
+  //       console.error('Failed to fetch user details:', error);
+  //       // Continue with provided user data
+  //     }
+  //   };
+  //   
+  //   fetchFullUserDetails();
+  // }, [user.id]);
+  // 
+  // Backend Endpoint: GET /api/users/{userId}/details
+  // 
+  // Response Format:
+  // {
+  //   success: true,
+  //   data: {
+  //     user: {
+  //       ...allUserFields,
+  //       // Include fields from userMemories context
+  //       can_id: string,
+  //       whp_alert: string,
+  //       dataCycleResetDate: string,
+  //       totalVolumeInMB: number,
+  //       totalDataConsumed_nonFupInMB: number,
+  //       totalDataConsumed_FupInMB: string,
+  //       fupStatus: string
+  //     },
+  //     currentSession: {
+  //       sessionId: string,
+  //       startTime: ISO8601,
+  //       dataUsed: number,
+  //       currentAP: string,
+  //       ipAddress: string,
+  //       deviceMAC: string
+  //     } | null,
+  //     devices: [
+  //       {
+  //         id: string,
+  //         name: string,
+  //         mac: string,
+  //         online: boolean,
+  //         lastSeen: ISO8601
+  //       }
+  //     ],
+  //     usageStats: {
+  //       currentMonth: {
+  //         totalData: string,
+  //         sessions: number,
+  //         avgSessionDuration: string,
+  //         lastOnline: string
+  //       },
+  //       quotaUsage: {
+  //         used: number,
+  //         total: number,
+  //         percentage: number
+  //       }
+  //     },
+  //     recentActivity: [
+  //       {
+  //         timestamp: ISO8601,
+  //         action: string,
+  //         details: string
+  //       }
+  //     ],
+  //     scheduledActions: [
+  //       {
+  //         type: 'deactivation' | 'policy_change',
+  //         scheduledFor: ISO8601,
+  //         details: string
+  //       }
+  //     ]
+  //   }
+  // }
+  // 
+  // Additional Considerations:
+  // - Show loading state while fetching
+  // - Display skeleton loaders for usage stats
+  // - Handle offline/unavailable data gracefully
+  // - Refresh data if modal stays open (WebSocket or polling)
+  // - Cache results briefly to avoid repeated calls
+  // ========================================
+
   const isActive = user.status === "Active";
   const isSuspended = user.status === "Suspended";
   const isBlocked = user.status === "Blocked" || user.status === "Restricted";
@@ -58,18 +164,129 @@ const UserDetailsModal = ({
   };
 
   const handleSendMessage = () => {
+    // ========================================
+    // TODO: Backend Integration - Resend Password/Credentials
+    // ========================================
+    // Trigger backend to resend user credentials via SMS/Email
+    // 
+    // API Endpoint: POST /api/users/{userId}/resend-password
+    // 
+    // Request Payload:
+    // {
+    //   userId: user.id,
+    //   channels: ['sms', 'email'], // Which channels to send on
+    //   reason: 'admin_request',
+    //   requestedBy: currentUser.id,
+    //   timestamp: new Date().toISOString()
+    // }
+    // 
+    // Backend Processing:
+    // 1. Verify user exists and is Active or Suspended (not Blocked)
+    // 2. Check if user has valid mobile/email for selected channels
+    // 3. Retrieve current password from database (or generate new OTP)
+    // 4. Format message template with user credentials:
+    //    - User ID
+    //    - Password (or OTP)
+    //    - Wi-Fi SSID
+    //    - Portal URL (if applicable)
+    // 5. Queue message to notification service:
+    //    - SMS via Twilio/MSG91/other provider
+    //    - Email via SMTP/SendGrid/SES
+    // 6. Create audit log entry:
+    //    - Action: 'password_resent'
+    //    - Admin user who initiated
+    //    - Channels used
+    //    - Delivery status
+    // 7. Update user record: last_credential_sent timestamp
+    // 
+    // Response Format:
+    // {
+    //   success: true,
+    //   data: {
+    //     userId: string,
+    //     sentVia: ['sms', 'email'],
+    //     deliveryStatus: {
+    //       sms: 'sent' | 'failed',
+    //       email: 'sent' | 'failed'
+    //     },
+    //     message: 'Credentials sent successfully'
+    //   }
+    // }
+    // 
+    // Error Handling:
+    // - 400: Invalid user state (Blocked users)
+    // - 404: User not found
+    // - 422: Missing contact information (no mobile/email)
+    // - 429: Rate limit exceeded (too many resends)
+    // - 500: Notification service unavailable
+    // 
+    // UI Implementation:
+    // const handleSendMessage = async () => {
+    //   try {
+    //     setResendingPassword(true);
+    //     
+    //     const response = await fetch(`/api/users/${user.id}/resend-password`, {
+    //       method: 'POST',
+    //       headers: {
+    //         'Content-Type': 'application/json',
+    //         'Authorization': `Bearer ${authToken}`
+    //       },
+    //       body: JSON.stringify({
+    //         channels: ['sms', 'email'],
+    //         reason: 'admin_request'
+    //       })
+    //     });
+    //     
+    //     const result = await response.json();
+    //     
+    //     if (result.success) {
+    //       notifications.showSuccess(
+    //         `Password sent to ${user.firstName} ${user.lastName} via ${result.data.sentVia.join(', ')}`
+    //       );
+    //     } else {
+    //       throw new Error(result.message);
+    //     }
+    //   } catch (error) {
+    //     console.error('Resend password error:', error);
+    //     notifications.showError('Failed to send password. Please try again.');
+    //   } finally {
+    //     setResendingPassword(false);
+    //   }
+    // };
+    // 
+    // Additional Features:
+    // - Show delivery status in modal (checkmarks for SMS/Email)
+    // - Rate limiting: prevent spamming (max 3 resends per hour)
+    // - Option to regenerate password before sending
+    // - Preview message content before sending
+    // - Track resend history in user activity log
+    // ========================================
+    
     if (onSendMessage) {
       onSendMessage(user);
       notifications.showInfo(`Password resend initiated for ${user.id}`);
     }
   };
 
-  // src/pages/UserManagement/UserDetailsModal.js (continued)
-
   const handleSuspend = () => {
     if (!window.confirm(`Are you sure you want to suspend ${user.firstName} ${user.lastName}?`)) {
       return;
     }
+    
+    // ========================================
+    // TODO: Backend Integration - Suspend User
+    // ========================================
+    // See UserList.js handleChangeStatus for full implementation details
+    // This calls parent's onSuspend which should trigger API call
+    // 
+    // Quick Reference:
+    // - Endpoint: PUT /api/users/{userId}/status
+    // - New status: 'Suspended'
+    // - AAA: Disable authentication but keep account
+    // - Devices: Maintain registrations
+    // - License: Keep allocated
+    // - Notification: Send suspension notice to user
+    // ========================================
     
     if (onSuspend) {
       onSuspend(user);
@@ -81,6 +298,21 @@ const UserDetailsModal = ({
       return;
     }
     
+    // ========================================
+    // TODO: Backend Integration - Block User
+    // ========================================
+    // See UserList.js handleChangeStatus for full implementation details
+    // This calls parent's onBlock which should trigger API call
+    // 
+    // Quick Reference:
+    // - Endpoint: PUT /api/users/{userId}/status
+    // - New status: 'Blocked'
+    // - AAA: Disable account + force disconnect active sessions
+    // - Devices: Clear MAC bindings
+    // - License: Free up (decrement count)
+    // - Notification: Send blocking notice to user (if policy allows)
+    // ========================================
+    
     if (onBlock) {
       onBlock(user);
     }
@@ -90,6 +322,21 @@ const UserDetailsModal = ({
     if (!window.confirm(`Are you sure you want to activate ${user.firstName} ${user.lastName}?`)) {
       return;
     }
+    
+    // ========================================
+    // TODO: Backend Integration - Activate User
+    // ========================================
+    // See UserList.js handleChangeStatus for full implementation details
+    // This calls parent's onActivate which should trigger API call
+    // 
+    // Quick Reference:
+    // - Endpoint: PUT /api/users/{userId}/status
+    // - New status: 'Active'
+    // - AAA: Enable account authentication
+    // - Devices: Restore MAC bindings
+    // - License: Allocate (increment count)
+    // - Notification: Send activation notice to user
+    // ========================================
     
     if (onActivate) {
       onActivate(user);
