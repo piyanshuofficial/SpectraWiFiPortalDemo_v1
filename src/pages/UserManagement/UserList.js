@@ -1124,6 +1124,7 @@ const UserList = () => {
   if (initialLoad) {
     return (
       <div className="user-list-container">
+        <h1 className="user-management-title">User Management</h1>
         <div className="user-toolbar-ring-row">
           <div className="user-toolbar">
             <SkeletonLoader variant="rect" height={40} />
@@ -1137,6 +1138,8 @@ const UserList = () => {
   return (
     <div className="user-list-container">
       <LoadingOverlay active={isLoading('users') || exportingCSV} message={exportingCSV ? "Exporting users..." : "Processing..."} />
+
+      <h1 className="user-management-title">User Management</h1>
 
       <div className="user-toolbar-ring-row">
         <div className="user-toolbar">

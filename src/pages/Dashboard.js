@@ -519,6 +519,7 @@ useEffect(() => {
   if (initialLoad) {
     return (
       <main className="main-content" role="main" aria-label="Dashboard">
+        <h1 className="dashboard-title">WiFi Dashboard</h1>
         <h2 className="dashboard-section-title">Overview</h2>
         <section className="dashboard-cards">
           {[...Array(4)].map((_, i) => (
@@ -549,20 +550,21 @@ useEffect(() => {
   }
 
   return (
-    <main 
-      className="main-content" 
-      role="main" 
+    <main
+      className="main-content"
+      role="main"
       aria-label="Dashboard"
       style={{ position: 'relative', zIndex: 1 }}
     >
       {(exportingCSV || exportingPDF) && (
-        <LoadingOverlay 
+        <LoadingOverlay
           active={true}
           message={exportingCSV ? "Preparing CSV..." : "Generating PDF..."}
           fullPage={false}
         />
       )}
 
+      <h1 className="dashboard-title">WiFi Dashboard</h1>
       <h2 className="dashboard-section-title">Overview</h2>
       <section className="dashboard-cards" aria-label="Dashboard summary cards">
         {renderDashboardForSegment()}

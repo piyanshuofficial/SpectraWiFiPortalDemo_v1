@@ -1,5 +1,12 @@
 /* src/pages/Dashboard.css */
 
+.dashboard-title {
+  font-size: var(--font-5xl);
+  font-weight: 700;
+  color: #153874;
+  margin: 1.5rem 0 1.25rem 0.125rem;
+}
+
 .dashboard-section-title {
   font-size: var(--font-3xl);
   font-weight: 600;

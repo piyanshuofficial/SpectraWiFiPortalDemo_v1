@@ -520,6 +520,7 @@ const ReportDashboard = () => {
   if (initialLoad) {
     return (
       <div className="report-dashboard-container" role="region" aria-label="Reports Dashboard">
+        <h1 className="reports-title">Reporting</h1>
         <div className="pinned-shortcuts-section">
           <SkeletonLoader variant="rect" height={30} width="40%" style={{ marginBottom: '20px' }} />
           <div className="shortcuts-grid">
@@ -544,10 +545,12 @@ const ReportDashboard = () => {
 
   return (
     <div className="report-dashboard-container" role="region" aria-label="Reports Dashboard">
-      <LoadingOverlay 
-        active={isLoading('export') || exportingCSV || exportingPDF} 
+      <LoadingOverlay
+        active={isLoading('export') || exportingCSV || exportingPDF}
         message={exportingCSV ? "Preparing CSV..." : "Generating PDF..."}
       />
+
+      <h1 className="reports-title">Reporting</h1>
 
       <ReportCriteriaModal
         open={criteriaModalOpen}

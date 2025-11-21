@@ -1,6 +1,6 @@
 // src/components/RoleAccessSelector.js
 
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useAuth } from '@context/AuthContext';
 import { AccessLevels, Roles } from '@utils/accessLevels';
@@ -19,6 +19,15 @@ import './RoleAccessSelector.css';
 const RoleAccessSelector = ({ showLabel = true }) => {
   const { currentUser, updateRole, updateAccessLevel } = useAuth();
 
+  // State for dragging
+  const [position, setPosition] = useState(() => {
+    const saved = localStorage.getItem('roleAccessSelectorPosition');
+    return saved ? JSON.parse(saved) : { x: 110, y: 70 };
+  });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const containerRef = useRef(null);
+
   const handleRoleChange = (e) => {
     updateRole(e.target.value);
   };
@@ -32,8 +41,71 @@ const RoleAccessSelector = ({ showLabel = true }) => {
     return value.charAt(0).toUpperCase() + value.slice(1);
   };
 
+  // Drag handlers
+  const handleMouseDown = (e) => {
+    // Only start drag if clicking on the container background or testing badge
+    if (
+      e.target.tagName === 'SELECT' ||
+      e.target.tagName === 'OPTION' ||
+      e.target.tagName === 'LABEL'
+    ) {
+      return;
+    }
+
+    setIsDragging(true);
+    const rect = containerRef.current.getBoundingClientRect();
+    setDragOffset({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    });
+  };
+
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (!isDragging) return;
+
+      const newX = e.clientX - dragOffset.x;
+      const newY = e.clientY - dragOffset.y;
+
+      // Constrain to viewport
+      const maxX = window.innerWidth - (containerRef.current?.offsetWidth || 0);
+      const maxY = window.innerHeight - (containerRef.current?.offsetHeight || 0);
+
+      const constrainedX = Math.max(0, Math.min(newX, maxX));
+      const constrainedY = Math.max(0, Math.min(newY, maxY));
+
+      setPosition({ x: constrainedX, y: constrainedY });
+    };
+
+    const handleMouseUp = () => {
+      if (isDragging) {
+        setIsDragging(false);
+        // Save position to localStorage
+        localStorage.setItem('roleAccessSelectorPosition', JSON.stringify(position));
+      }
+    };
+
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDragging, dragOffset, position]);
+
   return (
-    <div className="role-access-selector-container">
+    <div
+      ref={containerRef}
+      className={`role-access-selector-container ${isDragging ? 'dragging' : ''}`}
+      style={{
+        left: `${position.x}px`,
+        top: `${position.y}px`,
+      }}
+      onMouseDown={handleMouseDown}
+    >
       {/* Testing indicator */}
       <div className="testing-badge" aria-label="Testing mode active">
         🧪 TEST
