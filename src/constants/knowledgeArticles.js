@@ -7,7 +7,7 @@ export const knowledgeArticles = {
     content: [
       {
         type: "intro",
-        text: "Learn how to create new user accounts in the portal with proper policy assignments and segment configurations."
+        text: "Learn how to create new user accounts in the portal with proper policy assignments and access configurations."
       },
       {
         type: "steps",
@@ -21,36 +21,30 @@ export const knowledgeArticles = {
           },
           {
             number: 2,
-            title: "Select Segment",
-            description: "Use the Segment Selector in the header to choose the appropriate segment (Enterprise, Co-Living, Hotel, Co-Working, PG, or Miscellaneous) for the new user.",
-            screenshot: "[Screenshot: Segment selector dropdown]"
-          },
-          {
-            number: 3,
             title: "Click Add User Button",
             description: "Click the 'Add User' button in the toolbar at the top of the user list.",
             screenshot: "[Screenshot: Add User button highlighted]"
           },
           {
-            number: 4,
+            number: 3,
             title: "Fill User Details",
             description: "In the Add User modal, enter the following required information:\n• User ID (unique identifier)\n• First Name\n• Last Name\n• Mobile Number (10 digits)\n• Email Address\n• Location",
             screenshot: "[Screenshot: Add User form with fields highlighted]"
           },
           {
-            number: 5,
+            number: 4,
             title: "Assign User Policy",
             description: "Select an appropriate policy that defines:\n• Speed Limit (10 Mbps, 20 Mbps, 30 Mbps, 50 Mbps)\n• Data Volume (10 GB, 20 GB, 50 GB, 100 GB, Unlimited)\n• Device Limit (1-5 devices)\n• Data Cycle Type (Daily, Monthly)",
             screenshot: "[Screenshot: Policy selection dropdown]"
           },
           {
-            number: 6,
-            title: "Set Check-In/Check-Out Dates",
-            description: "For segments like Hotel, Co-Living, or PG, specify check-in and check-out dates to automatically manage user access periods.",
+            number: 5,
+            title: "Set Check-In/Check-Out Dates (Optional)",
+            description: "If applicable, specify check-in and check-out dates to automatically manage user access periods and account lifecycle.",
             screenshot: "[Screenshot: Date picker fields]"
           },
           {
-            number: 7,
+            number: 6,
             title: "Submit and Confirm",
             description: "Click 'Submit' to create the user. The system will:\n• Validate all fields\n• Check license availability\n• Provision the account\n• Display a success notification",
             screenshot: "[Screenshot: Success notification]"
@@ -110,7 +104,7 @@ export const knowledgeArticles = {
           },
           {
             name: "Device Limit",
-            description: "Maximum number of devices a user can connect simultaneously. Ranges from 1 to 5 devices based on segment requirements."
+            description: "Maximum number of devices a user can connect simultaneously. Ranges from 1 to 5 devices based on policy configuration."
           },
           {
             name: "Data Cycle Type",
@@ -123,16 +117,16 @@ export const knowledgeArticles = {
         title: "License Management",
         items: [
           {
-            name: "License Types by Segment",
-            description: "Enterprise: Premium, Standard, Basic, Guest\nCo-Living: Standard, Basic, Guest\nHotel: Premium, Standard, Guest (mostly Guest)\nCo-Working: Premium, Standard, Basic\nPG: Standard, Basic, Guest\nMiscellaneous: Basic, Guest"
+            name: "License Types",
+            description: "Available license tiers include:\n• Premium: High-speed access with unlimited or high data caps\n• Standard: Moderate speed and data allocations\n• Basic: Economical tier with essential connectivity\n• Guest: Temporary access with limited duration and data"
           },
           {
-            name: "License Allocation",
-            description: "Each segment has dedicated license pools:\n• Enterprise: 1000 licenses\n• Hotel: 500 licenses\n• Co-Living: 400 licenses\n• Co-Working: 350 licenses\n• PG: 250 licenses\n• Miscellaneous: 150 licenses"
+            name: "License Capacity",
+            description: "Your organization has a defined license pool capacity. Monitor license utilization regularly to ensure availability for new users and avoid hitting capacity limits that could block user creation."
           },
           {
             name: "Monitoring Usage",
-            description: "The license ring on the User Management page shows current usage vs. total available for the selected segment. Color codes: Green (0-70%), Yellow (71-85%), Red (86-100%)"
+            description: "The license ring on the User Management page shows current usage vs. total available licenses. Color codes: Green (0-70%), Yellow (71-85%), Red (86-100%)"
           }
         ]
       },
@@ -193,75 +187,39 @@ export const knowledgeArticles = {
           },
           {
             number: 2,
-            title: "Select Segment",
-            description: "Choose the segment where the device will be registered. Note: Some segments have device registration restrictions.",
-            screenshot: "[Screenshot: Segment selector]"
-          },
-          {
-            number: 3,
             title: "Click Register Device",
             description: "Click the 'Register Device' button in the toolbar",
             screenshot: "[Screenshot: Register Device button]"
           },
           {
-            number: 4,
+            number: 3,
             title: "Enter MAC Address",
             description: "Input the device MAC address in format: XX:XX:XX:XX:XX:XX or XX-XX-XX-XX-XX-XX. The system will validate format and check for duplicates.",
             screenshot: "[Screenshot: MAC address field]"
           },
           {
-            number: 5,
+            number: 4,
             title: "Choose Device Type",
             description: "Select device category:\n• Human Devices: Laptop, Mobile, Tablet\n• Non-Human Devices: IoT, Printer, Camera, Smart TV, Gaming Console",
             screenshot: "[Screenshot: Device type dropdown]"
           },
           {
-            number: 6,
+            number: 5,
             title: "Select Registration Mode",
             description: "Choose how to register:\n• Bind to Existing User: Links device to a user account\n• Create as Device User: Creates standalone device account (for IoT devices)",
             screenshot: "[Screenshot: Registration mode selection]"
           },
           {
-            number: 7,
+            number: 6,
             title: "Provide Device Name",
             description: "Enter a friendly name for identification (e.g., 'John's Laptop', 'Conference Room Printer')",
             screenshot: "[Screenshot: Device name field]"
           },
           {
-            number: 8,
+            number: 7,
             title: "Submit Registration",
             description: "Click Submit to register the device. The system will validate and activate it immediately.",
             screenshot: "[Screenshot: Success confirmation]"
-          }
-        ]
-      },
-      {
-        type: "section",
-        title: "Segment Device Availability",
-        items: [
-          {
-            name: "Enterprise",
-            description: "✓ Human devices ✓ Non-human devices - Full device support"
-          },
-          {
-            name: "Co-Living",
-            description: "✓ Human devices ✓ Non-human devices - Supports both types"
-          },
-          {
-            name: "Hotel",
-            description: "✓ Human devices only - Non-human devices not allowed"
-          },
-          {
-            name: "Co-Working",
-            description: "✓ Human devices ✓ Non-human devices - Full support"
-          },
-          {
-            name: "PG",
-            description: "✓ Human devices only - No non-human devices"
-          },
-          {
-            name: "Miscellaneous",
-            description: "✓ Human devices ✓ Non-human devices - Full support"
           }
         ]
       },
@@ -292,15 +250,15 @@ export const knowledgeArticles = {
         items: [
           {
             name: "Active Users",
-            description: "Shows current number of active users in the selected segment. Green arrow indicates growth, red arrow indicates decline."
+            description: "Shows current number of active users in your network. Green arrow indicates growth, red arrow indicates decline compared to previous period."
           },
           {
             name: "License Usage",
-            description: "Displays percentage of licenses used for the selected segment. Monitor this to avoid hitting capacity limits."
+            description: "Displays percentage of licenses currently in use. Monitor this to avoid hitting capacity limits and ensure availability for new users."
           },
           {
             name: "Data Usage",
-            description: "Total data consumed this week across all users in the segment, measured in TB (Terabytes)."
+            description: "Total data consumed this week across all users, measured in TB (Terabytes). Helps track network utilization trends."
           },
           {
             name: "Alerts",
@@ -318,25 +276,11 @@ export const knowledgeArticles = {
           },
           {
             name: "License Usage by Type (Bar Chart)",
-            description: "Shows distribution of license types (Premium, Standard, Basic, Guest) in the current segment. Helps optimize license allocation."
+            description: "Shows distribution of license types (Premium, Standard, Basic, Guest) across all active users. Helps optimize license allocation and planning."
           },
           {
             name: "Alerts Summary (Pie Chart)",
             description: "Breakdown of alerts by severity: Critical (red), Warning (orange), Info (green). Click segments for detailed alert list."
-          }
-        ]
-      },
-      {
-        type: "section",
-        title: "Segment Filtering",
-        items: [
-          {
-            name: "How It Works",
-            description: "Use the Segment Selector in the header to switch between segments. All dashboard data updates immediately to show segment-specific metrics, charts, and statistics."
-          },
-          {
-            name: "Segment Characteristics",
-            description: "Enterprise: Highest usage and capacity\nHotel: Guest-heavy with high turnover\nCo-Living: Residential patterns\nCo-Working: Business hours peaks\nPG: Budget-conscious limits\nMiscellaneous: Mixed use cases"
           }
         ]
       },
@@ -386,7 +330,7 @@ export const knowledgeArticles = {
           {
             number: 4,
             title: "Configure Report Criteria",
-            description: "Set filters based on report type:\n• Date Range: Start and end dates\n• Month Range: For monthly reports\n• Policy Filter: Specific user policies\n• Segment Filter: Target segment\n• User Filter: Specific user ID",
+            description: "Set filters based on report type:\n• Date Range: Start and end dates\n• Month Range: For monthly reports\n• Policy Filter: Specific user policies\n• User Filter: Specific user ID or group\n• Status Filter: Active, Suspended, Blocked users",
             screenshot: "[Screenshot: Criteria form]"
           },
           {
@@ -417,7 +361,7 @@ export const knowledgeArticles = {
           },
           {
             name: "Network Usage Report",
-            description: "Monitor daily/monthly network usage trends across segments for capacity planning."
+            description: "Monitor daily/monthly network usage trends for capacity planning and infrastructure optimization."
           },
           {
             name: "License Usage Report",
@@ -434,7 +378,7 @@ export const knowledgeArticles = {
         title: "Report Best Practices",
         items: [
           "Use date ranges wisely - large date ranges may take longer to generate",
-          "Apply segment filters to focus on specific user groups",
+          "Apply status and policy filters to focus on specific user groups",
           "Export to CSV for further analysis in Excel or BI tools",
           "Schedule regular report generation for compliance requirements",
           "Save frequently used criteria for quick access"
@@ -473,7 +417,7 @@ export const knowledgeArticles = {
           },
           {
             name: "Device Not Connecting",
-            solution: "Troubleshoot:\n1. MAC address correctly registered\n2. Device limit not exceeded\n3. Device category allowed for segment\n4. MAC format valid\n5. No duplicate MAC entries"
+            solution: "Troubleshoot:\n1. MAC address correctly registered\n2. User device limit not exceeded\n3. Device type allowed by policy\n4. MAC format valid\n5. No duplicate MAC entries"
           }
         ]
       },
@@ -548,29 +492,23 @@ export const knowledgeArticles = {
           {
             number: 2,
             title: "Prepare User Data",
-            description: "Fill the CSV template with user information:\n• User ID (unique)\n• First Name, Last Name\n• Mobile Number\n• Email Address\n• Policy Name\n• Segment Type\n• Location\n• Check-In/Check-Out dates (if applicable)",
+            description: "Fill the CSV template with user information:\n• User ID (unique)\n• First Name, Last Name\n• Mobile Number\n• Email Address\n• Policy Name\n• Location\n• Check-In/Check-Out dates (if applicable)",
             screenshot: "[Screenshot: Sample CSV file with data]"
           },
           {
             number: 3,
-            title: "Select Target Segment",
-            description: "Use the Segment Selector to choose which segment these users belong to (Enterprise, Co-Living, Hotel, etc.).",
-            screenshot: "[Screenshot: Segment selector highlighted]"
-          },
-          {
-            number: 4,
             title: "Upload CSV File",
             description: "Click 'Import Users' button, select your prepared CSV file, and click Upload. The system will validate the data format.",
             screenshot: "[Screenshot: Import Users dialog with file selector]"
           },
           {
-            number: 5,
+            number: 4,
             title: "Review Validation Results",
             description: "Check the validation report for any errors or warnings. Fix issues in the CSV and re-upload if needed.",
             screenshot: "[Screenshot: Validation results showing success/error counts]"
           },
           {
-            number: 6,
+            number: 5,
             title: "Confirm Import",
             description: "Review the summary of users to be imported and click 'Confirm Import' to create all user accounts in bulk.",
             screenshot: "[Screenshot: Import confirmation dialog with user count]"
@@ -599,7 +537,7 @@ export const knowledgeArticles = {
           },
           {
             name: "Export All Users",
-            description: "Export complete user database for the selected segment including all statuses and policies."
+            description: "Export complete user database including all statuses and policies for comprehensive reporting."
           },
           {
             name: "Export with Custom Columns",
@@ -662,7 +600,7 @@ export const knowledgeArticles = {
           },
           {
             name: "Expired Status",
-            description: "Automatically set when check-out date passes (for Hotel, PG, Co-Living segments). User access is automatically disabled."
+            description: "Automatically set when check-out date passes. User access is automatically disabled and license is freed for reuse."
           }
         ]
       },
@@ -771,7 +709,7 @@ export const knowledgeArticles = {
     content: [
       {
         type: "intro",
-        text: "Learn how to create and manage user policies that define network access parameters including speed limits, data volumes, device limits, and data cycle configurations for different user segments."
+        text: "Learn how to create and manage user policies that define network access parameters including speed limits, data volumes, device limits, and data cycle configurations for your users."
       },
       {
         type: "steps",
@@ -810,7 +748,7 @@ export const knowledgeArticles = {
           {
             number: 6,
             title: "Configure Device Limit",
-            description: "Set maximum number of devices per user (1-5 devices). Human and non-human devices may have separate limits based on segment.",
+            description: "Set maximum number of devices per user (1-5 devices). Configure separate limits for human and non-human devices if needed.",
             screenshot: "[Screenshot: Device limit slider]"
           },
           {
@@ -819,12 +757,6 @@ export const knowledgeArticles = {
             description: "Choose how data allowance resets:\n• Daily (resets every 24 hours)\n• Monthly (resets on 1st of each month)\n• Custom (specify cycle length)",
             screenshot: "[Screenshot: Data cycle type options]"
           },
-          {
-            number: 8,
-            title: "Assign to Segments",
-            description: "Select which segments can use this policy (Enterprise, Co-Living, Hotel, etc.). Policies can be segment-specific or global.",
-            screenshot: "[Screenshot: Segment assignment checkboxes]"
-          }
         ]
       },
       {
@@ -841,7 +773,7 @@ export const knowledgeArticles = {
           },
           {
             name: "Device Limit",
-            description: "Maximum devices a single user can register. Enterprise typically allows 3-5 devices, while Hotel/PG may limit to 1-2 devices."
+            description: "Maximum devices a single user can register. Configure based on use case: power users may need 3-5 devices, while guest users may be limited to 1-2 devices."
           },
           {
             name: "Data Cycle Type",
@@ -858,9 +790,9 @@ export const knowledgeArticles = {
         title: "Policy Design Best Practices",
         items: [
           "Create tiered policies (Basic, Standard, Premium) to offer service levels",
-          "Use descriptive names that indicate segment and speed (e.g., Enterprise_Premium_50Mbps)",
-          "Set realistic data volumes based on typical usage patterns",
-          "Consider separate policies for different user types within same segment",
+          "Use descriptive names that indicate user type and speed (e.g., Professional_Premium_50Mbps, Guest_Basic_10Mbps)",
+          "Set realistic data volumes based on typical usage patterns for your user base",
+          "Consider separate policies for different user types (permanent vs temporary, professional vs guest)",
           "Test new policies with a small user group before wide deployment",
           "Document policy purpose and target user type for future reference",
           "Review and adjust policies quarterly based on usage analytics"
@@ -876,7 +808,7 @@ export const knowledgeArticles = {
           },
           {
             issue: "Cannot assign policy to certain users",
-            solution: "Verify the policy is enabled for the user's segment. Check that policy is not marked as deprecated or inactive. Ensure you have admin permissions to assign policies."
+            solution: "Verify the policy is active and not deprecated. Check that you have admin permissions to assign policies. Confirm the user account is in good standing."
           },
           {
             issue: "Speed limits not being enforced",
@@ -888,116 +820,108 @@ export const knowledgeArticles = {
   },
 
   "segment-configuration": {
-    title: "Segment Configuration",
+    title: "Advanced Network Configuration",
     category: "Network Configuration",
     content: [
       {
         type: "intro",
-        text: "Learn how to configure segment-specific settings for Enterprise, Co-Living, Co-Working, Hotel, PG (Paying Guest), and Miscellaneous user types to optimize network management for different business scenarios."
+        text: "Learn how to configure advanced network settings including device type restrictions, license capacity management, and network performance optimization for your organization."
       },
       {
         type: "section",
-        title: "Segment Types Overview",
+        title: "Device Configuration",
         items: [
           {
-            name: "Enterprise",
-            description: "For corporate offices and business environments. Typically allows 3-5 devices per user, longer-term access, higher data volumes, and premium speed tiers. Focus on productivity and reliability."
+            name: "Device Type Restrictions",
+            description: "Configure which device types are allowed in your network. Human devices (laptops, phones, tablets) vs Non-human devices (IoT, printers, smart TVs, cameras). Set separate limits for each type."
           },
           {
-            name: "Co-Living",
-            description: "For shared living spaces and residential communities. Medium-term users (months), 2-3 devices per user, moderate data volumes. Balance between residential and managed access."
+            name: "Device Registration Settings",
+            description: "Control device registration process: automatic approval, manual approval, or restricted registration. Configure MAC address validation and duplicate detection rules."
           },
           {
-            name: "Co-Working",
-            description: "For shared workspaces and flexible offices. Daily/monthly access patterns, 2-4 devices per user, high-speed requirements for productivity. Professional-grade connectivity."
+            name: "Device Limits per User",
+            description: "Set global device limits or configure per-policy limits. Balance between user convenience (more devices) and network security/capacity (fewer devices)."
           },
           {
-            name: "Hotel",
-            description: "For hospitality and short-term guests. Automatic check-in/check-out based on dates, 1-2 devices per guest, daily data cycles. Focus on ease of access and guest experience."
-          },
-          {
-            name: "PG (Paying Guest)",
-            description: "For student housing and budget accommodations. Monthly cycles, 1-2 devices per resident, budget-friendly speed/data tiers. Cost-effective managed access."
-          },
-          {
-            name: "Miscellaneous",
-            description: "For special cases, vendors, contractors, and temporary access. Flexible configuration, typically limited devices and data volumes. Short-term access with basic connectivity."
+            name: "Device Naming Conventions",
+            description: "Enforce device naming standards to improve network visibility and management. Examples: 'username-devicetype-number' or 'location-devicetype-id'."
           }
         ]
       },
       {
         type: "steps",
-        title: "Configuring Segment Settings",
+        title: "Configuring Network Settings",
         steps: [
           {
             number: 1,
-            title: "Access Segment Configuration",
-            description: "Navigate to Configuration → Segment Settings in the sidebar to view all segment configurations.",
-            screenshot: "[Screenshot: Segment Settings page]"
+            title: "Access Network Configuration",
+            description: "Navigate to Configuration → Network Settings in the sidebar to access advanced configuration options.",
+            screenshot: "[Screenshot: Network Settings page]"
           },
           {
             number: 2,
-            title: "Select Segment to Configure",
-            description: "Click on the segment card you want to configure (Enterprise, Co-Living, Hotel, etc.) to open detailed settings.",
-            screenshot: "[Screenshot: Segment cards layout]"
+            title: "Configure Device Restrictions",
+            description: "Set device type policies:\n• Allow/restrict human devices (laptops, phones, tablets)\n• Allow/restrict non-human devices (IoT, printers, smart TVs)\n• Set maximum devices per user",
+            screenshot: "[Screenshot: Device restriction settings]"
           },
           {
             number: 3,
-            title: "Set Default Device Limits",
-            description: "Configure default device limits for this segment:\n• Human devices (laptops, phones)\n• Non-human devices (IoT, smart TVs)\n• Total devices per user",
-            screenshot: "[Screenshot: Device limit configuration panel]"
+            title: "Set License Capacity",
+            description: "Review and configure license pool capacity. Monitor current utilization and plan for growth. Set alert thresholds for capacity warnings.",
+            screenshot: "[Screenshot: License capacity configuration]"
           },
           {
             number: 4,
-            title: "Configure Available Policies",
-            description: "Select which policies are available for users in this segment. You can enable/disable policies and set default policy.",
-            screenshot: "[Screenshot: Policy availability checklist]"
+            title: "Configure Access Controls",
+            description: "Set network access rules:\n• Guest access duration limits\n• Temporary user auto-expiration\n• Password complexity requirements\n• Multi-device authentication rules",
+            screenshot: "[Screenshot: Access control panel]"
           },
           {
             number: 5,
-            title: "Set Date Range Requirements",
-            description: "For Hotel, PG, and Co-Living segments, configure whether check-in/check-out dates are required or optional.",
-            screenshot: "[Screenshot: Date range configuration toggle]"
+            title: "Performance Optimization",
+            description: "Configure QoS (Quality of Service) settings, bandwidth allocation priorities, and network traffic shaping rules to optimize performance.",
+            screenshot: "[Screenshot: Performance settings panel]"
           },
           {
             number: 6,
-            title: "Configure Billing Options",
-            description: "Set billing cycle, payment requirements, and auto-renewal settings specific to this segment type.",
-            screenshot: "[Screenshot: Billing configuration panel]"
+            title: "Save and Apply",
+            description: "Review all configuration changes and click 'Save & Apply'. Changes may take 5-10 minutes to propagate across the network infrastructure.",
+            screenshot: "[Screenshot: Save confirmation dialog]"
           }
         ]
       },
       {
         type: "tips",
-        title: "Segment Optimization Tips",
+        title: "Configuration Best Practices",
         items: [
-          "Align device limits with segment use case (Hotel: 1-2, Enterprise: 3-5)",
-          "Use daily data cycles for Hotel, monthly for Enterprise and Co-Living",
-          "Enable strict check-in/check-out for Hotel segment to auto-manage access",
-          "Configure higher speed tiers for Enterprise and Co-Working segments",
-          "Set appropriate license allocation per segment based on capacity",
-          "Review segment utilization monthly and adjust limits accordingly"
+          "Align device limits with user type: power users (3-5 devices), guests (1-2 devices)",
+          "Use daily data cycles for temporary access, monthly for permanent users",
+          "Enable automatic check-out for temporary users to free licenses automatically",
+          "Configure appropriate speed tiers based on expected usage patterns",
+          "Set license capacity alerts at 80% to avoid hitting limits unexpectedly",
+          "Review network utilization monthly and adjust policies accordingly"
         ]
       },
       {
         type: "section",
-        title: "Segment-Specific Features",
+        title: "Advanced Features",
         items: [
           {
-            name: "Auto Check-In/Out (Hotel)",
-            description: "Automatically activate users on check-in date and block on check-out date. Frees licenses automatically for new guests."
+            name: "Automatic User Lifecycle Management",
+            description: "Automatically activate users on check-in date and block on check-out date. Frees licenses automatically for reuse. Ideal for temporary access scenarios."
           },
           {
-            name: "Device Type Restrictions",
-            description: "Limit non-human devices (smart TVs, IoT) in Hotel/PG segments while allowing more flexibility in Enterprise segment."
+            name: "Device Type Filtering",
+            description: "Create rules to allow/restrict device types based on policies. Control IoT device proliferation while ensuring user productivity with personal devices."
           },
           {
             name: "Policy Templates",
-            description: "Pre-configured policy sets optimized for each segment type that can be applied with one click."
+            description: "Pre-configured policy sets (Basic, Standard, Premium, Guest) that can be applied quickly. Customize templates to match your organization's needs."
           },
           {
-            name: "License Pools",
-            description: "Allocate dedicated license pools per segment to prevent one segment from consuming all available licenses."
+            name: "License Capacity Management",
+            description: "Monitor license utilization in real-time. Set automated alerts for threshold warnings. Plan capacity upgrades based on usage trends and growth forecasts."
           }
         ]
       }

@@ -143,7 +143,7 @@ const KnowledgeHome = () => {
             onKeyPress={(e) => e.key === 'Enter' && handleArticleClick('adding-new-users')}
           >
             <b>Adding New Users</b><br />
-            Learn how to create user accounts, assign policies based on segments (Enterprise, Co-Living, Hotel, etc.), and manage user credentials
+            Learn how to create user accounts, assign appropriate policies, and manage user credentials effectively
           </div>
           <div
             className="block-entry clickable"
@@ -153,7 +153,7 @@ const KnowledgeHome = () => {
             onKeyPress={(e) => e.key === 'Enter' && handleArticleClick('user-policies-licenses')}
           >
             <b>User Policies & Licenses</b><br />
-            Configure speed limits, data volumes, device limits, and data cycle types for different user segments and monitor license utilization
+            Configure speed limits, data volumes, device limits, and data cycle types for users and monitor license utilization
           </div>
           <div
             className="block-entry clickable"
@@ -215,8 +215,8 @@ const KnowledgeHome = () => {
             tabIndex={0}
             onKeyPress={(e) => e.key === 'Enter' && handleArticleClick('segment-configuration')}
           >
-            <b>Device Limits by Segment</b><br />
-            Understand segment-specific device limits and configure device type restrictions for different user segments
+            <b>Device Type Configuration</b><br />
+            Configure device limits per user and set device type restrictions to optimize network performance and security
           </div>
         </div>
       </div>
@@ -252,7 +252,7 @@ const KnowledgeHome = () => {
             onKeyPress={(e) => e.key === 'Enter' && handleArticleClick('generating-reports')}
           >
             <b>Report Criteria & Filters</b><br />
-            Apply date ranges, month ranges, policy filters, and segment filters to generate targeted reports for your needs
+            Apply date ranges, month ranges, policy filters, and status filters to generate targeted reports for your needs
           </div>
           <div
             className="block-entry clickable"
@@ -284,8 +284,8 @@ const KnowledgeHome = () => {
             tabIndex={0}
             onKeyPress={(e) => e.key === 'Enter' && handleArticleClick('segment-configuration')}
           >
-            <b>Segment Configuration</b><br />
-            Configure segment-specific settings for Enterprise, Co-Living, Co-Working, Hotel, PG, and Miscellaneous user types
+            <b>Advanced Network Configuration</b><br />
+            Configure device restrictions, license capacity, access controls, and performance optimization settings
           </div>
           <div
             className="block-entry clickable"
@@ -305,7 +305,7 @@ const KnowledgeHome = () => {
             onKeyPress={(e) => e.key === 'Enter' && handleArticleClick('user-policies-licenses')}
           >
             <b>License Management</b><br />
-            Monitor license utilization, manage license allocation across segments, and configure alerts for license thresholds
+            Monitor license utilization, manage license allocation capacity, and configure alerts for license thresholds
           </div>
         </div>
       </div>
@@ -331,7 +331,7 @@ const KnowledgeHome = () => {
             onKeyPress={(e) => e.key === 'Enter' && handleArticleClick('device-registration')}
           >
             <b>Device Registration Problems</b><br />
-            Troubleshoot MAC address binding errors, device visibility issues, and segment-specific device registration constraints
+            Troubleshoot MAC address binding errors, device visibility issues, and device registration constraints
           </div>
           <div
             className="block-entry clickable"
