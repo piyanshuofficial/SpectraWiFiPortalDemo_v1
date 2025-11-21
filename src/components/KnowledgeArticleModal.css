@@ -238,6 +238,16 @@
   transform: scale(1.15);
 }
 
+.screenshot-thumbnail {
+  width: 100%;
+  height: auto;
+  border-radius: 4px;
+  display: block;
+  max-height: 150px;
+  object-fit: cover;
+  border: 1px solid #e2e8f0;
+}
+
 .screenshot-icon {
   font-size: 0.95rem;
   flex-shrink: 0;

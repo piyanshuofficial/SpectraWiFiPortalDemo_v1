@@ -11,13 +11,79 @@ const KnowledgeArticleModal = ({ article, onClose }) => {
 
   if (!article) return null;
 
+  // Map screenshot text to image filename
+  const getScreenshotImage = (screenshotText) => {
+    const mapping = {
+      "Sidebar with Users menu highlighted": "sidebar-users-menu.svg",
+      "Add User button highlighted": "add-user-button.svg",
+      "Add User form with fields highlighted": "add-user-form.svg",
+      "Policy selection dropdown": "policy-selection-dropdown.svg",
+      "Date picker fields": "date-picker-fields.svg",
+      "Success notification": "success-notification.svg",
+      "User form modal": "user-form-modal.svg",
+      "Policy dropdowns": "policy-dropdowns.svg",
+      "Policy summary": "policy-summary.svg",
+      "Device Management page": "device-management-page.svg",
+      "Register Device button": "register-device-button.svg",
+      "MAC address field": "mac-address-field.svg",
+      "Device type dropdown": "device-type-dropdown.svg",
+      "Registration mode selection": "registration-mode-selection.svg",
+      "Device name field": "device-name-field.svg",
+      "Success confirmation": "success-confirmation.svg",
+      "Reports navigation": "reports-navigation.svg",
+      "Report categories": "report-categories.svg",
+      "Report card": "report-card.svg",
+      "Criteria form": "criteria-form.svg",
+      "Report preview": "report-preview.svg",
+      "Export buttons": "export-buttons.svg",
+      "User status badge": "user-status-badge.svg",
+      "User policy details": "user-policy-details.svg",
+      "Device list": "device-list.svg",
+      "License ring": "license-ring.svg",
+      "Reset password button": "reset-password-button.svg",
+      "Download Template button in toolbar": "download-template-button.svg",
+      "Sample CSV file with data": "sample-csv-file.svg",
+      "Import Users dialog with file selector": "import-users-dialog.svg",
+      "Validation results showing success/error counts": "validation-results.svg",
+      "Import confirmation dialog with user count": "import-confirmation-dialog.svg",
+      "User search bar with filters": "user-search-bar.svg",
+      "User row with actions menu highlighted": "user-row-actions-menu.svg",
+      "Actions dropdown menu": "actions-dropdown-menu.svg",
+      "Confirmation dialog for status change": "confirmation-dialog-status.svg",
+      "User list showing updated status badge": "user-list-updated-status.svg",
+      "User row with actions menu": "user-row-actions.svg",
+      "Reset Password option highlighted": "reset-password-option.svg",
+      "Password reset method selection": "password-reset-method.svg",
+      "Password reset success message": "password-reset-success.svg",
+      "Sidebar with Configuration menu expanded": "sidebar-configuration-menu.svg",
+      "Create New Policy button highlighted": "create-policy-button.svg",
+      "Policy name input field": "policy-name-input.svg",
+      "Speed limit dropdown": "speed-limit-dropdown.svg",
+      "Data volume selector": "data-volume-selector.svg",
+      "Device limit slider": "device-limit-slider.svg",
+      "Data cycle type options": "data-cycle-type-options.svg",
+      "Network Settings page": "network-settings-page.svg",
+      "Device restriction settings": "device-restriction-settings.svg",
+      "License capacity configuration": "license-capacity-config.svg",
+      "Access control panel": "access-control-panel.svg",
+      "Performance settings panel": "performance-settings-panel.svg",
+      "Save confirmation dialog": "save-confirmation-dialog.svg"
+    };
+
+    return mapping[screenshotText] || null;
+  };
+
   const handleScreenshotClick = (screenshot) => {
-    // For now, we'll use a placeholder image URL
-    // In production, this would be the actual screenshot image path
-    setLightboxImage({
-      src: '/placeholder-screenshot.png', // This would be replaced with actual image URLs
-      alt: screenshot
-    });
+    const cleanText = screenshot.replace(/^\[Screenshot:\s*/, '').replace(/\]$/, '');
+    const imageName = getScreenshotImage(cleanText);
+
+    if (imageName) {
+      const imagePath = require(`@assets/images/knowledge-center/${imageName}`);
+      setLightboxImage({
+        src: imagePath,
+        alt: cleanText
+      });
+    }
   };
 
   const handleCloseLightbox = () => {
@@ -348,19 +414,39 @@ const KnowledgeArticleModal = ({ article, onClose }) => {
                   <div className="step-content">
                     <h4 className="step-title">{step.title}</h4>
                     <p className="step-description">{step.description}</p>
-                    {step.screenshot && (
-                      <div
-                        className="screenshot-placeholder clickable"
-                        onClick={() => handleScreenshotClick(step.screenshot)}
-                        role="button"
-                        tabIndex={0}
-                        onKeyPress={(e) => e.key === 'Enter' && handleScreenshotClick(step.screenshot)}
-                        aria-label="Click to view screenshot"
-                      >
-                        <span className="screenshot-icon">📷</span>
-                        <span className="screenshot-text">{step.screenshot}</span>
-                      </div>
-                    )}
+                    {step.screenshot && (() => {
+                      const cleanText = step.screenshot.replace(/^\[Screenshot:\s*/, '').replace(/\]$/, '');
+                      const imageName = getScreenshotImage(cleanText);
+                      let imageSrc = null;
+
+                      try {
+                        if (imageName) {
+                          imageSrc = require(`@assets/images/knowledge-center/${imageName}`);
+                        }
+                      } catch (e) {
+                        // Image not found, will show text placeholder
+                      }
+
+                      return (
+                        <div
+                          className="screenshot-placeholder clickable"
+                          onClick={() => handleScreenshotClick(step.screenshot)}
+                          role="button"
+                          tabIndex={0}
+                          onKeyPress={(e) => e.key === 'Enter' && handleScreenshotClick(step.screenshot)}
+                          aria-label="Click to view screenshot"
+                        >
+                          {imageSrc ? (
+                            <img src={imageSrc} alt={cleanText} className="screenshot-thumbnail" />
+                          ) : (
+                            <>
+                              <span className="screenshot-icon">📷</span>
+                              <span className="screenshot-text">{step.screenshot}</span>
+                            </>
+                          )}
+                        </div>
+                      );
+                    })()}
                   </div>
                 </div>
               ))}
