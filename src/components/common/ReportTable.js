@@ -8,6 +8,7 @@ import {
   FaAngleRight,
   FaAngleDoubleRight,
 } from "react-icons/fa";
+import Spinner from "@components/Loading/Spinner";
 import { PAGINATION } from "../../constants/appConstants";
 import "./ReportTable.css";
 
@@ -171,14 +172,14 @@ const ReportTable = ({
   if (loading) {
     return (
       <div className="report-table-container">
-        <div 
+        <div
           className="report-table-state"
           role="status"
           aria-live="polite"
           aria-busy="true"
         >
           <div className="report-table-loading">
-            <div className="spinner" aria-hidden="true"></div>
+            <Spinner size="lg" color="primary" />
             <p>Loading report data...</p>
           </div>
         </div>

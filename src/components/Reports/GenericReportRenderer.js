@@ -5,6 +5,7 @@ import PropTypes from 'prop-types';
 import { Bar, Line, Pie } from "react-chartjs-2";
 import ChartContainer from "@components/common/ChartContainer";
 import ReportTable from "@components/common/ReportTable";
+import Spinner from "@components/Loading/Spinner";
 import { getReportDefinition } from "@config/reportDefinitions";
 
 /**
@@ -256,25 +257,21 @@ const GenericReportRenderer = ({ reportId, data }) => {
 
       {/* Loading state for reports without table (chart only) */}
       {chart && !table && loading && (
-        <div 
-          style={{ 
-            textAlign: 'center', 
+        <div
+          style={{
+            textAlign: 'center',
             padding: '60px 20px',
-            color: '#666'
+            color: '#666',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '16px'
           }}
           role="status"
           aria-live="polite"
         >
-          <div style={{
-            width: '40px',
-            height: '40px',
-            border: '4px solid #e0e0e0',
-            borderTopColor: '#204094',
-            borderRadius: '50%',
-            animation: 'spin 0.8s linear infinite',
-            margin: '0 auto 16px'
-          }}></div>
-          <p>Loading report data...</p>
+          <Spinner size="lg" color="primary" />
+          <p style={{ margin: 0 }}>Loading report data...</p>
         </div>
       )}
 

@@ -194,31 +194,51 @@ export const REPORT_DEFINITIONS = {
       getData: (data) => {
         const uniquePolicies = [...new Set(data.map(d => d.policy))];
         const months = [...new Set(data.map(d => d.month))];
+        const policyColors = [
+          "rgba(33, 80, 162, 0.7)",
+          "rgba(49, 120, 115, 0.7)",
+          "rgba(76, 175, 80, 0.7)",
+          "rgba(255, 152, 0, 0.7)"
+        ];
         const datasets = uniquePolicies.map((policy, idx) => ({
           label: policy,
           data: months.map(month => {
             const record = data.find(d => d.month === month && d.policy === policy);
             return record ? record.avgActiveUsers : 0;
           }),
-          backgroundColor: idx % 2 === 0 ? "rgba(33, 80, 162, 0.7)" : "rgba(49, 120, 115, 0.7)"
+          backgroundColor: policyColors[idx % policyColors.length]
         }));
         return {
           labels: months,
           datasets: datasets,
         };
       },
-      getOptions: (reportName) => ({
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          title: { display: true, text: reportName },
-          legend: { position: "top" },
-        },
-        scales: {
-          x: { stacked: true, title: { display: true, text: "Month" } },
-          y: { stacked: true, beginAtZero: true, title: { display: true, text: "Avg Active Users" } }
-        }
-      }),
+      getOptions: (reportName) => {
+        const baseOptions = getStandardChartOptions({
+          type: "bar",
+          title: reportName,
+          xLabel: "Month",
+          yLabel: "Avg Active Users",
+          darkMode: false,
+          forExport: true
+        });
+
+        // Override to add stacked configuration
+        return {
+          ...baseOptions,
+          scales: {
+            ...baseOptions.scales,
+            x: {
+              ...baseOptions.scales.x,
+              stacked: true
+            },
+            y: {
+              ...baseOptions.scales.y,
+              stacked: true
+            }
+          }
+        };
+      },
     },
     csv: {
       headers: ["Month", "Policy", "Avg Active Users"],
@@ -317,17 +337,13 @@ export const REPORT_DEFINITIONS = {
           borderWidth: 1,
         }],
       }),
-      getOptions: (reportName) => ({
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          title: { display: true, text: reportName },
-          legend: { position: "top" },
-        },
-        scales: {
-          x: { title: { display: true, text: "License" } },
-          y: { title: { display: true, text: "Usage" }, beginAtZero: true },
-        },
+      getOptions: (reportName) => getStandardChartOptions({
+        type: "bar",
+        title: reportName,
+        xLabel: "License",
+        yLabel: "Usage",
+        darkMode: false,
+        forExport: true
       }),
     },
     csv: {
@@ -352,13 +368,11 @@ export const REPORT_DEFINITIONS = {
           backgroundColor: ["#4caf50", "#ff9800", "#f44336"],
         }],
       }),
-      getOptions: (reportName) => ({
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          title: { display: true, text: reportName },
-          legend: { position: "top" },
-        },
+      getOptions: (reportName) => getStandardChartOptions({
+        type: "pie",
+        title: reportName,
+        darkMode: false,
+        forExport: true
       }),
     },
     csv: {

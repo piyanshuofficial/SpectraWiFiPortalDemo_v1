@@ -115,20 +115,7 @@
   gap: 1rem;
 }
 
-.spinner {
-  width: 2.5rem;
-  height: 2.5rem;
-  border: 0.25rem solid #e0e0e0;
-  border-top-color: #204094;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
+/* Spinner styles removed - now using Spinner component */
 
 .report-table-state p {
   color: #666;
@@ -478,11 +465,7 @@
     margin-bottom: 0.75rem;
   }
 
-  .report-table-loading .spinner {
-    width: 2rem;
-    height: 2rem;
-    border-width: 0.1875rem;
-  }
+  /* Spinner sizing handled by Spinner component */
 
   .pagination-page-buttons {
     display: none;
@@ -661,10 +644,7 @@
   color: #9ca3af;
 }
 
-[data-theme="dark"] .report-table-loading .spinner {
-  border-color: #374151;
-  border-top-color: #3b82f6;
-}
+/* Dark theme spinner colors handled by Spinner component */
 
 [data-theme="dark"] .report-table-empty h3 {
   color: #f3f4f6;

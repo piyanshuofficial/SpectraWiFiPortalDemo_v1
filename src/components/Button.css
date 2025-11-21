@@ -108,18 +108,24 @@
 .btn-loading {
   position: relative;
   pointer-events: none;
+  opacity: 0.7;
 }
 
-.btn-spinner {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
+.btn-loader {
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  border: 0.125rem solid rgba(255, 255, 255, 0.3);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: btn-loader-spin 0.8s linear infinite;
+  margin-right: var(--space-xs);
 }
 
-.btn-content-loading {
-  opacity: 0;
-  visibility: hidden;
+@keyframes btn-loader-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .btn-content {

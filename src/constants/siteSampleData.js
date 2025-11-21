@@ -127,7 +127,7 @@ export const siteConfig = {
     recentActivities: [
       {
         id: 1,
-        text: "New user 'john.doe' registered",
+        text: "New user 'Amit Mishra' registered",
         time: "2 mins ago"
       },
       {
@@ -317,8 +317,12 @@ export const siteReportData = {
     { licenseType: "Guest", usageCount: 81 },
   ],
 
-  // ALERTS - 30 days of data
-  "alerts-summary-report": reportGen.generateAlertsSummary('2024-07-01', 30),
+  // ALERTS - Summary counts only (not time-series)
+  "alerts-summary-report": [
+    { alertType: "Critical", count: 12 },
+    { alertType: "Warning", count: 47 },
+    { alertType: "Info", count: 156 },
+  ],
 
   // CLUSTER/CITY/COMPANY REPORTS - Static data (no filtering needed)
   "cluster-average-active-users": [

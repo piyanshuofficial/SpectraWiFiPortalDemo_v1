@@ -101,12 +101,17 @@
   z-index: 10;
 }
 
+.user-table thead tr {
+  background-color: #004aad; /* Ensure row also has background */
+}
+
 .user-table thead th {
   padding: 0.5rem 0.625rem;
   vertical-align: middle;
   text-align: left;
   line-height: var(--line-height-tight);
   white-space: nowrap; /* Prevent wrapping */
+  background-color: #004aad; /* Ensure each cell has background for sticky */
 }
 
 /* Ensure Actions column takes appropriate width */

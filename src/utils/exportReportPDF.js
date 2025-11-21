@@ -55,35 +55,75 @@ function calculateSummaryStats(rows) {
 
 /**
  * Generate executive summary insights from data
+ * Only includes statistics for meaningful metrics, not identifiers
  * @param {array} rows - Table row data
  * @param {array} headers - Table headers
  * @returns {array} Array of insight strings
  */
 function generateExecutiveInsights(rows, headers) {
   if (!rows || rows.length === 0) return null;
-  
+
   const insights = [];
-  
+
+  // List of field names/patterns that should NOT have averages/peaks
+  const excludePatterns = [
+    /user.*id/i,
+    /mac/i,
+    /ip.*address/i,
+    /client.*mac/i,
+    /phone/i,
+    /mobile/i,
+    /email/i,
+    /name/i,
+    /device.*id/i,
+    /session.*id/i,
+    /transaction.*id/i,
+    /attempt.*count/i,  // Individual attempt counts shouldn't be averaged
+    /vendor/i,
+    /location/i,
+    /ssid/i,
+    /method/i,
+    /result/i,
+    /status/i,
+    /reason/i,
+    /message/i,
+    /details/i,
+    /type/i,
+    /policy/i,
+    /timestamp/i,
+    /date/i,
+    /time/i
+  ];
+
   for (let colIndex = 1; colIndex < rows[0].length && colIndex < headers.length; colIndex++) {
+    const headerName = String(headers[colIndex]);
+
+    // Skip if header matches any exclude pattern
+    const shouldExclude = excludePatterns.some(pattern => pattern.test(headerName));
+    if (shouldExclude) continue;
+
     const values = rows.map(row => {
       const val = parseFloat(String(row[colIndex]).replace(/[^0-9.-]/g, ''));
       return isNaN(val) ? null : val;
     }).filter(v => v !== null);
-    
-    if (values.length > 0) {
+
+    // Only calculate insights if we have meaningful numeric data
+    if (values.length > 1) {
       const total = values.reduce((a, b) => a + b, 0);
       const avg = (total / values.length).toFixed(2);
       const max = Math.max(...values);
-      
-      const headerName = String(headers[colIndex]);
-      
-      if (values.length > 1) {
+
+      // Only add insights for columns with significant variation
+      // (Skip if all values are the same or very similar)
+      const hasVariation = max > avg * 1.1; // At least 10% variation
+
+      if (hasVariation || values.length >= 5) {
         insights.push("Average " + headerName + ": " + avg);
         insights.push("Peak " + headerName + ": " + max);
       }
     }
   }
-  
+
   return insights.length > 0 ? insights.slice(0, 3) : null;
 }
 
