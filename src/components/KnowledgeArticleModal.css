@@ -152,6 +152,8 @@
   border-radius: 6px;
   padding: 10px 12px;
   transition: all 0.2s ease;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .step-item:hover {
@@ -194,6 +196,7 @@
   white-space: pre-line;
   word-wrap: break-word;
   overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .screenshot-placeholder {
@@ -269,6 +272,8 @@
   border-left: 2px solid #22c55e;
   border-radius: 4px;
   transition: all 0.2s ease;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .tip-item:hover {
@@ -286,6 +291,9 @@
   color: #166534;
   font-size: 0.75rem;
   line-height: 1.4;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 /* Troubleshooting Section */
@@ -306,6 +314,10 @@
   border-radius: 5px;
   padding: 10px 12px;
   transition: all 0.2s ease;
+  min-width: 0;
+  overflow: hidden;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .troubleshooting-item:hover {
@@ -357,6 +369,9 @@
   font-size: 0.75rem;
   line-height: 1.45;
   white-space: pre-line;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 /* Section Items */
@@ -377,6 +392,8 @@
   border-radius: 5px;
   padding: 10px 12px;
   transition: all 0.2s ease;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .section-item:hover {
@@ -399,6 +416,7 @@
   margin: 0;
   word-wrap: break-word;
   overflow-wrap: break-word;
+  word-break: break-word;
   white-space: pre-line;
 }
 

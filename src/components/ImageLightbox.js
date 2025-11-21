@@ -1,6 +1,7 @@
 // src/components/ImageLightbox.js
 
 import React, { useEffect } from 'react';
+import ReactDOM from 'react-dom';
 import { FaTimes, FaSearchPlus } from 'react-icons/fa';
 import './ImageLightbox.css';
 
@@ -27,7 +28,7 @@ const ImageLightbox = ({ imageSrc, imageAlt, onClose }) => {
     }
   };
 
-  return (
+  const lightboxContent = (
     <div className="image-lightbox-overlay" onClick={handleBackdropClick}>
       <button
         className="lightbox-close-btn"
@@ -52,6 +53,11 @@ const ImageLightbox = ({ imageSrc, imageAlt, onClose }) => {
         </div>
       </div>
     </div>
+  );
+
+  return ReactDOM.createPortal(
+    lightboxContent,
+    document.body
   );
 };
 
