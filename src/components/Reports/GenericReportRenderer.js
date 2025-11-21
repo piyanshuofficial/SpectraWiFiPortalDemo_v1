@@ -1,6 +1,6 @@
 // src/components/Reports/GenericReportRenderer.js
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import PropTypes from 'prop-types';
 import { Bar, Line, Pie } from "react-chartjs-2";
 import ChartContainer from "@components/common/ChartContainer";
@@ -15,8 +15,68 @@ import { getReportDefinition } from "@config/reportDefinitions";
  * Data is now sourced from centralized userSampleData or siteSampleData
  */
 const GenericReportRenderer = ({ reportId, data }) => {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [processedData, setProcessedData] = useState(null);
+
   const definition = getReportDefinition(reportId);
   
+  useEffect(() => {
+    // Simulate data processing/loading
+    setLoading(true);
+    setError(null);
+    
+    const timer = setTimeout(() => {
+      if (!data || data.length === 0) {
+        setError('No data available for this report');
+        setProcessedData(null);
+      } else {
+        setProcessedData(data);
+      }
+      setLoading(false);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [data, reportId]);
+
+  const handleRetry = () => {
+    setLoading(true);
+    setError(null);
+    // ========================================
+    // TODO: Backend Integration - Retry Data Fetch
+    // ========================================
+    // In real implementation, this would refetch data from backend
+    // 
+    // const refetchData = async () => {
+    //   try {
+    //     const response = await fetch(`/api/reports/${reportId}/data`, {
+    //       method: 'POST',
+    //       headers: { 'Content-Type': 'application/json' },
+    //       body: JSON.stringify({ filters: currentFilters })
+    //     });
+    //     const result = await response.json();
+    //     if (result.success) {
+    //       setProcessedData(result.data.rows);
+    //       setError(null);
+    //     }
+    //   } catch (err) {
+    //     setError('Failed to load report data. Please try again.');
+    //   } finally {
+    //     setLoading(false);
+    //   }
+    // };
+    // refetchData();
+    // ========================================
+    
+    setTimeout(() => {
+      if (data && data.length > 0) {
+        setProcessedData(data);
+        setError(null);
+      }
+      setLoading(false);
+    }, 500);
+  };
+
   if (!definition) {
     return (
       <div className="report-placeholder" role="alert">
@@ -27,7 +87,7 @@ const GenericReportRenderer = ({ reportId, data }) => {
 
   if (definition.component) {
     const CustomComponent = definition.component;
-    return <CustomComponent data={data} />;
+    return <CustomComponent data={processedData} loading={loading} error={error} />;
   }
 
   // ========================================
@@ -114,14 +174,6 @@ const GenericReportRenderer = ({ reportId, data }) => {
   // - Use cache key: `report:${reportId}:${hash(filters)}`
   // ========================================
 
-  if (!data) {
-    return (
-      <div className="report-placeholder" role="status">
-        <p>No data available for: {reportId}</p>
-      </div>
-    );
-  }
-
   const { chart, table } = definition;
 
   const getChartComponent = (type) => {
@@ -133,13 +185,39 @@ const GenericReportRenderer = ({ reportId, data }) => {
     }
   };
 
+  // Prepare table data with proper column alignment detection
+  const getColumnAlignment = () => {
+    if (!processedData || processedData.length === 0 || !table) return {};
+    
+    const alignment = {};
+    const firstRow = table.getRows(processedData)[0] || [];
+    
+    firstRow.forEach((value, index) => {
+      // First column (usually ID/Date/Month) - center aligned
+      if (index === 0) {
+        alignment[index] = 'center';
+      }
+      // Numeric columns - center aligned
+      else if (typeof value === 'number' || !isNaN(parseFloat(String(value).replace(/,/g, '')))) {
+        alignment[index] = 'center';
+      }
+      // Default - center aligned
+      else {
+        alignment[index] = 'center';
+      }
+    });
+    
+    return alignment;
+  };
+
   return (
     <div style={{ padding: '1.25rem' }}>
-      {chart && (
+      {/* Chart Section */}
+      {chart && !loading && !error && processedData && processedData.length > 0 && (
         <ChartContainer height={400} minHeight={400}>
           {(() => {
             const ChartComponent = getChartComponent(chart.type);
-            const chartData = chart.getData(data);
+            const chartData = chart.getData(processedData);
             const chartOptions = {
               ...chart.getOptions(""),
               responsive: true,
@@ -151,16 +229,89 @@ const GenericReportRenderer = ({ reportId, data }) => {
         </ChartContainer>
       )}
 
+      {/* Table Section */}
       {table && (
-        <ReportTable 
-          columns={table.columns} 
-          data={table.getRows(data)} 
-        />
+        <div style={{ marginTop: chart ? '2rem' : '0' }}>
+          <ReportTable 
+            columns={table.columns} 
+            data={processedData ? table.getRows(processedData) : []}
+            loading={loading}
+            error={error}
+            onRetry={handleRetry}
+            columnAlignment={getColumnAlignment()}
+            showPagination={true}
+            defaultRowsPerPage={20}
+            rowsPerPageOptions={[10, 20, 50, 100]}
+            totalRecords={processedData ? processedData.length : 0}
+          />
+        </div>
       )}
 
-      {!chart && !table && (
+      {/* Fallback for no chart and no table */}
+      {!chart && !table && !loading && (
         <div className="report-placeholder" role="status">
           <p>No visualization configured for this report</p>
+        </div>
+      )}
+
+      {/* Loading state for reports without table (chart only) */}
+      {chart && !table && loading && (
+        <div 
+          style={{ 
+            textAlign: 'center', 
+            padding: '60px 20px',
+            color: '#666'
+          }}
+          role="status"
+          aria-live="polite"
+        >
+          <div style={{
+            width: '40px',
+            height: '40px',
+            border: '4px solid #e0e0e0',
+            borderTopColor: '#204094',
+            borderRadius: '50%',
+            animation: 'spin 0.8s linear infinite',
+            margin: '0 auto 16px'
+          }}></div>
+          <p>Loading report data...</p>
+        </div>
+      )}
+
+      {/* Error state for reports without table (chart only) */}
+      {chart && !table && error && (
+        <div 
+          style={{ 
+            textAlign: 'center', 
+            padding: '60px 20px',
+            color: '#d32f2f'
+          }}
+          role="alert"
+          aria-live="assertive"
+        >
+          <div style={{ fontSize: '3rem', marginBottom: '16px' }}>⚠</div>
+          <h3 style={{ margin: '0 0 8px 0', fontSize: '1.25rem' }}>
+            Failed to Load Report
+          </h3>
+          <p style={{ margin: '0 0 20px 0', color: '#666' }}>
+            {error}
+          </p>
+          <button 
+            onClick={handleRetry}
+            className="btn btn-primary"
+            type="button"
+            style={{
+              padding: '8px 16px',
+              background: '#204094',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '0.9rem'
+            }}
+          >
+            Retry
+          </button>
         </div>
       )}
     </div>
@@ -169,7 +320,11 @@ const GenericReportRenderer = ({ reportId, data }) => {
 
 GenericReportRenderer.propTypes = {
   reportId: PropTypes.string.isRequired,
-  data: PropTypes.array.isRequired,
+  data: PropTypes.array,
+};
+
+GenericReportRenderer.defaultProps = {
+  data: null,
 };
 
 export default GenericReportRenderer;
