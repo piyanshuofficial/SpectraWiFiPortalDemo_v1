@@ -8,10 +8,10 @@ import '@components/Header.css';
 import { NOTIFICATIONS } from '@constants/appConstants';
 import { showInfo } from '@utils/notifications';
 import RoleAccessSelector from '@components/RoleAccessSelector';
-
-const siteName = "Sample Site Name";
+import { useSiteConfig } from '@hooks/useSiteConfig';
 
 const Header = () => {
+  const { siteName } = useSiteConfig();
   const [notifOpen, setNotifOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const notifRef = useRef();

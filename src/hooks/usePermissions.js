@@ -6,16 +6,24 @@ import { Permissions } from '../utils/accessLevels';
 
 /**
  * Custom hook for managing user permissions
- * 
+ *
  * @returns {Object} Object containing:
  *   - rolePermissions: All permissions for current user's role and access level
  *   - hasPermission: Function to check if user has a specific permission
  *   - canEditUsers: Boolean indicating if user can edit users
  *   - canViewReports: Boolean indicating if user can view reports
  *   - canManageDevices: Boolean indicating if user can manage devices
- * 
+ *   - canManagePolicies: Boolean indicating if user can manage policies
+ *   - canViewAnalytics: Boolean indicating if user can view analytics
+ *   - canExportData: Boolean indicating if user can export data
+ *   - canManageSegments: Boolean indicating if user can manage segments
+ *   - canViewMultipleSites: Boolean indicating if user can view multiple sites
+ *   - canManageBilling: Boolean indicating if user can manage billing
+ *   - canConfigureSystem: Boolean indicating if user can configure system settings
+ *   - canManageRoles: Boolean indicating if user can manage roles and permissions
+ *
  * @example
- * const { hasPermission, canEditUsers } = usePermissions();
+ * const { hasPermission, canEditUsers, canManagePolicies } = usePermissions();
  * if (canEditUsers) {
  *   // Show edit UI
  * }
@@ -34,8 +42,18 @@ export const usePermissions = () => {
   return {
     rolePermissions,
     hasPermission,
+    // Existing permissions
     canEditUsers: rolePermissions.canEditUsers === true,
     canViewReports: rolePermissions.canViewReports === true,
     canManageDevices: rolePermissions.canManageDevices === true,
+    // New permissions
+    canManagePolicies: rolePermissions.canManagePolicies === true,
+    canViewAnalytics: rolePermissions.canViewAnalytics === true,
+    canExportData: rolePermissions.canExportData === true,
+    canManageSegments: rolePermissions.canManageSegments === true,
+    canViewMultipleSites: rolePermissions.canViewMultipleSites === true,
+    canManageBilling: rolePermissions.canManageBilling === true,
+    canConfigureSystem: rolePermissions.canConfigureSystem === true,
+    canManageRoles: rolePermissions.canManageRoles === true,
   };
 };

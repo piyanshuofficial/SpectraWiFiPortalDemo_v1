@@ -97,6 +97,37 @@
 .block-entry {
   margin-bottom: 0.75rem;
   font-size: var(--font-base);
+  line-height: 1.6;
+}
+
+.block-entry.clickable {
+  cursor: pointer;
+  padding: 0.875rem;
+  margin-left: -0.875rem;
+  margin-right: -0.875rem;
+  border-radius: var(--radius-lg);
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+}
+
+.block-entry.clickable:hover {
+  background: #f0f5ff;
+  border-color: #204094;
+  transform: translateX(4px);
+}
+
+.block-entry.clickable:active {
+  transform: translateX(2px);
+}
+
+.block-entry.clickable b {
+  color: #204094;
+  transition: color 0.2s ease;
+}
+
+.block-entry.clickable:hover b {
+  color: #153874;
+  text-decoration: underline;
 }
 
 .knowledge-help-row {

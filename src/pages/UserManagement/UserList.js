@@ -18,20 +18,17 @@ import { useSort } from "../../hooks/useSort";
 import { useFilter } from "../../hooks/useFilter";
 import { useTableState } from "../../hooks/useTableState";
 import { commonColumns, segmentSpecificFields } from "../../utils/columns";
+import { useSegment } from "../../context/SegmentContext";
 import userSampleData from "../../constants/userSampleData";
 import UserLicenseRing from '../../components/common/UserLicenseRing';
 import { useLocation } from 'react-router-dom';
 import notifications from "../../utils/notifications";
 import SEGMENT_DEVICE_AVAILABILITY from '../../config/segmentDeviceConfig';
-import siteConfig from '../../config/siteConfig';
 import { PAGINATION } from '../../constants/appConstants';
 import { useLoading } from "../../context/LoadingContext";
 import LoadingOverlay from "../../components/Loading/LoadingOverlay";
 import SkeletonLoader from "../../components/Loading/SkeletonLoader";
 import { exportChartDataToCSV } from "../../utils/exportUtils";
-
-const MAX_LICENSES = siteConfig.licenses.maxLicenses;
-const USED_LICENSES = siteConfig.licenses.usedLicenses;
 
 const PolicyCell = React.memo(({ userPolicy }) => {
   if (!userPolicy) return <td className="policy-column">--</td>;
@@ -58,18 +55,17 @@ const PolicyCell = React.memo(({ userPolicy }) => {
 
 PolicyCell.displayName = 'PolicyCell';
 
-const UserTableRow = React.memo(({ 
-  user, 
-  visibleColumns, 
+const UserTableRow = React.memo(({
+  user,
+  visibleColumns,
   segmentSpecificFields,
   segmentFilter,
   hasEditPermission,
   onDetailsClick,
-  onEditClick,
-  onDeleteClick
+  onEditClick
 }) => {
   const isBlocked = user.status === "Blocked" || user.status === "Restricted";
-  
+
   return (
     <tr>
       {visibleColumns.includes("id") && <td>{user.id}</td>}
@@ -98,25 +94,15 @@ const UserTableRow = React.memo(({
           <FaInfoCircle />
         </Button>
         {hasEditPermission ? (
-          <>
-            <Button
-              variant="primary"
-              title={isBlocked ? "Cannot edit user with Blocked status" : "Edit User"}
-              aria-label={isBlocked ? "Edit User Disabled - Blocked Status" : "Edit User"}
-              onClick={() => onEditClick(user)}
-              disabled={isBlocked}
-            >
-              <FaEdit />
-            </Button>
-            <Button 
-              variant="danger" 
-              title="Delete User - Disabled" 
-              aria-label="Delete User Disabled" 
-              disabled
-            >
-              <FaTrash />
-            </Button>
-          </>
+          <Button
+            variant="primary"
+            title={isBlocked ? "Cannot edit user with Blocked status" : "Edit User"}
+            aria-label={isBlocked ? "Edit User Disabled - Blocked Status" : "Edit User"}
+            onClick={() => onEditClick(user)}
+            disabled={isBlocked}
+          >
+            <FaEdit />
+          </Button>
         ) : (
           <Button 
             variant="primary" 
@@ -148,6 +134,7 @@ UserTableRow.displayName = 'UserTableRow';
 
 const UserList = () => {
   const { canEditUsers, canViewReports } = usePermissions();
+  const { currentSegment } = useSegment();
   const location = useLocation();
   const { startLoading, stopLoading, isLoading } = useLoading();
   
@@ -156,7 +143,8 @@ const UserList = () => {
   const [initialLoad, setInitialLoad] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [exportingCSV, setExportingCSV] = useState(false);
-  const [segmentFilter, setSegmentFilter] = useState("enterprise");
+  // Use segment from context instead of local state
+  const segmentFilter = currentSegment;
   const [advancedFilterVisible, setAdvancedFilterVisible] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [showFormModal, setShowFormModal] = useState(false);
@@ -1026,8 +1014,7 @@ const UserList = () => {
       });
 
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T')[0];
-      const segmentName = segmentFilter.charAt(0).toUpperCase() + segmentFilter.slice(1);
-      const filename = `Users_${segmentName}_${timestamp}.csv`;
+      const filename = `Users_${timestamp}.csv`;
 
       exportChartDataToCSV({ headers, rows }, filename);
       
@@ -1120,6 +1107,20 @@ const UserList = () => {
 
   const segmentSpecificCols = segmentSpecificFields[segmentFilter] || [];
 
+  // Calculate segment-specific license counts
+  const segmentLicenseLimits = useMemo(() => {
+    const segmentLimits = {
+      enterprise: { max: 1000, used: 850 },
+      coLiving: { max: 400, used: 320 },
+      hotel: { max: 500, used: 450 },
+      coWorking: { max: 350, used: 280 },
+      pg: { max: 250, used: 180 },
+      miscellaneous: { max: 150, used: 95 }
+    };
+
+    return segmentLimits[segmentFilter] || { max: 1000, used: 500 };
+  }, [segmentFilter]);
+
   if (initialLoad) {
     return (
       <div className="user-list-container">
@@ -1136,22 +1137,6 @@ const UserList = () => {
   return (
     <div className="user-list-container">
       <LoadingOverlay active={isLoading('users') || exportingCSV} message={exportingCSV ? "Exporting users..." : "Processing..."} />
-      
-      <div className="segment-selector-test">
-        <label htmlFor="segment-test-select">Segment:</label>
-        <select
-          id="segment-test-select"
-          value={segmentFilter}
-          onChange={(e) => setSegmentFilter(e.target.value)}
-          className="segment-test-dropdown"
-        >
-          {Object.keys(segmentSpecificFields).map((s) => (
-            <option key={s} value={s}>
-              {s === "all" ? "All" : s.charAt(0).toUpperCase() + s.slice(1)}
-            </option>
-          ))}
-        </select>
-      </div>
 
       <div className="user-toolbar-ring-row">
         <div className="user-toolbar">
@@ -1171,7 +1156,7 @@ const UserList = () => {
           />
         </div>
         <div className="user-license-ring-header">
-          <UserLicenseRing current={USED_LICENSES} total={MAX_LICENSES} size={160} ringWidth={16} />
+          <UserLicenseRing current={segmentLicenseLimits.used} total={segmentLicenseLimits.max} size={160} ringWidth={16} />
           {/* ========================================
               TODO: Backend Integration - Real-time License Count
               ========================================
@@ -1192,23 +1177,6 @@ const UserList = () => {
       </div>
 
       <div className="column-controls-compact">
-        <div className="column-controls-left">
-          <label htmlFor="rows-per-page-select" className="compact-label">
-            Rows:
-          </label>
-          <select
-            id="rows-per-page-select"
-            className="compact-select"
-            value={rowsPerPage}
-            onChange={(e) => setRowsPerPage(Number(e.target.value))}
-            aria-label="Rows per page"
-          >
-            {PAGINATION.ROWS_PER_PAGE_OPTIONS.map((n) => (
-              <option key={n} value={n}>{n}</option>
-            ))}
-          </select>
-        </div>
-
         <div className="column-controls-right">
           <span className="compact-label">Columns:</span>
           <div className="column-checkbox-compact">
@@ -1376,7 +1344,6 @@ const UserList = () => {
                   hasEditPermission={canEditUsers}
                   onDetailsClick={handleDetailsClick}
                   onEditClick={handleEditClick}
-                  onDeleteClick={handleDelete}
                 />
               ))
             )}

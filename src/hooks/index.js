@@ -16,6 +16,7 @@ export { usePermissions } from './usePermissions';
 export { useSort } from './useSort';
 export { useFilter } from './useFilter';
 export { useTableState } from './useTableState';
+export { useSiteConfig } from './useSiteConfig';
 
 /**
  * Hook Usage Guide:

@@ -1,19 +1,20 @@
 // src/pages/Dashboard.js
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Card from "../components/Card";
 import Button from "../components/Button";
 import { Line, Bar, Pie } from "react-chartjs-2";
 import { FaUsers, FaUserFriends, FaChartPie, FaExclamationCircle, FaFileCsv, FaFilePdf, FaLifeRing } from "react-icons/fa";
 import { usePermissions } from "../hooks/usePermissions";
 import { useLoading } from "../context/LoadingContext";
+import { useSegment } from "../context/SegmentContext";
 import siteSampleData from "../constants/siteSampleData";
+import userSampleData from "../constants/userSampleData";
 import { getStandardChartOptions } from "../utils/commonChartOptions";
 import { EXPORT_CANVAS_SIZES } from "../utils/exportConstants";
 import { exportChartDataToCSV } from "../utils/exportUtils";
 import { exportReportPDF } from "../utils/exportReportPDF";
 import { useNavigate } from "react-router-dom";
-import siteConfig from "../config/siteConfig";
 import { ANIMATION, ACTIVITY } from '../constants/appConstants';
 import LoadingOverlay from "../components/Loading/LoadingOverlay";
 import SkeletonLoader from "../components/Loading/SkeletonLoader";
@@ -23,17 +24,64 @@ import "./Dashboard.css";
 
 
 const Dashboard = () => {
-  const metrics = {
-    activeUsers: siteConfig?.dashboard?.activeUsers || 850,
-    activeUsersDelta: 25,
-    licenseUsagePercent: Math.round((siteConfig?.licenses?.usedLicenses / siteConfig?.licenses?.maxLicenses) * 100) || 57,
-    licenseUsageDelta: 2,
-    dataUsageTB: 1.2,
-    dataUsageDelta: 0.05,
-    currentAlerts: 0,
-    alertsDelta: -2
-  };
-  
+  const { currentSegment } = useSegment();
+
+  // Calculate segment-specific metrics with realistic variation
+  const metrics = useMemo(() => {
+    // Different segments have different sizes and usage patterns
+    const segmentMetrics = {
+      enterprise: {
+        baseUsers: 850,
+        licensePercent: 68,
+        dataUsageTB: 2.8,
+        alerts: 3
+      },
+      coLiving: {
+        baseUsers: 320,
+        licensePercent: 45,
+        dataUsageTB: 1.5,
+        alerts: 1
+      },
+      hotel: {
+        baseUsers: 450,
+        licensePercent: 52,
+        dataUsageTB: 1.8,
+        alerts: 2
+      },
+      coWorking: {
+        baseUsers: 280,
+        licensePercent: 38,
+        dataUsageTB: 1.2,
+        alerts: 1
+      },
+      pg: {
+        baseUsers: 180,
+        licensePercent: 25,
+        dataUsageTB: 0.6,
+        alerts: 0
+      },
+      miscellaneous: {
+        baseUsers: 95,
+        licensePercent: 15,
+        dataUsageTB: 0.3,
+        alerts: 0
+      }
+    };
+
+    const segmentConfig = segmentMetrics[currentSegment] || segmentMetrics.enterprise;
+
+    return {
+      activeUsers: segmentConfig.baseUsers,
+      activeUsersDelta: Math.round(segmentConfig.baseUsers * 0.03), // 3% delta
+      licenseUsagePercent: segmentConfig.licensePercent,
+      licenseUsageDelta: 2,
+      dataUsageTB: segmentConfig.dataUsageTB,
+      dataUsageDelta: Math.round(segmentConfig.dataUsageTB * 0.04 * 100) / 100, // 4% delta
+      currentAlerts: segmentConfig.alerts,
+      alertsDelta: -1
+    };
+  }, [currentSegment]);
+
   const { hasPermission } = usePermissions();
   const { startLoading, stopLoading } = useLoading();
   const navigate = useNavigate();
@@ -118,9 +166,112 @@ const Dashboard = () => {
     }
   };
 
-  const networkData = siteSampleData.getSiteReportData("network-usage-report");
-  const licenseData = siteSampleData.getSiteReportData("license-usage-report");
-  const alertsData = siteSampleData.getSiteReportData("alerts-summary-report");
+  // Get segment-specific data for dashboard charts
+  const networkData = useMemo(() => {
+    // Generate segment-specific network usage data with variation per segment
+    const baseData = siteSampleData.getSiteReportData("network-usage-report") || [];
+
+    // Different segments have different usage patterns
+    const segmentMultipliers = {
+      enterprise: 2.5,      // Enterprise uses most bandwidth
+      coLiving: 1.8,        // Co-living has high usage
+      hotel: 1.5,           // Hotels have moderate usage
+      coWorking: 1.3,       // Co-working moderate-low
+      pg: 0.8,              // PG uses less
+      miscellaneous: 0.5    // Miscellaneous lowest
+    };
+
+    const multiplier = segmentMultipliers[currentSegment] || 1.0;
+
+    // Scale and add some variation per segment
+    return baseData.map((item, index) => {
+      // Add segment-specific pattern (some segments peak differently)
+      const dayVariation = currentSegment === 'enterprise' ? 1.0 + (Math.sin(index / 5) * 0.2) :
+                          currentSegment === 'hotel' ? 1.0 + (Math.cos(index / 4) * 0.25) :
+                          1.0;
+
+      return {
+        ...item,
+        usageGB: Math.round(item.usageGB * multiplier * dayVariation * 10) / 10
+      };
+    });
+  }, [currentSegment]);
+
+  const licenseData = useMemo(() => {
+    // Generate segment-specific license usage data with realistic distributions
+    const segmentLicenseDistributions = {
+      enterprise: [
+        { licenseType: "Premium", usageCount: 320 },
+        { licenseType: "Standard", usageCount: 410 },
+        { licenseType: "Basic", usageCount: 95 },
+        { licenseType: "Guest", usageCount: 25 }
+      ],
+      coLiving: [
+        { licenseType: "Standard", usageCount: 180 },
+        { licenseType: "Basic", usageCount: 110 },
+        { licenseType: "Guest", usageCount: 30 }
+      ],
+      hotel: [
+        { licenseType: "Premium", usageCount: 50 },
+        { licenseType: "Standard", usageCount: 120 },
+        { licenseType: "Guest", usageCount: 280 }
+      ],
+      coWorking: [
+        { licenseType: "Premium", usageCount: 95 },
+        { licenseType: "Standard", usageCount: 150 },
+        { licenseType: "Basic", usageCount: 35 }
+      ],
+      pg: [
+        { licenseType: "Standard", usageCount: 85 },
+        { licenseType: "Basic", usageCount: 75 },
+        { licenseType: "Guest", usageCount: 20 }
+      ],
+      miscellaneous: [
+        { licenseType: "Basic", usageCount: 60 },
+        { licenseType: "Guest", usageCount: 35 }
+      ]
+    };
+
+    return segmentLicenseDistributions[currentSegment] || segmentLicenseDistributions.enterprise;
+  }, [currentSegment]);
+
+  const alertsData = useMemo(() => {
+    // Generate segment-specific alerts data with different patterns
+    const segmentAlertDistributions = {
+      enterprise: [
+        { alertType: "Critical", count: 8 },
+        { alertType: "Warning", count: 42 },
+        { alertType: "Info", count: 125 }
+      ],
+      coLiving: [
+        { alertType: "Critical", count: 2 },
+        { alertType: "Warning", count: 18 },
+        { alertType: "Info", count: 65 }
+      ],
+      hotel: [
+        { alertType: "Critical", count: 5 },
+        { alertType: "Warning", count: 28 },
+        { alertType: "Info", count: 95 }
+      ],
+      coWorking: [
+        { alertType: "Critical", count: 3 },
+        { alertType: "Warning", count: 15 },
+        { alertType: "Info", count: 48 }
+      ],
+      pg: [
+        { alertType: "Critical", count: 0 },
+        { alertType: "Warning", count: 8 },
+        { alertType: "Info", count: 32 }
+      ],
+      miscellaneous: [
+        { alertType: "Critical", count: 0 },
+        { alertType: "Warning", count: 4 },
+        { alertType: "Info", count: 18 }
+      ]
+    };
+
+    return segmentAlertDistributions[currentSegment] || segmentAlertDistributions.enterprise;
+  }, [currentSegment]);
 
   const safeNumber = (value, fallback = 0) => typeof value === "number" && !isNaN(value) ? value : fallback;
 

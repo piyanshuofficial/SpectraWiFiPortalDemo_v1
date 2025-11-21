@@ -6,10 +6,10 @@ import { AccessLevels, Roles } from "../utils/accessLevels";
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  // Default to maximum rights: GROUP access level (highest) + ADMIN role (highest)
+  // Default to SITE access level (easiest to test) + ADMIN role (highest)
   const [currentUser, setCurrentUser] = useState({
     role: Roles.ADMIN,
-    accessLevel: AccessLevels.GROUP,
+    accessLevel: AccessLevels.SITE,
     username: "adminUser",
   });
 

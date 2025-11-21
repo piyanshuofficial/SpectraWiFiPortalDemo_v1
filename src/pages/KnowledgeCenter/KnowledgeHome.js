@@ -3,13 +3,27 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { FaBookOpen, FaVideo, FaQuestionCircle } from 'react-icons/fa';
 import SkeletonLoader from '../../components/Loading/SkeletonLoader';
+import KnowledgeArticleModal from '../../components/KnowledgeArticleModal';
+import { getArticle } from '../../constants/knowledgeArticles';
 import { ANIMATION } from '../../constants/appConstants';
 import './KnowledgeHome.css';
 
 const KnowledgeHome = () => {
   const [supportHighlight, setSupportHighlight] = useState(false);
   const [initialLoad, setInitialLoad] = useState(true);
+  const [selectedArticle, setSelectedArticle] = useState(null);
   const helpSectionRef = useRef(null);
+
+  const handleArticleClick = (articleId) => {
+    const article = getArticle(articleId);
+    if (article) {
+      setSelectedArticle(article);
+    }
+  };
+
+  const handleCloseArticle = () => {
+    setSelectedArticle(null);
+  };
 
   useEffect(() => {
     const loadContent = () => {
@@ -121,40 +135,88 @@ const KnowledgeHome = () => {
       <div className="knowledge-blocks-row">
         <div className="knowledge-block">
           <div className="block-title">User Management</div>
-          <div className="block-entry">
+          <div
+            className="block-entry clickable"
+            onClick={() => handleArticleClick('adding-new-users')}
+            role="button"
+            tabIndex={0}
+            onKeyPress={(e) => e.key === 'Enter' && handleArticleClick('adding-new-users')}
+          >
             <b>Adding New Users</b><br />
             Learn how to create user accounts, assign policies based on segments (Enterprise, Co-Living, Hotel, etc.), and manage user credentials
           </div>
-          <div className="block-entry">
+          <div
+            className="block-entry clickable"
+            onClick={() => handleArticleClick('user-policies-licenses')}
+            role="button"
+            tabIndex={0}
+            onKeyPress={(e) => e.key === 'Enter' && handleArticleClick('user-policies-licenses')}
+          >
             <b>User Policies & Licenses</b><br />
             Configure speed limits, data volumes, device limits, and data cycle types for different user segments and monitor license utilization
           </div>
-          <div className="block-entry">
+          <div
+            className="block-entry clickable"
+            onClick={() => handleArticleClick('bulk-user-operations')}
+            role="button"
+            tabIndex={0}
+            onKeyPress={(e) => e.key === 'Enter' && handleArticleClick('bulk-user-operations')}
+          >
             <b>Bulk User Operations</b><br />
             Import multiple users from CSV files, perform batch updates, and export user data for reporting and compliance
           </div>
-          <div className="block-entry">
+          <div
+            className="block-entry clickable"
+            onClick={() => handleArticleClick('user-status-management')}
+            role="button"
+            tabIndex={0}
+            onKeyPress={(e) => e.key === 'Enter' && handleArticleClick('user-status-management')}
+          >
             <b>User Status Management</b><br />
             Activate, suspend, or block users, manage user credentials, and handle password resets for your organization
           </div>
         </div>
         <div className="knowledge-block">
           <div className="block-title">Device Management</div>
-          <div className="block-entry">
+          <div
+            className="block-entry clickable"
+            onClick={() => handleArticleClick('device-registration')}
+            role="button"
+            tabIndex={0}
+            onKeyPress={(e) => e.key === 'Enter' && handleArticleClick('device-registration')}
+          >
             <b>Device Registration</b><br />
             Register new devices with MAC address binding, assign devices to users, and configure human vs non-human device types
           </div>
-          <div className="block-entry">
-            <b>Access Point Management</b><br />
-            Monitor online/offline status of access points, view connected clients, and manage network infrastructure across your sites
+          <div
+            className="block-entry clickable"
+            onClick={() => handleArticleClick('device-registration')}
+            role="button"
+            tabIndex={0}
+            onKeyPress={(e) => e.key === 'Enter' && handleArticleClick('device-registration')}
+          >
+            <b>Device Assignment & Tracking</b><br />
+            Assign registered devices to users, track device connection history, and monitor data usage per device
           </div>
-          <div className="block-entry">
-            <b>Device Monitoring</b><br />
-            Track device connection history, monitor data usage per device, and identify devices consuming excessive bandwidth
+          <div
+            className="block-entry clickable"
+            onClick={() => handleArticleClick('troubleshooting-connection')}
+            role="button"
+            tabIndex={0}
+            onKeyPress={(e) => e.key === 'Enter' && handleArticleClick('troubleshooting-connection')}
+          >
+            <b>Device Connectivity Issues</b><br />
+            Troubleshoot device connection problems, authentication failures, and MAC address binding errors
           </div>
-          <div className="block-entry">
-            <b>Network Security</b><br />
-            Detect rogue access points, block unauthorized devices, and manage device access controls for enhanced network security
+          <div
+            className="block-entry clickable"
+            onClick={() => handleArticleClick('segment-configuration')}
+            role="button"
+            tabIndex={0}
+            onKeyPress={(e) => e.key === 'Enter' && handleArticleClick('segment-configuration')}
+          >
+            <b>Device Limits by Segment</b><br />
+            Understand segment-specific device limits and configure device type restrictions for different user segments
           </div>
         </div>
       </div>
@@ -162,40 +224,88 @@ const KnowledgeHome = () => {
       <div className="knowledge-blocks-row">
         <div className="knowledge-block">
           <div className="block-title">Reports & Analytics</div>
-          <div className="block-entry">
+          <div
+            className="block-entry clickable"
+            onClick={() => handleArticleClick('dashboard-overview')}
+            role="button"
+            tabIndex={0}
+            onKeyPress={(e) => e.key === 'Enter' && handleArticleClick('dashboard-overview')}
+          >
             <b>Dashboard Overview</b><br />
             Understand key metrics: active users, license usage, data consumption, alerts, and network analytics at a glance
           </div>
-          <div className="block-entry">
+          <div
+            className="block-entry clickable"
+            onClick={() => handleArticleClick('generating-reports')}
+            role="button"
+            tabIndex={0}
+            onKeyPress={(e) => e.key === 'Enter' && handleArticleClick('generating-reports')}
+          >
             <b>Generating Reports</b><br />
             Create billing reports, usage summaries, network analytics, and SLA compliance reports with customizable date ranges
           </div>
-          <div className="block-entry">
+          <div
+            className="block-entry clickable"
+            onClick={() => handleArticleClick('generating-reports')}
+            role="button"
+            tabIndex={0}
+            onKeyPress={(e) => e.key === 'Enter' && handleArticleClick('generating-reports')}
+          >
             <b>Report Criteria & Filters</b><br />
             Apply date ranges, month ranges, policy filters, and segment filters to generate targeted reports for your needs
           </div>
-          <div className="block-entry">
-            <b>Export & Scheduling</b><br />
-            Export reports in CSV and PDF formats, schedule automated report generation, and share insights with stakeholders
+          <div
+            className="block-entry clickable"
+            onClick={() => handleArticleClick('generating-reports')}
+            role="button"
+            tabIndex={0}
+            onKeyPress={(e) => e.key === 'Enter' && handleArticleClick('generating-reports')}
+          >
+            <b>Export & Data Analysis</b><br />
+            Export reports in CSV and PDF formats, analyze usage trends, and share insights with stakeholders
           </div>
         </div>
         <div className="knowledge-block">
           <div className="block-title">Network Configuration</div>
-          <div className="block-entry">
+          <div
+            className="block-entry clickable"
+            onClick={() => handleArticleClick('policy-setup')}
+            role="button"
+            tabIndex={0}
+            onKeyPress={(e) => e.key === 'Enter' && handleArticleClick('policy-setup')}
+          >
             <b>Policy Setup</b><br />
             Create and manage user policies with speed limits (10-50 Mbps), data volume caps, device limits, and data cycle configurations
           </div>
-          <div className="block-entry">
+          <div
+            className="block-entry clickable"
+            onClick={() => handleArticleClick('segment-configuration')}
+            role="button"
+            tabIndex={0}
+            onKeyPress={(e) => e.key === 'Enter' && handleArticleClick('segment-configuration')}
+          >
             <b>Segment Configuration</b><br />
             Configure segment-specific settings for Enterprise, Co-Living, Co-Working, Hotel, PG, and Miscellaneous user types
           </div>
-          <div className="block-entry">
-            <b>Network Performance</b><br />
-            Monitor bandwidth utilization, track network usage patterns, optimize QoS settings, and ensure reliable connectivity
+          <div
+            className="block-entry clickable"
+            onClick={() => handleArticleClick('dashboard-overview')}
+            role="button"
+            tabIndex={0}
+            onKeyPress={(e) => e.key === 'Enter' && handleArticleClick('dashboard-overview')}
+          >
+            <b>Network Analytics</b><br />
+            Monitor bandwidth utilization, track network usage patterns, analyze data consumption trends, and view network health metrics
           </div>
-          <div className="block-entry">
-            <b>Alert Management</b><br />
-            Configure alerts for license thresholds, network anomalies, device issues, and critical system events
+          <div
+            className="block-entry clickable"
+            onClick={() => handleArticleClick('user-policies-licenses')}
+            role="button"
+            tabIndex={0}
+            onKeyPress={(e) => e.key === 'Enter' && handleArticleClick('user-policies-licenses')}
+          >
+            <b>License Management</b><br />
+            Monitor license utilization, manage license allocation across segments, and configure alerts for license thresholds
           </div>
         </div>
       </div>
@@ -203,40 +313,88 @@ const KnowledgeHome = () => {
       <div className="knowledge-blocks-row">
         <div className="knowledge-block">
           <div className="block-title">Troubleshooting</div>
-          <div className="block-entry">
+          <div
+            className="block-entry clickable"
+            onClick={() => handleArticleClick('troubleshooting-connection')}
+            role="button"
+            tabIndex={0}
+            onKeyPress={(e) => e.key === 'Enter' && handleArticleClick('troubleshooting-connection')}
+          >
             <b>User Connection Issues</b><br />
             Resolve common login problems, authentication failures, password reset issues, and user account access errors
           </div>
-          <div className="block-entry">
+          <div
+            className="block-entry clickable"
+            onClick={() => handleArticleClick('device-registration')}
+            role="button"
+            tabIndex={0}
+            onKeyPress={(e) => e.key === 'Enter' && handleArticleClick('device-registration')}
+          >
             <b>Device Registration Problems</b><br />
             Troubleshoot MAC address binding errors, device visibility issues, and segment-specific device registration constraints
           </div>
-          <div className="block-entry">
+          <div
+            className="block-entry clickable"
+            onClick={() => handleArticleClick('generating-reports')}
+            role="button"
+            tabIndex={0}
+            onKeyPress={(e) => e.key === 'Enter' && handleArticleClick('generating-reports')}
+          >
             <b>Report Generation Errors</b><br />
             Fix issues with report criteria validation, data export failures, and PDF generation problems
           </div>
-          <div className="block-entry">
+          <div
+            className="block-entry clickable"
+            onClick={() => handleArticleClick('user-policies-licenses')}
+            role="button"
+            tabIndex={0}
+            onKeyPress={(e) => e.key === 'Enter' && handleArticleClick('user-policies-licenses')}
+          >
             <b>License & Access Issues</b><br />
             Address license exhaustion warnings, permission-related errors, and role-based access control problems
           </div>
         </div>
         <div className="knowledge-block">
           <div className="block-title">Best Practices</div>
-          <div className="block-entry">
+          <div
+            className="block-entry clickable"
+            onClick={() => handleArticleClick('user-policies-licenses')}
+            role="button"
+            tabIndex={0}
+            onKeyPress={(e) => e.key === 'Enter' && handleArticleClick('user-policies-licenses')}
+          >
             <b>License Management</b><br />
             Optimize license allocation, monitor usage trends, plan capacity upgrades, and avoid service disruptions
           </div>
-          <div className="block-entry">
-            <b>Security Guidelines</b><br />
-            Implement strong password policies, manage user permissions, monitor rogue access points, and secure network access
+          <div
+            className="block-entry clickable"
+            onClick={() => handleArticleClick('user-status-management')}
+            role="button"
+            tabIndex={0}
+            onKeyPress={(e) => e.key === 'Enter' && handleArticleClick('user-status-management')}
+          >
+            <b>User Account Lifecycle</b><br />
+            Best practices for managing user accounts, handling suspensions and blocks, and maintaining account security
           </div>
-          <div className="block-entry">
+          <div
+            className="block-entry clickable"
+            onClick={() => handleArticleClick('bulk-user-operations')}
+            role="button"
+            tabIndex={0}
+            onKeyPress={(e) => e.key === 'Enter' && handleArticleClick('bulk-user-operations')}
+          >
             <b>Data Management</b><br />
-            Regular data exports, backup strategies, compliance reporting, and data retention best practices
+            Regular data exports, backup strategies, compliance reporting, and CSV import/export best practices
           </div>
-          <div className="block-entry">
-            <b>Performance Optimization</b><br />
-            Balance user load across access points, optimize policy settings, and monitor network health for peak performance
+          <div
+            className="block-entry clickable"
+            onClick={() => handleArticleClick('policy-setup')}
+            role="button"
+            tabIndex={0}
+            onKeyPress={(e) => e.key === 'Enter' && handleArticleClick('policy-setup')}
+          >
+            <b>Policy Optimization</b><br />
+            Design effective policies, balance user load with tiered service levels, and optimize network performance
           </div>
         </div>
       </div>
@@ -258,6 +416,13 @@ const KnowledgeHome = () => {
           <button className="help-btn chat">Live Chat</button>
         </div>
       </div>
+
+      {selectedArticle && (
+        <KnowledgeArticleModal
+          article={selectedArticle}
+          onClose={handleCloseArticle}
+        />
+      )}
     </main>
   );
 };

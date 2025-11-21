@@ -6,6 +6,7 @@ import { usePermissions } from "../../hooks/usePermissions";
 import { useFilter } from "../../hooks/useFilter";
 import { useTableState } from "../../hooks/useTableState";
 import { useLoading } from "../../context/LoadingContext";
+import { useSegment } from "../../context/SegmentContext";
 import Button from "../../components/Button";
 import Pagination from "../../components/Pagination";
 import DeviceFormModal from "../../components/DeviceFormModal";
@@ -113,6 +114,7 @@ DeviceCard.displayName = 'DeviceCard';
 const DeviceList = () => {
   const { hasPermission } = usePermissions();
   const { isLoading } = useLoading();
+  const { currentSegment, updateSegment } = useSegment();
 
   const [devices, setDevices] = useState([]);
   const [showDeviceModal, setShowDeviceModal] = useState(false);
@@ -120,7 +122,9 @@ const DeviceList = () => {
   const [submitting, setSubmitting] = useState(false);
   const [blockingDeviceId, setBlockingDeviceId] = useState(null);
   const [viewingDeviceId, setViewingDeviceId] = useState(null);
-  const [segmentFilter, setSegmentFilter] = useState("enterprise");
+
+  // Use segment from context instead of local state
+  const segmentFilter = currentSegment;
   
   const {
     currentPage,
@@ -137,8 +141,6 @@ const DeviceList = () => {
   
   const hasDevicePermission = hasPermission('canManageDevices');
   const canRegisterDevice = hasDevicePermission && showRegisterDevice;
-
-  const currentSite = siteConfig.segmentSites[segmentFilter] || siteConfig.segmentSites.enterprise;
 
   const segmentUsers = useMemo(() => {
     return (userSampleData.users || []).filter(user => user.segment === segmentFilter);
@@ -624,7 +626,7 @@ const DeviceList = () => {
         <select
           id="segment-test-select"
           value={segmentFilter}
-          onChange={(e) => setSegmentFilter(e.target.value)}
+          onChange={(e) => updateSegment(e.target.value)}
           className="segment-test-dropdown"
           disabled={isLoading('devices')}
         >
@@ -637,19 +639,7 @@ const DeviceList = () => {
         </select>
       </div>
 
-      <div style={{ marginBottom: '1.5rem' }}>
-        <h1 className="device-mgmt-title">Device Management</h1>
-        <div style={{ 
-          fontSize: '0.9rem', 
-          color: '#555', 
-          marginTop: '0.5rem',
-          fontWeight: '500'
-        }}>
-          <span>{currentSite.siteName}</span>
-          <span style={{ margin: '0 0.5rem', color: '#ccc' }}>•</span>
-          <span>{currentSite.location}</span>
-        </div>
-      </div>
+      <h1 className="device-mgmt-title" style={{ marginBottom: '1.5rem' }}>Device Management</h1>
 
       <div className="device-summary-cards">
         {segmentDeviceStats.map(stat => (

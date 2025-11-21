@@ -1,5 +1,10 @@
 // src/config/reportDefinitions.js
 
+/**
+ * Segment Constants
+ * These should match SEGMENTS from SegmentContext
+ */
+const ALL_SEGMENTS = ["enterprise", "coLiving", "coWorking", "hotel", "pg", "miscellaneous"];
 
 /**
  * Export canvas sizes for PDF generation
@@ -61,9 +66,16 @@ const getStandardChartOptions = ({ type, title, xLabel, yLabel, darkMode = false
 
 /**
  * Centralized Report Definitions
+ *
+ * Each report can have:
+ * - segments: Array of segment IDs this report applies to (default: ALL_SEGMENTS)
+ * - chart: Chart configuration
+ * - table: Table configuration
+ * - csv: CSV export configuration
  */
 export const REPORT_DEFINITIONS = {
   "site-monthly-active-users": {
+    segments: ALL_SEGMENTS, // Available for all segments
     chart: {
       type: "bar",
       canvasSize: EXPORT_CANVAS_SIZES.bar,
@@ -839,4 +851,26 @@ export function getChartConfig(reportId) {
 export function getTableConfig(reportId) {
   const definition = REPORT_DEFINITIONS[reportId];
   return definition?.table || null;
+}
+
+/**
+ * Check if report is available for the given segment
+ */
+export function isReportAvailableForSegment(reportId, segment) {
+  const definition = REPORT_DEFINITIONS[reportId];
+  if (!definition) return false;
+
+  // If no segments specified, available for all
+  if (!definition.segments) return true;
+
+  return definition.segments.includes(segment);
+}
+
+/**
+ * Get all reports available for a segment
+ */
+export function getReportsForSegment(segment) {
+  return Object.keys(REPORT_DEFINITIONS).filter(reportId =>
+    isReportAvailableForSegment(reportId, segment)
+  );
 }

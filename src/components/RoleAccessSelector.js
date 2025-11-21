@@ -4,16 +4,17 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { useAuth } from '@context/AuthContext';
 import { AccessLevels, Roles } from '@utils/accessLevels';
+import SegmentSelector from './SegmentSelector';
 import './RoleAccessSelector.css';
 
 /**
  * RoleAccessSelector Component
  *
- * Temporary testing component for switching between different roles and access levels.
+ * Temporary testing component for switching between different roles, access levels, and segments.
  * This component will be removed in production as each login will have specific
  * segment, role, and access level values.
  *
- * Default: ADMIN role + GROUP access level (maximum rights)
+ * Default: ADMIN role + SITE access level + All segments
  */
 const RoleAccessSelector = ({ showLabel = true }) => {
   const { currentUser, updateRole, updateAccessLevel } = useAuth();
@@ -37,6 +38,11 @@ const RoleAccessSelector = ({ showLabel = true }) => {
       <div className="testing-badge" aria-label="Testing mode active">
         🧪 TEST
       </div>
+
+      {/* Segment Selector */}
+      <SegmentSelector showLabel={showLabel} />
+
+      <div className="selectors-divider" aria-hidden="true"></div>
 
       {/* Role Selector */}
       <div className="role-selector-test">
@@ -74,12 +80,12 @@ const RoleAccessSelector = ({ showLabel = true }) => {
           className="access-level-test-dropdown"
           aria-label="Select access level for testing"
         >
-          {/* Display in hierarchical order (highest to lowest) */}
-          <option value={AccessLevels.GROUP}>Group (Highest)</option>
-          <option value={AccessLevels.COMPANY}>Company</option>
-          <option value={AccessLevels.CITY}>City</option>
-          <option value={AccessLevels.CLUSTER}>Cluster</option>
+          {/* Display in hierarchical order (lowest to highest for easier testing) */}
           <option value={AccessLevels.SITE}>Site (Lowest)</option>
+          <option value={AccessLevels.CLUSTER}>Cluster</option>
+          <option value={AccessLevels.CITY}>City</option>
+          <option value={AccessLevels.COMPANY}>Company</option>
+          <option value={AccessLevels.GROUP}>Group (Highest)</option>
         </select>
       </div>
     </div>

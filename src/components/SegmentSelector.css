@@ -1,0 +1,63 @@
+/* src/components/SegmentSelector.css */
+
+.segment-selector-container {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.segment-label {
+  font-weight: 600;
+  color: #555;
+  white-space: nowrap;
+  font-size: var(--font-sm);
+}
+
+.segment-dropdown {
+  padding: 0.3125rem 0.5rem;
+  font-size: var(--font-sm);
+  border-radius: var(--radius-base);
+  border: 0.0875rem solid #b8b8b8;
+  background: #fff;
+  min-width: 8.75rem;
+  cursor: pointer;
+  line-height: var(--line-height-tight);
+  font-weight: 600;
+  color: #333;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.segment-dropdown:hover {
+  border-color: #4a90e2;
+}
+
+.segment-dropdown:focus {
+  outline: none;
+  border-color: #4a90e2;
+  box-shadow: 0 0 0 0.1875rem rgba(74, 144, 226, 0.15);
+}
+
+/* Mobile responsive */
+@media (max-width: 900px) {
+  .segment-selector-container {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .segment-dropdown {
+    min-width: 6.25rem;
+    width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .segment-selector-container {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .segment-dropdown {
+    flex: 1;
+    min-width: unset;
+  }
+}
