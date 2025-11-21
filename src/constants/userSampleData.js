@@ -2,12 +2,12 @@
 
 /**
  * Centralized User Sample Data - API Format Aligned
- * 
+ *
  * ALIGNMENT STATUS:
  * - Structure aligned with Sample API (wifi portal).docx format
  * - Response wrapper pattern applied where appropriate
  * - Field naming follows API conventions
- * 
+ *
  * MissingForAPI:
  * - can_id (CAN ID from AAA system) - Backend to provide
  * - whp_alert (WhatsApp alert preference) - Backend to provide
@@ -22,7 +22,7 @@
  * - fupStatus (Fair Usage Policy status) - Backend to determine
  * - trimScpLink (Base64 encoded link) - Backend to generate
  * - stnUserfind (STN user mapping) - Backend to provide if applicable
- * 
+ *
  * FrontendOnly:
  * - segment (UI categorization)
  * - siteName, siteId (Frontend display context)
@@ -31,6 +31,8 @@
  * - lastOnline (Friendly time format)
  * - Segment-specific fields (employeeId, department, residentType, etc.)
  */
+
+import * as reportGen from '../utils/reportDataGenerator';
 
 /**
  * Convert portal user data to API format
@@ -1075,25 +1077,11 @@ export const sampleDevices = [
  */
 
 export const userReportData = {
-  "user-session-history": [
-    { userId: "USER001", segment: "enterprise", sessionStart: "2024-07-01 08:00", sessionEnd: "2024-07-01 12:30", dataUsed: "1.2 GB", duration: "4h 30m" },
-    { userId: "USER001", segment: "enterprise", sessionStart: "2024-07-01 14:00", sessionEnd: "2024-07-01 18:45", dataUsed: "0.8 GB", duration: "4h 45m" },
-    { userId: "USER012", segment: "enterprise", sessionStart: "2024-07-01 09:00", sessionEnd: "2024-07-01 13:00", dataUsed: "1.5 GB", duration: "4h 0m" },
-    { userId: "USER003", segment: "coLiving", sessionStart: "2024-07-01 10:00", sessionEnd: "2024-07-01 12:00", dataUsed: "0.5 GB", duration: "2h 0m" },
-    { userId: "USER007", segment: "hotel", sessionStart: "2024-07-01 11:00", sessionEnd: "2024-07-01 16:00", dataUsed: "0.9 GB", duration: "5h 0m" },
-    { userId: "USER008", segment: "pg", sessionStart: "2024-07-01 08:30", sessionEnd: "2024-07-01 14:30", dataUsed: "2.1 GB", duration: "6h 0m" },
-    { userId: "USER009", segment: "miscellaneous", sessionStart: "2024-07-01 09:30", sessionEnd: "2024-07-01 17:30", dataUsed: "3.2 GB", duration: "8h 0m" },
-  ],
+  // 90 days of comprehensive user session data (hundreds of sessions)
+  "user-session-history": reportGen.generateUserSessions('2024-01-01', 90),
 
-  "user-data-consumption": [
-    { userId: "USER001", segment: "enterprise", date: "2024-07-01", dataUsedMB: 2048, sessions: 2 },
-    { userId: "USER001", segment: "enterprise", date: "2024-07-02", dataUsedMB: 1850, sessions: 3 },
-    { userId: "USER012", segment: "enterprise", date: "2024-07-01", dataUsedMB: 2662, sessions: 2 },
-    { userId: "USER003", segment: "coLiving", date: "2024-07-01", dataUsedMB: 512, sessions: 1 },
-    { userId: "USER007", segment: "hotel", date: "2024-07-01", dataUsedMB: 922, sessions: 1 },
-    { userId: "USER008", segment: "pg", date: "2024-07-01", dataUsedMB: 2150, sessions: 1 },
-    { userId: "USER009", segment: "miscellaneous", date: "2024-07-01", dataUsedMB: 3277, sessions: 1 },
-  ],
+  // 90 days of user data consumption (thousands of records)
+  "user-data-consumption": reportGen.generateUserDataConsumption('2024-01-01', 90),
 };
 
 // ============================================

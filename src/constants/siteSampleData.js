@@ -2,11 +2,11 @@
 
 /**
  * Centralized Site Sample Data - API Format Aligned
- * 
+ *
  * ALIGNMENT STATUS:
  * - Structure partially aligned with API conventions
  * - Preserves all existing portal business logic
- * 
+ *
  * MissingForAPI:
  * - Real-time network metrics from monitoring system
  * - Live access point status from controller
@@ -14,7 +14,7 @@
  * - Active session counts from AAA
  * - SLA compliance data from ticketing system
  * - Alert aggregation from monitoring platform
- * 
+ *
  * FrontendOnly:
  * - dashboard.quickActions (UI shortcuts)
  * - dashboard.recentActivities (UI display)
@@ -23,6 +23,8 @@
  * - userRoles definitions (portal-specific)
  * - support contact information
  */
+
+import * as reportGen from '../utils/reportDataGenerator';
 
 // ============================================
 // SITE CONFIGURATION
@@ -294,93 +296,31 @@ export const siteMetrics = {
 };
 
 // ============================================
-// SITE REPORT DATA - Preserved Structure
+// SITE REPORT DATA - Comprehensive Sample Data
 // ============================================
 
 export const siteReportData = {
-  "site-monthly-active-users": [
-    {
-      month: "2024-01",
-      avgActiveUsers: 120,
-      newUsers: 15,
-      churnedUsers: 8,
-      activations: 22,
-      deactivations: 10,
-      changeFromPrevMonth: 5,
-    },
-    {
-      month: "2024-02",
-      avgActiveUsers: 127,
-      newUsers: 18,
-      churnedUsers: 7,
-      activations: 17,
-      deactivations: 8,
-      changeFromPrevMonth: 7,
-    },
-  ],
-  
-"monthly-data-usage-summary": [
-    { month: "2024-01", totalUsageGB: 1200, peakUsageGB: 150, avgUsageGB: 40 },
-    { month: "2024-02", totalUsageGB: 1300, peakUsageGB: 170, avgUsageGB: 43 },
-    { month: "2024-03", totalUsageGB: 1150, peakUsageGB: 135, avgUsageGB: 38 },
-    { month: "2024-04", totalUsageGB: 1400, peakUsageGB: 160, avgUsageGB: 47 },
-    { month: "2024-05", totalUsageGB: 1260, peakUsageGB: 145, avgUsageGB: 41 },
-    { month: "2024-06", totalUsageGB: 1350, peakUsageGB: 175, avgUsageGB: 45 },
-    { month: "2024-07", totalUsageGB: 1420, peakUsageGB: 180, avgUsageGB: 48 },
-    { month: "2024-08", totalUsageGB: 1370, peakUsageGB: 165, avgUsageGB: 44 },
-    { month: "2024-09", totalUsageGB: 1500, peakUsageGB: 190, avgUsageGB: 50 },
-    { month: "2024-10", totalUsageGB: 1300, peakUsageGB: 160, avgUsageGB: 42 },
-    { month: "2024-11", totalUsageGB: 1250, peakUsageGB: 155, avgUsageGB: 40 },
-    { month: "2024-12", totalUsageGB: 1520, peakUsageGB: 210, avgUsageGB: 51 },
-    { month: "2025-01", totalUsageGB: 1600, peakUsageGB: 200, avgUsageGB: 53 },
-    { month: "2025-02", totalUsageGB: 1480, peakUsageGB: 184, avgUsageGB: 47 },
-    { month: "2025-03", totalUsageGB: 1625, peakUsageGB: 215, avgUsageGB: 56 },
-    { month: "2025-04", totalUsageGB: 1550, peakUsageGB: 197, avgUsageGB: 49 },
-    { month: "2025-05", totalUsageGB: 1580, peakUsageGB: 200, avgUsageGB: 50 },
-    { month: "2025-06", totalUsageGB: 1650, peakUsageGB: 218, avgUsageGB: 55 },
-    { month: "2025-07", totalUsageGB: 1700, peakUsageGB: 220, avgUsageGB: 57 },
-    { month: "2025-08", totalUsageGB: 1630, peakUsageGB: 210, avgUsageGB: 54 },
-    { month: "2025-09", totalUsageGB: 1750, peakUsageGB: 230, avgUsageGB: 59 },
-    { month: "2025-10", totalUsageGB: 1680, peakUsageGB: 224, avgUsageGB: 56 },
-    { month: "2025-11", totalUsageGB: 1605, peakUsageGB: 218, avgUsageGB: 53 },
-    { month: "2025-12", totalUsageGB: 1800, peakUsageGB: 240, avgUsageGB: 61 },
-    { month: "2026-01", totalUsageGB: 1740, peakUsageGB: 232, avgUsageGB: 58 },
-],
+  // BILLING REPORTS - 12 months of comprehensive data
+  "site-monthly-active-users": reportGen.generateMonthlyActiveUsers('2024-01', 12),
+  "daily-average-active-users": reportGen.generateDailyActiveUsers('2024-01-01', 90),
+  "policy-wise-monthly-average-active-users": reportGen.generatePolicyWiseUsers('2024-01', 12),
 
-  
-  "daily-average-active-users": [
-    { date: "2024-07-01", avgActiveUsers: 350 },
-    { date: "2024-07-02", avgActiveUsers: 360 },
-  ],
-  
-  "policy-wise-monthly-average-active-users": [
-    { month: "2024-01", policy: "Policy A", avgActiveUsers: 120 },
-    { month: "2024-01", policy: "Policy B", avgActiveUsers: 80 },
-  ],
+  // USAGE REPORTS - 12 months of data
+  "monthly-data-usage-summary": reportGen.generateMonthlyDataUsage('2024-01', 12),
+  "network-usage-report": reportGen.generateNetworkUsage('2024-01-01', 90),
 
-  "network-usage-report": [
-    { day: "Mon", usageGB: 120 },
-    { day: "Tue", usageGB: 200 },
-    { day: "Wed", usageGB: 170 },
-    { day: "Thu", usageGB: 250 },
-    { day: "Fri", usageGB: 220 },
-    { day: "Sat", usageGB: 300 },
-    { day: "Sun", usageGB: 280 },
-  ],
-
+  // LICENSE REPORTS
   "license-usage-report": [
-    { licenseType: "License A", usageCount: 65 },
-    { licenseType: "License B", usageCount: 59 },
-    { licenseType: "License C", usageCount: 80 },
-    { licenseType: "License D", usageCount: 81 },
+    { licenseType: "Standard", usageCount: 65 },
+    { licenseType: "Premium", usageCount: 59 },
+    { licenseType: "Basic", usageCount: 80 },
+    { licenseType: "Guest", usageCount: 81 },
   ],
 
-  "alerts-summary-report": [
-    { alertType: "Success", count: 300 },
-    { alertType: "Warning", count: 50 },
-    { alertType: "Critical", count: 100 },
-  ],
+  // ALERTS - 30 days of data
+  "alerts-summary-report": reportGen.generateAlertsSummary('2024-07-01', 30),
 
+  // CLUSTER/CITY/COMPANY REPORTS - Static data (no filtering needed)
   "cluster-average-active-users": [
     { cluster: "West Region", totalActiveUsers: 1250, monthlyGrowth: 8.5 },
     { cluster: "East Region", totalActiveUsers: 1420, monthlyGrowth: 12.3 },
@@ -413,100 +353,33 @@ export const siteReportData = {
     { month: "2024-01", company: "Spectra Technologies", totalUsageTB: 38.5, yearOverYear: 18.7 }
   ],
 
-  "access-point-list": [
-    { apName: "AP-Floor1-01", mac: "00:1A:2B:3C:4D:01", location: "Floor 1 - Lobby", status: "Online", connectedUsers: 45 },
-    { apName: "AP-Floor1-02", mac: "00:1A:2B:3C:4D:02", location: "Floor 1 - Conference Room", status: "Online", connectedUsers: 32 },
-    { apName: "AP-Floor2-01", mac: "00:1A:2B:3C:4D:03", location: "Floor 2 - East Wing", status: "Online", connectedUsers: 38 },
-    { apName: "AP-Floor2-02", mac: "00:1A:2B:3C:4D:04", location: "Floor 2 - West Wing", status: "Online", connectedUsers: 41 },
-    { apName: "AP-Floor3-01", mac: "00:1A:2B:3C:4D:05", location: "Floor 3 - Cafeteria", status: "Offline", connectedUsers: 0 }
-  ],
+  // WI-FI NETWORK REPORTS
+  "access-point-list": reportGen.generateAccessPointList(),
+  "access-point-mac-list": reportGen.generateAccessPointList().map(ap => ({
+    mac: ap.mac,
+    apName: ap.apName,
+    vendor: Math.random() > 0.5 ? 'Cisco' : 'Aruba'
+  })),
+  "client-list": reportGen.generateClientList(),
+  "user-ap-analytics": reportGen.generateUserAPAnalytics('2024-01-01', 30),
+  "rogue-ap-list": reportGen.generateRogueAPList(),
+  "alarm-list": reportGen.generateAlarmList('2024-07-01', 30),
+  "event-list": reportGen.generateEventList('2024-07-01', 30),
 
-  "access-point-mac-list": [
-    { mac: "00:1A:2B:3C:4D:01", apName: "AP-Floor1-01", vendor: "Cisco" },
-    { mac: "00:1A:2B:3C:4D:02", apName: "AP-Floor1-02", vendor: "Cisco" },
-    { mac: "00:1A:2B:3C:4D:03", apName: "AP-Floor2-01", vendor: "Aruba" },
-    { mac: "00:1A:2B:3C:4D:04", apName: "AP-Floor2-02", vendor: "Aruba" },
-    { mac: "00:1A:2B:3C:4D:05", apName: "AP-Floor3-01", vendor: "Cisco" }
-  ],
+  // INTERNET REPORTS - 90 days of data
+  "bandwidth-utilization": reportGen.generateBandwidthUtilization('2024-07-01', 30),
+  "internet-uptime": reportGen.generateInternetUptime('2024-01-01', 90),
 
-  "client-list": [
-    { clientMac: "AA:BB:CC:DD:EE:01", userName: "Amit Sharma", apName: "AP-Floor1-01", signalStrength: "-65 dBm", connectedTime: "2h 35m" },
-    { clientMac: "AA:BB:CC:DD:EE:02", userName: "Neeta Singh", apName: "AP-Floor2-01", signalStrength: "-58 dBm", connectedTime: "1h 20m" },
-    { clientMac: "AA:BB:CC:DD:EE:03", userName: "Rajesh Kumar", apName: "AP-Floor1-02", signalStrength: "-72dBm", connectedTime: "3h 45m" },
-    { clientMac: "AA:BB:CC:DD:EE:04", userName: "Vikram Chatterjee", apName: "AP-Floor2-02", signalStrength: "-61 dBm", connectedTime: "0h 55m" }
-  ],
+  // SLA REPORTS - 12 months of data
+  "sla-compliance": reportGen.generateSLACompliance('2024-01', 12),
 
-  "user-ap-analytics": [
-    { apName: "AP-Floor1-01", uniqueUsers: 125, totalSessions: 450, avgSessionTime: "2h 15m" },
-    { apName: "AP-Floor1-02", uniqueUsers: 98, totalSessions: 380, avgSessionTime: "1h 50m" },
-    { apName: "AP-Floor2-01", uniqueUsers: 142, totalSessions: 520, avgSessionTime: "2h 40m" },
-    { apName: "AP-Floor2-02", uniqueUsers: 156, totalSessions: 590, avgSessionTime: "2h 55m" },
-    { apName: "AP-Floor3-01", uniqueUsers: 88, totalSessions: 310, avgSessionTime: "1h 30m" }
-  ],
+  // AUTHENTICATION REPORTS - 30 days of data
+  "authentication-logs": reportGen.generateAuthenticationLogs('2024-07-01', 30),
+  "failed-authentication": reportGen.generateFailedAuthentication('2024-07-01', 30),
 
-  "rogue-ap-list": [
-    { mac: "FF:EE:DD:CC:BB:01", ssid: "FreeWiFi", detectedTime: "2024-07-01 10:30", signalStrength: "-45 dBm", threat: "High" },
-    { mac: "FF:EE:DD:CC:BB:02", ssid: "GuestNetwork", detectedTime: "2024-07-02 14:20", signalStrength: "-52 dBm", threat: "Medium" }
-  ],
-
-  "alarm-list": [
-    { timestamp: "2024-07-01 09:15", severity: "Critical", message: "AP-Floor3-01 offline", affectedDevice: "AP-Floor3-01", status: "Resolved" },
-    { timestamp: "2024-07-02 11:30", severity: "Warning", message: "High bandwidth usage detected", affectedDevice: "AP-Floor2-02", status: "Active" },
-    { timestamp: "2024-07-03 15:45", severity: "Info", message: "Firmware update available", affectedDevice: "All APs", status: "Pending" }
-  ],
-
-  "event-list": [
-    { timestamp: "2024-07-01 08:00", eventType: "User Login", user: "Amit Sharma", device: "iPhone 14 Pro", details: "Successful authentication" },
-    { timestamp: "2024-07-01 09:15", eventType: "AP Offline", user: "System", device: "AP-Floor3-01", details: "Access point disconnected" },
-    { timestamp: "2024-07-01 10:30", eventType: "Rogue AP Detected", user: "System", device: "Unknown", details: "Unauthorized access point found" },
-    { timestamp: "2024-07-02 11:30", eventType: "Bandwidth Alert", user: "System", device: "AP-Floor2-02", details: "Threshold exceeded" }
-  ],
-
-  "bandwidth-utilization": [
-    { timestamp: "2024-07-01 00:00", uploadMbps: 45, downloadMbps: 230, utilization: 68 },
-    { timestamp: "2024-07-01 06:00", uploadMbps: 38, downloadMbps: 195, utilization: 58 },
-    { timestamp: "2024-07-01 12:00", uploadMbps: 52, downloadMbps: 280, utilization: 83 },
-    { timestamp: "2024-07-01 18:00", uploadMbps: 48, downloadMbps: 250, utilization: 74 }
-  ],
-
-  "internet-uptime": [
-    { date: "2024-07-01", uptimePercent: 99.8, outages: 1, totalDowntime: "12 min" },
-    { date: "2024-07-02", uptimePercent: 100, outages: 0, totalDowntime: "0 min" },
-    { date: "2024-07-03", uptimePercent: 99.5, outages: 2, totalDowntime: "36 min" },
-    { date: "2024-07-04", uptimePercent: 100, outages: 0, totalDowntime: "0 min" }
-  ],
-
-  "sla-compliance": [
-    { metric: "Network Uptime", target: 99.5, actual: 99.8, compliance: "Above Target" },
-    { metric: "Response Time", target: 100, actual: 85, compliance: "Below Target" },
-    { metric: "Bandwidth Availability", target: 95, actual: 97, compliance: "Above Target" },
-    { metric: "Support Resolution", target: 90, actual: 92, compliance: "Above Target" }
-  ],
-
-  "authentication-logs": [
-    { timestamp: "2024-07-01 08:00", userId: "USER001", method: "Password", result: "Success", ipAddress: "192.168.1.142" },
-    { timestamp: "2024-07-01 08:15", userId: "USER012", method: "Password", result: "Success", ipAddress: "192.168.1.156" },
-    { timestamp: "2024-07-01 08:30", userId: "USER003", method: "Password", result: "Failed", ipAddress: "192.168.1.143" },
-    { timestamp: "2024-07-01 09:00", userId: "USER007", method: "Password", result: "Success", ipAddress: "192.168.1.157" }
-  ],
-
-  "failed-authentication": [
-    { timestamp: "2024-07-01 08:30", userId: "USER003", attemptCount: 3, ipAddress: "192.168.1.143", reason: "Invalid Password" },
-    { timestamp: "2024-07-02 10:15", userId: "USER005", attemptCount: 2, ipAddress: "192.168.1.158", reason: "Account Locked" },
-    { timestamp: "2024-07-03 14:45", userId: "USER008", attemptCount: 1, ipAddress: "192.168.1.161", reason: "Invalid Username" }
-  ],
-
-  "addon-usage-report": [
-    { addonName: "Premium Bandwidth", users: 45, revenue: 4500, purchaseDate: "2024-01" },
-    { addonName: "Extended Data Pack", users: 32, revenue: 3200, purchaseDate: "2024-02" },
-    { addonName: "Priority Support", users: 28, revenue: 5600, purchaseDate: "2024-03" }
-  ],
-
-  "topup-history": [
-    { userId: "USER001", topupAmount: 50, purchaseDate: "2024-07-01", remaining: 35 },
-    { userId: "USER012", topupAmount: 100, purchaseDate: "2024-07-05", remaining: 85 },
-    { userId: "USER009", topupAmount: 75, purchaseDate: "2024-07-10", remaining: 60 }
-  ],
+  // UPSELL REPORTS - 12 months of data
+  "addon-usage-report": reportGen.generateAddonUsage('2024-01', 12),
+  "topup-history": reportGen.generateTopupHistory('2024-01-01', 90),
 };
 
 // ============================================

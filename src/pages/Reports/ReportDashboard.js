@@ -231,26 +231,43 @@ const ReportDashboard = () => {
 
   const filterReportData = useCallback((reportId, criteria) => {
     const rawData = getReportData(reportId);
-    if (!rawData) return null;
+    if (!rawData || !criteria) return rawData;
 
+    let filteredData = [...rawData];
+
+    // Filter by date range (for reports with 'date' field)
     if (criteria.dateRange) {
       const { start, end } = criteria.dateRange;
       const startDate = new Date(start);
       const endDate = new Date(end);
-      
-      return rawData.filter(item => {
+      endDate.setHours(23, 59, 59, 999); // Include the entire end date
+
+      filteredData = filteredData.filter(item => {
         if (item.date) {
           const itemDate = new Date(item.date);
+          return itemDate >= startDate && itemDate <= endDate;
+        }
+        if (item.timestamp) {
+          const itemDate = new Date(item.timestamp.split(' ')[0]);
+          return itemDate >= startDate && itemDate <= endDate;
+        }
+        if (item.sessionStart) {
+          const itemDate = new Date(item.sessionStart.split(' ')[0]);
+          return itemDate >= startDate && itemDate <= endDate;
+        }
+        if (item.purchaseDate) {
+          const itemDate = new Date(item.purchaseDate);
           return itemDate >= startDate && itemDate <= endDate;
         }
         return true;
       });
     }
 
+    // Filter by month range (for reports with 'month' field)
     if (criteria.monthRange) {
       const { start, end } = criteria.monthRange;
-      
-      return rawData.filter(item => {
+
+      filteredData = filteredData.filter(item => {
         if (item.month) {
           return item.month >= start && item.month <= end;
         }
@@ -258,8 +275,9 @@ const ReportDashboard = () => {
       });
     }
 
+    // Filter by policies (for policy-wise reports)
     if (criteria.policies && criteria.policies.length > 0) {
-      return rawData.filter(item => {
+      filteredData = filteredData.filter(item => {
         if (item.policy) {
           return criteria.policies.includes(item.policy);
         }
@@ -267,7 +285,20 @@ const ReportDashboard = () => {
       });
     }
 
-    return rawData;
+    // Filter by severity (for alarm/alert reports)
+    if (criteria.severity && criteria.severity !== 'All') {
+      filteredData = filteredData.filter(item => {
+        if (item.severity) {
+          return item.severity === criteria.severity;
+        }
+        if (item.alertType) {
+          return item.alertType === criteria.severity;
+        }
+        return true;
+      });
+    }
+
+    return filteredData;
   }, [getReportData]);
 
   const getCSVData = useCallback((report) => {
