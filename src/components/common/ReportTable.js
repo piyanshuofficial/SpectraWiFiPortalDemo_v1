@@ -289,8 +289,8 @@ const ReportTable = ({
         </table>
       </div>
       
-      {/* Pagination Controls */}
-      {showPagination && totalPages > 0 && (
+      {/* Pagination Controls - Always show when showPagination is true */}
+      {showPagination && calculatedTotalRecords > 0 && (
         <nav 
           className="report-table-pagination-nav" 
           role="navigation" 
@@ -307,70 +307,68 @@ const ReportTable = ({
             )}
           </div>
           
-          {totalPages > 1 && (
-            <div className="report-pagination-controls">
-              <div className="pagination-rows-selector">
-                <label htmlFor="report-rows-per-page" className="pagination-label">
-                  Rows per page:
-                </label>
-                <select
-                  id="report-rows-per-page"
-                  value={rowsPerPage}
-                  onChange={(e) => handleRowsPerPageChange(Number(e.target.value))}
-                  className="pagination-select"
-                  aria-label="Select rows per page"
-                >
-                  {rowsPerPageOptions.map(option => (
-                    <option key={option} value={option}>{option}</option>
-                  ))}
-                </select>
+          <div className="report-pagination-controls">
+            <div className="pagination-rows-selector">
+              <label htmlFor="report-rows-per-page" className="pagination-label">
+                Rows per page:
+              </label>
+              <select
+                id="report-rows-per-page"
+                value={rowsPerPage}
+                onChange={(e) => handleRowsPerPageChange(Number(e.target.value))}
+                className="pagination-select"
+                aria-label="Select rows per page"
+              >
+                {rowsPerPageOptions.map(option => (
+                  <option key={option} value={option}>{option}</option>
+                ))}
+              </select>
+            </div>
+            
+            <div className="pagination-buttons-group" role="group" aria-label="Pagination buttons">
+              <button
+                onClick={() => setCurrentPage(1)}
+                disabled={currentPage === 1 || totalPages <= 1}
+                className="pagination-nav-btn"
+                aria-label="Go to first page"
+                type="button"
+              >
+                <FaAngleDoubleLeft aria-hidden="true" />
+              </button>
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1 || totalPages <= 1}
+                className="pagination-nav-btn"
+                aria-label="Go to previous page"
+                type="button"
+              >
+                <FaAngleLeft aria-hidden="true" />
+              </button>
+              
+              <div className="pagination-page-buttons">
+                {totalPages > 0 && generatePageButtons()}
               </div>
               
-              <div className="pagination-buttons-group" role="group" aria-label="Pagination buttons">
-                <button
-                  onClick={() => setCurrentPage(1)}
-                  disabled={currentPage === 1}
-                  className="pagination-nav-btn"
-                  aria-label="Go to first page"
-                  type="button"
-                >
-                  <FaAngleDoubleLeft aria-hidden="true" />
-                </button>
-                <button
-                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                  disabled={currentPage === 1}
-                  className="pagination-nav-btn"
-                  aria-label="Go to previous page"
-                  type="button"
-                >
-                  <FaAngleLeft aria-hidden="true" />
-                </button>
-                
-                <div className="pagination-page-buttons">
-                  {generatePageButtons()}
-                </div>
-                
-                <button
-                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                  disabled={currentPage === totalPages}
-                  className="pagination-nav-btn"
-                  aria-label="Go to next page"
-                  type="button"
-                >
-                  <FaAngleRight aria-hidden="true" />
-                </button>
-                <button
-                  onClick={() => setCurrentPage(totalPages)}
-                  disabled={currentPage === totalPages}
-                  className="pagination-nav-btn"
-                  aria-label="Go to last page"
-                  type="button"
-                >
-                  <FaAngleDoubleRight aria-hidden="true" />
-                </button>
-              </div>
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages || totalPages <= 1}
+                className="pagination-nav-btn"
+                aria-label="Go to next page"
+                type="button"
+              >
+                <FaAngleRight aria-hidden="true" />
+              </button>
+              <button
+                onClick={() => setCurrentPage(totalPages)}
+                disabled={currentPage === totalPages || totalPages <= 1}
+                className="pagination-nav-btn"
+                aria-label="Go to last page"
+                type="button"
+              >
+                <FaAngleDoubleRight aria-hidden="true" />
+              </button>
             </div>
-          )}
+          </div>
         </nav>
       )}
     </div>
