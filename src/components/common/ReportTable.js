@@ -1,7 +1,14 @@
 // src/components/common/ReportTable.js
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import PropTypes from 'prop-types';
+import {
+  FaAngleDoubleLeft,
+  FaAngleLeft,
+  FaAngleRight,
+  FaAngleDoubleRight,
+} from "react-icons/fa";
+import { PAGINATION } from "../../constants/appConstants";
 import "./ReportTable.css";
 
 const ReportTable = ({ 
@@ -12,8 +19,8 @@ const ReportTable = ({
   onRetry,
   columnAlignment = {},
   showPagination = true,
-  rowsPerPageOptions = [10, 20, 50, 100],
-  defaultRowsPerPage = 20,
+  rowsPerPageOptions = PAGINATION.ROWS_PER_PAGE_OPTIONS,
+  defaultRowsPerPage = PAGINATION.DEFAULT_ROWS_PER_PAGE,
   totalRecords = null
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -21,6 +28,9 @@ const ReportTable = ({
 
   // Calculate total records - use prop if provided, otherwise use data length
   const calculatedTotalRecords = totalRecords !== null ? totalRecords : (data ? data.length : 0);
+  
+  // Calculate total pages
+  const totalPages = Math.ceil(calculatedTotalRecords / rowsPerPage);
   
   // Paginate data
   const paginatedData = useMemo(() => {
@@ -30,18 +40,22 @@ const ReportTable = ({
     return data.slice(startIndex, endIndex);
   }, [data, currentPage, rowsPerPage, showPagination]);
 
-  const totalPages = Math.ceil(calculatedTotalRecords / rowsPerPage);
   const startRecord = calculatedTotalRecords > 0 ? (currentPage - 1) * rowsPerPage + 1 : 0;
   const endRecord = Math.min(currentPage * rowsPerPage, calculatedTotalRecords);
 
   // Reset to page 1 when rowsPerPage changes
-  const handleRowsPerPageChange = (newRowsPerPage) => {
+  const handleRowsPerPageChange = useCallback((newRowsPerPage) => {
     setRowsPerPage(newRowsPerPage);
     setCurrentPage(1);
-  };
+  }, []);
+
+  // Reset to page 1 when data changes
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [data?.length]);
 
   // Get column alignment (default to left for text, right for numbers)
-  const getColumnAlignment = (colIndex, cellValue) => {
+  const getColumnAlignment = useCallback((colIndex, cellValue) => {
     // Check if alignment is explicitly set
     if (columnAlignment[colIndex]) {
       return columnAlignment[colIndex];
@@ -57,71 +71,101 @@ const ReportTable = ({
     }
     
     return 'left';
-  };
+  }, [columnAlignment]);
 
-  // Generate page buttons
-  const generatePageButtons = () => {
+  // Generate page buttons with ellipsis for large page counts
+  const generatePageButtons = useCallback(() => {
     const buttons = [];
-    const maxVisiblePages = 5;
+    const maxVisiblePages = 7;
     
-    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-    
-    if (endPage - startPage < maxVisiblePages - 1) {
-      startPage = Math.max(1, endPage - maxVisiblePages + 1);
-    }
-    
-    // First page button
-    if (startPage > 1) {
-      buttons.push(
-        <button
-          key="first"
-          onClick={() => setCurrentPage(1)}
-          className="pagination-btn"
-          aria-label="Go to first page"
-        >
-          1
-        </button>
-      );
-      if (startPage > 2) {
-        buttons.push(<span key="ellipsis-start" className="pagination-ellipsis">...</span>);
+    if (totalPages <= maxVisiblePages) {
+      // Show all pages if total is less than max
+      for (let i = 1; i <= totalPages; i++) {
+        buttons.push(
+          <button
+            key={i}
+            onClick={() => setCurrentPage(i)}
+            className={`pagination-btn ${currentPage === i ? 'active' : ''}`}
+            aria-label={`${currentPage === i ? 'Current page, ' : ''}Page ${i}`}
+            aria-current={currentPage === i ? 'page' : undefined}
+            type="button"
+          >
+            {i}
+          </button>
+        );
       }
-    }
-    
-    // Page number buttons
-    for (let i = startPage; i <= endPage; i++) {
-      buttons.push(
-        <button
-          key={i}
-          onClick={() => setCurrentPage(i)}
-          className={`pagination-btn ${currentPage === i ? 'active' : ''}`}
-          aria-label={`${currentPage === i ? 'Current page, ' : ''}Page ${i}`}
-          aria-current={currentPage === i ? 'page' : undefined}
-        >
-          {i}
-        </button>
-      );
-    }
-    
-    // Last page button
-    if (endPage < totalPages) {
-      if (endPage < totalPages - 1) {
-        buttons.push(<span key="ellipsis-end" className="pagination-ellipsis">...</span>);
+    } else {
+      // Show pages with ellipsis
+      let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+      let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+      
+      if (endPage - startPage < maxVisiblePages - 1) {
+        startPage = Math.max(1, endPage - maxVisiblePages + 1);
       }
-      buttons.push(
-        <button
-          key="last"
-          onClick={() => setCurrentPage(totalPages)}
-          className="pagination-btn"
-          aria-label="Go to last page"
-        >
-          {totalPages}
-        </button>
-      );
+      
+      // First page button
+      if (startPage > 1) {
+        buttons.push(
+          <button
+            key="first"
+            onClick={() => setCurrentPage(1)}
+            className="pagination-btn"
+            aria-label="Go to page 1"
+            type="button"
+          >
+            1
+          </button>
+        );
+        if (startPage > 2) {
+          buttons.push(
+            <span key="ellipsis-start" className="pagination-ellipsis" aria-hidden="true">
+              ...
+            </span>
+          );
+        }
+      }
+      
+      // Page number buttons
+      for (let i = startPage; i <= endPage; i++) {
+        buttons.push(
+          <button
+            key={i}
+            onClick={() => setCurrentPage(i)}
+            className={`pagination-btn ${currentPage === i ? 'active' : ''}`}
+            aria-label={`${currentPage === i ? 'Current page, ' : ''}Page ${i}`}
+            aria-current={currentPage === i ? 'page' : undefined}
+            type="button"
+          >
+            {i}
+          </button>
+        );
+      }
+      
+      // Last page button
+      if (endPage < totalPages) {
+        if (endPage < totalPages - 1) {
+          buttons.push(
+            <span key="ellipsis-end" className="pagination-ellipsis" aria-hidden="true">
+              ...
+            </span>
+          );
+        }
+        buttons.push(
+          <button
+            key="last"
+            onClick={() => setCurrentPage(totalPages)}
+            className="pagination-btn"
+            aria-label={`Go to page ${totalPages}`}
+            type="button"
+          >
+            {totalPages}
+          </button>
+        );
+      }
     }
     
     return buttons;
-  };
+  }, [totalPages, currentPage]);
 
   // Loading state
   if (loading) {
@@ -245,83 +289,90 @@ const ReportTable = ({
         </table>
       </div>
       
-      {/* Summary and Pagination */}
-      <div className="report-table-footer">
-        <div 
-          className="report-table-summary"
-          role="status"
-          aria-live="polite"
+      {/* Pagination Controls */}
+      {showPagination && totalPages > 0 && (
+        <nav 
+          className="report-table-pagination-nav" 
+          role="navigation" 
+          aria-label="Report table pagination"
         >
-          {showPagination && calculatedTotalRecords > rowsPerPage ? (
-            <>
+          <div className="report-pagination-summary" role="status" aria-live="polite">
+            <span className="pagination-info-text">
               Showing {startRecord}-{endRecord} of {calculatedTotalRecords} record{calculatedTotalRecords !== 1 ? 's' : ''}
-            </>
-          ) : (
-            <>
-              Showing {calculatedTotalRecords} record{calculatedTotalRecords !== 1 ? 's' : ''}
-            </>
-          )}
-        </div>
-        
-        {showPagination && totalPages > 1 && (
-          <div className="report-table-pagination" role="navigation" aria-label="Report pagination">
-            <div className="pagination-controls">
-              <label htmlFor="rows-per-page" className="pagination-label">
-                Rows per page:
-              </label>
-              <select
-                id="rows-per-page"
-                value={rowsPerPage}
-                onChange={(e) => handleRowsPerPageChange(Number(e.target.value))}
-                className="pagination-select"
-                aria-label="Select rows per page"
-              >
-                {rowsPerPageOptions.map(option => (
-                  <option key={option} value={option}>{option}</option>
-                ))}
-              </select>
-            </div>
-            
-            <div className="pagination-buttons">
-              <button
-                onClick={() => setCurrentPage(1)}
-                disabled={currentPage === 1}
-                className="pagination-btn pagination-nav"
-                aria-label="Go to first page"
-              >
-                ««
-              </button>
-              <button
-                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                disabled={currentPage === 1}
-                className="pagination-btn pagination-nav"
-                aria-label="Go to previous page"
-              >
-                ‹
-              </button>
-              
-              {generatePageButtons()}
-              
-              <button
-                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                disabled={currentPage === totalPages}
-                className="pagination-btn pagination-nav"
-                aria-label="Go to next page"
-              >
-                ›
-              </button>
-              <button
-                onClick={() => setCurrentPage(totalPages)}
-                disabled={currentPage === totalPages}
-                className="pagination-btn pagination-nav"
-                aria-label="Go to last page"
-              >
-                »»
-              </button>
-            </div>
+            </span>
+            {totalPages > 1 && (
+              <span className="pagination-page-info">
+                (Page {currentPage} of {totalPages})
+              </span>
+            )}
           </div>
-        )}
-      </div>
+          
+          {totalPages > 1 && (
+            <div className="report-pagination-controls">
+              <div className="pagination-rows-selector">
+                <label htmlFor="report-rows-per-page" className="pagination-label">
+                  Rows per page:
+                </label>
+                <select
+                  id="report-rows-per-page"
+                  value={rowsPerPage}
+                  onChange={(e) => handleRowsPerPageChange(Number(e.target.value))}
+                  className="pagination-select"
+                  aria-label="Select rows per page"
+                >
+                  {rowsPerPageOptions.map(option => (
+                    <option key={option} value={option}>{option}</option>
+                  ))}
+                </select>
+              </div>
+              
+              <div className="pagination-buttons-group" role="group" aria-label="Pagination buttons">
+                <button
+                  onClick={() => setCurrentPage(1)}
+                  disabled={currentPage === 1}
+                  className="pagination-nav-btn"
+                  aria-label="Go to first page"
+                  type="button"
+                >
+                  <FaAngleDoubleLeft aria-hidden="true" />
+                </button>
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                  className="pagination-nav-btn"
+                  aria-label="Go to previous page"
+                  type="button"
+                >
+                  <FaAngleLeft aria-hidden="true" />
+                </button>
+                
+                <div className="pagination-page-buttons">
+                  {generatePageButtons()}
+                </div>
+                
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                  disabled={currentPage === totalPages}
+                  className="pagination-nav-btn"
+                  aria-label="Go to next page"
+                  type="button"
+                >
+                  <FaAngleRight aria-hidden="true" />
+                </button>
+                <button
+                  onClick={() => setCurrentPage(totalPages)}
+                  disabled={currentPage === totalPages}
+                  className="pagination-nav-btn"
+                  aria-label="Go to last page"
+                  type="button"
+                >
+                  <FaAngleDoubleRight aria-hidden="true" />
+                </button>
+              </div>
+            </div>
+          )}
+        </nav>
+      )}
     </div>
   );
 };

@@ -319,10 +319,34 @@ export const siteReportData = {
     },
   ],
   
-  "monthly-data-usage-summary": [
+"monthly-data-usage-summary": [
     { month: "2024-01", totalUsageGB: 1200, peakUsageGB: 150, avgUsageGB: 40 },
     { month: "2024-02", totalUsageGB: 1300, peakUsageGB: 170, avgUsageGB: 43 },
-  ],
+    { month: "2024-03", totalUsageGB: 1150, peakUsageGB: 135, avgUsageGB: 38 },
+    { month: "2024-04", totalUsageGB: 1400, peakUsageGB: 160, avgUsageGB: 47 },
+    { month: "2024-05", totalUsageGB: 1260, peakUsageGB: 145, avgUsageGB: 41 },
+    { month: "2024-06", totalUsageGB: 1350, peakUsageGB: 175, avgUsageGB: 45 },
+    { month: "2024-07", totalUsageGB: 1420, peakUsageGB: 180, avgUsageGB: 48 },
+    { month: "2024-08", totalUsageGB: 1370, peakUsageGB: 165, avgUsageGB: 44 },
+    { month: "2024-09", totalUsageGB: 1500, peakUsageGB: 190, avgUsageGB: 50 },
+    { month: "2024-10", totalUsageGB: 1300, peakUsageGB: 160, avgUsageGB: 42 },
+    { month: "2024-11", totalUsageGB: 1250, peakUsageGB: 155, avgUsageGB: 40 },
+    { month: "2024-12", totalUsageGB: 1520, peakUsageGB: 210, avgUsageGB: 51 },
+    { month: "2025-01", totalUsageGB: 1600, peakUsageGB: 200, avgUsageGB: 53 },
+    { month: "2025-02", totalUsageGB: 1480, peakUsageGB: 184, avgUsageGB: 47 },
+    { month: "2025-03", totalUsageGB: 1625, peakUsageGB: 215, avgUsageGB: 56 },
+    { month: "2025-04", totalUsageGB: 1550, peakUsageGB: 197, avgUsageGB: 49 },
+    { month: "2025-05", totalUsageGB: 1580, peakUsageGB: 200, avgUsageGB: 50 },
+    { month: "2025-06", totalUsageGB: 1650, peakUsageGB: 218, avgUsageGB: 55 },
+    { month: "2025-07", totalUsageGB: 1700, peakUsageGB: 220, avgUsageGB: 57 },
+    { month: "2025-08", totalUsageGB: 1630, peakUsageGB: 210, avgUsageGB: 54 },
+    { month: "2025-09", totalUsageGB: 1750, peakUsageGB: 230, avgUsageGB: 59 },
+    { month: "2025-10", totalUsageGB: 1680, peakUsageGB: 224, avgUsageGB: 56 },
+    { month: "2025-11", totalUsageGB: 1605, peakUsageGB: 218, avgUsageGB: 53 },
+    { month: "2025-12", totalUsageGB: 1800, peakUsageGB: 240, avgUsageGB: 61 },
+    { month: "2026-01", totalUsageGB: 1740, peakUsageGB: 232, avgUsageGB: 58 },
+],
+
   
   "daily-average-active-users": [
     { date: "2024-07-01", avgActiveUsers: 350 },
