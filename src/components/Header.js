@@ -7,6 +7,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import '@components/Header.css';
 import { NOTIFICATIONS } from '@constants/appConstants';
 import { showInfo } from '@utils/notifications';
+import RoleAccessSelector from '@components/RoleAccessSelector';
 
 const siteName = "Sample Site Name";
 
@@ -145,7 +146,11 @@ const Header = () => {
           </div>
         </div>
       </header>
-      <ToastContainer 
+
+      {/* Testing Component - Role and Access Level Selector */}
+      <RoleAccessSelector />
+
+      <ToastContainer
         position={NOTIFICATIONS.POSITION}
         autoClose={NOTIFICATIONS.AUTO_CLOSE}
         hideProgressBar={false}

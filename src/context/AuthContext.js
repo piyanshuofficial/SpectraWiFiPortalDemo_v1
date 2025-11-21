@@ -1,19 +1,61 @@
 // src/context/AuthContext.js
 
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useCallback } from "react";
 import { AccessLevels, Roles } from "../utils/accessLevels";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
+  // Default to maximum rights: GROUP access level (highest) + ADMIN role (highest)
   const [currentUser, setCurrentUser] = useState({
     role: Roles.ADMIN,
-    accessLevel: AccessLevels.SITE,
+    accessLevel: AccessLevels.GROUP,
     username: "adminUser",
   });
 
+  // Method to update role (for testing purposes)
+  const updateRole = useCallback((newRole) => {
+    if (Object.values(Roles).includes(newRole)) {
+      setCurrentUser(prev => ({
+        ...prev,
+        role: newRole,
+      }));
+    } else {
+      console.error('Invalid role:', newRole);
+    }
+  }, []);
+
+  // Method to update access level (for testing purposes)
+  const updateAccessLevel = useCallback((newAccessLevel) => {
+    if (Object.values(AccessLevels).includes(newAccessLevel)) {
+      setCurrentUser(prev => ({
+        ...prev,
+        accessLevel: newAccessLevel,
+      }));
+    } else {
+      console.error('Invalid access level:', newAccessLevel);
+    }
+  }, []);
+
+  // Method to reset to maximum rights
+  const resetToMaximumRights = useCallback(() => {
+    setCurrentUser({
+      role: Roles.ADMIN,
+      accessLevel: AccessLevels.GROUP,
+      username: "adminUser",
+    });
+  }, []);
+
   return (
-    <AuthContext.Provider value={{ currentUser, setCurrentUser }}>
+    <AuthContext.Provider
+      value={{
+        currentUser,
+        setCurrentUser,
+        updateRole,
+        updateAccessLevel,
+        resetToMaximumRights
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
