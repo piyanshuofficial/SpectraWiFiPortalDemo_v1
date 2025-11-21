@@ -433,6 +433,7 @@ const KnowledgeArticleModal = ({ article, onClose }) => {
   };
 
   return (
+    <>
     <Modal onClose={onClose}>
       <div className="knowledge-article-modal">
         <div className="article-header">
@@ -465,14 +466,15 @@ const KnowledgeArticleModal = ({ article, onClose }) => {
         </div>
       </div>
 
-      {lightboxImage && (
-        <ImageLightbox
-          imageSrc={lightboxImage.src}
-          imageAlt={lightboxImage.alt}
-          onClose={handleCloseLightbox}
-        />
-      )}
     </Modal>
+    {lightboxImage && (
+      <ImageLightbox
+        imageSrc={lightboxImage.src}
+        imageAlt={lightboxImage.alt}
+        onClose={handleCloseLightbox}
+      />
+    )}
+    </>
   );
 };
 
