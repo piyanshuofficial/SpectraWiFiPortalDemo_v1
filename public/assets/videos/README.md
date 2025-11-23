@@ -1,19 +1,76 @@
-# Video Tutorial Files
+# Segment-Specific Video Tutorial Files
 
-This folder contains video files for the Knowledge Center video tutorials.
+This folder contains segment-specific video files for the Knowledge Center video tutorials. Videos are organized by business segment to provide tailored content for different use cases.
 
-**Location:** `public/assets/videos/`
+**Location:** `public/assets/videos/{segment}/`
 
-## Adding Videos
+## Folder Structure
 
-Place your video tutorial files in this folder (`public/assets/videos/`) with the following naming convention:
+```
+public/assets/videos/
+├── enterprise/          # Enterprise/Corporate WiFi management
+├── coLiving/           # Co-Living spaces (residential communities)
+├── hotel/              # Hotels and hospitality
+├── coWorking/          # Coworking spaces
+├── pg/                 # PG (Paying Guest) accommodations
+└── miscellaneous/      # General/default content
+```
 
-- `getting-started.mp4` - Getting Started with WiFi Portal
-- `user-management.mp4` - Adding and Managing Users
-- `device-registration.mp4` - Device Registration Process
-- `policy-setup.mp4` - Creating and Managing Policies
-- `reports.mp4` - Generating Reports and Analytics
-- `troubleshooting.mp4` - Troubleshooting Common Issues
+## Adding Segment-Specific Videos
+
+Place your video tutorial files in the appropriate segment folder with the following naming convention:
+
+### Required Video Files (per segment):
+
+1. `getting-started.mp4` - Getting Started guide for the segment
+2. `user-management.mp4` - User/Member/Guest management for the segment
+3. `device-registration.mp4` - Device registration process
+4. `policy-setup.mp4` - Policy/Plan configuration
+5. `reports.mp4` - Reports and Analytics
+6. `troubleshooting.mp4` - Troubleshooting guide
+
+### Segment-Specific Context:
+
+#### Enterprise (`enterprise/`)
+- Corporate user management
+- Department-based policies
+- Active Directory integration
+- Compliance reporting
+- BYOD policies
+
+#### Co-Living (`coLiving/`)
+- Resident onboarding
+- Move-in/move-out processes
+- Tiered internet plans
+- Occupancy analytics
+- Fair usage policies
+
+#### Hotel (`hotel/`)
+- Guest WiFi access
+- PMS integration
+- Voucher-based access
+- Automatic check-out expiry
+- Premium tier upselling
+
+#### Coworking (`coWorking/`)
+- Member management
+- Day pass generation
+- Flexible membership plans
+- Space utilization analytics
+- Professional WiFi standards
+
+#### PG (`pg/`)
+- Tenant registration
+- Room-based access
+- Cost-effective plans
+- Device limits per tenant
+- Rent-linked access control
+
+#### Miscellaneous (`miscellaneous/`)
+- General WiFi management
+- Standard user management
+- Basic device registration
+- Default troubleshooting
 
 ## Supported Formats
 
@@ -39,11 +96,26 @@ For testing purposes, you can:
 
 ### Example: Create a 10-second test video with FFmpeg
 ```bash
-ffmpeg -f lavfi -i testsrc=duration=10:size=1280x720:rate=30 -pix_fmt yuv420p getting-started.mp4
+ffmpeg -f lavfi -i testsrc=duration=10:size=1280x720:rate=30 -pix_fmt yuv420p enterprise/getting-started.mp4
 ```
 
 ## Current Status
 
-⚠️ **No video files currently present**
+✅ **Sample video present in all segment folders**
 
-Add your tutorial videos to this folder following the naming convention above. The application will automatically load them for playback in the Knowledge Center.
+A sample `getting-started.mp4` video has been copied to each segment folder for testing. Replace these with segment-specific content as needed.
+
+## How It Works
+
+The Knowledge Center automatically displays content based on the user's current segment:
+- When a user switches segments, articles, videos, and FAQs automatically update
+- Video paths are constructed as: `/assets/videos/{currentSegment}/{videoFile}.mp4`
+- If a segment-specific video is not found, the system will show an error with helpful instructions
+
+## Adding New Videos
+
+1. Record or source your video content
+2. Edit and export in MP4 format (H.264/AAC codec)
+3. Name the file according to the convention above
+4. Place in the appropriate segment folder
+5. Videos will automatically be available in the Knowledge Center for that segment

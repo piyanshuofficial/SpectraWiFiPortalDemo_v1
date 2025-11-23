@@ -7,6 +7,7 @@ import KnowledgeArticleModal from '../../components/KnowledgeArticleModal';
 import VideoPlayer from '../../components/VideoPlayer';
 import { getArticle } from '../../constants/knowledgeArticles';
 import { ANIMATION } from '../../constants/appConstants';
+import { useSegment, SEGMENTS } from '../../context/SegmentContext';
 import './KnowledgeHome.css';
 
 // Section views
@@ -18,6 +19,7 @@ const SECTION_VIEWS = {
 };
 
 const KnowledgeHome = () => {
+  const { currentSegment } = useSegment();
   const [supportHighlight, setSupportHighlight] = useState(false);
   const [initialLoad, setInitialLoad] = useState(true);
   const [selectedArticle, setSelectedArticle] = useState(null);
@@ -117,9 +119,10 @@ const KnowledgeHome = () => {
     setSelectedVideo(null);
   };
 
-  // Getting Started Articles - All existing articles organized by category
+  // Segment-Specific Getting Started Articles
   // Only includes articles that exist in knowledgeArticles.js constants
-  const gettingStartedArticles = useMemo(() => [
+  const segmentArticles = useMemo(() => ({
+    [SEGMENTS.ENTERPRISE]: [
     // User Management
     {
       id: 'adding-new-users',
@@ -268,12 +271,378 @@ const KnowledgeHome = () => {
       id: 'policy-setup', // Reuse existing article
       category: 'Best Practices',
       title: 'Policy Optimization',
-      description: 'Design effective policies, balance user load with tiered service levels, and optimize network performance'
+      description: 'Design effective policies for enterprise networks, balance user load with tiered service levels, and optimize network performance'
     }
-  ], []);
+  ],
+  [SEGMENTS.CO_LIVING]: [
+    {
+      id: 'adding-new-users',
+      category: 'User Management',
+      title: 'Resident Onboarding',
+      description: 'Quickly onboard new residents with self-service registration, automated policy assignment, and device registration workflows'
+    },
+    {
+      id: 'user-policies-licenses',
+      category: 'User Management',
+      title: 'Resident Internet Plans',
+      description: 'Configure tiered internet plans for residents with varying speeds, data limits, and device allowances based on room types'
+    },
+    {
+      id: 'bulk-user-operations',
+      category: 'User Management',
+      title: 'Bulk Resident Management',
+      description: 'Import resident data from CSV, manage move-ins and move-outs in bulk, and handle seasonal resident changes efficiently'
+    },
+    {
+      id: 'user-status-management',
+      category: 'User Management',
+      title: 'Managing Resident Access',
+      description: 'Control resident WiFi access during move-in/move-out, suspend access for non-payment, and handle visitor credentials'
+    },
+    {
+      id: 'device-registration',
+      category: 'Device Management',
+      title: 'Resident Device Registration',
+      description: 'Allow residents to self-register smartphones, laptops, smart TVs, and streaming devices with automated MAC binding'
+    },
+    {
+      id: 'device-registration',
+      category: 'Device Management',
+      title: 'Common Area Device Setup',
+      description: 'Configure shared devices in common areas like smart TVs, printers, and IoT devices with appropriate access controls'
+    },
+    {
+      id: 'dashboard-overview',
+      category: 'Reports & Analytics',
+      title: 'Occupancy & Usage Dashboard',
+      description: 'Monitor resident WiFi usage patterns, peak usage times, bandwidth consumption by floor/building, and occupancy metrics'
+    },
+    {
+      id: 'generating-reports',
+      category: 'Reports & Analytics',
+      title: 'Resident Usage Reports',
+      description: 'Generate reports for billing reconciliation, fair usage policy enforcement, and resident support tickets'
+    },
+    {
+      id: 'policy-setup',
+      category: 'Network Configuration',
+      title: 'Tiered Internet Plans',
+      description: 'Create basic, standard, and premium internet plans with different speeds (10-50 Mbps) and data allowances for residents'
+    },
+    {
+      id: 'segment-configuration',
+      category: 'Network Configuration',
+      title: 'Building Network Setup',
+      description: 'Configure network segmentation by floors/buildings, set bandwidth allocation per unit, and optimize shared bandwidth'
+    },
+    {
+      id: 'troubleshooting-connection',
+      category: 'Troubleshooting',
+      title: 'Resident Connection Issues',
+      description: 'Resolve common resident WiFi problems including weak signal, slow speeds, device limit reached, and authentication failures'
+    },
+    {
+      id: 'user-policies-licenses',
+      category: 'Best Practices',
+      title: 'Fair Usage Policies',
+      description: 'Implement fair usage policies to prevent bandwidth hogging, manage peak hour congestion, and ensure quality for all residents'
+    }
+  ],
+  [SEGMENTS.HOTEL]: [
+    {
+      id: 'adding-new-users',
+      category: 'Guest Management',
+      title: 'Guest WiFi Access',
+      description: 'Provide seamless WiFi access to hotel guests via room number, voucher codes, or automated check-in integration'
+    },
+    {
+      id: 'user-policies-licenses',
+      category: 'Guest Management',
+      title: 'Guest Internet Packages',
+      description: 'Offer complimentary basic WiFi and premium high-speed upgrades for business travelers and VIP guests'
+    },
+    {
+      id: 'bulk-user-operations',
+      category: 'Guest Management',
+      title: 'Bulk Guest Credentials',
+      description: 'Generate WiFi vouchers in bulk for events, conferences, and group bookings with customizable expiry times'
+    },
+    {
+      id: 'user-status-management',
+      category: 'Guest Management',
+      title: 'Check-Out WiFi Management',
+      description: 'Automatically expire guest WiFi access on check-out, extend access for late check-outs, and handle early arrivals'
+    },
+    {
+      id: 'device-registration',
+      category: 'Device Management',
+      title: 'Guest Device Registration',
+      description: 'Allow guests to register multiple devices easily, support smart room controls, and manage streaming device access'
+    },
+    {
+      id: 'device-registration',
+      category: 'Device Management',
+      title: 'Hotel IoT Devices',
+      description: 'Manage smart room devices, digital signage, POS systems, and hotel management systems on a separate secure network'
+    },
+    {
+      id: 'dashboard-overview',
+      category: 'Reports & Analytics',
+      title: 'Guest Satisfaction Analytics',
+      description: 'Track WiFi usage patterns, connection success rates, bandwidth quality, and guest satisfaction metrics'
+    },
+    {
+      id: 'generating-reports',
+      category: 'Reports & Analytics',
+      title: 'Hotel WiFi Reports',
+      description: 'Generate occupancy-linked WiFi reports, premium upgrade revenue, bandwidth usage by floor, and SLA compliance'
+    },
+    {
+      id: 'policy-setup',
+      category: 'Network Configuration',
+      title: 'Hotel WiFi Tiers',
+      description: 'Configure complimentary basic WiFi and premium high-speed tiers with differentiated speeds and device limits'
+    },
+    {
+      id: 'segment-configuration',
+      category: 'Network Configuration',
+      title: 'Hotel Network Segmentation',
+      description: 'Separate guest WiFi, staff networks, back-office systems, and IoT devices for security and performance'
+    },
+    {
+      id: 'troubleshooting-connection',
+      category: 'Troubleshooting',
+      title: 'Guest WiFi Support',
+      description: 'Quick troubleshooting for guest WiFi issues, voucher problems, device connection failures, and coverage concerns'
+    },
+    {
+      id: 'user-policies-licenses',
+      category: 'Best Practices',
+      title: 'Hotel WiFi Best Practices',
+      description: 'Ensure high availability, fast connection speeds, seamless roaming between floors, and excellent guest experience'
+    }
+  ],
+  [SEGMENTS.CO_WORKING]: [
+    {
+      id: 'adding-new-users',
+      category: 'Member Management',
+      title: 'Member Onboarding',
+      description: 'Onboard coworking members with flexible plans, day passes, hot desk access, and dedicated desk WiFi credentials'
+    },
+    {
+      id: 'user-policies-licenses',
+      category: 'Member Management',
+      title: 'Membership Internet Plans',
+      description: 'Create membership tiers with varying bandwidth, priority access, dedicated bandwidth for private offices, and day pass limits'
+    },
+    {
+      id: 'bulk-user-operations',
+      category: 'Member Management',
+      title: 'Bulk Member Management',
+      description: 'Import member rosters, manage corporate team accounts, handle membership renewals, and visitor day pass generation'
+    },
+    {
+      id: 'user-status-management',
+      category: 'Member Management',
+      title: 'Membership Access Control',
+      description: 'Manage active memberships, suspend for non-payment, provide guest day passes, and handle membership upgrades/downgrades'
+    },
+    {
+      id: 'device-registration',
+      category: 'Device Management',
+      title: 'Member Device Registration',
+      description: 'Support multiple work devices per member including laptops, phones, tablets, and allow BYOD with secure access'
+    },
+    {
+      id: 'device-registration',
+      category: 'Device Management',
+      title: 'Coworking Space Devices',
+      description: 'Manage shared printers, conference room equipment, digital displays, and access control systems on separate networks'
+    },
+    {
+      id: 'dashboard-overview',
+      category: 'Reports & Analytics',
+      title: 'Space Utilization Analytics',
+      description: 'Track member WiFi usage, peak occupancy times, bandwidth consumption by area, and space utilization patterns'
+    },
+    {
+      id: 'generating-reports',
+      category: 'Reports & Analytics',
+      title: 'Member Usage Reports',
+      description: 'Generate member activity reports, bandwidth usage for billing, network performance metrics, and compliance reports'
+    },
+    {
+      id: 'policy-setup',
+      category: 'Network Configuration',
+      title: 'Flexible Member Plans',
+      description: 'Create day pass, hot desk, dedicated desk, and private office plans with appropriate bandwidth and priority levels'
+    },
+    {
+      id: 'segment-configuration',
+      category: 'Network Configuration',
+      title: 'Coworking Network Setup',
+      description: 'Configure network zones by area, prioritize bandwidth for private offices, ensure quality video conferencing capability'
+    },
+    {
+      id: 'troubleshooting-connection',
+      category: 'Troubleshooting',
+      title: 'Member Connectivity Issues',
+      description: 'Troubleshoot member connection problems, VPN compatibility issues, video call quality, and device authentication'
+    },
+    {
+      id: 'user-policies-licenses',
+      category: 'Best Practices',
+      title: 'Professional WiFi Standards',
+      description: 'Maintain reliable high-speed connectivity, support video conferencing, provide secure networks, and ensure business continuity'
+    }
+  ],
+  [SEGMENTS.PG]: [
+    {
+      id: 'adding-new-users',
+      category: 'Tenant Management',
+      title: 'Tenant Registration',
+      description: 'Register new PG tenants with room-based access, create tenant credentials, and assign appropriate internet plans'
+    },
+    {
+      id: 'user-policies-licenses',
+      category: 'Tenant Management',
+      title: 'PG Internet Plans',
+      description: 'Configure affordable tenant plans with fair data limits, speed restrictions during peak hours, and shared bandwidth models'
+    },
+    {
+      id: 'bulk-user-operations',
+      category: 'Tenant Management',
+      title: 'Bulk Tenant Operations',
+      description: 'Import tenant lists, manage room changes, handle semester-based renewals, and process batch tenant updates'
+    },
+    {
+      id: 'user-status-management',
+      category: 'Tenant Management',
+      title: 'Tenant Access Management',
+      description: 'Control tenant WiFi access, suspend for rent pending, manage vacating tenants, and handle temporary visitors'
+    },
+    {
+      id: 'device-registration',
+      category: 'Device Management',
+      title: 'Tenant Device Limits',
+      description: 'Enforce device limits per tenant to ensure fair bandwidth distribution and prevent network abuse'
+    },
+    {
+      id: 'device-registration',
+      category: 'Device Management',
+      title: 'Common Area WiFi',
+      description: 'Set up WiFi for common areas like lounges, kitchens, and study rooms with separate bandwidth allocation'
+    },
+    {
+      id: 'dashboard-overview',
+      category: 'Reports & Analytics',
+      title: 'PG Usage Monitoring',
+      description: 'Monitor bandwidth consumption by floor/room, identify heavy users, track peak usage times, and ensure fair distribution'
+    },
+    {
+      id: 'generating-reports',
+      category: 'Reports & Analytics',
+      title: 'Tenant Usage Reports',
+      description: 'Generate monthly usage reports for tenants, identify bandwidth violations, and create fair usage policy reports'
+    },
+    {
+      id: 'policy-setup',
+      category: 'Network Configuration',
+      title: 'PG Bandwidth Plans',
+      description: 'Create cost-effective plans with moderate speeds, data caps, and time-based restrictions for fair distribution'
+    },
+    {
+      id: 'segment-configuration',
+      category: 'Network Configuration',
+      title: 'PG Network Configuration',
+      description: 'Configure per-room bandwidth limits, floor-wise segmentation, and implement fair usage policies for shared internet'
+    },
+    {
+      id: 'troubleshooting-connection',
+      category: 'Troubleshooting',
+      title: 'Tenant WiFi Issues',
+      description: 'Resolve tenant connectivity problems, handle bandwidth complaints, troubleshoot device registration issues'
+    },
+    {
+      id: 'user-policies-licenses',
+      category: 'Best Practices',
+      title: 'Fair Internet Distribution',
+      description: 'Ensure fair bandwidth distribution among tenants, prevent network abuse, and maintain cost-effective operations'
+    }
+  ],
+  [SEGMENTS.MISCELLANEOUS]: [
+    {
+      id: 'adding-new-users',
+      category: 'User Management',
+      title: 'Adding New Users',
+      description: 'Learn how to create user accounts, assign appropriate policies, and manage user credentials effectively'
+    },
+    {
+      id: 'user-policies-licenses',
+      category: 'User Management',
+      title: 'User Policies & Licenses',
+      description: 'Configure speed limits, data volumes, device limits, and data cycle types for users and monitor license utilization'
+    },
+    {
+      id: 'bulk-user-operations',
+      category: 'User Management',
+      title: 'Bulk User Operations',
+      description: 'Import multiple users from CSV files, perform batch updates, and export user data for reporting and compliance'
+    },
+    {
+      id: 'user-status-management',
+      category: 'User Management',
+      title: 'User Status Management',
+      description: 'Activate, suspend, or block users, manage user credentials, and handle password resets for your organization'
+    },
+    {
+      id: 'device-registration',
+      category: 'Device Management',
+      title: 'Device Registration',
+      description: 'Register new devices with MAC address binding, assign devices to users, and configure human vs non-human device types'
+    },
+    {
+      id: 'dashboard-overview',
+      category: 'Reports & Analytics',
+      title: 'Dashboard Overview',
+      description: 'Understand key metrics: active users, license usage, data consumption, alerts, and network analytics at a glance'
+    },
+    {
+      id: 'generating-reports',
+      category: 'Reports & Analytics',
+      title: 'Generating Reports',
+      description: 'Create billing reports, usage summaries, network analytics, and SLA compliance reports with customizable date ranges'
+    },
+    {
+      id: 'policy-setup',
+      category: 'Network Configuration',
+      title: 'Policy Setup',
+      description: 'Create and manage user policies with speed limits (10-50 Mbps), data volume caps, device limits, and data cycle configurations'
+    },
+    {
+      id: 'segment-configuration',
+      category: 'Network Configuration',
+      title: 'Advanced Network Configuration',
+      description: 'Configure device restrictions, license capacity, access controls, and performance optimization settings'
+    },
+    {
+      id: 'troubleshooting-connection',
+      category: 'Troubleshooting',
+      title: 'User Connection Issues',
+      description: 'Resolve common login problems, authentication failures, password reset issues, and user account access errors'
+    }
+  ]
+}), []);
 
-  // FAQ Data - Organized by category (memoized to prevent recreation on every render)
-  const faqData = useMemo(() => [
+  // Get articles for current segment
+  const gettingStartedArticles = useMemo(() =>
+    segmentArticles[currentSegment] || segmentArticles[SEGMENTS.MISCELLANEOUS],
+    [currentSegment, segmentArticles]
+  );
+
+  // Segment-Specific FAQ Data
+  const segmentFAQs = useMemo(() => ({
+    [SEGMENTS.ENTERPRISE]: [
     {
       id: 'faq-1',
       category: 'License Management',
@@ -334,61 +703,515 @@ const KnowledgeHome = () => {
       question: 'Device registration fails with MAC address error?',
       answer: 'Ensure MAC address format is correct (XX:XX:XX:XX:XX:XX or XX-XX-XX-XX-XX-XX). Check that the MAC address is not already registered. Verify device type is allowed for the user\'s segment. Some segments restrict non-human devices.'
     }
-  ], []);
-
-  // Video Tutorial Data (memoized to prevent recreation on every render)
-  // Note: Video files should be placed in src/assets/videos/ folder
-  // If video file doesn't exist, a placeholder message will be shown
-  const videoData = useMemo(() => [
+  ],
+  [SEGMENTS.CO_LIVING]: [
     {
-      id: 'video-1',
-      title: 'Getting Started with WiFi Portal',
-      description: 'Learn the basics of navigating the portal, understanding the dashboard, and managing users.',
-      duration: '8:45',
-      category: 'Getting Started',
-      videoFile: 'getting-started.mp4'
+      id: 'faq-1',
+      category: 'License Management',
+      question: 'How many licenses do I need for my co-living space?',
+      answer: 'Typically one license per resident/room. Check the Dashboard to see current license usage. Plan for 10-15% buffer for visitors and temporary residents.'
     },
     {
-      id: 'video-2',
-      title: 'Adding and Managing Users',
-      description: 'Step-by-step guide on creating user accounts, assigning policies, and managing user credentials.',
-      duration: '12:30',
-      category: 'User Management',
-      videoFile: 'user-management.mp4'
+      id: 'faq-2',
+      category: 'Resident Access',
+      question: 'How do residents get WiFi access?',
+      answer: 'Residents receive WiFi credentials during check-in. They can register their devices via self-service portal or through the property management system integration.'
     },
     {
-      id: 'video-3',
-      title: 'Device Registration Process',
-      description: 'Complete walkthrough of registering devices, MAC address binding, and device assignment.',
-      duration: '10:15',
+      id: 'faq-3',
+      category: 'Internet Plans',
+      question: 'Can I offer different internet speeds for different rooms?',
+      answer: 'Yes, create tiered plans (Basic/Standard/Premium) with different speeds and data allowances. Assign plans based on room types or resident preferences during onboarding.'
+    },
+    {
+      id: 'faq-4',
       category: 'Device Management',
-      videoFile: 'device-registration.mp4'
+      question: 'How many devices can each resident register?',
+      answer: 'Default is typically 3-5 devices per resident (smartphone, laptop, tablet, smart TV, etc.). You can adjust device limits per policy in the Network Configuration.'
     },
     {
-      id: 'video-4',
-      title: 'Creating and Managing Policies',
-      description: 'Learn how to create policies, set speed limits, data caps, and device limits.',
-      duration: '15:20',
-      category: 'Configuration',
-      videoFile: 'policy-setup.mp4'
-    },
-    {
-      id: 'video-5',
-      title: 'Generating Reports and Analytics',
-      description: 'Discover how to generate reports, apply filters, and export data for analysis.',
-      duration: '11:50',
-      category: 'Reports',
-      videoFile: 'reports.mp4'
-    },
-    {
-      id: 'video-6',
-      title: 'Troubleshooting Common Issues',
-      description: 'Solutions for common connectivity problems, device registration errors, and user access issues.',
-      duration: '9:30',
+      id: 'faq-5',
       category: 'Troubleshooting',
-      videoFile: 'troubleshooting.mp4'
+      question: 'Resident complains about slow internet. What should I check?',
+      answer: 'Verify: 1) Resident is on correct plan, 2) Check for bandwidth-heavy usage by other residents, 3) Device limit not exceeded, 4) No data cap reached, 5) Check WiFi signal strength in their room.'
     }
-  ], []);
+  ],
+  [SEGMENTS.HOTEL]: [
+    {
+      id: 'faq-1',
+      category: 'Guest Access',
+      question: 'How do guests get WiFi access?',
+      answer: 'Guests can access WiFi via: 1) Room number + last name at check-in, 2) Voucher codes provided at front desk, 3) Automatic PMS integration on check-in, 4) QR codes in rooms.'
+    },
+    {
+      id: 'faq-2',
+      category: 'Guest Access',
+      question: 'Does guest WiFi expire automatically at checkout?',
+      answer: 'Yes, when integrated with PMS, WiFi access automatically expires at checkout time. You can manually extend access for late checkouts or early departures as needed.'
+    },
+    {
+      id: 'faq-3',
+      category: 'WiFi Tiers',
+      question: 'Should I offer free WiFi or charge for premium speeds?',
+      answer: 'Best practice: Offer complimentary basic WiFi (suitable for email/browsing) and premium high-speed WiFi for business travelers and streaming at an upgrade fee.'
+    },
+    {
+      id: 'faq-4',
+      category: 'Conference & Events',
+      question: 'How do I provide WiFi for conferences and events?',
+      answer: 'Use bulk voucher generation to create temporary WiFi codes with custom expiry times. Set appropriate bandwidth limits per user to ensure quality for all attendees.'
+    },
+    {
+      id: 'faq-5',
+      category: 'Troubleshooting',
+      question: 'Guest cannot connect with voucher code. What should I do?',
+      answer: 'Verify: 1) Voucher is not expired, 2) Code entered correctly (case-sensitive), 3) Guest has not exceeded device limit, 4) Generate new voucher if issue persists.'
+    }
+  ],
+  [SEGMENTS.CO_WORKING]: [
+    {
+      id: 'faq-1',
+      category: 'Membership Plans',
+      question: 'How do I set up different plans for day pass vs monthly members?',
+      answer: 'Create separate policies: Day Pass (limited bandwidth, 8-hour access), Hot Desk (medium bandwidth, office hours), Dedicated Desk (high bandwidth, 24/7), Private Office (priority bandwidth, unlimited devices).'
+    },
+    {
+      id: 'faq-2',
+      category: 'Member Access',
+      question: 'How do members access WiFi?',
+      answer: 'Members receive unique credentials on sign-up. Day pass visitors get temporary codes. Integrate with your coworking management software for automatic access provisioning.'
+    },
+    {
+      id: 'faq-3',
+      category: 'Bandwidth Management',
+      question: 'How do I prioritize bandwidth for private offices?',
+      answer: 'Create premium policies with higher speed limits and priority flags. Assign these to private office members. This ensures they get priority during peak usage times.'
+    },
+    {
+      id: 'faq-4',
+      category: 'Video Conferencing',
+      question: 'Members complain about poor video call quality. How to fix?',
+      answer: 'Ensure: 1) High bandwidth allocation for member plans, 2) QoS settings prioritize video conferencing traffic, 3) Check conference room WiFi coverage, 4) Limit bandwidth-heavy downloads during business hours.'
+    },
+    {
+      id: 'faq-5',
+      category: 'Guest Access',
+      question: 'How do I provide WiFi to member guests and visitors?',
+      answer: 'Members can generate limited day pass codes for their guests, or front desk can issue temporary visitor WiFi with time-based expiry and bandwidth restrictions.'
+    }
+  ],
+  [SEGMENTS.PG]: [
+    {
+      id: 'faq-1',
+      category: 'Tenant Plans',
+      question: 'What internet plans work best for PG tenants?',
+      answer: 'Create affordable plans with moderate speeds (10-25 Mbps) and fair data caps. Consider time-based restrictions during peak hours to ensure fair distribution among all tenants.'
+    },
+    {
+      id: 'faq-2',
+      category: 'Fair Usage',
+      question: 'How do I prevent one tenant from consuming all bandwidth?',
+      answer: 'Implement: 1) Per-tenant bandwidth limits in policies, 2) Device limits (2-3 devices per tenant), 3) Data caps with cycle resets, 4) Monitor usage reports to identify heavy users.'
+    },
+    {
+      id: 'faq-3',
+      category: 'Device Limits',
+      question: 'How many devices should I allow per tenant?',
+      answer: 'Typically 2-3 devices per tenant (phone + laptop + tablet) to prevent network abuse. You can adjust based on your internet capacity and tenant count.'
+    },
+    {
+      id: 'faq-4',
+      category: 'Tenant Issues',
+      question: 'Tenant says WiFi is too slow. What should I check?',
+      answer: 'Check: 1) Tenant device count within limit, 2) No data cap reached, 3) Other tenants not heavily using bandwidth, 4) WiFi signal strength in tenant room, 5) Peak usage time vs off-peak.'
+    },
+    {
+      id: 'faq-5',
+      category: 'Payment Integration',
+      question: 'Can I suspend WiFi for rent pending?',
+      answer: 'Yes, change tenant status to Suspended in User Management. WiFi access will be blocked until status is changed back to Active after rent payment.'
+    }
+  ],
+  [SEGMENTS.MISCELLANEOUS]: [
+    {
+      id: 'faq-1',
+      category: 'License Management',
+      question: 'How do I check my current license usage?',
+      answer: 'You can view your license usage on the Dashboard or in the User Management page. The license ring display shows current usage out of total licenses. Navigate to Dashboard > Overview to see real-time license metrics.'
+    },
+    {
+      id: 'faq-2',
+      category: 'License Management',
+      question: 'What happens when I reach my license limit?',
+      answer: 'When you reach your license limit, you will not be able to add new users until licenses become available. You can either upgrade your license capacity or remove inactive users to free up licenses.'
+    },
+    {
+      id: 'faq-3',
+      category: 'User Policies',
+      question: 'How do I create a new user policy?',
+      answer: 'Navigate to Configuration > Policy Setup, click "Create New Policy", enter a policy name, configure speed limits (10-50 Mbps), data volume caps, device limits per user, and data cycle type (Daily/Weekly/Monthly). Save the policy to make it available for user assignment.'
+    },
+    {
+      id: 'faq-4',
+      category: 'User Policies',
+      question: 'Can I assign different policies to different users?',
+      answer: 'Yes, you can assign different policies to each user based on their needs. When creating or editing a user, select the appropriate policy from the dropdown menu. This allows you to provide tiered service levels.'
+    },
+    {
+      id: 'faq-5',
+      category: 'Device Registration',
+      question: 'How do I register a new device?',
+      answer: 'Go to Device Management, click "Register Device", enter the MAC address, select device type (Human/Non-Human), choose owner from the user list, optionally enter a device name, and click "Register". The device will be bound to the user account.'
+    },
+    {
+      id: 'faq-6',
+      category: 'Device Registration',
+      question: 'What is the difference between Human and Non-Human devices?',
+      answer: 'Human devices are user-operated devices like smartphones, laptops, and tablets. Non-Human devices are IoT devices, smart TVs, printers, and other automated devices. Some segments restrict certain device types for security and performance reasons.'
+    },
+    {
+      id: 'faq-7',
+      category: 'Reports',
+      question: 'How do I generate a custom report?',
+      answer: 'Navigate to Reports, select a report category, click on the specific report you need, configure criteria (date range, filters), preview the data, and use "Export CSV" or "Export PDF" buttons to download the report in your preferred format.'
+    },
+    {
+      id: 'faq-8',
+      category: 'Reports',
+      question: 'Can I schedule automated reports?',
+      answer: 'Automated report scheduling is a planned feature. Currently, you can manually generate and export reports as needed. Contact support for bulk reporting requirements or custom report automation.'
+    },
+    {
+      id: 'faq-9',
+      category: 'Troubleshooting',
+      question: 'User cannot connect to WiFi. What should I check?',
+      answer: 'Verify: 1) User status is Active (not Blocked/Suspended), 2) Device is registered with correct MAC address, 3) User has not exceeded device limit, 4) License is available, 5) Policy allows connectivity, 6) Check Recent Activities for any errors.'
+    },
+    {
+      id: 'faq-10',
+      category: 'Troubleshooting',
+      question: 'Device registration fails with MAC address error?',
+      answer: 'Ensure MAC address format is correct (XX:XX:XX:XX:XX:XX or XX-XX-XX-XX-XX-XX). Check that the MAC address is not already registered. Verify device type is allowed for the user\'s segment. Some segments restrict non-human devices.'
+    }
+  ]
+}), []);
+
+  // Get FAQs for current segment
+  const faqData = useMemo(() =>
+    segmentFAQs[currentSegment] || segmentFAQs[SEGMENTS.MISCELLANEOUS],
+    [currentSegment, segmentFAQs]
+  );
+
+  // Segment-Specific Video Tutorial Data
+  // Video files should be placed in public/assets/videos/{segment}/ folder
+  const segmentVideos = useMemo(() => ({
+    [SEGMENTS.ENTERPRISE]: [
+      {
+        id: 'video-1',
+        title: 'Getting Started with WiFi Portal',
+        description: 'Learn the basics of navigating the enterprise portal, understanding the dashboard, and managing corporate users efficiently.',
+        duration: '8:45',
+        category: 'Getting Started',
+        videoFile: 'enterprise/getting-started.mp4'
+      },
+      {
+        id: 'video-2',
+        title: 'Adding and Managing Users',
+        description: 'Step-by-step guide on creating corporate user accounts, assigning department-based policies, and managing user credentials with AD integration.',
+        duration: '12:30',
+        category: 'User Management',
+        videoFile: 'enterprise/user-management.mp4'
+      },
+      {
+        id: 'video-3',
+        title: 'Device Registration Process',
+        description: 'Complete walkthrough of registering company devices, implementing BYOD policies, and managing device lifecycle with MAC address binding.',
+        duration: '10:15',
+        category: 'Device Management',
+        videoFile: 'enterprise/device-registration.mp4'
+      },
+      {
+        id: 'video-4',
+        title: 'Creating and Managing Policies',
+        description: 'Learn how to create department-specific policies, set bandwidth allocation, implement compliance requirements, and configure enterprise-grade access controls.',
+        duration: '15:20',
+        category: 'Configuration',
+        videoFile: 'enterprise/policy-setup.mp4'
+      },
+      {
+        id: 'video-5',
+        title: 'Generating Reports and Analytics',
+        description: 'Discover how to generate compliance reports, department-wise usage analytics, apply filters for audit trails, and export data for executive review.',
+        duration: '11:50',
+        category: 'Reports',
+        videoFile: 'enterprise/reports.mp4'
+      },
+      {
+        id: 'video-6',
+        title: 'Troubleshooting Common Issues',
+        description: 'Solutions for corporate network connectivity problems, VPN conflicts, enterprise authentication failures, and user access issues.',
+        duration: '9:30',
+        category: 'Troubleshooting',
+        videoFile: 'enterprise/troubleshooting.mp4'
+      }
+    ],
+    [SEGMENTS.CO_LIVING]: [
+      {
+        id: 'video-1',
+        title: 'Getting Started with WiFi Portal',
+        description: 'Learn the basics of navigating the co-living portal, understanding resident analytics, and setting up self-service WiFi access for residents.',
+        duration: '8:45',
+        category: 'Getting Started',
+        videoFile: 'coLiving/getting-started.mp4'
+      },
+      {
+        id: 'video-2',
+        title: 'Adding and Managing Users',
+        description: 'Step-by-step guide on resident onboarding, creating resident accounts, handling move-in/move-out processes, and managing visitor credentials.',
+        duration: '12:30',
+        category: 'User Management',
+        videoFile: 'coLiving/user-management.mp4'
+      },
+      {
+        id: 'video-3',
+        title: 'Device Registration Process',
+        description: 'Complete walkthrough of resident device registration, self-service device binding, managing personal devices, and shared common area equipment.',
+        duration: '10:15',
+        category: 'Device Management',
+        videoFile: 'coLiving/device-registration.mp4'
+      },
+      {
+        id: 'video-4',
+        title: 'Creating and Managing Policies',
+        description: 'Learn how to create tiered internet plans (basic, standard, premium), set speed limits and data caps per room type, and configure resident-specific policies.',
+        duration: '15:20',
+        category: 'Configuration',
+        videoFile: 'coLiving/policy-setup.mp4'
+      },
+      {
+        id: 'video-5',
+        title: 'Generating Reports and Analytics',
+        description: 'Discover how to generate resident usage reports, occupancy analytics, billing reconciliation data, and export usage summaries for property management.',
+        duration: '11:50',
+        category: 'Reports',
+        videoFile: 'coLiving/reports.mp4'
+      },
+      {
+        id: 'video-6',
+        title: 'Troubleshooting Common Issues',
+        description: 'Solutions for resident connectivity problems, weak signal issues, fair usage policy enforcement, device limit errors, and bandwidth complaints.',
+        duration: '9:30',
+        category: 'Troubleshooting',
+        videoFile: 'coLiving/troubleshooting.mp4'
+      }
+    ],
+    [SEGMENTS.HOTEL]: [
+      {
+        id: 'video-1',
+        title: 'Getting Started with WiFi Portal',
+        description: 'Learn the basics of navigating the hotel WiFi portal, setting up guest access systems, PMS integration, and understanding voucher-based authentication.',
+        duration: '8:45',
+        category: 'Getting Started',
+        videoFile: 'hotel/getting-started.mp4'
+      },
+      {
+        id: 'video-2',
+        title: 'Adding and Managing Users',
+        description: 'Step-by-step guide on managing guest WiFi accounts, generating voucher codes, automatic check-out expiry, and handling conference/event attendees.',
+        duration: '12:30',
+        category: 'User Management',
+        videoFile: 'hotel/user-management.mp4'
+      },
+      {
+        id: 'video-3',
+        title: 'Device Registration Process',
+        description: 'Complete walkthrough of guest device registration, managing multiple devices per room, smart room IoT devices, and hotel infrastructure equipment.',
+        duration: '10:15',
+        category: 'Device Management',
+        videoFile: 'hotel/device-registration.mp4'
+      },
+      {
+        id: 'video-4',
+        title: 'Creating and Managing Policies',
+        description: 'Learn how to configure complimentary basic WiFi and premium high-speed tiers, set guest device limits, and create upsell opportunities for business travelers.',
+        duration: '15:20',
+        category: 'Configuration',
+        videoFile: 'hotel/policy-setup.mp4'
+      },
+      {
+        id: 'video-5',
+        title: 'Generating Reports and Analytics',
+        description: 'Discover how to generate guest satisfaction metrics, occupancy-linked usage reports, premium tier revenue analysis, and export data for management review.',
+        duration: '11:50',
+        category: 'Reports',
+        videoFile: 'hotel/reports.mp4'
+      },
+      {
+        id: 'video-6',
+        title: 'Troubleshooting Common Issues',
+        description: 'Solutions for guest connectivity problems, voucher code errors, device registration failures, coverage issues in guest rooms, and rapid support workflows.',
+        duration: '9:30',
+        category: 'Troubleshooting',
+        videoFile: 'hotel/troubleshooting.mp4'
+      }
+    ],
+    [SEGMENTS.CO_WORKING]: [
+      {
+        id: 'video-1',
+        title: 'Getting Started with WiFi Portal',
+        description: 'Learn the basics of navigating the coworking space portal, understanding member analytics, setting up day pass systems, and managing flexible membership tiers.',
+        duration: '8:45',
+        category: 'Getting Started',
+        videoFile: 'coWorking/getting-started.mp4'
+      },
+      {
+        id: 'video-2',
+        title: 'Adding and Managing Users',
+        description: 'Step-by-step guide on creating member accounts, issuing day passes, managing corporate team subscriptions, and handling visitor WiFi access.',
+        duration: '12:30',
+        category: 'User Management',
+        videoFile: 'coWorking/user-management.mp4'
+      },
+      {
+        id: 'video-3',
+        title: 'Device Registration Process',
+        description: 'Complete walkthrough of member device registration, supporting BYOD environments, managing multiple work devices, and configuring shared coworking equipment.',
+        duration: '10:15',
+        category: 'Device Management',
+        videoFile: 'coWorking/device-registration.mp4'
+      },
+      {
+        id: 'video-4',
+        title: 'Creating and Managing Policies',
+        description: 'Learn how to create flexible membership plans (day pass, hot desk, dedicated desk, private office), set bandwidth priorities, and ensure quality for video conferencing.',
+        duration: '15:20',
+        category: 'Configuration',
+        videoFile: 'coWorking/policy-setup.mp4'
+      },
+      {
+        id: 'video-5',
+        title: 'Generating Reports and Analytics',
+        description: 'Discover how to generate space utilization reports, member activity analytics, network performance metrics, and export data for business intelligence.',
+        duration: '11:50',
+        category: 'Reports',
+        videoFile: 'coWorking/reports.mp4'
+      },
+      {
+        id: 'video-6',
+        title: 'Troubleshooting Common Issues',
+        description: 'Solutions for member connectivity problems, video conferencing quality issues, VPN compatibility errors, device authentication failures, and professional support workflows.',
+        duration: '9:30',
+        category: 'Troubleshooting',
+        videoFile: 'coWorking/troubleshooting.mp4'
+      }
+    ],
+    [SEGMENTS.PG]: [
+      {
+        id: 'video-1',
+        title: 'Getting Started with WiFi Portal',
+        description: 'Learn the basics of navigating the PG portal, setting up cost-effective WiFi management, room-based access control, and implementing fair usage policies.',
+        duration: '8:45',
+        category: 'Getting Started',
+        videoFile: 'pg/getting-started.mp4'
+      },
+      {
+        id: 'video-2',
+        title: 'Adding and Managing Users',
+        description: 'Step-by-step guide on registering PG tenants, creating room-based credentials, handling tenant move-in/move-out, and rent-linked WiFi suspensions.',
+        duration: '12:30',
+        category: 'User Management',
+        videoFile: 'pg/user-management.mp4'
+      },
+      {
+        id: 'video-3',
+        title: 'Device Registration Process',
+        description: 'Complete walkthrough of tenant device registration, enforcing device limits per room, managing common area WiFi, and preventing network abuse.',
+        duration: '10:15',
+        category: 'Device Management',
+        videoFile: 'pg/device-registration.mp4'
+      },
+      {
+        id: 'video-4',
+        title: 'Creating and Managing Policies',
+        description: 'Learn how to create cost-effective internet plans, set fair data caps, configure speed limits, implement time-based restrictions, and ensure equitable bandwidth distribution.',
+        duration: '15:20',
+        category: 'Configuration',
+        videoFile: 'pg/policy-setup.mp4'
+      },
+      {
+        id: 'video-5',
+        title: 'Generating Reports and Analytics',
+        description: 'Discover how to generate tenant usage reports, monitor per-room bandwidth consumption, identify heavy users, track violations, and export data for tenant billing.',
+        duration: '11:50',
+        category: 'Reports',
+        videoFile: 'pg/reports.mp4'
+      },
+      {
+        id: 'video-6',
+        title: 'Troubleshooting Common Issues',
+        description: 'Solutions for tenant connectivity problems, handling bandwidth complaints, resolving device limit errors, addressing slow speed issues, and maintaining fair usage enforcement.',
+        duration: '9:30',
+        category: 'Troubleshooting',
+        videoFile: 'pg/troubleshooting.mp4'
+      }
+    ],
+    [SEGMENTS.MISCELLANEOUS]: [
+      {
+        id: 'video-1',
+        title: 'Getting Started with WiFi Portal',
+        description: 'Learn the basics of navigating the portal, understanding the dashboard, and managing users.',
+        duration: '8:45',
+        category: 'Getting Started',
+        videoFile: 'miscellaneous/getting-started.mp4'
+      },
+      {
+        id: 'video-2',
+        title: 'Adding and Managing Users',
+        description: 'Step-by-step guide on creating user accounts, assigning policies, and managing user credentials.',
+        duration: '12:30',
+        category: 'User Management',
+        videoFile: 'miscellaneous/user-management.mp4'
+      },
+      {
+        id: 'video-3',
+        title: 'Device Registration Process',
+        description: 'Complete walkthrough of registering devices, MAC address binding, and device assignment.',
+        duration: '10:15',
+        category: 'Device Management',
+        videoFile: 'miscellaneous/device-registration.mp4'
+      },
+      {
+        id: 'video-4',
+        title: 'Creating and Managing Policies',
+        description: 'Learn how to create policies, set speed limits, data caps, and device limits.',
+        duration: '15:20',
+        category: 'Configuration',
+        videoFile: 'miscellaneous/policy-setup.mp4'
+      },
+      {
+        id: 'video-5',
+        title: 'Generating Reports and Analytics',
+        description: 'Discover how to generate reports, apply filters, and export data for analysis.',
+        duration: '11:50',
+        category: 'Reports',
+        videoFile: 'miscellaneous/reports.mp4'
+      },
+      {
+        id: 'video-6',
+        title: 'Troubleshooting Common Issues',
+        description: 'Solutions for common connectivity problems, device registration errors, and user access issues.',
+        duration: '9:30',
+        category: 'Troubleshooting',
+        videoFile: 'miscellaneous/troubleshooting.mp4'
+      }
+    ]
+  }), []);
+
+  // Get videos for current segment
+  const videoData = useMemo(() =>
+    segmentVideos[currentSegment] || segmentVideos[SEGMENTS.MISCELLANEOUS],
+    [currentSegment, segmentVideos]
+  );
 
   // Random selection logic - generates different content on each visit/refresh
   const getRandomItems = (array, count) => {
