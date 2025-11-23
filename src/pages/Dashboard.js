@@ -8,6 +8,7 @@ import { FaUsers, FaUserFriends, FaChartPie, FaExclamationCircle, FaFileCsv, FaF
 import { usePermissions } from "../hooks/usePermissions";
 import { useLoading } from "../context/LoadingContext";
 import { useSegment } from "../context/SegmentContext";
+import { useSegmentActivities } from "../hooks/useSegmentActivities";
 import siteSampleData from "../constants/siteSampleData";
 import userSampleData from "../constants/userSampleData";
 import { getStandardChartOptions } from "../utils/commonChartOptions";
@@ -81,6 +82,9 @@ const Dashboard = () => {
       alertsDelta: -1
     };
   }, [currentSegment]);
+
+  // Get segment-specific recent activities from shared hook
+  const recentActivities = useSegmentActivities();
 
   const { hasPermission } = usePermissions();
   const { startLoading, stopLoading } = useLoading();
@@ -791,12 +795,7 @@ useEffect(() => {
       <h2 className="dashboard-section-title">Recent Activities</h2>
       <Card title="" className="recent-activities-card" aria-label="Recent user activities">
         <ul className="activity-list">
-          {[
-            { text: "User Amit logged in", time: "10:30 AM" },
-            { text: "License allocation updated for Enterprise segment", time: "Yesterday" },
-            { text: "Network health check passed", time: "2 days ago" },
-            { text: "Password reset request for user Neeta", time: "3 days ago" },
-          ].slice(0, ACTIVITY.MAX_RECENT_ITEMS).map((activity, i) => (
+          {recentActivities.slice(0, ACTIVITY.MAX_RECENT_ITEMS).map((activity, i) => (
             <li key={i} className="activity-item" tabIndex={0}>
               <span className="activity-text">{activity.text}</span>
               <span className="activity-time">{activity.time}</span>

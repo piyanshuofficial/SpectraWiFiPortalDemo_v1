@@ -114,7 +114,7 @@ DeviceCard.displayName = 'DeviceCard';
 const DeviceList = () => {
   const { hasPermission } = usePermissions();
   const { isLoading } = useLoading();
-  const { currentSegment, updateSegment } = useSegment();
+  const { currentSegment } = useSegment();
 
   const [devices, setDevices] = useState([]);
   const [showDeviceModal, setShowDeviceModal] = useState(false);
@@ -615,29 +615,11 @@ const DeviceList = () => {
 
   return (
     <main className="device-mgmt-main">
-      <LoadingOverlay 
+      <LoadingOverlay
         active={isLoading('devices')}
         message="Processing devices..."
         fullPage={false}
       />
-      
-      <div className="segment-selector-test">
-        <label htmlFor="segment-test-select">Segment:</label>
-        <select
-          id="segment-test-select"
-          value={segmentFilter}
-          onChange={(e) => updateSegment(e.target.value)}
-          className="segment-test-dropdown"
-          disabled={isLoading('devices')}
-        >
-          <option value="enterprise">Enterprise</option>
-          <option value="coLiving">Co-Living</option>
-          <option value="coWorking">Co-Working</option>
-          <option value="hotel">Hotel</option>
-          <option value="pg">PG</option>
-          <option value="miscellaneous">Miscellaneous</option>
-        </select>
-      </div>
 
       <h1 className="device-mgmt-title" style={{ marginBottom: '1.5rem' }}>Device Management</h1>
 

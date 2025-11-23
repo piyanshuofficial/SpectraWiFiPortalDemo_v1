@@ -9,6 +9,9 @@ import { NOTIFICATIONS } from '@constants/appConstants';
 import { showInfo } from '@utils/notifications';
 import RoleAccessSelector from '@components/RoleAccessSelector';
 import { useSiteConfig } from '@hooks/useSiteConfig';
+import { useSegmentActivities } from '@hooks/useSegmentActivities';
+
+const MAX_NOTIFICATIONS = 5;
 
 const Header = () => {
   const { siteName } = useSiteConfig();
@@ -16,6 +19,10 @@ const Header = () => {
   const [profileOpen, setProfileOpen] = useState(false);
   const notifRef = useRef();
   const profileRef = useRef();
+
+  // Get segment-specific activities (same as Recent Activities on Dashboard)
+  const allActivities = useSegmentActivities();
+  const notifications = allActivities.slice(0, MAX_NOTIFICATIONS);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -25,12 +32,6 @@ const Header = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
-  const notifications = [
-    { text: "User Amit logged in", time: "10:25 AM" },
-    { text: "User Rohit was blocked", time: "Yesterday" },
-    { text: "Network health check passed", time: "2 days ago" }
-  ];
 
   const handleChangePassword = () => {
     showInfo("Change Password - backend integration pending.");
