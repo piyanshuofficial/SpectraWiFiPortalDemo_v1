@@ -1,6 +1,8 @@
 // src/utils/notifications.js
 
+import React from 'react';
 import { toast } from "react-toastify";
+import Spinner from '../components/Loading/Spinner';
 
 /**
  * Centralized notification system for the application
@@ -108,6 +110,17 @@ export const showInfo = (message, options = {}) => {
 };
 
 /**
+ * Custom loading content component
+ * Ensures only the spinner rotates, not the text
+ */
+const LoadingContent = ({ message }) => (
+  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+    <Spinner size="sm" color="primary" />
+    <span>{message}</span>
+  </div>
+);
+
+/**
  * Display a loading notification that returns a toast ID
  * Used for operations that need to update the notification later
  * @param {string} message - The loading message to display
@@ -115,7 +128,12 @@ export const showInfo = (message, options = {}) => {
  * @returns {string|number} Toast ID for updating later
  */
 export const showLoading = (message, options = {}) => {
-  return toast.loading(message, { ...DEFAULT_CONFIG, ...options });
+  return toast.info(<LoadingContent message={message} />, {
+    ...DEFAULT_CONFIG,
+    autoClose: false,
+    closeButton: false,
+    ...options
+  });
 };
 
 /**
@@ -148,6 +166,14 @@ export const dismissToast = (toastId) => {
   } else {
     toast.dismiss();
   }
+};
+
+/**
+ * Dismiss all active toasts before showing a new one
+ * Useful for preventing old loading toasts from lingering
+ */
+export const dismissAllToasts = () => {
+  toast.dismiss();
 };
 
 /**
@@ -205,7 +231,9 @@ export const showPromise = (promise, { pending, success, error }, options = {}) 
   return toast.promise(
     promise,
     {
-      pending: pending || "Processing...",
+      pending: {
+        render: () => <LoadingContent message={pending || "Processing..."} />,
+      },
       success: success || "Operation completed successfully",
       error: error || "Operation failed",
     },

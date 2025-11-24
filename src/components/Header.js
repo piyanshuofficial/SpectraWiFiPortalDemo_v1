@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { FaBell, FaUserCircle } from 'react-icons/fa';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import '../styles/toastify-overrides.css'; // CRITICAL: Must be imported AFTER ReactToastify.css
 import '@components/Header.css';
 import { NOTIFICATIONS } from '@constants/appConstants';
 import { showInfo } from '@utils/notifications';

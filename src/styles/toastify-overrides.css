@@ -1,0 +1,93 @@
+/* src/styles/toastify-overrides.css */
+/* CRITICAL: This file MUST be imported AFTER react-toastify/dist/ReactToastify.css */
+/* Import order matters for CSS cascade! */
+
+/* ===================================================================== */
+/* CRITICAL FIX: Prevent text from rotating with spinners in toast notifications */
+/* ===================================================================== */
+
+/* 1. Prevent rotation on toast containers (but ALLOW enter/exit animations for auto-dismiss) */
+.Toastify__toast,
+.Toastify__toast--default,
+.Toastify__toast--info,
+.Toastify__toast--success,
+.Toastify__toast--warning,
+.Toastify__toast--error,
+.Toastify__toast--loading {
+  /* DO NOT set animation: none - toasts need animations to auto-dismiss! */
+  /* Only prevent rotation via transform */
+  transform: rotate(0deg) !important;
+}
+
+/* 2. Prevent rotation on toast body and content (but allow other transforms) */
+.Toastify__toast-body,
+.Toastify__toast-body > div,
+.Toastify__toast-body > div:last-child,
+.Toastify__toast-body > div:first-child {
+  /* DO NOT disable animations - needed for enter/exit */
+  /* Only prevent rotation */
+  transform: rotate(0deg) !important;
+}
+
+/* 3. ONLY allow rotation on LOADING spinner elements (NOT success/error/warning icons) */
+.Toastify__spinner,
+.Toastify__toast--loading .Toastify__toast-icon,
+.Toastify__toast--loading .Toastify__toast-icon > svg,
+.spinner-inner {
+  animation: Toastify__spin 0.65s linear infinite !important;
+}
+
+/* 3b. Ensure success/error/warning/info icons DO NOT rotate */
+.Toastify__toast--success .Toastify__toast-icon,
+.Toastify__toast--error .Toastify__toast-icon,
+.Toastify__toast--warning .Toastify__toast-icon,
+.Toastify__toast--info .Toastify__toast-icon,
+.Toastify__toast--success .Toastify__toast-icon > svg,
+.Toastify__toast--error .Toastify__toast-icon > svg,
+.Toastify__toast--warning .Toastify__toast-icon > svg,
+.Toastify__toast--info .Toastify__toast-icon > svg {
+  animation: none !important;
+  transform: none !important;
+}
+
+/* 4. Prevent rotation on custom flex containers */
+.Toastify__toast-body > div[style*="flex"],
+.Toastify__toast-body > div[style*="display"] {
+  /* Only prevent rotation, not all transforms */
+  transform: rotate(0deg) !important;
+}
+
+/* 5. Ensure ALL text elements NEVER rotate */
+.Toastify__toast-body span,
+.Toastify__toast-body p,
+.Toastify__toast-body div > span,
+.Toastify__toast-body div > p {
+  /* Only prevent rotation */
+  transform: rotate(0deg) !important;
+}
+
+/* 6. Target our custom LoadingContent component specifically */
+.Toastify__toast-body > div > span:not(.spinner-inner) {
+  /* Only prevent rotation */
+  transform: rotate(0deg) !important;
+}
+
+/* Define the rotation animation (only for spinner elements) */
+@keyframes Toastify__spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Ensure reduced motion preference is respected */
+@media (prefers-reduced-motion: reduce) {
+  .Toastify__spinner,
+  .Toastify__toast-icon,
+  .Toastify__toast-icon > svg,
+  .spinner-inner {
+    animation: none !important;
+  }
+}

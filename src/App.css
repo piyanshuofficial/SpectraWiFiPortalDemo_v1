@@ -215,3 +215,70 @@ canvas {
 .modal-backdrop {
   z-index: 10000 !important;
 }
+
+/* ===== React Toastify Custom Styles ===== */
+/* CRITICAL FIX: Prevent text from rotating with spinners */
+
+/* 1. Prevent rotation on toast containers (ALLOW enter/exit animations) */
+.Toastify__toast,
+.Toastify__toast--default,
+.Toastify__toast--info,
+.Toastify__toast--success,
+.Toastify__toast--warning,
+.Toastify__toast--error,
+.Toastify__toast--loading {
+  /* DO NOT disable animations - needed for auto-dismiss! */
+  /* Only prevent rotation */
+  transform: rotate(0deg) !important;
+}
+
+/* 2. Prevent rotation on toast body and content */
+.Toastify__toast-body,
+.Toastify__toast-body > div,
+.Toastify__toast-body > div:last-child,
+.Toastify__toast-body > div:first-child {
+  /* Only prevent rotation, allow other animations */
+  transform: rotate(0deg) !important;
+}
+
+/* 3. ONLY allow rotation on LOADING spinner (NOT success/error/warning icons) */
+.Toastify__spinner,
+.Toastify__toast--loading .Toastify__toast-icon,
+.Toastify__toast--loading .Toastify__toast-icon > svg,
+.spinner-inner {
+  animation: Toastify__spin 0.65s linear infinite !important;
+}
+
+/* 3b. Explicitly prevent success/error/warning icons from rotating */
+.Toastify__toast--success .Toastify__toast-icon,
+.Toastify__toast--error .Toastify__toast-icon,
+.Toastify__toast--warning .Toastify__toast-icon,
+.Toastify__toast--info .Toastify__toast-icon {
+  animation: none !important;
+  transform: none !important;
+}
+
+/* 4. Prevent rotation on custom loading content */
+.Toastify__toast-body > div[style*="flex"],
+.Toastify__toast-body > div[style*="display"] {
+  /* Only prevent rotation */
+  transform: rotate(0deg) !important;
+}
+
+/* 5. Ensure text elements NEVER rotate */
+.Toastify__toast-body span,
+.Toastify__toast-body p,
+.Toastify__toast-body div > span {
+  /* Only prevent rotation */
+  transform: rotate(0deg) !important;
+}
+
+/* Define the spin animation */
+@keyframes Toastify__spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
