@@ -43,7 +43,17 @@ const siteConfig = {
       siteName: "Spectra Community Hub - Delhi",
       siteId: "SITE-DEL-MIS-006",
       location: "Delhi",
-      address: "Connaught Place, New Delhi - 110001"
+      address: "Connaught Place, New Delhi - 110001",
+      // Data cycle type configuration (set during site provisioning)
+      // ========================================
+      // TODO: Backend Integration - Site Provisioning Configuration
+      // ========================================
+      // This should be configured during site setup by IT team
+      // Backend endpoint: POST /api/sites/{siteId}/configure
+      // Payload: { dataCycleType: 'Daily' | 'Monthly' }
+      // Store in site_config table and fetch during site load
+      // ========================================
+      dataCycleType: "Monthly" // Default for demo portal, can be 'Daily' or 'Monthly'
     }
   },
   

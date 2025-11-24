@@ -1,7 +1,7 @@
 // src/pages/DeviceManagement/DeviceList.js
 
 import React, { useState, useMemo, useEffect, useCallback } from "react";
-import { FaDesktop, FaGlobeAmericas, FaBan, FaWifi, FaMobileAlt, FaLaptop, FaTablet, FaUpload } from "react-icons/fa";
+import { FaDesktop, FaGlobeAmericas, FaBan, FaWifi, FaMobileAlt, FaLaptop, FaTablet } from "react-icons/fa";
 import { usePermissions } from "../../hooks/usePermissions";
 import { useFilter } from "../../hooks/useFilter";
 import { useTableState } from "../../hooks/useTableState";
@@ -11,6 +11,7 @@ import { useSegment } from "../../context/SegmentContext";
 import Button from "../../components/Button";
 import Pagination from "../../components/Pagination";
 import DeviceFormModal from "../../components/DeviceFormModal";
+import DeviceToolbar from "./DeviceToolbar";
 import BulkImportModal from "../../components/BulkImportModal";
 import LoadingOverlay from "../../components/Loading/LoadingOverlay";
 import SkeletonLoader from "../../components/Loading/SkeletonLoader";
@@ -44,19 +45,27 @@ const SummaryCard = React.memo(({ stat }) => (
 
 SummaryCard.displayName = 'SummaryCard';
 
-const DeviceCard = React.memo(({ 
-  device, 
-  onViewDetails, 
-  onBlock,
-  viewingDeviceId,
-  blockingDeviceId
+const DeviceCard = React.memo(({
+  device,
+  onEdit,
+  onDisconnect,
+  canEdit,
+  disconnectingDeviceId
 }) => (
   <div className="device-card">
     <div className="device-icon-bg">
       <device.Icon className="device-main-icon" />
+      <span
+        className={`device-status-indicator ${device.online ? "status-online" : "status-offline"}`}
+        title={device.online ? "Online" : "Offline"}
+        aria-label={device.online ? "Device is online" : "Device is offline"}
+      >
+        {device.online ? "●" : "●"}
+      </span>
     </div>
     <div className="device-meta-col">
       <div className="device-card-title">{device.name}</div>
+      <div className="device-detail">Type: {device.category}</div>
       <div className="device-detail">MAC: {device.mac}</div>
       <div className="device-detail">Owner: {device.owner}</div>
       <div className="device-card-info-row">
@@ -75,39 +84,38 @@ const DeviceCard = React.memo(({
       </div>
     </div>
     <div className="device-card-actions">
-      <Button 
-        variant="info"
-        onClick={() => onViewDetails(device)}
-        aria-label={`View details for ${device.name}`}
-        loading={viewingDeviceId === device.id}
-        disabled={blockingDeviceId === device.id}
-      >
-        Details
-      </Button>
-      <Button 
+      {canEdit && (
+        <Button
+          variant="primary"
+          onClick={() => onEdit(device)}
+          aria-label={`Edit ${device.name}`}
+          disabled={disconnectingDeviceId === device.id}
+          title="Edit device name, type, and MAC address"
+        >
+          Edit
+        </Button>
+      )}
+      <Button
         variant="danger"
-        onClick={() => onBlock(device)}
-        aria-label={`Block ${device.name}`}
-        disabled={device.blocked || viewingDeviceId === device.id}
-        loading={blockingDeviceId === device.id}
+        onClick={() => onDisconnect(device)}
+        aria-label={`Disconnect ${device.name}`}
+        disabled={!device.online}
+        loading={disconnectingDeviceId === device.id}
+        title={!device.online ? "Device is already offline" : "Disconnect device from network"}
       >
-        {device.blocked ? "Blocked" : "Block"}
+        Disconnect
       </Button>
     </div>
-    <span
-      className={`device-status-dot ${device.online ? "online" : "offline"}`}
-      title={device.online ? "Online" : "Offline"}
-      aria-label={device.online ? "Device is online" : "Device is offline"}
-    ></span>
   </div>
 ), (prevProps, nextProps) => {
   return (
     prevProps.device.id === nextProps.device.id &&
-    prevProps.device.blocked === nextProps.device.blocked &&
     prevProps.device.online === nextProps.device.online &&
     prevProps.device.name === nextProps.device.name &&
-    prevProps.viewingDeviceId === nextProps.viewingDeviceId &&
-    prevProps.blockingDeviceId === nextProps.blockingDeviceId
+    prevProps.device.mac === nextProps.device.mac &&
+    prevProps.device.category === nextProps.device.category &&
+    prevProps.canEdit === nextProps.canEdit &&
+    prevProps.disconnectingDeviceId === nextProps.disconnectingDeviceId
   );
 });
 
@@ -121,16 +129,16 @@ const DeviceList = () => {
 
   const [devices, setDevices] = useState([]);
   const [showDeviceModal, setShowDeviceModal] = useState(false);
+  const [editingDevice, setEditingDevice] = useState(null);
   const [showBulkImportModal, setShowBulkImportModal] = useState(false);
   const [bulkImportType, setBulkImportType] = useState(null); // 'humanDevices' or 'otherDevices'
   const [initialLoad, setInitialLoad] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [blockingDeviceId, setBlockingDeviceId] = useState(null);
-  const [viewingDeviceId, setViewingDeviceId] = useState(null);
+  const [disconnectingDeviceId, setDisconnectingDeviceId] = useState(null);
 
   // Use segment from context instead of local state
   const segmentFilter = currentSegment;
-  
+
   const {
     currentPage,
     setCurrentPage,
@@ -142,10 +150,12 @@ const DeviceList = () => {
   const segmentDeviceConfig = SEGMENT_DEVICE_AVAILABILITY[segmentFilter] || {};
   const allowHuman = segmentDeviceConfig.allowHuman ?? false;
   const allowNonHuman = segmentDeviceConfig.allowNonHuman ?? false;
+  const allowDeviceEdit = segmentDeviceConfig.allowDeviceEdit ?? false;
   const showRegisterDevice = allowHuman || allowNonHuman;
-  
+
   const hasDevicePermission = hasPermission('canManageDevices');
   const canRegisterDevice = hasDevicePermission && showRegisterDevice;
+  const canEditDevice = hasDevicePermission && allowDeviceEdit;
 
   const segmentUsers = useMemo(() => {
     return (userSampleData.users || []).filter(user => user.segment === segmentFilter);
@@ -189,8 +199,8 @@ const DeviceList = () => {
   const segmentDeviceStats = useMemo(() => {
     const segmentDevices = devices.filter(device => segmentUserIds.has(device.userId));
     const onlineDevices = segmentDevices.filter(d => d.online).length;
-    const blockedDevices = segmentDevices.filter(d => d.blocked).length;
-    
+    const offlineDevices = segmentDevices.filter(d => !d.online).length;
+
     return [
       {
         label: "Total Devices",
@@ -205,10 +215,10 @@ const DeviceList = () => {
         colorClass: "stat-green"
       },
       {
-        label: "Blocked",
-        value: blockedDevices,
+        label: "Offline",
+        value: offlineDevices,
         Icon: FaBan,
-        colorClass: "stat-red"
+        colorClass: "stat-gray"
       },
       {
         label: "Access Points",
@@ -500,65 +510,141 @@ const DeviceList = () => {
     setSubmitting(true);
     try {
       await new Promise(resolve => setTimeout(resolve, 800));
-      
+
       const sampleUsers = userSampleData.users || [];
-      const newDevice = {
-        id: `dev${String(devices.length + 1).padStart(3, '0')}`,
-        userId: deviceInfo.mode === 'bindUser' ? deviceInfo.userId : 'system',
-        name: deviceInfo.deviceName,
-        type: deviceInfo.deviceCategory.toLowerCase().includes('mobile') || deviceInfo.deviceCategory.toLowerCase().includes('tablet') || deviceInfo.deviceCategory.toLowerCase().includes('phone') ? 'mobile' : 'laptop',
-        category: deviceInfo.deviceCategory,
-        Icon: getDeviceIcon(deviceInfo.deviceCategory),
-        mac: deviceInfo.macAddress,
-        owner: deviceInfo.mode === 'bindUser' ? 
-          (() => {
-            const user = sampleUsers.find(u => u.id === deviceInfo.userId);
-            return user ? `${user.firstName} ${user.lastName}` : 'Unknown';
-          })() : 'System',
-        ip: `192.168.1.${Math.floor(Math.random() * 200) + 1}`,
-        additionDate: new Date().toISOString().split('T')[0],
-        lastUsageDate: 'Just now',
-        dataUsage: '0 MB',
-        online: true,
-        blocked: false
-      };
-      
-      setDevices(prev => [newDevice, ...prev]);
-      notifications.deviceRegistered(deviceInfo.deviceName);
+
+      if (deviceInfo.isEdit) {
+        // Editing existing device
+        const updatedDevice = {
+          ...devices.find(d => d.id === deviceInfo.id),
+          name: deviceInfo.deviceName,
+          category: deviceInfo.deviceCategory,
+          Icon: getDeviceIcon(deviceInfo.deviceCategory),
+          mac: deviceInfo.macAddress,
+          type: deviceInfo.deviceCategory.toLowerCase().includes('mobile') || deviceInfo.deviceCategory.toLowerCase().includes('tablet') || deviceInfo.deviceCategory.toLowerCase().includes('phone') ? 'mobile' : 'laptop',
+        };
+
+        setDevices(prev => prev.map(dev => dev.id === deviceInfo.id ? updatedDevice : dev));
+        notifications.success(`Device "${deviceInfo.deviceName}" updated successfully`);
+
+        // TODO: Backend Integration - Update Device
+        // fetch(`/api/devices/${deviceInfo.id}`, {
+        //   method: 'PUT',
+        //   headers: { 'Content-Type': 'application/json' },
+        //   body: JSON.stringify({
+        //     name: deviceInfo.deviceName,
+        //     category: deviceInfo.deviceCategory,
+        //     macAddress: deviceInfo.macAddress,
+        //     segment: segmentFilter,
+        //     updatedBy: currentUser.id
+        //   })
+        // });
+      } else {
+        // Creating new device
+        const newDevice = {
+          id: `dev${String(devices.length + 1).padStart(3, '0')}`,
+          userId: deviceInfo.mode === 'bindUser' ? deviceInfo.userId : 'system',
+          name: deviceInfo.deviceName,
+          type: deviceInfo.deviceCategory.toLowerCase().includes('mobile') || deviceInfo.deviceCategory.toLowerCase().includes('tablet') || deviceInfo.deviceCategory.toLowerCase().includes('phone') ? 'mobile' : 'laptop',
+          category: deviceInfo.deviceCategory,
+          Icon: getDeviceIcon(deviceInfo.deviceCategory),
+          mac: deviceInfo.macAddress,
+          owner: deviceInfo.mode === 'bindUser' ?
+            (() => {
+              const user = sampleUsers.find(u => u.id === deviceInfo.userId);
+              return user ? `${user.firstName} ${user.lastName}` : 'Unknown';
+            })() : 'System',
+          ip: `192.168.1.${Math.floor(Math.random() * 200) + 1}`,
+          additionDate: new Date().toISOString().split('T')[0],
+          lastUsageDate: 'Just now',
+          dataUsage: '0 MB',
+          online: true,
+          blocked: false
+        };
+
+        setDevices(prev => [newDevice, ...prev]);
+        notifications.deviceRegistered(deviceInfo.deviceName);
+      }
+
       setShowDeviceModal(false);
+      setEditingDevice(null);
     } catch (error) {
-      notifications.operationFailed("register device");
+      notifications.operationFailed(deviceInfo.isEdit ? "update device" : "register device");
     } finally {
       setSubmitting(false);
     }
-  }, [devices.length]);
+  }, [devices, segmentFilter]);
 
-  const handleBlockDevice = useCallback(async (device) => {
-    if (device.blocked) {
-      notifications.deviceAlreadyBlocked(device.name);
+  const handleDisconnectDevice = useCallback(async (device) => {
+    if (!device.online) {
+      notifications.showInfo(`${device.name} is already offline`);
       return;
     }
 
-    if (!window.confirm(`Are you sure you want to block ${device.name}?`)) {
+    if (!window.confirm(`Are you sure you want to disconnect ${device.name} from the network?`)) {
       return;
     }
 
-    setBlockingDeviceId(device.id);
+    setDisconnectingDeviceId(device.id);
     try {
       await new Promise(resolve => setTimeout(resolve, 600));
-      
-      setDevices(prev => 
-        prev.map(dev => 
-          dev.id === device.id 
-            ? { ...dev, blocked: true, online: false } 
+
+      // ========================================
+      // TODO: Backend Integration - Disconnect Device
+      // ========================================
+      // API Endpoint: POST /api/devices/{deviceId}/disconnect
+      //
+      // Request Payload:
+      // {
+      //   deviceId: device.id,
+      //   macAddress: device.mac,
+      //   userId: device.userId,
+      //   reason: 'admin_disconnect',
+      //   disconnectedBy: currentUser.id,
+      //   timestamp: new Date().toISOString()
+      // }
+      //
+      // Backend Processing:
+      // 1. Identify the user account associated with this device
+      // 2. Remove MAC address from user's allowed devices list in AAA system
+      // 3. Call AAA API to force disconnect active sessions for this MAC
+      //    - Endpoint: POST /aaa/api/disconnect-mac
+      //    - Payload: { macAddress, reason: 'admin_disconnect' }
+      // 4. Update NAS (Network Access Server) to revoke MAC binding
+      // 5. Clear MAC from firewall rules/whitelist
+      // 6. Update device status in database to offline
+      // 7. Create audit log entry for disconnect action
+      // 8. Send notification to device owner (optional)
+      //
+      // Response Format:
+      // {
+      //   success: true,
+      //   data: {
+      //     deviceId: string,
+      //     macAddress: string,
+      //     disconnectedAt: ISO8601,
+      //     sessionsTerminated: number
+      //   }
+      // }
+      //
+      // Error Handling:
+      // - 404: Device not found
+      // - 409: Device already disconnected
+      // - 500: AAA system error (log and retry)
+      // ========================================
+
+      setDevices(prev =>
+        prev.map(dev =>
+          dev.id === device.id
+            ? { ...dev, online: false, lastUsageDate: 'Just now' }
             : dev
         )
       );
-      notifications.deviceBlocked(device.name);
+      notifications.success(`${device.name} has been disconnected from the network`);
     } catch (error) {
-      notifications.operationFailed(`block ${device.name}`);
+      notifications.operationFailed(`disconnect ${device.name}`);
     } finally {
-      setBlockingDeviceId(null);
+      setDisconnectingDeviceId(null);
     }
   }, []);
 
@@ -569,18 +655,6 @@ const DeviceList = () => {
       notifications.showInfo("Enter search criteria");
     }
   }, [searchTerm]);
-  
-  const handleViewDetails = useCallback(async (device) => {
-    setViewingDeviceId(device.id);
-    try {
-      await new Promise(resolve => setTimeout(resolve, 400));
-      notifications.showInfo(`Viewing details for ${device.name}`);
-    } catch (error) {
-      notifications.operationFailed("load device details");
-    } finally {
-      setViewingDeviceId(null);
-    }
-  }, []);
 
   const handleRegisterDeviceClick = useCallback(() => {
     if (!hasDevicePermission) {
@@ -593,8 +667,24 @@ const DeviceList = () => {
       return;
     }
 
+    setEditingDevice(null);
     setShowDeviceModal(true);
   }, [hasDevicePermission, showRegisterDevice, segmentFilter]);
+
+  const handleEditDevice = useCallback((device) => {
+    if (!hasDevicePermission) {
+      notifications.noPermission("edit devices");
+      return;
+    }
+
+    if (!allowDeviceEdit) {
+      notifications.showError(`Device editing is not available for ${segmentFilter} segment.`);
+      return;
+    }
+
+    setEditingDevice(device);
+    setShowDeviceModal(true);
+  }, [hasDevicePermission, allowDeviceEdit, segmentFilter]);
 
   /**
    * Handle bulk import of devices
@@ -755,101 +845,23 @@ const DeviceList = () => {
         ))}
       </div>
 
-      <div className="device-mgmt-toolbar">
-        <select
-          value={typeFilter}
-          onChange={e => setFilter('typeFilter', e.target.value)}
-          className="device-mgmt-select"
-          aria-label="Filter by device type"
-          disabled={isLoading('devices')}
-        >
-          {deviceTypes.map(t => (
-            <option key={t.value} value={t.value}>
-              {t.label}
-            </option>
-          ))}
-        </select>
-        <select
-          value={statusFilter}
-          onChange={e => setFilter('statusFilter', e.target.value)}
-          className="device-mgmt-select"
-          aria-label="Filter by device status"
-          disabled={isLoading('devices')}
-        >
-          {statusOptions.map(s => (
-            <option key={s.value} value={s.value}>
-              {s.label}
-            </option>
-          ))}
-        </select>
-        <input
-          className="device-mgmt-search"
-          type="text"
-          value={searchTerm}
-          onChange={e => setSearchTerm(e.target.value)}
-          placeholder="Search by name, MAC, or owner..."
-          aria-label="Search devices"
-          disabled={isLoading('devices')}
-        />
-        <Button 
-          type="button" 
-          variant="secondary"
-          onClick={handleSearch}
-          aria-label="Execute search"
-          disabled={isLoading('devices')}
-        >
-          Search
-        </Button>
-        
-        {canBulkAddHumanDevices && (
-          <Button
-            variant="success"
-            onClick={handleBulkImportHumanDevices}
-            aria-label="Bulk Import Human Devices"
-            title="Bulk import human devices from CSV"
-            disabled={!hasDevicePermission || isLoading('devices') || submitting}
-          >
-            <FaUpload style={{ marginRight: 6 }} />
-            Bulk Import Human
-          </Button>
-        )}
-
-        {canBulkAddOtherDevices && (
-          <Button
-            variant="success"
-            onClick={handleBulkImportOtherDevices}
-            aria-label="Bulk Import Other Devices"
-            title="Bulk import IoT and other devices from CSV"
-            disabled={!hasDevicePermission || isLoading('devices') || submitting}
-          >
-            <FaUpload style={{ marginRight: 6 }} />
-            Bulk Import Other
-          </Button>
-        )}
-
-        <Button
-          variant="primary"
-          onClick={handleRegisterDeviceClick}
-          aria-label={
-            !hasDevicePermission
-              ? "Register Device - Permission Required"
-              : !showRegisterDevice
-              ? "Register Device - Not Available for This Segment"
-              : "Register New Device"
-          }
-          title={
-            !hasDevicePermission
-              ? "You need device management permissions to register devices"
-              : !showRegisterDevice
-              ? `Device registration is not available for ${segmentFilter} segment`
-              : "Register a new device"
-          }
-          style={{ marginLeft: "auto" }}
-          disabled={!canRegisterDevice || isLoading('devices') || submitting}
-        >
-          Register Device
-        </Button>
-      </div>
+      <DeviceToolbar
+        searchValue={searchTerm}
+        onSearchChange={e => setSearchTerm(e.target.value)}
+        typeFilter={typeFilter}
+        onTypeChange={e => setFilter('typeFilter', e.target.value)}
+        statusFilter={statusFilter}
+        onStatusChange={e => setFilter('statusFilter', e.target.value)}
+        onRegisterDevice={handleRegisterDeviceClick}
+        disableRegisterDevice={!canRegisterDevice || isLoading('devices') || submitting}
+        onBulkImportHuman={canBulkAddHumanDevices ? handleBulkImportHumanDevices : undefined}
+        disableBulkImportHuman={!hasDevicePermission || isLoading('devices') || submitting}
+        onBulkImportOther={canBulkAddOtherDevices ? handleBulkImportOtherDevices : undefined}
+        disableBulkImportOther={!hasDevicePermission || isLoading('devices') || submitting}
+        deviceTypes={deviceTypes}
+        statusOptions={statusOptions}
+        segment={segmentFilter}
+      />
 
       <div className="device-card-list">
         {pagedDevices.length === 0 ? (
@@ -867,10 +879,10 @@ const DeviceList = () => {
             <DeviceCard
               key={device.id}
               device={device}
-              onViewDetails={handleViewDetails}
-              onBlock={handleBlockDevice}
-              viewingDeviceId={viewingDeviceId}
-              blockingDeviceId={blockingDeviceId}
+              onEdit={handleEditDevice}
+              onDisconnect={handleDisconnectDevice}
+              canEdit={canEditDevice}
+              disconnectingDeviceId={disconnectingDeviceId}
             />
           ))
         )}
@@ -889,8 +901,12 @@ const DeviceList = () => {
       {showDeviceModal && (
         <DeviceFormModal
           open={showDeviceModal}
-          onClose={() => setShowDeviceModal(false)}
+          onClose={() => {
+            setShowDeviceModal(false);
+            setEditingDevice(null);
+          }}
           onSubmit={handleDeviceSubmit}
+          device={editingDevice}
           users={segmentUsers}
           devices={devices}
           segment={segmentFilter}

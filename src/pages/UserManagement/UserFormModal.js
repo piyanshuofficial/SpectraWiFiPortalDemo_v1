@@ -51,26 +51,51 @@ const DEFAULTS = {
   checkOutTime: DATE_TIME.DEFAULT_CHECK_OUT_TIME,
 };
 
-const UserFormModal = ({ 
-  user, 
-  onSubmit, 
-  onClose, 
+const UserFormModal = ({
+  user,
+  onSubmit,
+  onClose,
   segment,
-  submitting = false 
+  submitting = false
 }) => {
-  const allowedCycleTypes = useMemo(() => ["Daily", "Monthly"], []);
-  const allowedSpeeds = useMemo(() => 
+  // Segment-specific cycle types
+  const allowedCycleTypes = useMemo(() => {
+    if (segment === "pg") {
+      return ["Monthly"]; // PG only allows monthly
+    } else if (segment === "miscellaneous") {
+      // Get from site config - configured during site provisioning
+      const miscConfig = siteConfig.segmentSites.miscellaneous;
+      const configuredType = miscConfig?.dataCycleType || "Monthly";
+      return [configuredType]; // Only the configured type
+    }
+    return ["Daily", "Monthly"]; // Default for other segments
+  }, [segment]);
+
+  const allowedSpeeds = useMemo(() =>
     segment === "enterprise" ? ["10 Mbps", "25 Mbps", "50 Mbps"] : ["5 Mbps", "10 Mbps", "15 Mbps"],
     [segment]
   );
-  const allowedVolumes = useMemo(() => 
+  const allowedVolumes = useMemo(() =>
     segment === "enterprise" ? ["50 GB", "100 GB", "200 GB"] : ["10 GB", "25 GB", "50 GB"],
     [segment]
   );
   const allowedDeviceCounts = useMemo(() => ["1", "2", "3", "4", "5"], []);
-  
-  const isCycleTypeStatic = user && user.segment === "hotel";
-  
+
+  // Determine if cycle type should be non-editable
+  const isCycleTypeStatic = useMemo(() => {
+    // Co-Living: Auto-selected based on resident type (non-editable)
+    if (segment === "coLiving") return true;
+    // Coworking: Auto-selected based on member type (non-editable)
+    if (segment === "coWorking") return true;
+    // PG: Only monthly available (non-editable)
+    if (segment === "pg") return true;
+    // Miscellaneous: Configured during site provisioning (non-editable)
+    if (segment === "miscellaneous") return true;
+    // Hotels: Editable when creating, static when editing
+    if (segment === "hotel" && user) return true;
+    return false;
+  }, [segment, user]);
+
   const initialResidentType = useMemo(() => segment === "coLiving" ? "Long-Term" : "", [segment]);
   const initialMemberType = useMemo(() => segment === "coWorking" ? "Permanent" : "", [segment]);
 
@@ -154,6 +179,25 @@ const UserFormModal = ({
     };
   }, [user, segment, allowedCycleTypes, allowedSpeeds, allowedVolumes, allowedDeviceCounts, initialResidentType, initialMemberType]);
 
+  // Auto-select dataCycleType based on resident/member type for Co-Living and Coworking
+  useEffect(() => {
+    if (segment === "coLiving") {
+      // Co-Living: Long-Term → Monthly, Short-Term → Daily
+      if (form.residentType === "Long-Term" && form.dataCycleType !== "Monthly") {
+        setForm(prev => ({ ...prev, dataCycleType: "Monthly" }));
+      } else if (form.residentType === "Short-Term" && form.dataCycleType !== "Daily") {
+        setForm(prev => ({ ...prev, dataCycleType: "Daily" }));
+      }
+    } else if (segment === "coWorking") {
+      // Coworking: Permanent → Monthly, Temporary → Daily
+      if (form.memberType === "Permanent" && form.dataCycleType !== "Monthly") {
+        setForm(prev => ({ ...prev, dataCycleType: "Monthly" }));
+      } else if (form.memberType === "Temporary" && form.dataCycleType !== "Daily") {
+        setForm(prev => ({ ...prev, dataCycleType: "Daily" }));
+      }
+    }
+  }, [segment, form.residentType, form.memberType, form.dataCycleType]);
+
   function minCheckOutDate() {
     return form.checkInDate || DEFAULTS.checkInDate;
   }
@@ -171,6 +215,7 @@ const UserFormModal = ({
   const isCoLivingShortTerm = segment === "coLiving" && form.residentType === "Short-Term";
   const isCoWorkingPermanent = segment === "coWorking" && form.memberType === "Permanent";
   const isCoWorkingTemporary = segment === "coWorking" && form.memberType === "Temporary";
+  const isHotelMonthly = segment === "hotel" && form.dataCycleType === "Monthly";
   const isEmailRequired = EMAIL_REQUIRED_SEGMENTS[segment] ?? false;
 
   const validate = () => {
@@ -732,7 +777,10 @@ const UserFormModal = ({
           {segment === "hotel" && (
             <>
               <div className="user-form-row">
-                <label htmlFor="checkInDate">Check-In Date <span className="required-asterisk">*</span></label>
+                <label htmlFor="checkInDate">
+                  Check-In Date {!isHotelMonthly && <span className="required-asterisk">*</span>}
+                  {isHotelMonthly && <span style={{ fontSize: '0.85em', color: '#666' }}> (Not required for Monthly)</span>}
+                </label>
                 <input
                   id="checkInDate"
                   name="checkInDate"
@@ -740,14 +788,17 @@ const UserFormModal = ({
                   value={form.checkInDate}
                   onChange={handleChange}
                   className={errors.checkInDate ? 'error' : ''}
-                  required
-                  disabled={submitting}
+                  required={!isHotelMonthly}
+                  disabled={isHotelMonthly || submitting}
                 />
                 {errors.checkInDate && <div className="error-message" id="checkInDate-error" role="alert">{errors.checkInDate}</div>}
               </div>
 
               <div className="user-form-row">
-                <label htmlFor="checkOutDate">Check-Out Date <span className="required-asterisk">*</span></label>
+                <label htmlFor="checkOutDate">
+                  Check-Out Date {!isHotelMonthly && <span className="required-asterisk">*</span>}
+                  {isHotelMonthly && <span style={{ fontSize: '0.85em', color: '#666' }}> (Not required for Monthly)</span>}
+                </label>
                 <input
                   id="checkOutDate"
                   name="checkOutDate"
@@ -756,14 +807,17 @@ const UserFormModal = ({
                   onChange={handleChange}
                   className={errors.checkOutDate ? 'error' : ''}
                   min={minCheckOutDate()}
-                  required
-                  disabled={submitting}
+                  required={!isHotelMonthly}
+                  disabled={isHotelMonthly || submitting}
                 />
                 {errors.checkOutDate && <div className="error-message" id="checkOutDate-error" role="alert">{errors.checkOutDate}</div>}
               </div>
 
               <div className="user-form-row">
-                <label htmlFor="checkInTime">Check-In Time <span className="required-asterisk">*</span></label>
+                <label htmlFor="checkInTime">
+                  Check-In Time {!isHotelMonthly && <span className="required-asterisk">*</span>}
+                  {isHotelMonthly && <span style={{ fontSize: '0.85em', color: '#666' }}> (Not required for Monthly)</span>}
+                </label>
                 <input
                   id="checkInTime"
                   name="checkInTime"
@@ -771,14 +825,17 @@ const UserFormModal = ({
                   value={form.checkInTime}
                   onChange={handleChange}
                   className={errors.checkInTime ? 'error' : ''}
-                  required
-                  disabled={submitting}
+                  required={!isHotelMonthly}
+                  disabled={isHotelMonthly || submitting}
                 />
                 {errors.checkInTime && <div className="error-message" id="checkInTime-error" role="alert">{errors.checkInTime}</div>}
               </div>
 
               <div className="user-form-row">
-                <label htmlFor="checkOutTime">Check-Out Time <span className="required-asterisk">*</span></label>
+                <label htmlFor="checkOutTime">
+                  Check-Out Time {!isHotelMonthly && <span className="required-asterisk">*</span>}
+                  {isHotelMonthly && <span style={{ fontSize: '0.85em', color: '#666' }}> (Not required for Monthly)</span>}
+                </label>
                 <input
                   id="checkOutTime"
                   name="checkOutTime"
@@ -787,8 +844,8 @@ const UserFormModal = ({
                   onChange={handleChange}
                   className={errors.checkOutTime ? 'error' : ''}
                   min={minCheckOutTime()}
-                  required
-                  disabled={submitting}
+                  required={!isHotelMonthly}
+                  disabled={isHotelMonthly || submitting}
                 />
                 {errors.checkOutTime && <div className="error-message" id="checkOutTime-error" role="alert">{errors.checkOutTime}</div>}
               </div>

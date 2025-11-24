@@ -87,34 +87,36 @@ const UserTableRow = React.memo(({
         visibleColumns.includes(col.key) ? <td key={col.key}>{user[col.key] || "-"}</td> : null
       ))}
       <td>
-        <Button
-          variant="info"
-          title="User Details"
-          aria-label="View User Details"
-          onClick={() => onDetailsClick(user)}
-        >
-          <FaInfoCircle />
-        </Button>
-        {hasEditPermission ? (
+        <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', alignItems: 'center' }}>
           <Button
-            variant="primary"
-            title={isBlocked ? "Cannot edit user with Blocked status" : "Edit User"}
-            aria-label={isBlocked ? "Edit User Disabled - Blocked Status" : "Edit User"}
-            onClick={() => onEditClick(user)}
-            disabled={isBlocked}
+            variant="info"
+            title="User Details"
+            aria-label="View User Details"
+            onClick={() => onDetailsClick(user)}
           >
-            <FaEdit />
+            <FaInfoCircle />
           </Button>
-        ) : (
-          <Button 
-            variant="primary" 
-            title="Edit User - Permission Required" 
-            aria-label="Edit Disabled, Permission Required" 
-            disabled
-          >
-            <FaEdit />
-          </Button>
-        )}
+          {hasEditPermission ? (
+            <Button
+              variant="primary"
+              title={isBlocked ? "Cannot edit user with Blocked status" : "Edit User"}
+              aria-label={isBlocked ? "Edit User Disabled - Blocked Status" : "Edit User"}
+              onClick={() => onEditClick(user)}
+              disabled={isBlocked}
+            >
+              <FaEdit />
+            </Button>
+          ) : (
+            <Button
+              variant="primary"
+              title="Edit User - Permission Required"
+              aria-label="Edit Disabled, Permission Required"
+              disabled
+            >
+              <FaEdit />
+            </Button>
+          )}
+        </div>
       </td>
     </tr>
   );
@@ -1122,7 +1124,7 @@ const UserList = () => {
 
     } catch (error) {
       console.error('Bulk import error:', error);
-      notifications.error('Failed to import users');
+      notifications.custom.error('Failed to import users');
     }
   }, [segmentFilter]);
 

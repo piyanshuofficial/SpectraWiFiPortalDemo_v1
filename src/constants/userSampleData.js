@@ -90,7 +90,7 @@ export const sampleUsers = [
       deviceLimit: "3", 
       dataCycleType: "Monthly" 
     },
-    devicesCount: 3,
+    devicesCount: 2,
     status: "Active",
     registration: "2024-01-15",
     lastOnline: "2 min ago",
@@ -120,7 +120,7 @@ export const sampleUsers = [
       deviceLimit: "5", 
       dataCycleType: "Monthly" 
     },
-    devicesCount: 4,
+    devicesCount: 2,
     status: "Active",
     registration: "2024-04-15",
     lastOnline: "1 hour ago",
@@ -150,7 +150,7 @@ export const sampleUsers = [
       deviceLimit: "4", 
       dataCycleType: "Monthly" 
     },
-    devicesCount: 7,
+    devicesCount: 2,
     status: "Active",
     registration: "2024-06-15",
     lastOnline: "30 min ago",
@@ -175,14 +175,14 @@ export const sampleUsers = [
     lastName: "Kumar",
     mobile: "+91-9988776655",
     email: "",
-    userPolicy: { 
+    userPolicy: {
       policyId: "COL_WIFI_10Mbps_50GB",
-      speed: "Upto 10 Mbps", 
-      dataVolume: "50 GB", 
-      deviceLimit: "1", 
-      dataCycleType: "Monthly" 
+      speed: "Upto 10 Mbps",
+      dataVolume: "50 GB",
+      deviceLimit: "1",
+      dataCycleType: "Monthly"
     },
-    devicesCount: 1,
+    devicesCount: 2,
     status: "Suspended",
     registration: "2024-02-20",
     lastOnline: "1 hour ago",
@@ -235,14 +235,14 @@ export const sampleUsers = [
     lastName: "Nair",
     mobile: "+91-9988776657",
     email: "",
-    userPolicy: { 
+    userPolicy: {
       policyId: "COL_WIFI_20Mbps_90GB",
-      speed: "Upto 20 Mbps", 
-      dataVolume: "90 GB", 
-      deviceLimit: "3", 
-      dataCycleType: "Monthly" 
+      speed: "Upto 20 Mbps",
+      dataVolume: "90 GB",
+      deviceLimit: "3",
+      dataCycleType: "Monthly"
     },
-    devicesCount: 3,
+    devicesCount: 2,
     status: "Active",
     registration: "2024-04-22",
     lastOnline: "15 min ago",
@@ -267,14 +267,14 @@ export const sampleUsers = [
     lastName: "Rao",
     mobile: "+91-9012345678",
     email: "",
-    userPolicy: { 
+    userPolicy: {
       policyId: "COW_WIFI_10Mbps_50GB",
-      speed: "Upto 10 Mbps", 
-      dataVolume: "50 GB", 
-      deviceLimit: "1", 
-      dataCycleType: "Monthly" 
+      speed: "Upto 10 Mbps",
+      dataVolume: "50 GB",
+      deviceLimit: "1",
+      dataCycleType: "Monthly"
     },
-    devicesCount: 1,
+    devicesCount: 2,
     status: "Blocked",
     registration: "2024-03-01",
     lastOnline: "2 days ago",
@@ -304,7 +304,7 @@ export const sampleUsers = [
       deviceLimit: "2", 
       dataCycleType: "Monthly" 
     },
-    devicesCount: 2,
+    devicesCount: 1,
     status: "Active",
     registration: "2024-05-01",
     lastOnline: "1 hour ago",
@@ -327,14 +327,14 @@ export const sampleUsers = [
     lastName: "Joshi",
     mobile: "+91-9012345680",
     email: "pooja.joshi@mail.com",
-    userPolicy: { 
+    userPolicy: {
       policyId: "COW_WIFI_20Mbps_100GB",
-      speed: "Upto 20 Mbps", 
-      dataVolume: "100 GB", 
-      deviceLimit: "3", 
-      dataCycleType: "Monthly" 
+      speed: "Upto 20 Mbps",
+      dataVolume: "100 GB",
+      deviceLimit: "3",
+      dataCycleType: "Monthly"
     },
-    devicesCount: 3,
+    devicesCount: 2,
     status: "Active",
     registration: "2024-06-20",
     lastOnline: "30 min ago",
@@ -359,14 +359,14 @@ export const sampleUsers = [
     lastName: "Chatterjee",
     mobile: "+91-9988123456",
     email: "",
-    userPolicy: { 
+    userPolicy: {
       policyId: "HTL_WIFI_10Mbps_50GB_Daily",
-      speed: "Upto 10 Mbps", 
-      dataVolume: "50 GB", 
-      deviceLimit: "1", 
-      dataCycleType: "Daily" 
+      speed: "Upto 10 Mbps",
+      dataVolume: "50 GB",
+      deviceLimit: "1",
+      dataCycleType: "Daily"
     },
-    devicesCount: 1,
+    devicesCount: 2,
     status: "Active",
     registration: "2024-03-15",
     lastOnline: "12 min ago",
@@ -391,14 +391,14 @@ export const sampleUsers = [
     lastName: "Iyer",
     mobile: "+91-9988123457",
     email: "",
-    userPolicy: { 
+    userPolicy: {
       policyId: "HTL_WIFI_15Mbps_70GB_Daily",
-      speed: "Upto 15 Mbps", 
-      dataVolume: "70 GB", 
-      deviceLimit: "2", 
-      dataCycleType: "Daily" 
+      speed: "Upto 15 Mbps",
+      dataVolume: "70 GB",
+      deviceLimit: "2",
+      dataCycleType: "Daily"
     },
-    devicesCount: 2,
+    devicesCount: 1,
     status: "Active",
     registration: "2024-04-18",
     lastOnline: "10 min ago",
@@ -423,14 +423,14 @@ export const sampleUsers = [
     lastName: "Kapoor",
     mobile: "+91-9988123458",
     email: "",
-    userPolicy: { 
+    userPolicy: {
       policyId: "HTL_WIFI_20Mbps_100GB_Daily",
-      speed: "Upto 20 Mbps", 
-      dataVolume: "100 GB", 
-      deviceLimit: "3", 
-      dataCycleType: "Daily" 
+      speed: "Upto 20 Mbps",
+      dataVolume: "100 GB",
+      deviceLimit: "3",
+      dataCycleType: "Daily"
     },
-    devicesCount: 3,
+    devicesCount: 2,
     status: "Suspended",
     registration: "2024-05-25",
     lastOnline: "1 hour ago",
@@ -457,14 +457,14 @@ export const sampleUsers = [
     lastName: "Nair",
     mobile: "+91-9876541230",
     email: "",
-    userPolicy: { 
+    userPolicy: {
       policyId: "PG_WIFI_25Mbps_100GB",
-      speed: "Upto 25 Mbps", 
-      dataVolume: "100 GB", 
-      deviceLimit: "4", 
-      dataCycleType: "Monthly" 
+      speed: "Upto 25 Mbps",
+      dataVolume: "100 GB",
+      deviceLimit: "4",
+      dataCycleType: "Monthly"
     },
-    devicesCount: 4,
+    devicesCount: 2,
     status: "Suspended",
     registration: "2024-03-12",
     lastOnline: "3 hours ago",
@@ -487,14 +487,14 @@ export const sampleUsers = [
     lastName: "Kumari",
     mobile: "+91-9876541231",
     email: "",
-    userPolicy: { 
+    userPolicy: {
       policyId: "PG_WIFI_15Mbps_75GB",
-      speed: "Upto 15 Mbps", 
-      dataVolume: "75 GB", 
-      deviceLimit: "2", 
-      dataCycleType: "Monthly" 
+      speed: "Upto 15 Mbps",
+      dataVolume: "75 GB",
+      deviceLimit: "2",
+      dataCycleType: "Monthly"
     },
-    devicesCount: 2,
+    devicesCount: 1,
     status: "Active",
     registration: "2024-06-20",
     lastOnline: "45 min ago",
@@ -549,14 +549,14 @@ export const sampleUsers = [
     lastName: "Desai",
     mobile: "+91-9098765432",
     email: "rahul.desai@mail.com",
-    userPolicy: { 
+    userPolicy: {
       policyId: "MIS_WIFI_50Mbps_100GB",
-      speed: "Upto 50 Mbps", 
-      dataVolume: "100 GB", 
-      deviceLimit: "6", 
-      dataCycleType: "Monthly" 
+      speed: "Upto 50 Mbps",
+      dataVolume: "100 GB",
+      deviceLimit: "6",
+      dataCycleType: "Monthly"
     },
-    devicesCount: 6,
+    devicesCount: 2,
     status: "Active",
     registration: "2024-03-17",
     lastOnline: "30 sec ago",
@@ -1055,6 +1055,82 @@ export const sampleDevices = [
     additionDate: "2024-07-28",
     lastUsageDate: "6 hours ago",
     dataUsage: "478 MB",
+    online: false,
+    blocked: false
+  },
+
+  // Kiran Sharma's device (USER020)
+  {
+    id: "dev028",
+    userId: "USER020",
+    name: "Samsung Galaxy A54",
+    type: "mobile",
+    category: "Smartphone",
+    mac: "00:1B:44:11:3A:CC",
+    ip: "192.168.1.155",
+    additionDate: "2024-08-02",
+    lastUsageDate: "2 hours ago",
+    dataUsage: "312 MB",
+    online: true,
+    blocked: false
+  },
+
+  // Neelam Patel's devices (USER021)
+  {
+    id: "dev029",
+    userId: "USER021",
+    name: "Redmi Note 12",
+    type: "mobile",
+    category: "Smartphone",
+    mac: "00:1B:44:11:3A:CD",
+    ip: "192.168.1.171",
+    additionDate: "2024-07-08",
+    lastUsageDate: "45 minutes ago",
+    dataUsage: "289 MB",
+    online: true,
+    blocked: false
+  },
+  {
+    id: "dev030",
+    userId: "USER021",
+    name: "HP Pavilion 15",
+    type: "laptop",
+    category: "Laptop",
+    mac: "00:1B:44:11:3A:DB",
+    ip: "192.168.1.172",
+    additionDate: "2024-06-18",
+    lastUsageDate: "1 hour ago",
+    dataUsage: "1.4 GB",
+    online: true,
+    blocked: false
+  },
+  {
+    id: "dev031",
+    userId: "USER021",
+    name: "iPad Mini",
+    type: "mobile",
+    category: "Tablet",
+    mac: "00:1B:44:11:3A:CE",
+    ip: "192.168.1.173",
+    additionDate: "2024-08-15",
+    lastUsageDate: "3 hours ago",
+    dataUsage: "567 MB",
+    online: false,
+    blocked: false
+  },
+
+  // Raja Singh's device (USER022)
+  {
+    id: "dev032",
+    userId: "USER022",
+    name: "Poco X5",
+    type: "mobile",
+    category: "Smartphone",
+    mac: "00:1B:44:11:3A:CF",
+    ip: "192.168.1.174",
+    additionDate: "2024-09-01",
+    lastUsageDate: "4 hours ago",
+    dataUsage: "156 MB",
     online: false,
     blocked: false
   }

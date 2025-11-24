@@ -66,6 +66,7 @@
 .stat-green .devsc-value, .stat-green .devsc-icon { color: #17a157; }
 .stat-red .devsc-value, .stat-red .devsc-icon { color: #e13b1b; }
 .stat-yellow .devsc-value, .stat-yellow .devsc-icon { color: #ffb200; }
+.stat-gray .devsc-value, .stat-gray .devsc-icon { color: #6c757d; }
 
 .devsc-dot.green {
   width: 1rem;
@@ -144,6 +145,24 @@
   justify-content: center;
   margin-right: 1rem;
   flex-shrink: 0;
+  position: relative;
+}
+
+.device-status-indicator {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  font-size: 1.5rem;
+  line-height: 1;
+  text-shadow: 0 0 3px rgba(0, 0, 0, 0.3);
+}
+
+.device-status-indicator.status-online {
+  color: #19c246;
+}
+
+.device-status-indicator.status-offline {
+  color: #e74a3b;
 }
 
 .device-main-icon {

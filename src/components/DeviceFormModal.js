@@ -132,19 +132,50 @@ function DeviceFormModal({
 
   useEffect(() => {
     if (open) {
-      if (allowHuman && !allowNonHuman) setMode('bindUser');
-      else if (!allowHuman && allowNonHuman) setMode('deviceUser');
-      else setMode('bindUser');
-      setSearchTerm('');
-      setSelectedUser(null);
-      setDeviceCategory('');
-      setDeviceName('');
-      setUserId('');
-      setMacAddress('');
-      setErrors({});
+      // If editing an existing device, populate the form
+      if (device) {
+        // Determine mode based on device data
+        const isDeviceUser = device.deviceType === 'other' || !device.owner || device.owner === 'System' || device.owner === 'Unassigned';
+        setMode(isDeviceUser ? 'deviceUser' : 'bindUser');
+
+        // Set device category
+        setDeviceCategory(device.category || '');
+
+        // Set device name
+        setDeviceName(device.name || '');
+
+        // Set MAC address
+        setMacAddress(device.mac || '');
+
+        // Set user ID for device user mode
+        if (isDeviceUser) {
+          setUserId(device.userId || '');
+        } else {
+          // Find and set the selected user for bind user mode
+          const user = siteUserList.find(u => u.id === device.userId);
+          if (user) {
+            setSelectedUser(user);
+            setSearchTerm(`${user.name} (${user.id})`);
+          }
+        }
+
+        setErrors({});
+      } else {
+        // Creating new device - reset form
+        if (allowHuman && !allowNonHuman) setMode('bindUser');
+        else if (!allowHuman && allowNonHuman) setMode('deviceUser');
+        else setMode('bindUser');
+        setSearchTerm('');
+        setSelectedUser(null);
+        setDeviceCategory('');
+        setDeviceName('');
+        setUserId('');
+        setMacAddress('');
+        setErrors({});
+      }
       setTimeout(() => firstInputRef.current && firstInputRef.current.focus(), ANIMATION.AUTO_FOCUS_DELAY);
     }
-  }, [open, allowHuman, allowNonHuman]);
+  }, [open, allowHuman, allowNonHuman, device, siteUserList]);
 
   useEffect(() => {
     if (mode === 'deviceUser' && deviceCategory) {
@@ -183,7 +214,7 @@ function DeviceFormModal({
   async function handleSubmit(e) {
     e.preventDefault();
     if (!validate()) return;
-    
+
     let deviceData = {};
     if (mode === 'bindUser') {
       deviceData = {
@@ -201,6 +232,12 @@ function DeviceFormModal({
         deviceName: deviceName.trim(),
         macAddress: macAddress.trim().toUpperCase()
       };
+    }
+
+    // If editing existing device, include device ID
+    if (device) {
+      deviceData.id = device.id;
+      deviceData.isEdit = true;
     }
 
     // ========================================
@@ -381,22 +418,22 @@ function DeviceFormModal({
         aria-labelledby="device-form-heading"
         aria-modal="true"
       >
-        <h2 
-          id="device-form-heading" 
+        <h2
+          id="device-form-heading"
           className="device-form-header"
         >
-          Register New Device
+          {device ? 'Edit Device' : 'Register New Device'}
         </h2>
         <div className="device-form-scrollable-content">
           <form onSubmit={handleSubmit} autoComplete="off" noValidate>
             <fieldset style={{ border: 'none', padding: 0, margin: 0 }}>
-              <legend className="sr-only">Device registration form</legend>
+              {!device && <legend className="sr-only">Device registration form</legend>}
               
               <div className="device-form-row mapping-type-row">
                 <span id="mapping-type-label" className="form-label">
-                  Mapping Type
+                  Mapping Type {device && <span style={{ fontSize: '0.85em', color: '#666' }}>(Non-editable)</span>}
                 </span>
-                <div 
+                <div
                   className="mapping-type-options"
                   role="radiogroup"
                   aria-labelledby="mapping-type-label"
@@ -408,6 +445,7 @@ function DeviceFormModal({
                         name="mappingType"
                         checked={mode === 'bindUser'}
                         onChange={() => setMode('bindUser')}
+                        disabled={!!device}
                         aria-label="Bind device to human user"
                       />
                       <span>Bind to Human User</span>
@@ -420,6 +458,7 @@ function DeviceFormModal({
                         name="mappingType"
                         checked={mode === 'deviceUser'}
                         onChange={() => setMode('deviceUser')}
+                        disabled={!!device}
                         aria-label="Register device as device user"
                       />
                       <span>Register as Device User</span>
@@ -431,7 +470,8 @@ function DeviceFormModal({
               {mode === 'bindUser' && allowHuman && (
                 <div className="device-form-row">
                   <label htmlFor="userSearch">
-                    Assign To User<span className="required-asterisk">*</span>
+                    {device ? 'Owner' : 'Assign To User'}<span className="required-asterisk">*</span>
+                    {device && <span style={{ fontSize: '0.85em', color: '#666' }}> (Non-editable)</span>}
                   </label>
                   <div style={{ position: 'relative', width: '100%' }}>
                     <input
@@ -480,6 +520,7 @@ function DeviceFormModal({
                       aria-autocomplete="list"
                       aria-controls="user-search-results"
                       aria-expanded={searchTerm.trim().length > 0 && filteredUsers.length > 0}
+                      disabled={!!device}
                       style={{ width: '100%' }}
                     />
 
