@@ -17,6 +17,7 @@ export { useSort } from './useSort';
 export { useFilter } from './useFilter';
 export { useTableState } from './useTableState';
 export { useSiteConfig } from './useSiteConfig';
+export { useBulkOperations } from './useBulkOperations';
 
 /**
  * Hook Usage Guide:

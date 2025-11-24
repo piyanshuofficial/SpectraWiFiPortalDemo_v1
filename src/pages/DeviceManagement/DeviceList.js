@@ -1,15 +1,17 @@
 // src/pages/DeviceManagement/DeviceList.js
 
 import React, { useState, useMemo, useEffect, useCallback } from "react";
-import { FaDesktop, FaGlobeAmericas, FaBan, FaWifi, FaMobileAlt, FaLaptop, FaTablet } from "react-icons/fa";
+import { FaDesktop, FaGlobeAmericas, FaBan, FaWifi, FaMobileAlt, FaLaptop, FaTablet, FaUpload } from "react-icons/fa";
 import { usePermissions } from "../../hooks/usePermissions";
 import { useFilter } from "../../hooks/useFilter";
 import { useTableState } from "../../hooks/useTableState";
+import { useBulkOperations } from "../../hooks/useBulkOperations";
 import { useLoading } from "../../context/LoadingContext";
 import { useSegment } from "../../context/SegmentContext";
 import Button from "../../components/Button";
 import Pagination from "../../components/Pagination";
 import DeviceFormModal from "../../components/DeviceFormModal";
+import BulkImportModal from "../../components/BulkImportModal";
 import LoadingOverlay from "../../components/Loading/LoadingOverlay";
 import SkeletonLoader from "../../components/Loading/SkeletonLoader";
 import notifications from "../../utils/notifications";
@@ -115,9 +117,12 @@ const DeviceList = () => {
   const { hasPermission } = usePermissions();
   const { isLoading } = useLoading();
   const { currentSegment } = useSegment();
+  const { canBulkAddHumanDevices, canBulkAddOtherDevices } = useBulkOperations();
 
   const [devices, setDevices] = useState([]);
   const [showDeviceModal, setShowDeviceModal] = useState(false);
+  const [showBulkImportModal, setShowBulkImportModal] = useState(false);
+  const [bulkImportType, setBulkImportType] = useState(null); // 'humanDevices' or 'otherDevices'
   const [initialLoad, setInitialLoad] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [blockingDeviceId, setBlockingDeviceId] = useState(null);
@@ -582,14 +587,135 @@ const DeviceList = () => {
       notifications.noPermission("register devices");
       return;
     }
-    
+
     if (!showRegisterDevice) {
       notifications.showError(`Device registration is not available for ${segmentFilter} segment.`);
       return;
     }
-    
+
     setShowDeviceModal(true);
   }, [hasDevicePermission, showRegisterDevice, segmentFilter]);
+
+  /**
+   * Handle bulk import of devices
+   */
+  const handleBulkImportDevices = useCallback((importedDevices) => {
+    try {
+      const isHumanDevice = bulkImportType === 'humanDevices';
+
+      // Generate new device entries
+      const newDevices = importedDevices.map((deviceData, index) => {
+        if (isHumanDevice) {
+          // Human device mapping
+          return {
+            id: `HD${Date.now()}${index}`,
+            name: `${deviceData.deviceType}-${deviceData.assignedUserId}`,
+            mac: `00:${Math.random().toString(16).substr(2, 2).toUpperCase()}:${Math.random().toString(16).substr(2, 2).toUpperCase()}:${Math.random().toString(16).substr(2, 2).toUpperCase()}:${Math.random().toString(16).substr(2, 2).toUpperCase()}:${Math.random().toString(16).substr(2, 2).toUpperCase()}`,
+            owner: deviceData.fullName,
+            ownerEmail: deviceData.email,
+            ip: `192.168.1.${100 + index}`,
+            category: deviceData.deviceType,
+            Icon: getDeviceIcon(deviceData.deviceType),
+            lastUsageDate: 'Just now',
+            dataUsage: '0 GB',
+            online: true,
+            blocked: false,
+            segment: segmentFilter,
+            deviceType: 'human',
+            assignedUserId: deviceData.assignedUserId,
+            priority: deviceData.priority || 'medium',
+            notes: deviceData.notes || ''
+          };
+        } else {
+          // Other device mapping
+          return {
+            id: `OD${Date.now()}${index}`,
+            name: deviceData.deviceName,
+            mac: deviceData.macAddress,
+            owner: deviceData.assignedTo || 'Unassigned',
+            ip: `192.168.1.${100 + index}`,
+            category: deviceData.deviceType,
+            Icon: FaDesktop,
+            lastUsageDate: 'Just now',
+            dataUsage: '0 GB',
+            online: deviceData.status === 'active',
+            blocked: deviceData.status === 'blocked',
+            segment: segmentFilter,
+            deviceType: 'other',
+            manufacturer: deviceData.manufacturer || '',
+            location: deviceData.location || '',
+            status: deviceData.status || 'active',
+            notes: deviceData.notes || ''
+          };
+        }
+      });
+
+      // Add new devices to the existing list
+      setDevices(prevDevices => [...newDevices, ...prevDevices]);
+
+      // Show success notification
+      const deviceTypeLabel = isHumanDevice ? 'human device' : 'other device';
+      notifications.success(`Successfully imported ${newDevices.length} ${deviceTypeLabel}${newDevices.length > 1 ? 's' : ''}`);
+
+      // Close modal and reset type
+      setShowBulkImportModal(false);
+      setBulkImportType(null);
+
+      // TODO: Backend Integration - Bulk Device Import
+      // Send bulk import data to backend
+      // fetch('/api/devices/bulk-import', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({
+      //     devices: newDevices,
+      //     segment: segmentFilter,
+      //     deviceType: bulkImportType,
+      //     importedBy: currentUser.id,
+      //     timestamp: new Date().toISOString()
+      //   })
+      // });
+
+    } catch (error) {
+      console.error('Bulk device import error:', error);
+      notifications.error('Failed to import devices');
+    }
+  }, [bulkImportType, segmentFilter]);
+
+  /**
+   * Open bulk import modal for human devices
+   */
+  const handleBulkImportHumanDevices = useCallback(() => {
+    if (!hasDevicePermission) {
+      notifications.noPermission("import devices");
+      return;
+    }
+
+    if (!canBulkAddHumanDevices) {
+      notifications.showError(`Bulk import of human devices is not available for ${segmentFilter} segment.`);
+      return;
+    }
+
+    setBulkImportType('humanDevices');
+    setShowBulkImportModal(true);
+  }, [hasDevicePermission, canBulkAddHumanDevices, segmentFilter]);
+
+  /**
+   * Open bulk import modal for other devices
+   */
+  const handleBulkImportOtherDevices = useCallback(() => {
+    if (!hasDevicePermission) {
+      notifications.noPermission("import devices");
+      return;
+    }
+
+    if (!canBulkAddOtherDevices) {
+      notifications.showError(`Bulk import of other devices is not available for ${segmentFilter} segment.`);
+      return;
+    }
+
+    setBulkImportType('otherDevices');
+    setShowBulkImportModal(true);
+  }, [hasDevicePermission, canBulkAddOtherDevices, segmentFilter]);
 
   if (initialLoad) {
     return (
@@ -675,20 +801,46 @@ const DeviceList = () => {
           Search
         </Button>
         
+        {canBulkAddHumanDevices && (
+          <Button
+            variant="success"
+            onClick={handleBulkImportHumanDevices}
+            aria-label="Bulk Import Human Devices"
+            title="Bulk import human devices from CSV"
+            disabled={!hasDevicePermission || isLoading('devices') || submitting}
+          >
+            <FaUpload style={{ marginRight: 6 }} />
+            Bulk Import Human
+          </Button>
+        )}
+
+        {canBulkAddOtherDevices && (
+          <Button
+            variant="success"
+            onClick={handleBulkImportOtherDevices}
+            aria-label="Bulk Import Other Devices"
+            title="Bulk import IoT and other devices from CSV"
+            disabled={!hasDevicePermission || isLoading('devices') || submitting}
+          >
+            <FaUpload style={{ marginRight: 6 }} />
+            Bulk Import Other
+          </Button>
+        )}
+
         <Button
           variant="primary"
           onClick={handleRegisterDeviceClick}
           aria-label={
-            !hasDevicePermission 
-              ? "Register Device - Permission Required" 
-              : !showRegisterDevice 
+            !hasDevicePermission
+              ? "Register Device - Permission Required"
+              : !showRegisterDevice
               ? "Register Device - Not Available for This Segment"
               : "Register New Device"
           }
           title={
-            !hasDevicePermission 
-              ? "You need device management permissions to register devices" 
-              : !showRegisterDevice 
+            !hasDevicePermission
+              ? "You need device management permissions to register devices"
+              : !showRegisterDevice
               ? `Device registration is not available for ${segmentFilter} segment`
               : "Register a new device"
           }
@@ -744,6 +896,18 @@ const DeviceList = () => {
           segment={segmentFilter}
           siteUserList={segmentUsers}
           submitting={submitting}
+        />
+      )}
+
+      {showBulkImportModal && bulkImportType && (
+        <BulkImportModal
+          type={bulkImportType}
+          isOpen={showBulkImportModal}
+          onClose={() => {
+            setShowBulkImportModal(false);
+            setBulkImportType(null);
+          }}
+          onImport={handleBulkImportDevices}
         />
       )}
     </main>

@@ -1,7 +1,7 @@
 // src/pages/UserManagement/UserToolbar.js
 
 import React from "react";
-import { FaPlus, FaDownload, FaQuestionCircle, FaPlusCircle } from "react-icons/fa";
+import { FaPlus, FaDownload, FaQuestionCircle, FaPlusCircle, FaUpload } from "react-icons/fa";
 import Button from "../../components/Button";
 import SEGMENTDEVICEAVAILABILITY from "../../config/segmentDeviceConfig";
 import "./UserToolbar.css";
@@ -13,6 +13,8 @@ function UserToolbar({
   onStatusChange,
   onAdd,
   disableAdd,
+  onBulkImport,
+  disableBulkImport,
   onExport,
   disableExport,
   exportLoading,
@@ -92,6 +94,18 @@ function UserToolbar({
               <FaPlus style={{ marginRight: 6 }} />
               Add New User
             </Button>
+            {onBulkImport && (
+              <Button
+                onClick={onBulkImport}
+                variant="success"
+                disabled={disableBulkImport}
+                title={disableBulkImport ? "Permission required to bulk import users" : "Bulk import users from CSV"}
+                aria-label="Bulk Import Users"
+              >
+                <FaUpload style={{ marginRight: 6 }} />
+                Bulk Import
+              </Button>
+            )}
             {showAddDevice && (
               <Button
                 onClick={onAddDevice}

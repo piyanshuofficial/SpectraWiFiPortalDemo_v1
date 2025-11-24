@@ -957,6 +957,458 @@ export const knowledgeArticles = {
         ]
       }
     ]
+  },
+
+  "bulk-user-import": {
+    title: "Bulk User Import",
+    category: "User Management",
+    content: [
+      {
+        type: "intro",
+        text: "Learn how to import multiple users at once using CSV files or direct Excel paste, saving time when onboarding large groups of users."
+      },
+      {
+        type: "steps",
+        title: "Using CSV File Upload",
+        steps: [
+          {
+            number: 1,
+            title: "Click Bulk Import Button",
+            description: "Navigate to User Management and click the 'Bulk Import' button in the toolbar (green button with upload icon).",
+            screenshot: "[Screenshot: Bulk Import button highlighted in toolbar]"
+          },
+          {
+            number: 2,
+            title: "Download Template",
+            description: "In the bulk import modal, click 'Download Template' to get a CSV file with the correct format and sample data.",
+            screenshot: "[Screenshot: Download Template button in modal]"
+          },
+          {
+            number: 3,
+            title: "Fill CSV File",
+            description: "Open the template in Excel or any spreadsheet software and fill in user data:\n• username (required): Unique user identifier\n• email (required): Valid email address\n• fullName (required): User's full name\n• phone: Contact number in E.164 format\n• policy (required): Standard Access, Premium Access, Basic Access, or Guest Access\n• status: active, inactive, or suspended\n• segment: Business segment\n• department: User's department\n• notes: Additional information",
+            screenshot: "[Screenshot: CSV file open in Excel with sample data]"
+          },
+          {
+            number: 4,
+            title: "Upload File",
+            description: "Click 'Select CSV File' in the modal and choose your completed CSV file. The system will load the file for validation.",
+            screenshot: "[Screenshot: File selected, showing filename]"
+          },
+          {
+            number: 5,
+            title: "Validate Data",
+            description: "Click 'Validate File' to check your data. The system will:\n• Verify required fields are present\n• Check username format (3-50 chars, alphanumeric)\n• Validate email addresses\n• Verify policy names match available policies\n• Check phone number format\n• Ensure no duplicate usernames",
+            screenshot: "[Screenshot: Validation results showing valid and error counts]"
+          },
+          {
+            number: 6,
+            title: "Review Errors (if any)",
+            description: "If validation finds errors, review the detailed error list showing:\n• Row number with the error\n• Specific fields that failed validation\n• Clear error messages\n\nFix errors in your CSV file and re-upload.",
+            screenshot: "[Screenshot: Error details panel with specific row errors]"
+          },
+          {
+            number: 7,
+            title: "Import Users",
+            description: "Once validation passes (0 errors), click 'Import X Users' to add them to the system. A success notification will confirm the import.",
+            screenshot: "[Screenshot: Success notification showing imported user count]"
+          }
+        ]
+      },
+      {
+        type: "steps",
+        title: "Using Excel Paste Method",
+        steps: [
+          {
+            number: 1,
+            title: "Prepare Data in Excel",
+            description: "Create or open an Excel spreadsheet with user data. Ensure the first row contains headers matching the template format.",
+            screenshot: "[Screenshot: Excel spreadsheet with headers and data]"
+          },
+          {
+            number: 2,
+            title: "Copy Data",
+            description: "Select all data including headers, then copy (Ctrl+C or Cmd+C).",
+            screenshot: "[Screenshot: Selected data in Excel ready to copy]"
+          },
+          {
+            number: 3,
+            title: "Open Bulk Import Modal",
+            description: "Click 'Bulk Import' button in User Management toolbar.",
+            screenshot: "[Screenshot: Bulk Import button highlighted]"
+          },
+          {
+            number: 4,
+            title: "Switch to Paste Tab",
+            description: "Click the 'Paste from Excel' tab in the modal.",
+            screenshot: "[Screenshot: Paste from Excel tab selected]"
+          },
+          {
+            number: 5,
+            title: "Paste Data",
+            description: "Click in the text area and paste your data (Ctrl+V or Cmd+V).",
+            screenshot: "[Screenshot: Pasted data visible in textarea]"
+          },
+          {
+            number: 6,
+            title: "Validate and Import",
+            description: "Click 'Validate Data', review results, and if valid, click 'Import X Users'.",
+            screenshot: "[Screenshot: Validation success and import button]"
+          }
+        ]
+      },
+      {
+        type: "section",
+        title: "Segment Limits",
+        items: [
+          {
+            name: "Enterprise",
+            description: "Maximum 1000 users per bulk import"
+          },
+          {
+            name: "Hotel",
+            description: "Maximum 2000 users per bulk import (high guest turnover)"
+          },
+          {
+            name: "Coworking",
+            description: "Maximum 800 users per bulk import"
+          },
+          {
+            name: "Co-Living",
+            description: "Maximum 500 users per bulk import"
+          },
+          {
+            name: "PG",
+            description: "Maximum 300 users per bulk import"
+          },
+          {
+            name: "Miscellaneous",
+            description: "Maximum 500 users per bulk import"
+          }
+        ]
+      },
+      {
+        type: "tips",
+        title: "Pro Tips",
+        items: [
+          "Keep your CSV file under the segment's maximum user limit",
+          "Test with a small batch first (5-10 users) to verify format",
+          "Use the downloaded template to ensure correct column order",
+          "Usernames must be unique across the entire system",
+          "Policy names are case-sensitive - match exactly",
+          "Phone numbers should be in E.164 format: +1234567890",
+          "Excel paste method is faster for one-time imports"
+        ]
+      },
+      {
+        type: "troubleshooting",
+        title: "Common Issues",
+        items: [
+          {
+            issue: "Username validation error",
+            solution: "Usernames must be 3-50 characters, containing only letters, numbers, dots, underscores, and hyphens"
+          },
+          {
+            issue: "Invalid email format",
+            solution: "Ensure emails follow standard format: user@domain.com"
+          },
+          {
+            issue: "Policy not found",
+            solution: "Policy must be exactly: 'Standard Access', 'Premium Access', 'Basic Access', or 'Guest Access'"
+          },
+          {
+            issue: "Exceeds maximum limit",
+            solution: "Split your import into smaller batches within your segment's limit"
+          },
+          {
+            issue: "Duplicate username",
+            solution: "Check for duplicate usernames in your CSV or against existing users"
+          }
+        ]
+      }
+    ]
+  },
+
+  "bulk-device-import-human": {
+    title: "Bulk Import Human Devices",
+    category: "Device Management",
+    content: [
+      {
+        type: "intro",
+        text: "Import multiple human devices (laptops, smartphones, tablets) at once for quick device provisioning across your organization."
+      },
+      {
+        type: "steps",
+        title: "Bulk Import Process",
+        steps: [
+          {
+            number: 1,
+            title: "Navigate to Device Management",
+            description: "Click 'Devices' in the sidebar to access the Device Management page.",
+            screenshot: "[Screenshot: Devices menu in sidebar]"
+          },
+          {
+            number: 2,
+            title: "Click Bulk Import Human",
+            description: "In the toolbar, click the 'Bulk Import Human' button (green button with upload icon). Note: This button only appears in Enterprise, Hotel, and Miscellaneous segments.",
+            screenshot: "[Screenshot: Bulk Import Human button highlighted]"
+          },
+          {
+            number: 3,
+            title: "Download Template",
+            description: "Click 'Download Template' to get the human device CSV format with sample data.",
+            screenshot: "[Screenshot: Template download button in modal]"
+          },
+          {
+            number: 4,
+            title: "Fill Device Data",
+            description: "Complete the CSV with device information:\n• assignedUserId (required): User ID who owns the device\n• fullName (required): Owner's full name\n• email: Owner's email address\n• phone: Owner's phone number\n• deviceType (required): laptop, smartphone, or tablet\n• priority: high, medium, or low\n• notes: Device description or notes",
+            screenshot: "[Screenshot: Human device CSV template with data]"
+          },
+          {
+            number: 5,
+            title: "Upload and Validate",
+            description: "Upload your CSV file, then click 'Validate File' to check for errors. The system validates:\n• Device type is laptop/smartphone/tablet\n• Priority is high/medium/low\n• Required fields are present\n• User IDs exist in the system",
+            screenshot: "[Screenshot: Validation results for human devices]"
+          },
+          {
+            number: 6,
+            title: "Import Devices",
+            description: "After successful validation, click 'Import X Devices'. MAC addresses and IP addresses will be auto-generated for human devices.",
+            screenshot: "[Screenshot: Success notification for device import]"
+          }
+        ]
+      },
+      {
+        type: "section",
+        title: "Device Types",
+        items: [
+          {
+            name: "Laptop",
+            description: "Corporate or personal laptops assigned to users. Typically given high priority for business-critical work.",
+            screenshot: "[Screenshot: Laptop icon in device list]"
+          },
+          {
+            name: "Smartphone",
+            description: "Mobile phones used for work or personal use. Can have medium or high priority depending on role.",
+            screenshot: "[Screenshot: Smartphone icon in device list]"
+          },
+          {
+            name: "Tablet",
+            description: "Tablets and iPads used for mobile productivity. Often medium priority unless business-critical.",
+            screenshot: "[Screenshot: Tablet icon in device list]"
+          }
+        ]
+      },
+      {
+        type: "section",
+        title: "Segment Availability",
+        items: [
+          {
+            name: "Enterprise",
+            description: "✅ Available - Maximum 2000 devices per import",
+            screenshot: "[Screenshot: Bulk Import Human button in Enterprise segment]"
+          },
+          {
+            name: "Hotel",
+            description: "✅ Available - Maximum 3000 devices per import",
+            screenshot: "[Screenshot: Bulk Import Human button in Hotel segment]"
+          },
+          {
+            name: "Miscellaneous",
+            description: "✅ Available - Maximum 1000 devices per import",
+            screenshot: "[Screenshot: Bulk Import Human button in Miscellaneous segment]"
+          },
+          {
+            name: "Co-Living, Coworking, PG",
+            description: "❌ Not Available - Human devices not supported in these segments"
+          }
+        ]
+      },
+      {
+        type: "tips",
+        title: "Pro Tips",
+        items: [
+          "High priority devices get bandwidth preference during congestion",
+          "MAC addresses are auto-generated - no need to provide them",
+          "Assign devices to existing user IDs only",
+          "Use descriptive notes to identify company vs personal devices",
+          "Batch similar device types together for easier management"
+        ]
+      },
+      {
+        type: "troubleshooting",
+        title: "Common Issues",
+        items: [
+          {
+            issue: "User ID not found",
+            solution: "Ensure the assignedUserId matches an existing user in the system. Import users first if needed."
+          },
+          {
+            issue: "Invalid device type",
+            solution: "Device type must be exactly: 'laptop', 'smartphone', or 'tablet' (lowercase)"
+          },
+          {
+            issue: "Feature not available",
+            solution: "Human device imports are only available in Enterprise, Hotel, and Miscellaneous segments"
+          }
+        ]
+      }
+    ]
+  },
+
+  "bulk-device-import-other": {
+    title: "Bulk Import Other Devices",
+    category: "Device Management",
+    content: [
+      {
+        type: "intro",
+        text: "Import IoT devices, printers, cameras, sensors, and other network devices in bulk for efficient infrastructure management."
+      },
+      {
+        type: "steps",
+        title: "Bulk Import Process",
+        steps: [
+          {
+            number: 1,
+            title: "Navigate to Device Management",
+            description: "Click 'Devices' in the sidebar navigation menu.",
+            screenshot: "[Screenshot: Devices menu highlighted in sidebar]"
+          },
+          {
+            number: 2,
+            title: "Click Bulk Import Other",
+            description: "Click the 'Bulk Import Other' button in the toolbar (green button). Available in all segments except Miscellaneous.",
+            screenshot: "[Screenshot: Bulk Import Other button highlighted]"
+          },
+          {
+            number: 3,
+            title: "Download Template",
+            description: "Click 'Download Template' to get the other devices CSV format.",
+            screenshot: "[Screenshot: Download template button]"
+          },
+          {
+            number: 4,
+            title: "Fill Device Information",
+            description: "Complete the CSV with device details:\n• deviceName (required): Descriptive name for the device\n• macAddress (required): MAC address in XX:XX:XX:XX:XX:XX format\n• deviceType (required): iot, printer, camera, sensor, access-point, or other\n• manufacturer: Device manufacturer/brand\n• location: Physical location of device\n• assignedTo: Department or person responsible\n• status: active, inactive, or maintenance\n• notes: Additional information",
+            screenshot: "[Screenshot: Other devices CSV template with IoT data]"
+          },
+          {
+            number: 5,
+            title: "Validate Data",
+            description: "Upload and click 'Validate File'. The system checks:\n• MAC address format (XX:XX:XX:XX:XX:XX or XX-XX-XX-XX-XX-XX)\n• Device type is from allowed list\n• Status is active/inactive/maintenance\n• Required fields are present\n• No duplicate MAC addresses",
+            screenshot: "[Screenshot: Validation results for other devices]"
+          },
+          {
+            number: 6,
+            title: "Import Devices",
+            description: "After validation passes, click 'Import X Devices' to add them to your network. Devices will be assigned IP addresses automatically.",
+            screenshot: "[Screenshot: Success notification for other devices import]"
+          }
+        ]
+      },
+      {
+        type: "section",
+        title: "Device Types",
+        items: [
+          {
+            name: "IoT Devices",
+            description: "Smart sensors, controllers, and connected devices. Examples: temperature sensors, smart locks, environmental monitors.",
+            screenshot: "[Screenshot: IoT device in device list]"
+          },
+          {
+            name: "Printers",
+            description: "Network printers and multi-function devices. Track usage and manage printer fleet centrally.",
+            screenshot: "[Screenshot: Printer device in device list]"
+          },
+          {
+            name: "Cameras",
+            description: "IP cameras and security surveillance devices. Monitor connectivity and bandwidth usage.",
+            screenshot: "[Screenshot: Camera device in device list]"
+          },
+          {
+            name: "Sensors",
+            description: "Environmental, motion, and specialized sensors. Often low bandwidth but require reliable connectivity.",
+            screenshot: "[Screenshot: Sensor device in device list]"
+          },
+          {
+            name: "Access Points",
+            description: "WiFi access points and network infrastructure. Critical devices that need priority treatment.",
+            screenshot: "[Screenshot: Access point device in device list]"
+          },
+          {
+            name: "Other",
+            description: "Any other network devices not covered by above categories. Use descriptive names for identification.",
+            screenshot: "[Screenshot: Other device in device list]"
+          }
+        ]
+      },
+      {
+        type: "section",
+        title: "Segment Limits",
+        items: [
+          {
+            name: "Enterprise",
+            description: "Maximum 2000 devices per import"
+          },
+          {
+            name: "Hotel",
+            description: "Maximum 3000 devices per import"
+          },
+          {
+            name: "Coworking",
+            description: "Maximum 1500 devices per import"
+          },
+          {
+            name: "Co-Living",
+            description: "Maximum 1000 devices per import"
+          },
+          {
+            name: "PG",
+            description: "Maximum 600 devices per import"
+          },
+          {
+            name: "Miscellaneous",
+            description: "❌ Not Available - Other devices not supported"
+          }
+        ]
+      },
+      {
+        type: "tips",
+        title: "Pro Tips",
+        items: [
+          "Use manufacturer's MAC address labels for accuracy",
+          "Group devices by location for easier management",
+          "Set critical infrastructure to 'active' status",
+          "Use 'maintenance' status for devices being serviced",
+          "Include location details for quick physical identification",
+          "Use consistent naming conventions (e.g., Floor-Room-DeviceType)",
+          "Access points should be marked as high priority in policy"
+        ]
+      },
+      {
+        type: "troubleshooting",
+        title: "Common Issues",
+        items: [
+          {
+            issue: "Invalid MAC address format",
+            solution: "MAC address must be in format XX:XX:XX:XX:XX:XX or XX-XX-XX-XX-XX-XX. Use uppercase letters A-F for hex digits."
+          },
+          {
+            issue: "Duplicate MAC address",
+            solution: "Each MAC address must be unique. Check for duplicates in your CSV or against existing devices."
+          },
+          {
+            issue: "Invalid device type",
+            solution: "Device type must be exactly one of: iot, printer, camera, sensor, access-point, or other (lowercase)"
+          },
+          {
+            issue: "Exceeds segment limit",
+            solution: "Split your import into multiple smaller batches within your segment's maximum limit"
+          }
+        ]
+      }
+    ]
   }
 };
 

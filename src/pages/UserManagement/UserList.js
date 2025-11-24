@@ -8,6 +8,7 @@ import Pagination from "../../components/Pagination";
 import Badge from "../../components/Badge";
 import Button from "../../components/Button";
 import DeviceFormModal from "../../components/DeviceFormModal";
+import BulkImportModal from "../../components/BulkImportModal";
 import {
   FaInfoCircle, FaEdit, FaTrash, FaSortUp, FaSortDown,
   FaTachometerAlt, FaDatabase, FaTabletAlt
@@ -17,6 +18,7 @@ import { usePermissions } from "../../hooks/usePermissions";
 import { useSort } from "../../hooks/useSort";
 import { useFilter } from "../../hooks/useFilter";
 import { useTableState } from "../../hooks/useTableState";
+import { useBulkOperations } from "../../hooks/useBulkOperations";
 import { commonColumns, segmentSpecificFields } from "../../utils/columns";
 import { useSegment } from "../../context/SegmentContext";
 import userSampleData from "../../constants/userSampleData";
@@ -135,6 +137,7 @@ UserTableRow.displayName = 'UserTableRow';
 const UserList = () => {
   const { canEditUsers, canViewReports } = usePermissions();
   const { currentSegment } = useSegment();
+  const { canBulkAddUsers } = useBulkOperations();
   const location = useLocation();
   const { startLoading, stopLoading, isLoading } = useLoading();
   
@@ -148,6 +151,7 @@ const UserList = () => {
   const [advancedFilterVisible, setAdvancedFilterVisible] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [showFormModal, setShowFormModal] = useState(false);
+  const [showBulkImportModal, setShowBulkImportModal] = useState(false);
   const [detailsUser, setDetailsUser] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showDeviceModal, setShowDeviceModal] = useState(false);
@@ -1065,6 +1069,63 @@ const UserList = () => {
     }
   }, [canViewReports, columns, visibleColumns, sortedUsers, segmentFilter, statusFilter, searchTerm]);
 
+  /**
+   * Handle bulk import of users
+   */
+  const handleBulkImport = useCallback((importedUsers) => {
+    try {
+      // Generate new user IDs and add segment
+      const newUsers = importedUsers.map((userData, index) => ({
+        id: `BU${Date.now()}${index}`,
+        userId: userData.username,
+        name: userData.fullName,
+        email: userData.email,
+        mobile: userData.phone || '',
+        policy: userData.policy,
+        status: userData.status || 'Active',
+        segment: segmentFilter,
+        department: userData.department || '',
+        notes: userData.notes || '',
+        deviceCount: 0,
+        dataUsed: '0 GB',
+        lastActive: 'Just now',
+        userPolicy: {
+          speed: userData.policy === 'Premium Access' ? '100 Mbps' :
+                 userData.policy === 'Standard Access' ? '50 Mbps' :
+                 userData.policy === 'Basic Access' ? '25 Mbps' : '10 Mbps',
+          dataVolume: userData.policy === 'Guest Access' ? '5 GB/day' :
+                     userData.policy === 'Basic Access' ? '50 GB/month' : 'Unlimited',
+          deviceLimit: userData.policy === 'Premium Access' ? 5 :
+                      userData.policy === 'Standard Access' ? 3 :
+                      userData.policy === 'Basic Access' ? 2 : 1
+        }
+      }));
+
+      // Add new users to the existing list
+      setUsers(prevUsers => [...newUsers, ...prevUsers]);
+
+      // Show success notification
+      notifications.success(`Successfully imported ${newUsers.length} user${newUsers.length > 1 ? 's' : ''}`);
+
+      // TODO: Backend Integration - Bulk User Import
+      // Send bulk import data to backend
+      // fetch('/api/users/bulk-import', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({
+      //     users: newUsers,
+      //     segment: segmentFilter,
+      //     importedBy: currentUser.id,
+      //     timestamp: new Date().toISOString()
+      //   })
+      // });
+
+    } catch (error) {
+      console.error('Bulk import error:', error);
+      notifications.error('Failed to import users');
+    }
+  }, [segmentFilter]);
+
   // ========================================
   // TODO: Backend Integration - Column Customization Persistence
   // ========================================
@@ -1150,6 +1211,8 @@ const UserList = () => {
             onStatusChange={e => setFilter('statusFilter', e.target.value)}
             onAdd={canEditUsers ? () => setShowFormModal(true) : undefined}
             disableAdd={!canEditUsers}
+            onBulkImport={canBulkAddUsers && canEditUsers ? () => setShowBulkImportModal(true) : undefined}
+            disableBulkImport={!canBulkAddUsers || !canEditUsers}
             onExport={handleExportUsers}
             disableExport={!canViewReports || exportingCSV}
             exportLoading={exportingCSV}
@@ -1374,6 +1437,13 @@ const UserList = () => {
           submitting={submitting}
         />
       )}
+
+      <BulkImportModal
+        type="users"
+        isOpen={showBulkImportModal}
+        onClose={() => setShowBulkImportModal(false)}
+        onImport={handleBulkImport}
+      />
 
       {showDetailsModal && detailsUser && (
         <UserDetailsModal
