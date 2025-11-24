@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import Modal from "../../components/Modal";
 import Button from "../../components/Button";
+import ConfirmationModal from "../../components/ConfirmationModal";
 import { segmentFieldConfig } from "../../config/segmentFieldConfig";
 import siteConfig from "../../config/siteConfig";
 import policyConfig from "../../config/policyConfig";
@@ -136,6 +137,8 @@ const UserFormModal = ({
   });
 
   const [errors, setErrors] = useState({});
+  const [showUpdateConfirmation, setShowUpdateConfirmation] = useState(false);
+  const [pendingUserData, setPendingUserData] = useState(null);
   const firstInputRef = useRef(null);
   const focusTimeoutRef = useRef(null);
   const licensesFull = USED_LICENSES >= MAX_LICENSES;
@@ -416,7 +419,15 @@ const UserFormModal = ({
       // }
       // ```
       // ========================================
-      
+
+      // If updating existing user, show confirmation modal
+      if (user) {
+        setPendingUserData(newUser);
+        setShowUpdateConfirmation(true);
+        return;
+      }
+
+      // For new users, submit directly
       await onSubmit(newUser);
 
       // ========================================
@@ -435,6 +446,19 @@ const UserFormModal = ({
     } else {
       notifications.validationError();
     }
+  };
+
+  const handleConfirmUpdate = async () => {
+    if (pendingUserData) {
+      await onSubmit(pendingUserData);
+      setShowUpdateConfirmation(false);
+      setPendingUserData(null);
+    }
+  };
+
+  const handleCancelUpdate = () => {
+    setShowUpdateConfirmation(false);
+    setPendingUserData(null);
   };
 
   return (
@@ -933,6 +957,22 @@ const UserFormModal = ({
           </Button>
         </div>
       </form>
+
+      <ConfirmationModal
+        open={showUpdateConfirmation}
+        onClose={handleCancelUpdate}
+        onConfirm={handleConfirmUpdate}
+        title="Update User"
+        message={
+          pendingUserData
+            ? `Are you sure you want to update user "${pendingUserData.firstName} ${pendingUserData.lastName}" (${pendingUserData.id})? This will modify their account details and may affect their network access.`
+            : ''
+        }
+        confirmText="Update"
+        cancelText="Cancel"
+        variant="primary"
+        loading={submitting}
+      />
     </Modal>
   );
 };

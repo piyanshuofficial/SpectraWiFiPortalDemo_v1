@@ -9,6 +9,7 @@ import Badge from "../../components/Badge";
 import Button from "../../components/Button";
 import DeviceFormModal from "../../components/DeviceFormModal";
 import BulkImportModal from "../../components/BulkImportModal";
+import ConfirmationModal from "../../components/ConfirmationModal";
 import {
   FaInfoCircle, FaEdit, FaTrash, FaSortUp, FaSortDown,
   FaTachometerAlt, FaDatabase, FaTabletAlt
@@ -156,6 +157,11 @@ const UserList = () => {
   const [showBulkImportModal, setShowBulkImportModal] = useState(false);
   const [detailsUser, setDetailsUser] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showSuspendConfirmation, setShowSuspendConfirmation] = useState(false);
+  const [showActivateConfirmation, setShowActivateConfirmation] = useState(false);
+  const [showBlockConfirmation, setShowBlockConfirmation] = useState(false);
+  const [userToChangeStatus, setUserToChangeStatus] = useState(null);
+  const [changingStatus, setChangingStatus] = useState(false);
   const [showDeviceModal, setShowDeviceModal] = useState(false);
 
   const segmentDeviceConfig = SEGMENT_DEVICE_AVAILABILITY[segmentFilter] || {};
@@ -611,6 +617,73 @@ const UserList = () => {
       setSubmitting(false);
     }
   }, [editingUser, segmentFilter]);
+
+  const handleSuspendClick = useCallback((user) => {
+    setUserToChangeStatus({ user, newStatus: "Suspended" });
+    setShowSuspendConfirmation(true);
+  }, []);
+
+  const handleActivateClick = useCallback((user) => {
+    setUserToChangeStatus({ user, newStatus: "Active" });
+    setShowActivateConfirmation(true);
+  }, []);
+
+  const handleBlockClick = useCallback((user) => {
+    setUserToChangeStatus({ user, newStatus: "Blocked" });
+    setShowBlockConfirmation(true);
+  }, []);
+
+  const handleConfirmStatusChange = useCallback(async () => {
+    if (!userToChangeStatus) return;
+
+    const { user, newStatus } = userToChangeStatus;
+    setChangingStatus(true);
+
+    try {
+      await new Promise(resolve => setTimeout(resolve, 600));
+
+      // Update user status in state
+      setUsers(prev =>
+        prev.map(u => u.id === user.id ? { ...u, status: newStatus } : u)
+      );
+
+      // Show success notification
+      if (newStatus === "Suspended") {
+        notifications.userSuspended(user.id);
+      } else if (newStatus === "Blocked") {
+        notifications.userBlocked(user.id);
+      } else if (newStatus === "Active") {
+        notifications.userActivated(user.id);
+      }
+
+      // Close modals
+      setShowSuspendConfirmation(false);
+      setShowActivateConfirmation(false);
+      setShowBlockConfirmation(false);
+      setShowDetailsModal(false);
+      setUserToChangeStatus(null);
+
+      // ========================================
+      // TODO: Backend Integration - Update User Status
+      // ========================================
+      // Call backend API to change user status in database and AAA system
+      // See handleChangeStatus function below for detailed backend integration notes
+      // API Endpoint: PUT /api/users/{userId}/status
+      // Payload: { status: newStatus, reason: 'admin_action', changedBy: currentUser.id }
+      // ========================================
+    } catch (error) {
+      notifications.operationFailed(`change user status to ${newStatus}`);
+    } finally {
+      setChangingStatus(false);
+    }
+  }, [userToChangeStatus]);
+
+  const handleCancelStatusChange = useCallback(() => {
+    setShowSuspendConfirmation(false);
+    setShowActivateConfirmation(false);
+    setShowBlockConfirmation(false);
+    setUserToChangeStatus(null);
+  }, []);
 
   const handleChangeStatus = useCallback((id, newStatus) => {
     // ========================================
@@ -1462,21 +1535,9 @@ const UserList = () => {
           onSendMessage={(user) => {
             // Placeholder - actual implementation in UserDetailsModal
           }}
-          onSuspend={(user) => {
-            handleChangeStatus(user.id, "Suspended");
-            notifications.userSuspended(user.id);
-            setShowDetailsModal(false);
-          }}
-          onBlock={(user) => {
-            handleChangeStatus(user.id, "Blocked");
-            notifications.userBlocked(user.id);
-            setShowDetailsModal(false);
-          }}
-          onActivate={(user) => {
-            handleChangeStatus(user.id, "Active");
-            notifications.userActivated(user.id);
-            setShowDetailsModal(false);
-          }}
+          onSuspend={handleSuspendClick}
+          onBlock={handleBlockClick}
+          onActivate={handleActivateClick}
         />
       )}
 
@@ -1491,6 +1552,54 @@ const UserList = () => {
           siteUserList={users}
         />
       )}
+
+      <ConfirmationModal
+        open={showSuspendConfirmation}
+        onClose={handleCancelStatusChange}
+        onConfirm={handleConfirmStatusChange}
+        title="Suspend User"
+        message={
+          userToChangeStatus
+            ? `Are you sure you want to suspend user "${userToChangeStatus.user.firstName} ${userToChangeStatus.user.lastName}" (${userToChangeStatus.user.id})? The user will lose network access until reactivated.`
+            : ''
+        }
+        confirmText="Suspend"
+        cancelText="Cancel"
+        variant="warning"
+        loading={changingStatus}
+      />
+
+      <ConfirmationModal
+        open={showActivateConfirmation}
+        onClose={handleCancelStatusChange}
+        onConfirm={handleConfirmStatusChange}
+        title="Activate User"
+        message={
+          userToChangeStatus
+            ? `Are you sure you want to activate user "${userToChangeStatus.user.firstName} ${userToChangeStatus.user.lastName}" (${userToChangeStatus.user.id})? The user will regain network access.`
+            : ''
+        }
+        confirmText="Activate"
+        cancelText="Cancel"
+        variant="primary"
+        loading={changingStatus}
+      />
+
+      <ConfirmationModal
+        open={showBlockConfirmation}
+        onClose={handleCancelStatusChange}
+        onConfirm={handleConfirmStatusChange}
+        title="Block User - Irreversible Action"
+        message={
+          userToChangeStatus
+            ? `⚠️ WARNING: Are you sure you want to block user "${userToChangeStatus.user.firstName} ${userToChangeStatus.user.lastName}" (${userToChangeStatus.user.id})?\n\nThis action is IRREVERSIBLE. The user will:\n• Be immediately disconnected from the network\n• Lose all network access permanently\n• NOT be able to be activated again\n\nPlease confirm this is intended.`
+            : ''
+        }
+        confirmText="Block Permanently"
+        cancelText="Cancel"
+        variant="danger"
+        loading={changingStatus}
+      />
     </div>
   );
 };

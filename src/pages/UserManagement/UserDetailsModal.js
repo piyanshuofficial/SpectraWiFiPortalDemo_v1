@@ -270,16 +270,12 @@ const UserDetailsModal = ({
   };
 
   const handleSuspend = () => {
-    if (!window.confirm(`Are you sure you want to suspend ${user.firstName} ${user.lastName}?`)) {
-      return;
-    }
-    
     // ========================================
     // TODO: Backend Integration - Suspend User
     // ========================================
     // See UserList.js handleChangeStatus for full implementation details
     // This calls parent's onSuspend which should trigger API call
-    // 
+    //
     // Quick Reference:
     // - Endpoint: PUT /api/users/{userId}/status
     // - New status: 'Suspended'
@@ -288,48 +284,41 @@ const UserDetailsModal = ({
     // - License: Keep allocated
     // - Notification: Send suspension notice to user
     // ========================================
-    
+
     if (onSuspend) {
       onSuspend(user);
     }
   };
 
   const handleBlock = () => {
-    if (!window.confirm(`Are you sure you want to block ${user.firstName} ${user.lastName}? This action will immediately disconnect the user from the network.`)) {
-      return;
-    }
-    
     // ========================================
-    // TODO: Backend Integration - Block User
+    // TODO: Backend Integration - Block User (IRREVERSIBLE)
     // ========================================
     // See UserList.js handleChangeStatus for full implementation details
     // This calls parent's onBlock which should trigger API call
-    // 
+    //
     // Quick Reference:
     // - Endpoint: PUT /api/users/{userId}/status
-    // - New status: 'Blocked'
+    // - New status: 'Blocked' (IRREVERSIBLE)
     // - AAA: Disable account + force disconnect active sessions
-    // - Devices: Clear MAC bindings
+    // - Devices: Clear MAC bindings permanently
     // - License: Free up (decrement count)
     // - Notification: Send blocking notice to user (if policy allows)
+    // - Note: This action is IRREVERSIBLE - user cannot be activated again
     // ========================================
-    
+
     if (onBlock) {
       onBlock(user);
     }
   };
 
   const handleActivate = () => {
-    if (!window.confirm(`Are you sure you want to activate ${user.firstName} ${user.lastName}?`)) {
-      return;
-    }
-    
     // ========================================
     // TODO: Backend Integration - Activate User
     // ========================================
     // See UserList.js handleChangeStatus for full implementation details
     // This calls parent's onActivate which should trigger API call
-    // 
+    //
     // Quick Reference:
     // - Endpoint: PUT /api/users/{userId}/status
     // - New status: 'Active'
@@ -337,8 +326,9 @@ const UserDetailsModal = ({
     // - Devices: Restore MAC bindings
     // - License: Allocate (increment count)
     // - Notification: Send activation notice to user
+    // - Note: Can only activate Suspended users (not Blocked users)
     // ========================================
-    
+
     if (onActivate) {
       onActivate(user);
     }
@@ -473,9 +463,9 @@ const UserDetailsModal = ({
               Suspend User
             </Button>
           )}
-          {isSuspended && (
-            <Button 
-              variant="success" 
+          {isSuspended && !isBlocked && (
+            <Button
+              variant="success"
               onClick={handleActivate}
               title="Reactivate user account"
             >

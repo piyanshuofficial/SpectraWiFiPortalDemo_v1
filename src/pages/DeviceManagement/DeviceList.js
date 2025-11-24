@@ -15,6 +15,7 @@ import DeviceToolbar from "./DeviceToolbar";
 import BulkImportModal from "../../components/BulkImportModal";
 import LoadingOverlay from "../../components/Loading/LoadingOverlay";
 import SkeletonLoader from "../../components/Loading/SkeletonLoader";
+import ConfirmationModal from "../../components/ConfirmationModal";
 import notifications from "../../utils/notifications";
 import "./DeviceList.css";
 import { PAGINATION } from "../../constants/appConstants";
@@ -27,6 +28,13 @@ const getDeviceIcon = (category) => {
   if (categoryLower.includes('tablet')) return FaTablet;
   if (categoryLower.includes('phone') || categoryLower.includes('mobile')) return FaMobileAlt;
   return FaLaptop;
+};
+
+const getDeviceType = (category) => {
+  const categoryLower = category.toLowerCase();
+  if (categoryLower.includes('tablet')) return 'tablet';
+  if (categoryLower.includes('phone') || categoryLower.includes('mobile')) return 'mobile';
+  return 'laptop';
 };
 
 const SummaryCard = React.memo(({ stat }) => (
@@ -49,7 +57,9 @@ const DeviceCard = React.memo(({
   device,
   onEdit,
   onDisconnect,
+  onDelete,
   canEdit,
+  canDelete,
   disconnectingDeviceId
 }) => (
   <div className="device-card">
@@ -96,7 +106,7 @@ const DeviceCard = React.memo(({
         </Button>
       )}
       <Button
-        variant="danger"
+        variant="warning"
         onClick={() => onDisconnect(device)}
         aria-label={`Disconnect ${device.name}`}
         disabled={!device.online}
@@ -105,6 +115,17 @@ const DeviceCard = React.memo(({
       >
         Disconnect
       </Button>
+      {canDelete && (
+        <Button
+          variant="danger"
+          onClick={() => onDelete(device)}
+          aria-label={`Delete ${device.name}`}
+          disabled={disconnectingDeviceId === device.id}
+          title="Permanently delete this device"
+        >
+          Delete
+        </Button>
+      )}
     </div>
   </div>
 ), (prevProps, nextProps) => {
@@ -115,6 +136,7 @@ const DeviceCard = React.memo(({
     prevProps.device.mac === nextProps.device.mac &&
     prevProps.device.category === nextProps.device.category &&
     prevProps.canEdit === nextProps.canEdit &&
+    prevProps.canDelete === nextProps.canDelete &&
     prevProps.disconnectingDeviceId === nextProps.disconnectingDeviceId
   );
 });
@@ -135,6 +157,11 @@ const DeviceList = () => {
   const [initialLoad, setInitialLoad] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [disconnectingDeviceId, setDisconnectingDeviceId] = useState(null);
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [deviceToDelete, setDeviceToDelete] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+  const [showDisconnectConfirmation, setShowDisconnectConfirmation] = useState(false);
+  const [deviceToDisconnect, setDeviceToDisconnect] = useState(null);
 
   // Use segment from context instead of local state
   const segmentFilter = currentSegment;
@@ -151,11 +178,13 @@ const DeviceList = () => {
   const allowHuman = segmentDeviceConfig.allowHuman ?? false;
   const allowNonHuman = segmentDeviceConfig.allowNonHuman ?? false;
   const allowDeviceEdit = segmentDeviceConfig.allowDeviceEdit ?? false;
+  const allowDeviceDelete = segmentDeviceConfig.allowDeviceDelete ?? false;
   const showRegisterDevice = allowHuman || allowNonHuman;
 
   const hasDevicePermission = hasPermission('canManageDevices');
   const canRegisterDevice = hasDevicePermission && showRegisterDevice;
   const canEditDevice = hasDevicePermission && allowDeviceEdit;
+  const canDeleteDevice = hasDevicePermission && allowDeviceDelete;
 
   const segmentUsers = useMemo(() => {
     return (userSampleData.users || []).filter(user => user.segment === segmentFilter);
@@ -231,7 +260,8 @@ const DeviceList = () => {
 
   const deviceTypes = useMemo(() => [
     { value: "all", label: "All Device Types" },
-    { value: "mobile", label: "Mobile" },
+    { value: "mobile", label: "Mobile/Phone" },
+    { value: "tablet", label: "Tablet" },
     { value: "laptop", label: "Laptop" }
   ], []);
 
@@ -521,7 +551,7 @@ const DeviceList = () => {
           category: deviceInfo.deviceCategory,
           Icon: getDeviceIcon(deviceInfo.deviceCategory),
           mac: deviceInfo.macAddress,
-          type: deviceInfo.deviceCategory.toLowerCase().includes('mobile') || deviceInfo.deviceCategory.toLowerCase().includes('tablet') || deviceInfo.deviceCategory.toLowerCase().includes('phone') ? 'mobile' : 'laptop',
+          type: getDeviceType(deviceInfo.deviceCategory),
         };
 
         setDevices(prev => prev.map(dev => dev.id === deviceInfo.id ? updatedDevice : dev));
@@ -545,7 +575,7 @@ const DeviceList = () => {
           id: `dev${String(devices.length + 1).padStart(3, '0')}`,
           userId: deviceInfo.mode === 'bindUser' ? deviceInfo.userId : 'system',
           name: deviceInfo.deviceName,
-          type: deviceInfo.deviceCategory.toLowerCase().includes('mobile') || deviceInfo.deviceCategory.toLowerCase().includes('tablet') || deviceInfo.deviceCategory.toLowerCase().includes('phone') ? 'mobile' : 'laptop',
+          type: getDeviceType(deviceInfo.deviceCategory),
           category: deviceInfo.deviceCategory,
           Icon: getDeviceIcon(deviceInfo.deviceCategory),
           mac: deviceInfo.macAddress,
@@ -575,17 +605,146 @@ const DeviceList = () => {
     }
   }, [devices, segmentFilter]);
 
-  const handleDisconnectDevice = useCallback(async (device) => {
+  const handleDeleteDevice = useCallback((device) => {
+    if (!hasDevicePermission) {
+      notifications.noPermission("delete devices");
+      return;
+    }
+
+    if (!allowDeviceDelete) {
+      notifications.showError(`Device deletion is not available for ${segmentFilter} segment.`);
+      return;
+    }
+
+    setDeviceToDelete(device);
+    setShowDeleteConfirmation(true);
+  }, [hasDevicePermission, allowDeviceDelete, segmentFilter]);
+
+  const handleConfirmDelete = useCallback(async () => {
+    if (!deviceToDelete) return;
+
+    setDeleting(true);
+    try {
+      await new Promise(resolve => setTimeout(resolve, 600));
+
+      // ========================================
+      // TODO: Backend Integration - Delete Device
+      // ========================================
+      // API Endpoint: DELETE /api/devices/{deviceId}
+      //
+      // Request Payload:
+      // {
+      //   deviceId: deviceToDelete.id,
+      //   macAddress: deviceToDelete.mac,
+      //   userId: deviceToDelete.userId,
+      //   segment: segmentFilter,
+      //   deletedBy: currentUser.id,
+      //   reason: 'admin_deletion',
+      //   timestamp: new Date().toISOString()
+      // }
+      //
+      // Backend Processing:
+      // 1. Verify user has permission to delete devices
+      // 2. Check if device is currently online/connected
+      //    - If online: Disconnect device first (call disconnect endpoint)
+      //    - Remove MAC address from AAA system
+      //    - Call AAA API to force disconnect: POST /aaa/api/disconnect-mac
+      //    - Clear MAC from firewall rules/whitelist
+      // 3. Remove device from database (soft delete recommended)
+      //    - Set deleted_at timestamp instead of hard delete
+      //    - Preserve device history for audit trail
+      // 4. Update user's device count
+      //    - Decrement active device count for the user
+      //    - Free up device slot for the user
+      // 5. Clean up related data:
+      //    - Remove device from monitoring system
+      //    - Clear any pending notifications for this device
+      //    - Remove from network access lists
+      //    - Clean up usage history (optional, or archive)
+      // 6. Create audit log entry
+      //    - Log device deletion with admin details
+      //    - Include device info: name, MAC, owner, segment
+      // 7. Send notification to device owner (optional)
+      //    - Email/SMS notification about device removal
+      //    - Include reason if provided
+      //
+      // Response Format:
+      // {
+      //   success: true,
+      //   data: {
+      //     deviceId: string,
+      //     deviceName: string,
+      //     macAddress: string,
+      //     deletedAt: ISO8601,
+      //     wasOnline: boolean,
+      //     disconnected: boolean
+      //   }
+      // }
+      //
+      // Error Handling:
+      // - 404: Device not found
+      // - 403: Insufficient permissions or segment restriction
+      // - 409: Device cannot be deleted (e.g., active critical connection)
+      // - 500: Database or AAA system error (log and retry)
+      //
+      // Implementation Example:
+      // const response = await fetch(`/api/devices/${deviceToDelete.id}`, {
+      //   method: 'DELETE',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //     'Authorization': `Bearer ${authToken}`
+      //   },
+      //   body: JSON.stringify({
+      //     segment: segmentFilter,
+      //     reason: 'admin_deletion',
+      //     deletedBy: currentUser.id
+      //   })
+      // });
+      //
+      // if (!response.ok) {
+      //   throw new Error(`Failed to delete device: ${response.statusText}`);
+      // }
+      //
+      // const result = await response.json();
+      //
+      // Security Considerations:
+      // - Verify segment-based permissions on backend
+      // - Prevent deletion of system/infrastructure devices
+      // - Rate limit deletion requests to prevent abuse
+      // - Require additional confirmation for bulk deletions
+      // - Log all deletion attempts (successful and failed)
+      // ========================================
+
+      setDevices(prev => prev.filter(dev => dev.id !== deviceToDelete.id));
+      notifications.success(`Device "${deviceToDelete.name}" has been deleted successfully`);
+      setShowDeleteConfirmation(false);
+      setDeviceToDelete(null);
+    } catch (error) {
+      notifications.operationFailed(`delete ${deviceToDelete.name}`);
+    } finally {
+      setDeleting(false);
+    }
+  }, [deviceToDelete, segmentFilter]);
+
+  const handleCancelDelete = useCallback(() => {
+    setShowDeleteConfirmation(false);
+    setDeviceToDelete(null);
+  }, []);
+
+  const handleDisconnectDevice = useCallback((device) => {
     if (!device.online) {
       notifications.showInfo(`${device.name} is already offline`);
       return;
     }
 
-    if (!window.confirm(`Are you sure you want to disconnect ${device.name} from the network?`)) {
-      return;
-    }
+    setDeviceToDisconnect(device);
+    setShowDisconnectConfirmation(true);
+  }, []);
 
-    setDisconnectingDeviceId(device.id);
+  const handleConfirmDisconnect = useCallback(async () => {
+    if (!deviceToDisconnect) return;
+
+    setDisconnectingDeviceId(deviceToDisconnect.id);
     try {
       await new Promise(resolve => setTimeout(resolve, 600));
 
@@ -635,17 +794,24 @@ const DeviceList = () => {
 
       setDevices(prev =>
         prev.map(dev =>
-          dev.id === device.id
+          dev.id === deviceToDisconnect.id
             ? { ...dev, online: false, lastUsageDate: 'Just now' }
             : dev
         )
       );
-      notifications.success(`${device.name} has been disconnected from the network`);
+      notifications.success(`${deviceToDisconnect.name} has been disconnected from the network`);
+      setShowDisconnectConfirmation(false);
+      setDeviceToDisconnect(null);
     } catch (error) {
-      notifications.operationFailed(`disconnect ${device.name}`);
+      notifications.operationFailed(`disconnect ${deviceToDisconnect.name}`);
     } finally {
       setDisconnectingDeviceId(null);
     }
+  }, [deviceToDisconnect]);
+
+  const handleCancelDisconnect = useCallback(() => {
+    setShowDisconnectConfirmation(false);
+    setDeviceToDisconnect(null);
   }, []);
 
   const handleSearch = useCallback(() => {
@@ -881,7 +1047,9 @@ const DeviceList = () => {
               device={device}
               onEdit={handleEditDevice}
               onDisconnect={handleDisconnectDevice}
+              onDelete={handleDeleteDevice}
               canEdit={canEditDevice}
+              canDelete={canDeleteDevice}
               disconnectingDeviceId={disconnectingDeviceId}
             />
           ))
@@ -926,6 +1094,38 @@ const DeviceList = () => {
           onImport={handleBulkImportDevices}
         />
       )}
+
+      <ConfirmationModal
+        open={showDisconnectConfirmation}
+        onClose={handleCancelDisconnect}
+        onConfirm={handleConfirmDisconnect}
+        title="Disconnect Device"
+        message={
+          deviceToDisconnect
+            ? `Are you sure you want to disconnect "${deviceToDisconnect.name}" from the network? The device will lose network access immediately.`
+            : ''
+        }
+        confirmText="Disconnect"
+        cancelText="Cancel"
+        variant="warning"
+        loading={disconnectingDeviceId === deviceToDisconnect?.id}
+      />
+
+      <ConfirmationModal
+        open={showDeleteConfirmation}
+        onClose={handleCancelDelete}
+        onConfirm={handleConfirmDelete}
+        title="Delete Device"
+        message={
+          deviceToDelete
+            ? `Are you sure you want to permanently delete "${deviceToDelete.name}" (${deviceToDelete.mac})? This action cannot be undone.`
+            : ''
+        }
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="danger"
+        loading={deleting}
+      />
     </main>
   );
 };

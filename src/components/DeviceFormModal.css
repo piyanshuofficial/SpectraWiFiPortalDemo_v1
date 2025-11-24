@@ -335,3 +335,32 @@ form {
   color: #4a75ad;
   margin-left: 0.25rem;
 }
+
+.device-count-badge {
+  font-size: var(--font-xs);
+  background: #e8f3ff;
+  color: #2150a2;
+  padding: 0.1875rem 0.4375rem;
+  border-radius: var(--radius-base);
+  border: 0.0625rem solid #c5dbf7;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.device-count-badge.at-limit {
+  background: #ffe8e6;
+  color: #c81500;
+  border-color: #f7b5b0;
+}
+
+.search-user-row.at-limit {
+  background: #fff8f7;
+  border-left: 0.1875rem solid #f7b5b0;
+  padding-left: 0.4375rem;
+}
+
+.search-user-row.at-limit:hover,
+.search-user-row.at-limit:focus {
+  background: #fff0ee;
+}

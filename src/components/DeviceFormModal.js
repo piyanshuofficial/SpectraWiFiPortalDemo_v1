@@ -198,7 +198,21 @@ function DeviceFormModal({
   function validate() {
     const errs = {};
     if (mode === 'bindUser') {
-      if (!selectedUser) errs.selectedUser = 'Select a user to bind the device';
+      if (!selectedUser) {
+        errs.selectedUser = 'Select a user to bind the device';
+      } else if (!device) {
+        // Only check device limit when registering a NEW device (not when editing)
+        // Count how many devices this user already has
+        const userDeviceCount = devices.filter(d => d.userId === selectedUser.id).length;
+
+        // Get user's device limit from their policy
+        const userDeviceLimit = parseInt(selectedUser.deviceLimit) || 0;
+
+        // Check if user has reached their device limit
+        if (userDeviceCount >= userDeviceLimit) {
+          errs.selectedUser = `User ${selectedUser.firstName} ${selectedUser.lastName} has reached their device limit (${userDeviceLimit} ${userDeviceLimit === 1 ? 'device' : 'devices'}). They currently have ${userDeviceCount} ${userDeviceCount === 1 ? 'device' : 'devices'} registered.`;
+        }
+      }
     }
     if (!deviceCategory) errs.deviceCategory = 'Device category is required';
     if (!deviceName.trim()) errs.deviceName = 'Device name is required';
@@ -535,29 +549,41 @@ function DeviceFormModal({
                         role="listbox"
                         aria-label="User search results"
                       >
-                        {filteredUsers.map(user => (
-                          <div
-                            key={user.id}
-                            className={`search-user-row${selectedUser?.id === user.id ? ' selected' : ''}`}
-                            onClick={() => {
-                              setSelectedUser(user);
-                              setSearchTerm(`${user.firstName} ${user.lastName} (${user.id})`);
-                            }}
-                            tabIndex={0}
-                            role="option"
-                            aria-selected={selectedUser?.id === user.id}
-                            onKeyDown={e => {
-                              if (e.key === 'Enter' || e.key === ' ') {
-                                e.preventDefault();
+                        {filteredUsers.map(user => {
+                          const userDeviceCount = devices.filter(d => d.userId === user.id).length;
+                          const userDeviceLimit = parseInt(user.deviceLimit) || 0;
+                          const isAtLimit = userDeviceCount >= userDeviceLimit;
+
+                          return (
+                            <div
+                              key={user.id}
+                              className={`search-user-row${selectedUser?.id === user.id ? ' selected' : ''}${isAtLimit ? ' at-limit' : ''}`}
+                              onClick={() => {
                                 setSelectedUser(user);
                                 setSearchTerm(`${user.firstName} ${user.lastName} (${user.id})`);
-                              }
-                            }}
-                          >
-                            <span className="search-user-name">{user.firstName} {user.lastName}</span>
-                            <span className="search-user-id">({user.id})</span>
-                          </div>
-                        ))}
+                              }}
+                              tabIndex={0}
+                              role="option"
+                              aria-selected={selectedUser?.id === user.id}
+                              onKeyDown={e => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                  e.preventDefault();
+                                  setSelectedUser(user);
+                                  setSearchTerm(`${user.firstName} ${user.lastName} (${user.id})`);
+                                }
+                              }}
+                              title={isAtLimit ? `Device limit reached (${userDeviceCount}/${userDeviceLimit})` : `Devices: ${userDeviceCount}/${userDeviceLimit}`}
+                            >
+                              <div style={{ flex: 1 }}>
+                                <span className="search-user-name">{user.firstName} {user.lastName}</span>
+                                <span className="search-user-id">({user.id})</span>
+                              </div>
+                              <span className={`device-count-badge${isAtLimit ? ' at-limit' : ''}`}>
+                                {userDeviceCount}/{userDeviceLimit} devices
+                              </span>
+                            </div>
+                          );
+                        })}
                       </div>
                     )}
                   </div>
