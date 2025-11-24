@@ -8,14 +8,15 @@
 
 .device-form-modal {
   background: #fff;
-  padding: 0.875rem 1rem 1.125rem 1rem;
+  padding: 1rem 1.375rem 0.875rem 1.375rem;
   border-radius: var(--radius-lg);
-  max-width: 27.5rem;
+  max-width: 26.25rem;
   width: 100%;
-  max-height: 85vh;
+  max-height: 90vh;
   box-shadow: 0 0.25rem 1rem rgba(33, 38, 71, 0.18);
   display: flex;
   flex-direction: column;
+  gap: 0.375rem;
   position: relative;
   font-size: var(--font-sm-plus);
   margin: 0 auto;
@@ -25,18 +26,42 @@
 .device-form-header {
   font-size: var(--font-4xl);
   font-weight: 700;
-  margin-bottom: 1.375rem;
+  margin-bottom: 0.625rem;
   color: #193a6b;
-  text-align: left;
+  text-align: center;
+  line-height: var(--line-height-tight);
+  padding: 0;
+  flex-shrink: 0;
 }
 
 .device-form-scrollable-content {
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
+  padding-right: 0.375rem;
+  margin-top: 0.25rem;
+  padding-bottom: 0.5rem;
   display: flex;
   flex-direction: column;
   width: 100%;
+}
+
+.device-form-scrollable-content::-webkit-scrollbar {
+  width: 0.375rem;
+}
+
+.device-form-scrollable-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: var(--radius-xs);
+}
+
+.device-form-scrollable-content::-webkit-scrollbar-thumb {
+  background: #c1c8d4;
+  border-radius: var(--radius-xs);
+}
+
+.device-form-scrollable-content::-webkit-scrollbar-thumb:hover {
+  background: #a8b0c0;
 }
 
 form {
@@ -50,7 +75,7 @@ form {
 .device-form-row {
   display: flex;
   flex-direction: column;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.625rem;
   width: 100%;
   min-width: 0;
 }
@@ -78,7 +103,7 @@ form {
   align-items: center;
   gap: 0.625rem;
   cursor: pointer;
-  font-size: var(--font-lg);
+  font-size: var(--font-sm);
   color: #2150a2;
   font-weight: 600;
   transition: color 0.15s;
@@ -100,19 +125,20 @@ form {
 }
 
 .device-form-row label {
-  font-size: var(--font-base);
+  font-size: var(--font-sm);
   color: #2150a2;
   font-weight: 600;
   margin-bottom: 0.25rem;
+  line-height: var(--line-height-tight);
 }
 
 .device-form-row input,
 .device-form-row select {
-  padding: 0.4375rem 0.625rem;
-  font-size: var(--font-lg);
+  padding: 0.375rem 0.5625rem;
+  font-size: var(--font-sm);
   border-radius: var(--radius-base);
   border: 0.075rem solid #cfd7ea;
-  margin-bottom: 0.125rem;
+  margin-bottom: 0.0625rem;
   background: #f8faff;
   line-height: var(--line-height-snug);
   width: 100%;
@@ -191,11 +217,13 @@ form {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 1.25rem;
-  margin: 1.125rem 0 1rem 0;
-  padding: 0;
+  gap: 0.625rem;
+  margin: 0.75rem 0 0 0;
+  padding: 0.75rem 0 0 0;
   width: 100%;
-  background: none;
+  background: #fff;
+  flex-shrink: 0;
+  border: 0 none;
 }
 
 .device-form-actions .btn,
@@ -203,13 +231,14 @@ form {
   flex: 1 1 0;
   min-width: 0;
   margin: 0;
-  padding: 0.5625rem 0;
-  font-size: var(--font-lg);
+  padding: 0.4375rem 0;
+  font-size: var(--font-sm);
   font-weight: 600;
-  border-radius: var(--radius-md);
-  min-height: 2.25rem;
-  box-shadow: 0 0.125rem 0.375rem rgba(33, 38, 71, 0.10);
+  border-radius: var(--radius-base);
+  min-height: 2.125rem;
+  box-shadow: none;
   transition: background 0.2s, box-shadow 0.2s;
+  line-height: var(--line-height-snug);
 }
 
 .device-form-actions .btn:hover,
@@ -220,21 +249,45 @@ form {
 /* Responsive for small screens */
 @media (max-width: 520px) {
   .device-form-modal {
-    padding: 0.5rem 2vw 0.875rem 2vw;
-    max-width: 100vw;
+    padding: 0.875rem 1.125rem 0.75rem 1.125rem;
+    max-width: calc(100vw - 2rem);
+    max-height: 85vh;
   }
   .device-form-header {
     font-size: var(--font-3xl);
-    margin-bottom: 0.875rem;
+    margin-bottom: 0.5rem;
+  }
+  .device-form-row {
+    margin-bottom: 0.5rem;
+  }
+  .device-form-row label {
+    font-size: var(--font-xs);
+  }
+  .device-form-row input,
+  .device-form-row select {
+    font-size: var(--font-xs);
+    padding: 0.3125rem 0.5rem;
   }
   .mapping-type-options {
     gap: 1.125rem;
     padding: 0.4375rem 0.375rem;
-    font-size: var(--font-lg);
+    font-size: var(--font-sm);
+  }
+  .mapping-type-options label {
+    font-size: var(--font-xs);
   }
   .search-results-list label {
-    font-size: var(--font-base);
+    font-size: var(--font-xs);
     padding: 0.3125rem 0.4375rem;
+  }
+  .device-form-actions {
+    padding-top: 0.5rem;
+  }
+  .device-form-actions .btn,
+  .device-form-actions button {
+    font-size: var(--font-xs);
+    padding: 0.375rem 0;
+    min-height: 2rem;
   }
 }
 
