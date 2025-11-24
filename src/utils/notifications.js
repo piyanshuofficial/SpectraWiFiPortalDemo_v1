@@ -243,6 +243,17 @@ export const showPromise = (promise, { pending, success, error }, options = {}) 
 
 // Specialized notifications for common operations
 export const notifications = {
+  // Direct access to show methods
+  showSuccess,
+  showError,
+  showWarning,
+  showInfo,
+  showLoading,
+  updateToast,
+  dismissToast,
+  dismissAllToasts,
+  showPromise,
+
   // User Management
   userAdded: () => showSuccess("User added successfully"),
   userUpdated: () => showSuccess("User updated successfully"),
@@ -250,32 +261,32 @@ export const notifications = {
   userActivated: (userId) => showSuccess(`User ${userId} activated successfully`),
   userSuspended: (userId) => showWarning(`User ${userId} suspended`),
   userBlocked: (userId) => showError(`User ${userId} blocked`),
-  
+
   // Device Management
   deviceRegistered: (deviceName) => showSuccess(`Device "${deviceName}" registered successfully`),
   deviceBlocked: (deviceName) => showWarning(`${deviceName} has been blocked`),
   deviceAlreadyBlocked: (deviceName) => showInfo(`${deviceName} is already blocked`),
-  
+
   // Export Operations
   exportSuccess: (type = "file") => showSuccess(`${type} exported successfully`),
   exportFailed: (type = "file") => showError(`Failed to export ${type}`),
-  
+
   // Permission Errors
   noPermission: (action) => showError(`You don't have permission to ${action}. Please contact your administrator.`),
-  
+
   // License Warnings
   licenseFull: () => showError("Cannot add more users: all licenses are used. Please suspend or block an existing user or request additional licenses."),
-  
+
   // Generic Operations
   operationSuccess: (operation) => showSuccess(`${operation} completed successfully`),
   operationFailed: (operation) => showError(`${operation} failed`),
-  
+
   // Validation
   validationError: (message = "Please fix errors before submitting") => showError(message),
-  
+
   // Loading
   loading: (message = "Processing...") => showLoading(message),
-  
+
   // Custom
   custom: {
     success: showSuccess,

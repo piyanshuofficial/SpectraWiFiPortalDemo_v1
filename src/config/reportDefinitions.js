@@ -337,6 +337,7 @@ export const REPORT_DEFINITIONS = {
   },
 
   "speed-tier-report": {
+    segments: ALL_SEGMENTS, // Available for all segments
     chart: {
       type: "bar",
       canvasSize: EXPORT_CANVAS_SIZES.bar,
