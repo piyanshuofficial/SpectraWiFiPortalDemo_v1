@@ -27,7 +27,7 @@
   width: 100%;
   border-collapse: collapse;
   font-size: 0.875rem;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
   background: #fff;
   table-layout: auto;
 }
@@ -188,7 +188,7 @@
   font-size: 0.875rem;
   color: #333;
   font-weight: 500;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
 }
 
 .pagination-info-text {
@@ -219,7 +219,7 @@
   font-weight: 600;
   color: #204094;
   white-space: nowrap;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
 }
 
 .pagination-select {
@@ -229,7 +229,7 @@
   background: #fff;
   color: #17418f;
   font-size: 0.875rem;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
   cursor: pointer;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
   outline: none;
@@ -272,7 +272,7 @@
   background: #f6f8fb;
   color: #17418f;
   font-size: 0.875rem;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.15s ease;

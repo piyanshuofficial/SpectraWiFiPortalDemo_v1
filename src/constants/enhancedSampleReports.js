@@ -11,7 +11,7 @@
  * - criteriaFields structure (UI form generation)
  * - exportFormats, hasChart, hasTable (UI capabilities)
  * - Used exclusively for reports dashboard filtering and display
- * - Actual report data sourced from userSampleData/siteSampleData
+ * - Actual report data sourced from userSampleData and siteConfig
  */
 
 const enhancedSampleReports = [

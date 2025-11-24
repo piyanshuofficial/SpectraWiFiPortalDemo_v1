@@ -1,4 +1,7 @@
 // src/config/siteConfig.js
+
+import * as reportGen from '../utils/reportDataGenerator';
+
 const siteConfig = {
   // Default site (can be overridden based on segment)
   siteName: "Mumbai Corporate Office",
@@ -277,5 +280,116 @@ const siteConfig = {
     documentation: "https://www.spectra.co"
   }
 };
+
+// ============================================
+// SITE REPORT DATA - Sample Data for Reports
+// ============================================
+
+export const siteReportData = {
+  // BILLING REPORTS - 12 months of comprehensive data
+  "site-monthly-active-users": reportGen.generateMonthlyActiveUsers('2024-01', 12),
+  "daily-average-active-users": reportGen.generateDailyActiveUsers('2024-01-01', 90),
+  "policy-wise-monthly-average-active-users": reportGen.generatePolicyWiseUsers('2024-01', 12),
+
+  // USAGE REPORTS - 12 months of data
+  "monthly-data-usage-summary": reportGen.generateMonthlyDataUsage('2024-01', 12),
+  "network-usage-report": reportGen.generateNetworkUsage('2024-01-01', 90),
+
+  // SPEED TIER REPORTS
+  "speed-tier-report": [
+    { speedTier: "Up to 25 Mbps", userCount: 180 },
+    { speedTier: "26-50 Mbps", userCount: 320 },
+    { speedTier: "51-100 Mbps", userCount: 250 },
+    { speedTier: "Above 100 Mbps", userCount: 100 },
+  ],
+
+  // ALERTS - Summary counts only (not time-series)
+  "alerts-summary-report": [
+    { alertType: "Critical", count: 12 },
+    { alertType: "Warning", count: 47 },
+    { alertType: "Info", count: 156 },
+  ],
+
+  // CLUSTER/CITY/COMPANY REPORTS - Static data (no filtering needed)
+  "cluster-average-active-users": [
+    { cluster: "West Region", totalActiveUsers: 1250, monthlyGrowth: 8.5 },
+    { cluster: "East Region", totalActiveUsers: 1420, monthlyGrowth: 12.3 },
+    { cluster: "North Region", totalActiveUsers: 980, monthlyGrowth: 6.7 }
+  ],
+
+  "cluster-monthly-data-usage": [
+    { month: "2024-01", cluster: "West Region", totalUsageGB: 5200, peakUsageGB: 650 },
+    { month: "2024-01", cluster: "East Region", totalUsageGB: 6100, peakUsageGB: 780 },
+    { month: "2024-01", cluster: "North Region", totalUsageGB: 4300, peakUsageGB: 520 }
+  ],
+
+  "city-average-active-users": [
+    { city: "Mumbai", totalActiveUsers: 2850, monthlyGrowth: 9.2 },
+    { city: "Bangalore", totalActiveUsers: 3200, monthlyGrowth: 11.5 },
+    { city: "Delhi", totalActiveUsers: 2650, monthlyGrowth: 7.8 }
+  ],
+
+  "city-monthly-data-usage": [
+    { month: "2024-01", city: "Mumbai", totalUsageGB: 12500, avgUsageGB: 4.2 },
+    { month: "2024-01", city: "Bangalore", totalUsageGB: 14200, avgUsageGB: 4.5 },
+    { month: "2024-01", city: "Delhi", totalUsageGB: 11800, avgUsageGB: 4.0 }
+  ],
+
+  "company-average-active-users": [
+    { company: "Spectra Technologies", totalActiveUsers: 8700, yearOverYear: 15.2 }
+  ],
+
+  "company-monthly-data-usage": [
+    { month: "2024-01", company: "Spectra Technologies", totalUsageTB: 38.5, yearOverYear: 18.7 }
+  ],
+
+  // WI-FI NETWORK REPORTS
+  "access-point-list": reportGen.generateAccessPointList(),
+  "access-point-mac-list": reportGen.generateAccessPointList().map(ap => ({
+    mac: ap.mac,
+    apName: ap.apName,
+    vendor: Math.random() > 0.5 ? 'Cisco' : 'Aruba'
+  })),
+  "client-list": reportGen.generateClientList(),
+  "user-ap-analytics": reportGen.generateUserAPAnalytics('2024-01-01', 30),
+  "rogue-ap-list": reportGen.generateRogueAPList(),
+  "alarm-list": reportGen.generateAlarmList('2024-07-01', 30),
+  "event-list": reportGen.generateEventList('2024-07-01', 30),
+
+  // INTERNET REPORTS - 90 days of data
+  "bandwidth-utilization": reportGen.generateBandwidthUtilization('2024-07-01', 30),
+  "internet-uptime": reportGen.generateInternetUptime('2024-01-01', 90),
+
+  // SLA REPORTS - 12 months of data
+  "sla-compliance": reportGen.generateSLACompliance('2024-01', 12),
+
+  // AUTHENTICATION REPORTS - 30 days of data
+  "authentication-logs": reportGen.generateAuthenticationLogs('2024-07-01', 30),
+  "failed-authentication": reportGen.generateFailedAuthentication('2024-07-01', 30),
+
+  // UPSELL REPORTS - 12 months of data
+  "addon-usage-report": reportGen.generateAddonUsage('2024-01', 12),
+  "topup-history": reportGen.generateTopupHistory('2024-01-01', 90),
+};
+
+// ============================================
+// HELPER FUNCTIONS
+// ============================================
+
+export const getSiteReportData = (reportId) => {
+  return siteReportData[reportId] || null;
+};
+
+export const isSiteReport = (reportId) => {
+  return reportId in siteReportData;
+};
+
+export const getSiteReportIds = () => {
+  return Object.keys(siteReportData);
+};
+
+// ============================================
+// DEFAULT EXPORT
+// ============================================
 
 export default siteConfig;

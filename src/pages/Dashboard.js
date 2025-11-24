@@ -9,8 +9,7 @@ import { usePermissions } from "../hooks/usePermissions";
 import { useLoading } from "../context/LoadingContext";
 import { useSegment } from "../context/SegmentContext";
 import { useSegmentActivities } from "../hooks/useSegmentActivities";
-import siteSampleData from "../constants/siteSampleData";
-import userSampleData from "../constants/userSampleData";
+import { getSiteReportData } from "../config/siteConfig";
 import { getStandardChartOptions } from "../utils/commonChartOptions";
 import { EXPORT_CANVAS_SIZES } from "../utils/exportConstants";
 import { exportChartDataToCSV } from "../utils/exportUtils";
@@ -173,7 +172,7 @@ const Dashboard = () => {
   // Get segment-specific data for dashboard charts
   const networkData = useMemo(() => {
     // Generate segment-specific network usage data with variation per segment
-    const baseData = siteSampleData.getSiteReportData("network-usage-report") || [];
+    const baseData = getSiteReportData("network-usage-report") || [];
 
     // Different segments have different usage patterns
     const segmentMultipliers = {

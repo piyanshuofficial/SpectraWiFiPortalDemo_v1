@@ -23,7 +23,7 @@ import enhancedSampleReports, {
   getCommonReports 
 } from "../../constants/enhancedSampleReports";
 import userSampleData from "../../constants/userSampleData";
-import siteSampleData from "../../constants/siteSampleData";
+import { getSiteReportData, isSiteReport } from "../../config/siteConfig";
 import { exportChartDataToCSV } from "../../utils/exportUtils";
 import { exportReportPDF } from "../../utils/exportReportPDF";
 
@@ -206,8 +206,8 @@ const ReportDashboard = () => {
       return userSampleData.getUserReportData(reportId);
     }
     
-    if (siteSampleData.isSiteReport(reportId)) {
-      return siteSampleData.getSiteReportData(reportId);
+    if (isSiteReport(reportId)) {
+      return getSiteReportData(reportId);
     }
     
     return null;
