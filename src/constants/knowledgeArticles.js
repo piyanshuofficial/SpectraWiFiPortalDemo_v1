@@ -96,19 +96,23 @@ export const knowledgeArticles = {
         items: [
           {
             name: "Speed Limit",
-            description: "Controls maximum bandwidth per user. Options: 10 Mbps, 20 Mbps, 30 Mbps, 50 Mbps. Enterprise users typically get higher speeds."
+            description: "Controls maximum bandwidth per user. Options: 10 Mbps, 20 Mbps, 30 Mbps, 50 Mbps. Enterprise users typically get higher speeds.",
+            screenshot: "[Screenshot: Speed limit dropdown options in policy form]"
           },
           {
             name: "Data Volume",
-            description: "Monthly or daily data cap per user. Options: 10 GB, 20 GB, 50 GB, 100 GB, Unlimited. Guest users often have limited data."
+            description: "Monthly or daily data cap per user. Options: 10 GB, 20 GB, 50 GB, 100 GB, Unlimited. Guest users often have limited data.",
+            screenshot: "[Screenshot: Data volume selection options]"
           },
           {
             name: "Device Limit",
-            description: "Maximum number of devices a user can connect simultaneously. Ranges from 1 to 5 devices based on policy configuration."
+            description: "Maximum number of devices a user can connect simultaneously. Ranges from 1 to 5 devices based on policy configuration.",
+            screenshot: "[Screenshot: Device limit selector]"
           },
           {
             name: "Data Cycle Type",
-            description: "Defines when data caps reset. Daily cycle resets at midnight, Monthly cycle resets on the 1st of each month."
+            description: "Defines when data caps reset. Daily cycle resets at midnight, Monthly cycle resets on the 1st of each month.",
+            screenshot: "[Screenshot: Data cycle type options - Daily/Monthly]"
           }
         ]
       },
@@ -118,15 +122,18 @@ export const knowledgeArticles = {
         items: [
           {
             name: "License Types",
-            description: "Available license tiers include:\n• Premium: High-speed access with unlimited or high data caps\n• Standard: Moderate speed and data allocations\n• Basic: Economical tier with essential connectivity\n• Guest: Temporary access with limited duration and data"
+            description: "Available license tiers include:\n• Premium: High-speed access with unlimited or high data caps\n• Standard: Moderate speed and data allocations\n• Basic: Economical tier with essential connectivity\n• Guest: Temporary access with limited duration and data",
+            screenshot: "[Screenshot: License type distribution chart]"
           },
           {
             name: "License Capacity",
-            description: "Your organization has a defined license pool capacity. Monitor license utilization regularly to ensure availability for new users and avoid hitting capacity limits that could block user creation."
+            description: "Your organization has a defined license pool capacity. Monitor license utilization regularly to ensure availability for new users and avoid hitting capacity limits that could block user creation.",
+            screenshot: "[Screenshot: License capacity indicator on dashboard]"
           },
           {
             name: "Monitoring Usage",
-            description: "The license ring on the User Management page shows current usage vs. total available licenses. Color codes: Green (0-70%), Yellow (71-85%), Red (86-100%)"
+            description: "The license ring on the User Management page shows current usage vs. total available licenses. Color codes: Green (0-70%), Yellow (71-85%), Red (86-100%)",
+            screenshot: "[Screenshot: License ring with color-coded usage status]"
           }
         ]
       },
@@ -250,19 +257,23 @@ export const knowledgeArticles = {
         items: [
           {
             name: "Active Users",
-            description: "Shows current number of active users in your network. Green arrow indicates growth, red arrow indicates decline compared to previous period."
+            description: "Shows current number of active users in your network. Green arrow indicates growth, red arrow indicates decline compared to previous period.",
+            screenshot: "[Screenshot: Active Users card showing user count with trend arrow]"
           },
           {
             name: "License Usage",
-            description: "Displays percentage of licenses currently in use. Monitor this to avoid hitting capacity limits and ensure availability for new users."
+            description: "Displays percentage of licenses currently in use. Monitor this to avoid hitting capacity limits and ensure availability for new users.",
+            screenshot: "[Screenshot: License Usage card showing percentage and progress bar]"
           },
           {
             name: "Data Usage",
-            description: "Total data consumed this week across all users, measured in TB (Terabytes). Helps track network utilization trends."
+            description: "Total data consumed this week across all users, measured in TB (Terabytes). Helps track network utilization trends.",
+            screenshot: "[Screenshot: Data Usage card showing TB consumed with trend indicator]"
           },
           {
             name: "Alerts",
-            description: "Count of current system alerts. Click to view details. Green badge means no critical alerts."
+            description: "Count of current system alerts. Click to view details. Green badge means no critical alerts.",
+            screenshot: "[Screenshot: Alerts card showing alert count with color indicator]"
           }
         ]
       },
@@ -272,15 +283,18 @@ export const knowledgeArticles = {
         items: [
           {
             name: "Network Usage (Line Chart)",
-            description: "Daily network usage in GB over the last 90 days. Use this to identify trends and plan capacity. Hover over points for exact values. Export to CSV or PDF for reporting."
+            description: "Daily network usage in GB over the last 90 days. Use this to identify trends and plan capacity. Hover over points for exact values. Export to CSV or PDF for reporting.",
+            screenshot: "[Screenshot: Network Usage line chart with 90-day trend and export buttons]"
           },
           {
             name: "License Usage by Type (Bar Chart)",
-            description: "Shows distribution of license types (Premium, Standard, Basic, Guest) across all active users. Helps optimize license allocation and planning."
+            description: "Shows distribution of license types (Premium, Standard, Basic, Guest) across all active users. Helps optimize license allocation and planning.",
+            screenshot: "[Screenshot: License Usage bar chart showing distribution by type]"
           },
           {
             name: "Alerts Summary (Pie Chart)",
-            description: "Breakdown of alerts by severity: Critical (red), Warning (orange), Info (green). Click segments for detailed alert list."
+            description: "Breakdown of alerts by severity: Critical (red), Warning (orange), Info (green). Click segments for detailed alert list.",
+            screenshot: "[Screenshot: Alerts pie chart with severity breakdown]"
           }
         ]
       },
@@ -292,7 +306,8 @@ export const knowledgeArticles = {
           "View Users - Jump to user management page",
           "Reports - Access detailed reporting dashboard",
           "Support - Get help from knowledge center"
-        ]
+        ],
+        screenshot: "[Screenshot: Dashboard quick action buttons at bottom of page]"
       }
     ]
   },
@@ -533,19 +548,23 @@ export const knowledgeArticles = {
         items: [
           {
             name: "Export Current View",
-            description: "Export users visible in the current filtered view with applied search and status filters."
+            description: "Export users visible in the current filtered view with applied search and status filters.",
+            screenshot: "[Screenshot: Export CSV button in user list toolbar]"
           },
           {
             name: "Export All Users",
-            description: "Export complete user database including all statuses and policies for comprehensive reporting."
+            description: "Export complete user database including all statuses and policies for comprehensive reporting.",
+            screenshot: "[Screenshot: Export options dropdown with All Users selected]"
           },
           {
             name: "Export with Custom Columns",
-            description: "Select specific columns to include in the export (User ID, Name, Policy, Status, Usage Stats, etc.)."
+            description: "Select specific columns to include in the export (User ID, Name, Policy, Status, Usage Stats, etc.).",
+            screenshot: "[Screenshot: Export column selection dialog]"
           },
           {
             name: "Export Date Range",
-            description: "Export users created or modified within a specific date range for audit and compliance purposes."
+            description: "Export users created or modified within a specific date range for audit and compliance purposes.",
+            screenshot: "[Screenshot: Date range filter in export dialog]"
           }
         ]
       },
@@ -588,19 +607,23 @@ export const knowledgeArticles = {
         items: [
           {
             name: "Active Status",
-            description: "User can authenticate and access network resources according to their policy. Data usage is tracked and licenses are consumed."
+            description: "User can authenticate and access network resources according to their policy. Data usage is tracked and licenses are consumed.",
+            screenshot: "[Screenshot: User row with green Active status badge]"
           },
           {
             name: "Suspended Status",
-            description: "Temporary suspension - user cannot access network but account remains in system. Useful for temporary holds or payment issues. License is still consumed."
+            description: "Temporary suspension - user cannot access network but account remains in system. Useful for temporary holds or payment issues. License is still consumed.",
+            screenshot: "[Screenshot: User row with yellow Suspended status badge]"
           },
           {
             name: "Blocked Status",
-            description: "Permanent block - user cannot access network. Use for policy violations or account termination. License is freed for reuse."
+            description: "Permanent block - user cannot access network. Use for policy violations or account termination. License is freed for reuse.",
+            screenshot: "[Screenshot: User row with red Blocked status badge]"
           },
           {
             name: "Expired Status",
-            description: "Automatically set when check-out date passes. User access is automatically disabled and license is freed for reuse."
+            description: "Automatically set when check-out date passes. User access is automatically disabled and license is freed for reuse.",
+            screenshot: "[Screenshot: User row with gray Expired status badge]"
           }
         ]
       },
@@ -833,19 +856,23 @@ export const knowledgeArticles = {
         items: [
           {
             name: "Device Type Restrictions",
-            description: "Configure which device types are allowed in your network. Human devices (laptops, phones, tablets) vs Non-human devices (IoT, printers, smart TVs, cameras). Set separate limits for each type."
+            description: "Configure which device types are allowed in your network. Human devices (laptops, phones, tablets) vs Non-human devices (IoT, printers, smart TVs, cameras). Set separate limits for each type.",
+            screenshot: "[Screenshot: Device type restriction checkboxes and limits]"
           },
           {
             name: "Device Registration Settings",
-            description: "Control device registration process: automatic approval, manual approval, or restricted registration. Configure MAC address validation and duplicate detection rules."
+            description: "Control device registration process: automatic approval, manual approval, or restricted registration. Configure MAC address validation and duplicate detection rules.",
+            screenshot: "[Screenshot: Device registration approval settings]"
           },
           {
             name: "Device Limits per User",
-            description: "Set global device limits or configure per-policy limits. Balance between user convenience (more devices) and network security/capacity (fewer devices)."
+            description: "Set global device limits or configure per-policy limits. Balance between user convenience (more devices) and network security/capacity (fewer devices).",
+            screenshot: "[Screenshot: Global device limit configuration slider]"
           },
           {
             name: "Device Naming Conventions",
-            description: "Enforce device naming standards to improve network visibility and management. Examples: 'username-devicetype-number' or 'location-devicetype-id'."
+            description: "Enforce device naming standards to improve network visibility and management. Examples: 'username-devicetype-number' or 'location-devicetype-id'.",
+            screenshot: "[Screenshot: Device naming pattern configuration field]"
           }
         ]
       },
@@ -909,19 +936,23 @@ export const knowledgeArticles = {
         items: [
           {
             name: "Automatic User Lifecycle Management",
-            description: "Automatically activate users on check-in date and block on check-out date. Frees licenses automatically for reuse. Ideal for temporary access scenarios."
+            description: "Automatically activate users on check-in date and block on check-out date. Frees licenses automatically for reuse. Ideal for temporary access scenarios.",
+            screenshot: "[Screenshot: Automatic lifecycle toggle in settings]"
           },
           {
             name: "Device Type Filtering",
-            description: "Create rules to allow/restrict device types based on policies. Control IoT device proliferation while ensuring user productivity with personal devices."
+            description: "Create rules to allow/restrict device types based on policies. Control IoT device proliferation while ensuring user productivity with personal devices.",
+            screenshot: "[Screenshot: Device type filter rules configuration]"
           },
           {
             name: "Policy Templates",
-            description: "Pre-configured policy sets (Basic, Standard, Premium, Guest) that can be applied quickly. Customize templates to match your organization's needs."
+            description: "Pre-configured policy sets (Basic, Standard, Premium, Guest) that can be applied quickly. Customize templates to match your organization's needs.",
+            screenshot: "[Screenshot: Policy template selection dropdown]"
           },
           {
             name: "License Capacity Management",
-            description: "Monitor license utilization in real-time. Set automated alerts for threshold warnings. Plan capacity upgrades based on usage trends and growth forecasts."
+            description: "Monitor license utilization in real-time. Set automated alerts for threshold warnings. Plan capacity upgrades based on usage trends and growth forecasts.",
+            screenshot: "[Screenshot: License capacity dashboard with alerts]"
           }
         ]
       }
