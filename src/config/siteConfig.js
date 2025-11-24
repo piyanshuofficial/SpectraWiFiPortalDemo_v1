@@ -13,31 +13,76 @@ const siteConfig = {
       siteName: "Mumbai Corporate Office",
       siteId: "SITE-MUM-ENT-001",
       location: "Mumbai, Maharashtra",
-      address: "Spectra Business Park, Andheri East, Mumbai - 400069"
+      address: "Spectra Business Park, Andheri East, Mumbai - 400069",
+      policies: [
+        { policyId: "ENT_WIFI_10Mbps_50GB_3Devices" },
+        { policyId: "ENT_WIFI_25Mbps_100GB_3Devices" },
+        { policyId: "ENT_WIFI_50Mbps_200GB_4Devices" },
+        { policyId: "ENT_WIFI_50Mbps_Unlimited_3Devices" },
+        { policyId: "ENT_WIFI_100Mbps_Unlimited_5Devices" },
+        { policyId: "ENT_WIFI_150Mbps_500GB_5Devices" },
+        { policyId: "ENT_WIFI_200Mbps_Unlimited_5Devices" }
+      ]
     },
     coLiving: {
       siteName: "Spectra Urban Living - Bangalore",
       siteId: "SITE-BLR-COL-002",
       location: "Bangalore, Karnataka",
-      address: "Koramangala, Bangalore - 560034"
+      address: "Koramangala, Bangalore - 560034",
+      policies: [
+        { policyId: "COL_WIFI_10Mbps_50GB_1Devices" },
+        { policyId: "COL_WIFI_15Mbps_75GB_2Devices" },
+        { policyId: "COL_WIFI_20Mbps_100GB_3Devices" },
+        { policyId: "COL_WIFI_25Mbps_150GB_3Devices" },
+        { policyId: "COL_WIFI_30Mbps_200GB_4Devices" },
+        { policyId: "COL_WIFI_50Mbps_300GB_5Devices" },
+        { policyId: "COL_WIFI_75Mbps_Unlimited_5Devices" }
+      ]
     },
     coWorking: {
       siteName: "Spectra WorkHub - Pune",
       siteId: "SITE-PUN-COW-003",
       location: "Pune, Maharashtra",
-      address: "Hinjewadi IT Park, Pune - 411057"
+      address: "Hinjewadi IT Park, Pune - 411057",
+      policies: [
+        { policyId: "COW_WIFI_10Mbps_50GB_1Devices" },
+        { policyId: "COW_WIFI_15Mbps_75GB_2Devices" },
+        { policyId: "COW_WIFI_20Mbps_100GB_3Devices" },
+        { policyId: "COW_WIFI_30Mbps_200GB_4Devices" },
+        { policyId: "COW_WIFI_50Mbps_300GB_5Devices" },
+        { policyId: "COW_WIFI_75Mbps_500GB_5Devices" },
+        { policyId: "COW_WIFI_100Mbps_Unlimited_5Devices" }
+      ]
     },
     hotel: {
       siteName: "Spectra Grand Hotel - Goa",
       siteId: "SITE-GOA-HTL-004",
       location: "Goa",
-      address: "Calangute Beach Road, Goa - 403516"
+      address: "Calangute Beach Road, Goa - 403516",
+      policies: [
+        { policyId: "HTL_WIFI_10Mbps_5GB_1Devices" },
+        { policyId: "HTL_WIFI_15Mbps_10GB_2Devices" },
+        { policyId: "HTL_WIFI_20Mbps_Unlimited_3Devices" },
+        { policyId: "HTL_WIFI_25Mbps_5GB_2Devices" },
+        { policyId: "HTL_WIFI_30Mbps_10GB_3Devices" },
+        { policyId: "HTL_WIFI_50Mbps_Unlimited_4Devices" },
+        { policyId: "HTL_WIFI_75Mbps_Unlimited_5Devices" }
+      ]
     },
     pg: {
       siteName: "Spectra PG Residency - Chennai",
       siteId: "SITE-CHN-PGR-005",
       location: "Chennai, Tamil Nadu",
-      address: "Adyar, Chennai - 600020"
+      address: "Adyar, Chennai - 600020",
+      policies: [
+        { policyId: "PG_WIFI_10Mbps_50GB_1Devices" },
+        { policyId: "PG_WIFI_15Mbps_75GB_2Devices" },
+        { policyId: "PG_WIFI_20Mbps_100GB_3Devices" },
+        { policyId: "PG_WIFI_25Mbps_100GB_4Devices" },
+        { policyId: "PG_WIFI_30Mbps_150GB_4Devices" },
+        { policyId: "PG_WIFI_40Mbps_200GB_5Devices" },
+        { policyId: "PG_WIFI_50Mbps_300GB_5Devices" }
+      ]
     },
     miscellaneous: {
       siteName: "Spectra Community Hub - Delhi",
@@ -53,7 +98,16 @@ const siteConfig = {
       // Payload: { dataCycleType: 'Daily' | 'Monthly' }
       // Store in site_config table and fetch during site load
       // ========================================
-      dataCycleType: "Monthly" // Default for demo portal, can be 'Daily' or 'Monthly'
+      dataCycleType: "Monthly", // Default for demo portal, can be 'Daily' or 'Monthly'
+      policies: [
+        { policyId: "MIS_WIFI_10Mbps_10GB_1Devices" },
+        { policyId: "MIS_WIFI_20Mbps_50GB_3Devices" },
+        { policyId: "MIS_WIFI_30Mbps_75GB_3Devices" },
+        { policyId: "MIS_WIFI_50Mbps_100GB_4Devices" },
+        { policyId: "MIS_WIFI_75Mbps_200GB_5Devices" },
+        { policyId: "MIS_WIFI_100Mbps_500GB_5Devices" },
+        { policyId: "MIS_WIFI_Unlimited_Unlimited_5Devices" }
+      ]
     }
   },
   
@@ -174,40 +228,10 @@ const siteConfig = {
     }
   },
 
-  policies: [
-    {
-      id: "standard",
-      name: "Standard Access",
-      speed: "50 Mbps",
-      dataLimit: "Unlimited",
-      maxDevices: 3,
-      duration: "Unlimited"
-    },
-    {
-      id: "premium",
-      name: "Premium Access",
-      speed: "100 Mbps",
-      dataLimit: "Unlimited",
-      maxDevices: 5,
-      duration: "Unlimited"
-    },
-    {
-      id: "basic",
-      name: "Basic Access",
-      speed: "25 Mbps",
-      dataLimit: "50 GB/month",
-      maxDevices: 2,
-      duration: "30 days"
-    },
-    {
-      id: "guest",
-      name: "Guest Access",
-      speed: "10 Mbps",
-      dataLimit: "5 GB/day",
-      maxDevices: 1,
-      duration: "24 hours"
-    }
-  ],
+  // Policies are now defined per segment in segmentSites
+  // Policy IDs follow format: {SEGMENT}_WIFI_{SPEED}_{DATA}_{DEVICES}Devices
+  // Example: ENT_WIFI_50Mbps_Unlimited_3Devices
+  // Policy IDs are NEVER exposed to users - they only see speed, data, and device count
 
   permissions: {
     "user.create": ["admin", "userManager"],

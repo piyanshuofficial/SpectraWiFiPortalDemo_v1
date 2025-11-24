@@ -309,12 +309,12 @@ export const siteReportData = {
   "monthly-data-usage-summary": reportGen.generateMonthlyDataUsage('2024-01', 12),
   "network-usage-report": reportGen.generateNetworkUsage('2024-01-01', 90),
 
-  // LICENSE REPORTS
-  "license-usage-report": [
-    { licenseType: "Standard", usageCount: 65 },
-    { licenseType: "Premium", usageCount: 59 },
-    { licenseType: "Basic", usageCount: 80 },
-    { licenseType: "Guest", usageCount: 81 },
+  // SPEED TIER REPORTS
+  "speed-tier-report": [
+    { speedTier: "Up to 25 Mbps", userCount: 180 },
+    { speedTier: "26-50 Mbps", userCount: 320 },
+    { speedTier: "51-100 Mbps", userCount: 250 },
+    { speedTier: "Above 100 Mbps", userCount: 100 },
   ],
 
   // ALERTS - Summary counts only (not time-series)

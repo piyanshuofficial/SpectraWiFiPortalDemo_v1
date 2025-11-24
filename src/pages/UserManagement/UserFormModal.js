@@ -5,6 +5,7 @@ import Modal from "../../components/Modal";
 import Button from "../../components/Button";
 import { segmentFieldConfig } from "../../config/segmentFieldConfig";
 import siteConfig from "../../config/siteConfig";
+import policyConfig from "../../config/policyConfig";
 import { isEmailValid, isRequired } from "../../utils/validationUtils";
 import notifications from "../../utils/notifications";
 import "./UserFormModal.css";
@@ -71,15 +72,29 @@ const UserFormModal = ({
     return ["Daily", "Monthly"]; // Default for other segments
   }, [segment]);
 
-  const allowedSpeeds = useMemo(() =>
-    segment === "enterprise" ? ["10 Mbps", "25 Mbps", "50 Mbps"] : ["5 Mbps", "10 Mbps", "15 Mbps"],
-    [segment]
-  );
-  const allowedVolumes = useMemo(() =>
-    segment === "enterprise" ? ["50 GB", "100 GB", "200 GB"] : ["10 GB", "25 GB", "50 GB"],
-    [segment]
-  );
-  const allowedDeviceCounts = useMemo(() => ["1", "2", "3", "4", "5"], []);
+  // Get site policies for current segment
+  const sitePolicies = useMemo(() => {
+    return siteConfig.segmentSites[segment]?.policies || [];
+  }, [segment]);
+
+  // Get initial allowed options based on data cycle type
+  const allowedSpeeds = useMemo(() => {
+    if (!sitePolicies.length) return policyConfig.getSpeedOptions(allowedCycleTypes[0]);
+    const available = policyConfig.getAvailableOptionsFromPolicies(sitePolicies, allowedCycleTypes[0]);
+    return available.speeds.length > 0 ? available.speeds : policyConfig.getSpeedOptions(allowedCycleTypes[0]);
+  }, [segment, sitePolicies, allowedCycleTypes]);
+
+  const allowedVolumes = useMemo(() => {
+    if (!sitePolicies.length) return policyConfig.getDataOptions(allowedCycleTypes[0]);
+    const available = policyConfig.getAvailableOptionsFromPolicies(sitePolicies, allowedCycleTypes[0]);
+    return available.dataVolumes.length > 0 ? available.dataVolumes : policyConfig.getDataOptions(allowedCycleTypes[0]);
+  }, [segment, sitePolicies, allowedCycleTypes]);
+
+  const allowedDeviceCounts = useMemo(() => {
+    if (!sitePolicies.length) return policyConfig.getDeviceOptions();
+    const available = policyConfig.getAvailableOptionsFromPolicies(sitePolicies, allowedCycleTypes[0]);
+    return available.deviceCounts.length > 0 ? available.deviceCounts : policyConfig.getDeviceOptions();
+  }, [segment, sitePolicies, allowedCycleTypes]);
 
   // Determine if cycle type should be non-editable
   const isCycleTypeStatic = useMemo(() => {
@@ -124,6 +139,37 @@ const UserFormModal = ({
   const firstInputRef = useRef(null);
   const focusTimeoutRef = useRef(null);
   const licensesFull = USED_LICENSES >= MAX_LICENSES;
+
+  // Dynamic filtering based on current selections and data cycle type
+  const filteredSpeedOptions = useMemo(() => {
+    if (!sitePolicies.length) return policyConfig.getSpeedOptions(form.dataCycleType);
+    const valid = policyConfig.getValidCombinations(
+      sitePolicies,
+      { speed: null, dataVolume: form.dataVolume, deviceCount: form.deviceLimit },
+      form.dataCycleType
+    );
+    return valid.speeds.length > 0 ? valid.speeds : policyConfig.getSpeedOptions(form.dataCycleType);
+  }, [sitePolicies, form.dataCycleType, form.dataVolume, form.deviceLimit]);
+
+  const filteredDataOptions = useMemo(() => {
+    if (!sitePolicies.length) return policyConfig.getDataOptions(form.dataCycleType);
+    const valid = policyConfig.getValidCombinations(
+      sitePolicies,
+      { speed: form.speed, dataVolume: null, deviceCount: form.deviceLimit },
+      form.dataCycleType
+    );
+    return valid.dataVolumes.length > 0 ? valid.dataVolumes : policyConfig.getDataOptions(form.dataCycleType);
+  }, [sitePolicies, form.dataCycleType, form.speed, form.deviceLimit]);
+
+  const filteredDeviceOptions = useMemo(() => {
+    if (!sitePolicies.length) return policyConfig.getDeviceOptions();
+    const valid = policyConfig.getValidCombinations(
+      sitePolicies,
+      { speed: form.speed, dataVolume: form.dataVolume, deviceCount: null },
+      form.dataCycleType
+    );
+    return valid.deviceCounts.length > 0 ? valid.deviceCounts : policyConfig.getDeviceOptions();
+  }, [sitePolicies, form.dataCycleType, form.speed, form.dataVolume]);
 
   useEffect(() => {
     let mounted = true;
@@ -297,13 +343,24 @@ const UserFormModal = ({
     
     if (validate()) {
       const userCategory = USER_CATEGORY_SEGMENT[segment] || "user";
+
+      // Generate policy ID from speed, data, and device selections
+      const policyId = policyConfig.generatePolicyId(
+        segment,
+        form.speed,
+        form.dataVolume,
+        form.deviceLimit,
+        form.dataCycleType
+      );
+
       const newUser = {
         ...form,
+        policyId, // Include generated policy ID
         status: "Active",
         userCategory,
         password: randomPassword(),
       };
-      
+
       // ========================================
       // TODO: Backend Integration - User Creation/Update
       // ========================================
@@ -522,18 +579,18 @@ const UserFormModal = ({
 
           <div className="user-form-row">
             <label htmlFor="speed">Speed <span className="required-asterisk">*</span></label>
-            <select 
-              id="speed" 
-              name="speed" 
-              value={form.speed} 
-              onChange={handleChange} 
+            <select
+              id="speed"
+              name="speed"
+              value={form.speed}
+              onChange={handleChange}
               className={errors.speed ? 'error' : ''}
-              required 
-              aria-invalid={!!errors.speed} 
+              required
+              aria-invalid={!!errors.speed}
               aria-describedby="speed-error"
               disabled={submitting}
             >
-              {allowedSpeeds.map(speed => (
+              {filteredSpeedOptions.map(speed => (
                 <option key={speed} value={speed}>{speed}</option>
               ))}
             </select>
@@ -542,18 +599,18 @@ const UserFormModal = ({
 
           <div className="user-form-row">
             <label htmlFor="dataVolume">Data Volume <span className="required-asterisk">*</span></label>
-            <select 
-              id="dataVolume" 
-              name="dataVolume" 
-              value={form.dataVolume} 
-              onChange={handleChange} 
+            <select
+              id="dataVolume"
+              name="dataVolume"
+              value={form.dataVolume}
+              onChange={handleChange}
               className={errors.dataVolume ? 'error' : ''}
-              required 
-              aria-invalid={!!errors.dataVolume} 
+              required
+              aria-invalid={!!errors.dataVolume}
               aria-describedby="dataVolume-error"
               disabled={submitting}
             >
-              {allowedVolumes.map(volume => (
+              {filteredDataOptions.map(volume => (
                 <option key={volume} value={volume}>{volume}</option>
               ))}
             </select>
@@ -562,18 +619,18 @@ const UserFormModal = ({
 
           <div className="user-form-row">
             <label htmlFor="deviceLimit">Device Limit <span className="required-asterisk">*</span></label>
-            <select 
-              id="deviceLimit" 
-              name="deviceLimit" 
-              value={form.deviceLimit} 
-              onChange={handleChange} 
+            <select
+              id="deviceLimit"
+              name="deviceLimit"
+              value={form.deviceLimit}
+              onChange={handleChange}
               className={errors.deviceLimit ? 'error' : ''}
               required 
               aria-invalid={!!errors.deviceLimit} 
               aria-describedby="deviceLimit-error"
               disabled={submitting}
             >
-              {allowedDeviceCounts.map(count => (
+              {filteredDeviceOptions.map(count => (
                 <option key={count} value={count}>{count}</option>
               ))}
             </select>

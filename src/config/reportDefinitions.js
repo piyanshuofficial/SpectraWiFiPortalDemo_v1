@@ -336,15 +336,15 @@ export const REPORT_DEFINITIONS = {
     }
   },
 
-  "license-usage-report": {
+  "speed-tier-report": {
     chart: {
       type: "bar",
       canvasSize: EXPORT_CANVAS_SIZES.bar,
       getData: (data) => ({
-        labels: data.map((d) => d.licenseType),
+        labels: data.map((d) => d.speedTier),
         datasets: [{
-          label: "License Usage",
-          data: data.map((d) => d.usageCount),
+          label: "User Count",
+          data: data.map((d) => d.userCount),
           backgroundColor: ["#004aad", "#3f51b5", "#7986cb", "#c5cae9"],
           borderWidth: 1,
         }],
@@ -352,19 +352,19 @@ export const REPORT_DEFINITIONS = {
       getOptions: (reportName) => getStandardChartOptions({
         type: "bar",
         title: reportName,
-        xLabel: "License",
-        yLabel: "Usage",
+        xLabel: "Speed Tier",
+        yLabel: "User Count",
         darkMode: false,
         forExport: true
       }),
     },
     csv: {
-      headers: ["License", "Usage"],
-      getRows: (data) => data.map(r => [r.licenseType, r.usageCount])
+      headers: ["Speed Tier", "User Count"],
+      getRows: (data) => data.map(r => [r.speedTier, r.userCount])
     },
     table: {
-      columns: ["License", "Usage"],
-      getRows: (data) => data.map(r => [r.licenseType, r.usageCount])
+      columns: ["Speed Tier", "User Count"],
+      getRows: (data) => data.map(r => [r.speedTier, r.userCount])
     }
   },
 

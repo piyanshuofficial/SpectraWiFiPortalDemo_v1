@@ -142,8 +142,8 @@ const Dashboard = () => {
             if (context.parsed.y !== null) {
               if (context.chart.canvas.id === 'chart-network-usage') {
                 label += context.parsed.y + ' GB';
-              } else if (context.chart.canvas.id === 'chart-license-usage') {
-                label += context.parsed.y;
+              } else if (context.chart.canvas.id === 'chart-speed-tier') {
+                label += context.parsed.y + ' users';
               } else if (context.chart.canvas.id === 'chart-alerts-summary') {
                 label += context.parsed.y;
               } else {
@@ -201,42 +201,43 @@ const Dashboard = () => {
     });
   }, [currentSegment]);
 
-  const licenseData = useMemo(() => {
-    // Generate segment-specific license usage data with realistic distributions
-    const segmentLicenseDistributions = {
+  const speedTierData = useMemo(() => {
+    // Generate segment-specific user distribution by speed tiers
+    const segmentSpeedDistributions = {
       enterprise: [
-        { licenseType: "Premium", usageCount: 320 },
-        { licenseType: "Standard", usageCount: 410 },
-        { licenseType: "Basic", usageCount: 95 },
-        { licenseType: "Guest", usageCount: 25 }
+        { speedTier: "Up to 25 Mbps", userCount: 180 },
+        { speedTier: "26-50 Mbps", userCount: 320 },
+        { speedTier: "51-100 Mbps", userCount: 250 },
+        { speedTier: "Above 100 Mbps", userCount: 100 }
       ],
       coLiving: [
-        { licenseType: "Standard", usageCount: 180 },
-        { licenseType: "Basic", usageCount: 110 },
-        { licenseType: "Guest", usageCount: 30 }
+        { speedTier: "Up to 25 Mbps", userCount: 120 },
+        { speedTier: "26-50 Mbps", userCount: 140 },
+        { speedTier: "51-100 Mbps", userCount: 60 }
       ],
       hotel: [
-        { licenseType: "Premium", usageCount: 50 },
-        { licenseType: "Standard", usageCount: 120 },
-        { licenseType: "Guest", usageCount: 280 }
+        { speedTier: "Up to 25 Mbps", userCount: 280 },
+        { speedTier: "26-50 Mbps", userCount: 120 },
+        { speedTier: "51-100 Mbps", userCount: 50 }
       ],
       coWorking: [
-        { licenseType: "Premium", usageCount: 95 },
-        { licenseType: "Standard", usageCount: 150 },
-        { licenseType: "Basic", usageCount: 35 }
+        { speedTier: "Up to 25 Mbps", userCount: 85 },
+        { speedTier: "26-50 Mbps", userCount: 130 },
+        { speedTier: "51-100 Mbps", userCount: 65 }
       ],
       pg: [
-        { licenseType: "Standard", usageCount: 85 },
-        { licenseType: "Basic", usageCount: 75 },
-        { licenseType: "Guest", usageCount: 20 }
+        { speedTier: "Up to 25 Mbps", userCount: 95 },
+        { speedTier: "26-50 Mbps", userCount: 75 },
+        { speedTier: "51-100 Mbps", userCount: 10 }
       ],
       miscellaneous: [
-        { licenseType: "Basic", usageCount: 60 },
-        { licenseType: "Guest", usageCount: 35 }
+        { speedTier: "Up to 25 Mbps", userCount: 45 },
+        { speedTier: "26-50 Mbps", userCount: 35 },
+        { speedTier: "51-100 Mbps", userCount: 15 }
       ]
     };
 
-    return segmentLicenseDistributions[currentSegment] || segmentLicenseDistributions.enterprise;
+    return segmentSpeedDistributions[currentSegment] || segmentSpeedDistributions.enterprise;
   }, [currentSegment]);
 
   const alertsData = useMemo(() => {
@@ -408,10 +409,10 @@ useEffect(() => {
         };
       } else if (chartType === "bar") {
         chartData = {
-          labels: dataRows.map((d) => d.licenseType),
+          labels: dataRows.map((d) => d.speedTier),
           datasets: [{
-            label: "License Usage",
-            data: dataRows.map((d) => d.usageCount),
+            label: "User Count",
+            data: dataRows.map((d) => d.userCount),
             backgroundColor: ["#004aad", "#3f51b5", "#7986cb", "#c5cae9"],
             borderWidth: 1,
           }],
@@ -430,8 +431,8 @@ useEffect(() => {
       const exportChartOptions = getStandardChartOptions({
         type: chartType,
         title,
-        xLabel: chartType === "line" ? "Day" : chartType === "bar" ? "License" : "",
-        yLabel: chartType === "line" ? "Network Usage (GB)" : chartType === "bar" ? "Usage" : "",
+        xLabel: chartType === "line" ? "Day" : chartType === "bar" ? "Speed Tier" : "",
+        yLabel: chartType === "line" ? "Network Usage (GB)" : chartType === "bar" ? "User Count" : "",
         darkMode: false,
         forExport: true,
       });
@@ -674,15 +675,15 @@ useEffect(() => {
           </div>
         </Card>
 
-        <Card title="License Usage by Type">
-          <div id="chart-license-usage" className="chart-container">
+        <Card title="Users by Speed Tier">
+          <div id="chart-speed-tier" className="chart-container">
             <Bar
               data={{
-                labels: licenseData.map((d) => d.licenseType),
+                labels: speedTierData.map((d) => d.speedTier),
                 datasets: [
                   {
-                    label: "License Usage",
-                    data: licenseData.map((d) => d.usageCount),
+                    label: "User Count",
+                    data: speedTierData.map((d) => d.userCount),
                     backgroundColor: ["#004aad", "#3f51b5", "#7986cb", "#c5cae9"],
                     borderWidth: 1,
                   },
@@ -696,15 +697,15 @@ useEffect(() => {
               variant="secondary"
               onClick={() =>
                 handleDashboardExportCSV(
-                  ["License", "Usage"],
-                  licenseData.map((d) => [d.licenseType, d.usageCount]),
-                  "license_usage.csv",
-                  "license-usage"
+                  ["Speed Tier", "User Count"],
+                  speedTierData.map((d) => [d.speedTier, d.userCount]),
+                  "users_by_speed_tier.csv",
+                  "speed-tier"
                 )
               }
-              aria-label="Export License Usage CSV"
-              loading={exportingCSV && exportingChart === "license-usage"}
-              disabled={exportingPDF || (exportingCSV && exportingChart !== "license-usage")}
+              aria-label="Export Users by Speed Tier CSV"
+              loading={exportingCSV && exportingChart === "speed-tier"}
+              disabled={exportingPDF || (exportingCSV && exportingChart !== "speed-tier")}
             >
               <FaFileCsv style={{ marginRight: 6 }} />
               Export CSV
@@ -713,19 +714,19 @@ useEffect(() => {
               variant="secondary"
               onClick={() =>
                 handleDashboardExportPDF(
-                  "License Usage by Type",
-                  ["License", "Usage"],
-                  licenseData.map((d) => [d.licenseType, d.usageCount]),
+                  "Users by Speed Tier",
+                  ["Speed Tier", "User Count"],
+                  speedTierData.map((d) => [d.speedTier, d.userCount]),
                   "bar",
-                  licenseData,
-                  "license_usage.pdf",
-                  "license_usage",
-                  "license-usage"
+                  speedTierData,
+                  "users_by_speed_tier.pdf",
+                  "users_by_speed_tier",
+                  "speed-tier"
                 )
               }
-              aria-label="Export License Usage PDF"
-              loading={exportingPDF && exportingChart === "license-usage"}
-              disabled={exportingCSV || (exportingPDF && exportingChart !== "license-usage")}
+              aria-label="Export Users by Speed Tier PDF"
+              loading={exportingPDF && exportingChart === "speed-tier"}
+              disabled={exportingCSV || (exportingPDF && exportingChart !== "speed-tier")}
             >
               <FaFilePdf style={{ marginRight: 6 }} />
               Export PDF

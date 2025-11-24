@@ -155,7 +155,7 @@ function DeviceFormModal({
           const user = siteUserList.find(u => u.id === device.userId);
           if (user) {
             setSelectedUser(user);
-            setSearchTerm(`${user.name} (${user.id})`);
+            setSearchTerm(`${user.firstName} ${user.lastName} (${user.id})`);
           }
         }
 
@@ -185,11 +185,15 @@ function DeviceFormModal({
     }
   }, [mode, deviceCategory, existingDeviceUserIds]);
 
-  const filteredUsers = siteUserList.filter(user =>
-    (user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-     user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-     user.id?.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  const filteredUsers = siteUserList.filter(user => {
+    const searchLower = searchTerm.toLowerCase();
+    const fullName = `${user.firstName} ${user.lastName}`.toLowerCase();
+    return (
+      fullName.includes(searchLower) ||
+      user.email?.toLowerCase().includes(searchLower) ||
+      user.id?.toLowerCase().includes(searchLower)
+    );
+  });
 
   function validate() {
     const errs = {};
@@ -537,7 +541,7 @@ function DeviceFormModal({
                             className={`search-user-row${selectedUser?.id === user.id ? ' selected' : ''}`}
                             onClick={() => {
                               setSelectedUser(user);
-                              setSearchTerm(`${user.name} (${user.id})`);
+                              setSearchTerm(`${user.firstName} ${user.lastName} (${user.id})`);
                             }}
                             tabIndex={0}
                             role="option"
@@ -546,11 +550,11 @@ function DeviceFormModal({
                               if (e.key === 'Enter' || e.key === ' ') {
                                 e.preventDefault();
                                 setSelectedUser(user);
-                                setSearchTerm(`${user.name} (${user.id})`);
+                                setSearchTerm(`${user.firstName} ${user.lastName} (${user.id})`);
                               }
                             }}
                           >
-                            <span className="search-user-name">{user.name}</span>
+                            <span className="search-user-name">{user.firstName} {user.lastName}</span>
                             <span className="search-user-id">({user.id})</span>
                           </div>
                         ))}

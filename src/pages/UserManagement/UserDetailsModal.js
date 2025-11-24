@@ -151,7 +151,8 @@ const UserDetailsModal = ({
   const isBlocked = user.status === "Blocked" || user.status === "Restricted";
 
   const usageStats = getUsageStats(user);
-  const userPolicy = user.policy || user.userPolicy;
+  // Policy fields are now directly on user object (speed, dataVolume, deviceLimit)
+  // No longer nested in userPolicy object
 
   const handleEditClick = () => {
     if (isBlocked) {
@@ -343,9 +344,8 @@ const UserDetailsModal = ({
     }
   };
 
-  const renderPolicyDetails = (policy) => {
-    if (!policy || typeof policy === "string") return <span className="udm-value">{policy || "--"}</span>;
-    const { speed, dataVolume, deviceLimit } = policy;
+  const renderPolicyDetails = () => {
+    const { speed, dataVolume, deviceLimit } = user;
     return (
       <div className="policy-detail-stack">
         <div className="policy-row">
@@ -411,7 +411,7 @@ const UserDetailsModal = ({
               </div>
               <div className="udm-item">
                 <span className="udm-label">Policy:</span>
-                {renderPolicyDetails(userPolicy)}
+                {renderPolicyDetails()}
               </div>
               <div className="udm-item">
                 <span className="udm-label">Status:</span>

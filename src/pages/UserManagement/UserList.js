@@ -32,23 +32,23 @@ import LoadingOverlay from "../../components/Loading/LoadingOverlay";
 import SkeletonLoader from "../../components/Loading/SkeletonLoader";
 import { exportChartDataToCSV } from "../../utils/exportUtils";
 
-const PolicyCell = React.memo(({ userPolicy }) => {
-  if (!userPolicy) return <td className="policy-column">--</td>;
-  
+const PolicyCell = React.memo(({ speed, dataVolume, deviceLimit }) => {
+  if (!speed && !dataVolume && !deviceLimit) return <td className="policy-column">--</td>;
+
   return (
     <td className="policy-column">
       <div className="policy-row">
         <span className="policy-icon speed"><FaTachometerAlt /></span>
-        <span className="policy-pill speed">{userPolicy.speed}</span>
+        <span className="policy-pill speed">{speed || "--"}</span>
       </div>
       <div className="policy-row">
         <span className="policy-icon data"><FaDatabase /></span>
-        <span className="policy-pill data">{userPolicy.dataVolume}</span>
+        <span className="policy-pill data">{dataVolume || "--"}</span>
       </div>
       <div className="policy-row">
         <span className="policy-icon device"><FaTabletAlt /></span>
         <span className="policy-pill device">
-          {userPolicy.deviceLimit} Device{userPolicy.deviceLimit > 1 ? "s" : ""}
+          {deviceLimit ? `${deviceLimit} Device${Number(deviceLimit) > 1 ? "s" : ""}` : "--"}
         </span>
       </div>
     </td>
@@ -75,7 +75,7 @@ const UserTableRow = React.memo(({
       {visibleColumns.includes("mobile") && <td>{user.mobile}</td>}
       {visibleColumns.includes("email") && <td>{user.email}</td>}
       {(visibleColumns.includes("userPolicy") || visibleColumns.includes("policy")) && (
-        <PolicyCell userPolicy={user.userPolicy} />
+        <PolicyCell speed={user.speed} dataVolume={user.dataVolume} deviceLimit={user.deviceLimit} />
       )}
       {visibleColumns.includes("devicesCount") && <td>{user.devicesCount}</td>}
       {visibleColumns.includes("status") && (
