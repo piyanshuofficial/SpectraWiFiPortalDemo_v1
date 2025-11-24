@@ -8,6 +8,7 @@ import VideoPlayer from '../../components/VideoPlayer';
 import { getArticle } from '../../constants/knowledgeArticles';
 import { ANIMATION } from '../../constants/appConstants';
 import { useSegment, SEGMENTS } from '../../context/SegmentContext';
+import { useVideoDurations } from '../../hooks';
 import './KnowledgeHome.css';
 
 // Section views
@@ -1213,6 +1214,19 @@ const KnowledgeHome = () => {
     [currentSegment, segmentVideos]
   );
 
+  // Load actual video durations from video files
+  const { durations, loading: durationsLoading } = useVideoDurations(videoData);
+
+  // Merge actual durations with video data
+  const videosWithDurations = useMemo(() => {
+    if (durationsLoading) return videoData; // Show hardcoded durations while loading
+
+    return videoData.map(video => ({
+      ...video,
+      duration: durations[video.videoFile] || video.duration
+    }));
+  }, [videoData, durations, durationsLoading]);
+
   // Random selection logic - generates different content on each visit/refresh
   const getRandomItems = (array, count) => {
     const shuffled = [...array].sort(() => 0.5 - Math.random());
@@ -1221,7 +1235,7 @@ const KnowledgeHome = () => {
 
   // Preview content for home page (randomized on each render)
   const previewGettingStarted = useMemo(() => getRandomItems(gettingStartedArticles, 3), [gettingStartedArticles]);
-  const previewVideos = useMemo(() => getRandomItems(videoData, 3), [videoData]);
+  const previewVideos = useMemo(() => getRandomItems(videosWithDurations, 3), [videosWithDurations]);
   const previewFAQs = useMemo(() => getRandomItems(faqData, 3), [faqData]);
 
   // Filter content based on search term
@@ -1246,14 +1260,14 @@ const KnowledgeHome = () => {
   }, [searchTerm, faqData]); // faqData is now stable (memoized with empty deps)
 
   const filteredVideos = useMemo(() => {
-    if (!searchTerm) return videoData;
+    if (!searchTerm) return videosWithDurations;
     const term = searchTerm.toLowerCase();
-    return videoData.filter(video =>
+    return videosWithDurations.filter(video =>
       video.title.toLowerCase().includes(term) ||
       video.description.toLowerCase().includes(term) ||
       video.category.toLowerCase().includes(term)
     );
-  }, [searchTerm, videoData]); // videoData is now stable (memoized with empty deps)
+  }, [searchTerm, videosWithDurations]); // videoData is now stable (memoized with empty deps)
 
   if (initialLoad) {
     return (
@@ -1878,7 +1892,7 @@ const KnowledgeHome = () => {
         <div className="video-modal-overlay" onClick={handleCloseVideo}>
           <div className="video-modal-content" onClick={(e) => e.stopPropagation()}>
             <VideoPlayer
-              src={`${process.env.PUBLIC_URL}/assets/videos/${selectedVideo.videoFile}`}
+              src={`/assets/videos/${selectedVideo.videoFile}`}
               title={selectedVideo.title}
               onClose={handleCloseVideo}
             />

@@ -4,7 +4,8 @@
       "Bash(npm run build:*)",
       "Bash(node -e:*)",
       "Bash(do echo \"\" echo \"=== $segment folder ===\" ls -lh \"public/assets/videos/$segment/\")",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(done)"
     ],
     "deny": [],
     "ask": []

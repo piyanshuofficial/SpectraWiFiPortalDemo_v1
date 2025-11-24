@@ -18,6 +18,7 @@ export { useFilter } from './useFilter';
 export { useTableState } from './useTableState';
 export { useSiteConfig } from './useSiteConfig';
 export { useBulkOperations } from './useBulkOperations';
+export { useVideoDurations } from './useVideoDurations';
 
 /**
  * Hook Usage Guide:
