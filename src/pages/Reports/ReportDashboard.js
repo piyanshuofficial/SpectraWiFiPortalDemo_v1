@@ -84,20 +84,37 @@ const ReportDashboard = () => {
       try {
         const savedPinned = localStorage.getItem(LOCAL_STORAGE_KEYS.PINNED);
         const savedRecent = localStorage.getItem(LOCAL_STORAGE_KEYS.RECENT);
-        
+
         let pinnedIds = [];
-        
+
         if (savedPinned) {
-          pinnedIds = JSON.parse(savedPinned);
+          // Parse saved pinned reports and validate they still exist
+          const parsedPinned = JSON.parse(savedPinned);
+          // Filter out any report IDs that no longer exist in enhancedSampleReports
+          pinnedIds = parsedPinned.filter(id =>
+            enhancedSampleReports.some(report => report.id === id)
+          );
+
+          // If we filtered out invalid reports, save the cleaned list back to localStorage
+          if (pinnedIds.length !== parsedPinned.length) {
+            console.log('Cleaned up invalid pinned report IDs:',
+              parsedPinned.filter(id => !pinnedIds.includes(id))
+            );
+          }
         } else {
           const commonReports = getCommonReports().slice(0, MAX_PINNED_REPORTS);
           pinnedIds = commonReports.map(r => r.id);
         }
-        
+
         setPinnedReports(pinnedIds);
-        
+
         if (savedRecent) {
-          setRecentReports(JSON.parse(savedRecent));
+          // Also validate recent reports
+          const parsedRecent = JSON.parse(savedRecent);
+          const validRecent = parsedRecent.filter(id =>
+            enhancedSampleReports.some(report => report.id === id)
+          );
+          setRecentReports(validRecent);
         }
       } catch (error) {
         console.error('Error loading saved report preferences:', error);
@@ -106,12 +123,12 @@ const ReportDashboard = () => {
       if (categories.length > 0) {
         setActiveCategory(categories[0]);
       }
-      
+
       setInitialLoad(false);
     };
 
     const timer = setTimeout(loadReports, 300);
-    
+
     return () => clearTimeout(timer);
   }, [categories]);
 
