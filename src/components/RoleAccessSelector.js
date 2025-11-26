@@ -19,6 +19,12 @@ import './RoleAccessSelector.css';
 const RoleAccessSelector = ({ showLabel = true }) => {
   const { currentUser, updateRole, updateAccessLevel } = useAuth();
 
+  // State for visibility
+  const [isVisible, setIsVisible] = useState(() => {
+    const saved = localStorage.getItem('roleAccessSelectorVisible');
+    return saved !== null ? JSON.parse(saved) : true; // Default visible
+  });
+
   // State for dragging
   const [position, setPosition] = useState(() => {
     const saved = localStorage.getItem('roleAccessSelectorPosition');
@@ -34,6 +40,12 @@ const RoleAccessSelector = ({ showLabel = true }) => {
 
   const handleAccessLevelChange = (e) => {
     updateAccessLevel(e.target.value);
+  };
+
+  const toggleVisibility = () => {
+    const newVisibility = !isVisible;
+    setIsVisible(newVisibility);
+    localStorage.setItem('roleAccessSelectorVisible', JSON.stringify(newVisibility));
   };
 
   // Helper to format display names
@@ -97,19 +109,34 @@ const RoleAccessSelector = ({ showLabel = true }) => {
   }, [isDragging, dragOffset, position]);
 
   return (
-    <div
-      ref={containerRef}
-      className={`role-access-selector-container ${isDragging ? 'dragging' : ''}`}
-      style={{
-        left: `${position.x}px`,
-        top: `${position.y}px`,
-      }}
-      onMouseDown={handleMouseDown}
-    >
-      {/* Testing indicator */}
-      <div className="testing-badge" aria-label="Testing mode active">
-        🧪 TEST
+    <>
+      {/* Toggle button - visible on hover */}
+      <div className="test-bar-toggle-area">
+        <button
+          className="test-bar-toggle-btn"
+          onClick={toggleVisibility}
+          aria-label={isVisible ? "Hide test bar" : "Show test bar"}
+          title={isVisible ? "Hide test bar" : "Show test bar"}
+        >
+          {isVisible ? '👁️' : '🧪'}
+        </button>
       </div>
+
+      {/* Test bar - conditionally visible */}
+      {isVisible && (
+        <div
+          ref={containerRef}
+          className={`role-access-selector-container ${isDragging ? 'dragging' : ''}`}
+          style={{
+            left: `${position.x}px`,
+            top: `${position.y}px`,
+          }}
+          onMouseDown={handleMouseDown}
+        >
+          {/* Testing indicator */}
+          <div className="testing-badge" aria-label="Testing mode active">
+            🧪 TEST
+          </div>
 
       {/* Segment Selector */}
       <SegmentSelector showLabel={showLabel} />
@@ -160,7 +187,9 @@ const RoleAccessSelector = ({ showLabel = true }) => {
           <option value={AccessLevels.GROUP}>Group (Highest)</option>
         </select>
       </div>
-    </div>
+        </div>
+      )}
+    </>
   );
 };
 

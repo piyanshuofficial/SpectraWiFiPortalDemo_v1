@@ -6,7 +6,7 @@ const siteConfig = {
   // Default site (can be overridden based on segment)
   siteName: "Mumbai Corporate Office",
   siteId: "SITE-MUM-ENT-001",
-  company: "Spectra Technologies",
+  company: "Sample Technologies",
   segment: "Enterprise",
   accessLevel: "Site",
   
@@ -16,7 +16,7 @@ const siteConfig = {
       siteName: "Mumbai Corporate Office",
       siteId: "SITE-MUM-ENT-001",
       location: "Mumbai, Maharashtra",
-      address: "Spectra Business Park, Andheri East, Mumbai - 400069",
+      address: "Corporate Business Park, Andheri East, Mumbai - 400069",
       policies: [
         { policyId: "ENT_WIFI_10Mbps_50GB_3Devices" },
         { policyId: "ENT_WIFI_25Mbps_100GB_3Devices" },
@@ -28,7 +28,7 @@ const siteConfig = {
       ]
     },
     coLiving: {
-      siteName: "Spectra Urban Living - Bangalore",
+      siteName: "Urban Living - Bangalore",
       siteId: "SITE-BLR-COL-002",
       location: "Bangalore, Karnataka",
       address: "Koramangala, Bangalore - 560034",
@@ -43,7 +43,7 @@ const siteConfig = {
       ]
     },
     coWorking: {
-      siteName: "Spectra WorkHub - Pune",
+      siteName: "WorkHub - Pune",
       siteId: "SITE-PUN-COW-003",
       location: "Pune, Maharashtra",
       address: "Hinjewadi IT Park, Pune - 411057",
@@ -58,7 +58,7 @@ const siteConfig = {
       ]
     },
     hotel: {
-      siteName: "Spectra Grand Hotel - Goa",
+      siteName: "Grand Hotel - Goa",
       siteId: "SITE-GOA-HTL-004",
       location: "Goa",
       address: "Calangute Beach Road, Goa - 403516",
@@ -73,7 +73,7 @@ const siteConfig = {
       ]
     },
     pg: {
-      siteName: "Spectra PG Residency - Chennai",
+      siteName: "PG Residency - Chennai",
       siteId: "SITE-CHN-PGR-005",
       location: "Chennai, Tamil Nadu",
       address: "Adyar, Chennai - 600020",
@@ -88,7 +88,7 @@ const siteConfig = {
       ]
     },
     miscellaneous: {
-      siteName: "Spectra Community Hub - Delhi",
+      siteName: "Community Hub - Delhi",
       siteId: "SITE-DEL-MIS-006",
       location: "Delhi",
       address: "Connaught Place, New Delhi - 110001",
@@ -336,11 +336,11 @@ export const siteReportData = {
   ],
 
   "company-average-active-users": [
-    { company: "Spectra Technologies", totalActiveUsers: 8700, yearOverYear: 15.2 }
+    { company: "Sample Technologies", totalActiveUsers: 8700, yearOverYear: 15.2 }
   ],
 
   "company-monthly-data-usage": [
-    { month: "2024-01", company: "Spectra Technologies", totalUsageTB: 38.5, yearOverYear: 18.7 }
+    { month: "2024-01", company: "Sample Technologies", totalUsageTB: 38.5, yearOverYear: 18.7 }
   ],
 
   // WI-FI NETWORK REPORTS

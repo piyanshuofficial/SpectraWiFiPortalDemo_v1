@@ -1,5 +1,60 @@
 /* src/components/RoleAccessSelector.css */
 
+/* Hover area to reveal the toggle button */
+.test-bar-toggle-area {
+  position: fixed;
+  top: 4.375rem;
+  right: 0;
+  width: 4rem;
+  height: 4rem;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.test-bar-toggle-btn {
+  background: rgba(255, 140, 0, 0.95);
+  color: white;
+  border: 0.125rem solid rgba(255, 140, 0, 1);
+  border-radius: 50%;
+  width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.25rem;
+  box-shadow: 0 0.25rem 0.75rem rgba(255, 140, 0, 0.4);
+  transition: all 0.3s ease;
+  padding: 0;
+  outline: none;
+  opacity: 0;
+  transform: translateX(0.5rem);
+}
+
+/* Show button when hovering over the area */
+.test-bar-toggle-area:hover .test-bar-toggle-btn {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.test-bar-toggle-btn:hover {
+  background: rgba(255, 140, 0, 1);
+  transform: scale(1.1) translateX(0);
+  box-shadow: 0 0.375rem 1rem rgba(255, 140, 0, 0.5);
+}
+
+.test-bar-toggle-btn:active {
+  transform: scale(0.95) translateX(0);
+}
+
+.test-bar-toggle-btn:focus {
+  opacity: 1;
+  transform: translateX(0);
+  box-shadow: 0 0 0 0.1875rem rgba(255, 140, 0, 0.3), 0 0.25rem 0.75rem rgba(255, 140, 0, 0.4);
+}
+
 .role-access-selector-container {
   position: fixed;
   top: 4.375rem;
@@ -96,6 +151,18 @@
 
 /* Responsive adjustments */
 @media (max-width: 1200px) {
+  .test-bar-toggle-area {
+    top: 3.625rem;
+    width: 3.5rem;
+    height: 3.5rem;
+  }
+
+  .test-bar-toggle-btn {
+    width: 2.25rem;
+    height: 2.25rem;
+    font-size: 1.125rem;
+  }
+
   .role-access-selector-container {
     top: 3.625rem;
     left: 6.875rem;
@@ -106,6 +173,18 @@
 }
 
 @media (max-width: 900px) {
+  .test-bar-toggle-area {
+    top: 5.5rem; /* Below header on mobile */
+    width: 3rem;
+    height: 3rem;
+  }
+
+  .test-bar-toggle-btn {
+    width: 2rem;
+    height: 2rem;
+    font-size: 1rem;
+  }
+
   .role-access-selector-container {
     left: 0.625rem; /* Move to left edge on mobile since sidebar collapses */
     right: 0.625rem;
