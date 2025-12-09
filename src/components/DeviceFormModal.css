@@ -124,6 +124,71 @@ form {
   color: #164d92;
 }
 
+.mapping-type-options label.disabled-option {
+  opacity: 0.5;
+  cursor: not-allowed;
+  color: #888;
+}
+
+.mapping-type-options label.disabled-option:hover {
+  color: #888;
+}
+
+.mapping-type-options label.disabled-option input[type='radio'] {
+  cursor: not-allowed;
+}
+
+/* Digital Device Unavailable Notice */
+.digital-device-unavailable-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: #fff3cd;
+  border: 1px solid #ffc107;
+  border-radius: var(--radius-base);
+  font-size: var(--font-sm);
+  color: #856404;
+  line-height: 1.4;
+}
+
+[data-theme="dark"] .digital-device-unavailable-notice {
+  background: rgba(255, 193, 7, 0.15);
+  border-color: #d29922;
+  color: #ffc107;
+}
+
+.digital-device-unavailable-notice .notice-icon {
+  flex-shrink: 0;
+  font-size: var(--font-base);
+}
+
+.digital-device-unavailable-notice .notice-text {
+  flex: 1;
+}
+
+/* Digital Device License Info */
+.digital-device-license-info {
+  margin-top: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: #e8f5e9;
+  border: 1px solid #81c784;
+  border-radius: var(--radius-base);
+  font-size: var(--font-xs);
+  color: #2e7d32;
+}
+
+[data-theme="dark"] .digital-device-license-info {
+  background: rgba(129, 199, 132, 0.15);
+  border-color: #3fb950;
+  color: #3fb950;
+}
+
+.digital-device-license-info .license-info-text {
+  font-weight: 500;
+}
+
 .device-form-row label {
   font-size: var(--font-sm);
   color: #2150a2;

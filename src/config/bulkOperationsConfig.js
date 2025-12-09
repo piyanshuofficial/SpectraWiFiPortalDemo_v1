@@ -11,10 +11,21 @@ const BULK_OPERATIONS_CONFIG = {
   // Enterprise segment
   enterprise: {
     bulkAddUsers: true,
-    bulkAddHumanDevices: true,
-    bulkAddOtherDevices: true,
+    bulkAddUserDevices: true,
+    bulkAddSmartDigitalDevices: true,
     maxBulkUsers: 1000,          // Maximum users per bulk upload
     maxBulkDevices: 2000,        // Maximum devices per bulk upload
+    allowExcelPaste: true,        // Allow direct paste from Excel
+    requireApproval: false        // Whether bulk operations need approval
+  },
+
+  // Office segment
+  office: {
+    bulkAddUsers: true,
+    bulkAddUserDevices: true,
+    bulkAddSmartDigitalDevices: true,
+    maxBulkUsers: 800,           // Maximum users per bulk upload
+    maxBulkDevices: 1500,        // Maximum devices per bulk upload
     allowExcelPaste: true,        // Allow direct paste from Excel
     requireApproval: false        // Whether bulk operations need approval
   },
@@ -22,8 +33,8 @@ const BULK_OPERATIONS_CONFIG = {
   // Co-Living segment
   coLiving: {
     bulkAddUsers: true,
-    bulkAddHumanDevices: false,   // Human devices not available in co-living
-    bulkAddOtherDevices: true,
+    bulkAddUserDevices: false,   // User devices not available in co-living
+    bulkAddSmartDigitalDevices: true,
     maxBulkUsers: 500,
     maxBulkDevices: 1000,
     allowExcelPaste: true,
@@ -33,8 +44,8 @@ const BULK_OPERATIONS_CONFIG = {
   // Hotel segment
   hotel: {
     bulkAddUsers: true,
-    bulkAddHumanDevices: true,
-    bulkAddOtherDevices: true,
+    bulkAddUserDevices: true,
+    bulkAddSmartDigitalDevices: true,
     maxBulkUsers: 2000,           // Hotels may have many guests
     maxBulkDevices: 3000,
     allowExcelPaste: true,
@@ -44,8 +55,8 @@ const BULK_OPERATIONS_CONFIG = {
   // Coworking segment
   coWorking: {
     bulkAddUsers: true,
-    bulkAddHumanDevices: false,   // Human devices not available in coworking
-    bulkAddOtherDevices: true,
+    bulkAddUserDevices: false,   // User devices not available in coworking
+    bulkAddSmartDigitalDevices: true,
     maxBulkUsers: 800,
     maxBulkDevices: 1500,
     allowExcelPaste: true,
@@ -55,8 +66,8 @@ const BULK_OPERATIONS_CONFIG = {
   // PG (Paying Guest) segment
   pg: {
     bulkAddUsers: true,
-    bulkAddHumanDevices: false,   // Human devices not available in PG
-    bulkAddOtherDevices: true,
+    bulkAddUserDevices: false,   // User devices not available in PG
+    bulkAddSmartDigitalDevices: true,
     maxBulkUsers: 300,
     maxBulkDevices: 600,
     allowExcelPaste: true,
@@ -66,8 +77,8 @@ const BULK_OPERATIONS_CONFIG = {
   // Miscellaneous segment
   miscellaneous: {
     bulkAddUsers: true,
-    bulkAddHumanDevices: true,
-    bulkAddOtherDevices: false,   // Other devices not available in miscellaneous
+    bulkAddUserDevices: true,
+    bulkAddSmartDigitalDevices: false,   // Smart/Digital devices not available in miscellaneous
     maxBulkUsers: 500,
     maxBulkDevices: 1000,
     allowExcelPaste: true,
@@ -118,7 +129,7 @@ export const CSV_TEMPLATES = {
     ]
   },
 
-  humanDevices: {
+  userDevices: {
     headers: [
       'assignedUserId',
       'fullName',
@@ -144,14 +155,14 @@ export const CSV_TEMPLATES = {
         fullName: 'Jane Smith',
         email: 'jane.smith@example.com',
         phone: '+1234567891',
-        deviceType: 'smartphone',
+        deviceType: 'mobile',
         priority: 'medium',
         notes: 'Personal device'
       }
     ]
   },
 
-  otherDevices: {
+  smartDigitalDevices: {
     headers: [
       'deviceName',
       'macAddress',
@@ -217,10 +228,10 @@ export const VALIDATION_RULES = {
     }
   },
 
-  humanDevices: {
+  userDevices: {
     deviceType: {
-      enum: ['laptop', 'smartphone', 'tablet'],
-      errorMessage: 'Invalid device type. Must be: laptop, smartphone, or tablet'
+      enum: ['laptop', 'mobile', 'tablet'],
+      errorMessage: 'Invalid device type. Must be: laptop, mobile, or tablet'
     },
     priority: {
       enum: ['high', 'medium', 'low'],
@@ -228,7 +239,7 @@ export const VALIDATION_RULES = {
     }
   },
 
-  otherDevices: {
+  smartDigitalDevices: {
     macAddress: {
       pattern: /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/,
       errorMessage: 'Invalid MAC address format (use format: XX:XX:XX:XX:XX:XX or XX-XX-XX-XX-XX-XX)'

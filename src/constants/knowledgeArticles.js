@@ -207,7 +207,7 @@ export const knowledgeArticles = {
           {
             number: 4,
             title: "Choose Device Type",
-            description: "Select device category:\n• Human Devices: Laptop, Mobile, Tablet\n• Non-Human Devices: IoT, Printer, Camera, Smart TV, Gaming Console",
+            description: "Select device category:\n• User Devices: Laptop, Mobile, Tablet\n• Digital Devices: IoT, Printer, Camera, Smart TV, Gaming Console",
             screenshot: "[Screenshot: Device type dropdown]"
           },
           {
@@ -236,7 +236,7 @@ export const knowledgeArticles = {
         items: [
           "MAC addresses must be unique across the entire network",
           "Device count is limited by user's policy (typically 1-5 devices)",
-          "Non-human devices should be registered as device users for proper accounting",
+          "Digital devices should be registered as device users for proper accounting",
           "Device names can be changed later, but MAC addresses cannot"
         ]
       }
@@ -771,7 +771,7 @@ export const knowledgeArticles = {
           {
             number: 6,
             title: "Configure Device Limit",
-            description: "Set maximum number of devices per user (1-5 devices). Configure separate limits for human and non-human devices if needed.",
+            description: "Set maximum number of devices per user (1-5 devices). Configure separate limits for user and digital devices if needed.",
             screenshot: "[Screenshot: Device limit slider]"
           },
           {
@@ -856,7 +856,7 @@ export const knowledgeArticles = {
         items: [
           {
             name: "Device Type Restrictions",
-            description: "Configure which device types are allowed in your network. Human devices (laptops, phones, tablets) vs Non-human devices (IoT, printers, smart TVs, cameras). Set separate limits for each type.",
+            description: "Configure which device types are allowed in your network. User devices (laptops, phones, tablets) vs Digital devices (IoT, printers, smart TVs, cameras). Set separate limits for each type.",
             screenshot: "[Screenshot: Device type restriction checkboxes and limits]"
           },
           {
@@ -889,7 +889,7 @@ export const knowledgeArticles = {
           {
             number: 2,
             title: "Configure Device Restrictions",
-            description: "Set device type policies:\n• Allow/restrict human devices (laptops, phones, tablets)\n• Allow/restrict non-human devices (IoT, printers, smart TVs)\n• Set maximum devices per user",
+            description: "Set device type policies:\n• Allow/restrict user devices (laptops, phones, tablets)\n• Allow/restrict digital devices (IoT, printers, smart TVs)\n• Set maximum devices per user",
             screenshot: "[Screenshot: Device restriction settings]"
           },
           {
@@ -1066,6 +1066,10 @@ export const knowledgeArticles = {
             description: "Maximum 1000 users per bulk import"
           },
           {
+            name: "Office",
+            description: "Maximum 800 users per bulk import"
+          },
+          {
             name: "Hotel",
             description: "Maximum 2000 users per bulk import (high guest turnover)"
           },
@@ -1129,13 +1133,13 @@ export const knowledgeArticles = {
     ]
   },
 
-  "bulk-device-import-human": {
-    title: "Bulk Import Human Devices",
+  "bulk-device-import-user": {
+    title: "Bulk Import User Devices",
     category: "Device Management",
     content: [
       {
         type: "intro",
-        text: "Import multiple human devices (laptops, smartphones, tablets) at once for quick device provisioning across your organization."
+        text: "Import multiple user devices (laptops, mobile phones, tablets) at once for quick device provisioning across your organization."
       },
       {
         type: "steps",
@@ -1149,32 +1153,32 @@ export const knowledgeArticles = {
           },
           {
             number: 2,
-            title: "Click Bulk Import Human",
-            description: "In the toolbar, click the 'Bulk Import Human' button (green button with upload icon). Note: This button only appears in Enterprise, Hotel, and Miscellaneous segments.",
-            screenshot: "[Screenshot: Bulk Import Human button highlighted]"
+            title: "Click Bulk Import User Devices",
+            description: "In the toolbar, click the 'Bulk Import' button and select 'User Devices' (green button with upload icon). Note: This button only appears in Enterprise, Hotel, and Miscellaneous segments.",
+            screenshot: "[Screenshot: Bulk Import User Devices button highlighted]"
           },
           {
             number: 3,
             title: "Download Template",
-            description: "Click 'Download Template' to get the human device CSV format with sample data.",
+            description: "Click 'Download Template' to get the user device CSV format with sample data.",
             screenshot: "[Screenshot: Template download button in modal]"
           },
           {
             number: 4,
             title: "Fill Device Data",
-            description: "Complete the CSV with device information:\n• assignedUserId (required): User ID who owns the device\n• fullName (required): Owner's full name\n• email: Owner's email address\n• phone: Owner's phone number\n• deviceType (required): laptop, smartphone, or tablet\n• priority: high, medium, or low\n• notes: Device description or notes",
-            screenshot: "[Screenshot: Human device CSV template with data]"
+            description: "Complete the CSV with device information:\n• assignedUserId (required): User ID who owns the device\n• fullName (required): Owner's full name\n• email: Owner's email address\n• phone: Owner's phone number\n• deviceType (required): laptop, mobile, or tablet\n• priority: high, medium, or low\n• notes: Device description or notes",
+            screenshot: "[Screenshot: User device CSV template with data]"
           },
           {
             number: 5,
             title: "Upload and Validate",
-            description: "Upload your CSV file, then click 'Validate File' to check for errors. The system validates:\n• Device type is laptop/smartphone/tablet\n• Priority is high/medium/low\n• Required fields are present\n• User IDs exist in the system",
-            screenshot: "[Screenshot: Validation results for human devices]"
+            description: "Upload your CSV file, then click 'Validate File' to check for errors. The system validates:\n• Device type is laptop/mobile/tablet\n• Priority is high/medium/low\n• Required fields are present\n• User IDs exist in the system",
+            screenshot: "[Screenshot: Validation results for user devices]"
           },
           {
             number: 6,
             title: "Import Devices",
-            description: "After successful validation, click 'Import X Devices'. MAC addresses and IP addresses will be auto-generated for human devices.",
+            description: "After successful validation, click 'Import X Devices'. MAC addresses and IP addresses will be auto-generated for user devices.",
             screenshot: "[Screenshot: Success notification for device import]"
           }
         ]
@@ -1189,9 +1193,9 @@ export const knowledgeArticles = {
             screenshot: "[Screenshot: Laptop icon in device list]"
           },
           {
-            name: "Smartphone",
+            name: "Mobile",
             description: "Mobile phones used for work or personal use. Can have medium or high priority depending on role.",
-            screenshot: "[Screenshot: Smartphone icon in device list]"
+            screenshot: "[Screenshot: Mobile icon in device list]"
           },
           {
             name: "Tablet",
@@ -1207,21 +1211,21 @@ export const knowledgeArticles = {
           {
             name: "Enterprise",
             description: "✅ Available - Maximum 2000 devices per import",
-            screenshot: "[Screenshot: Bulk Import Human button in Enterprise segment]"
+            screenshot: "[Screenshot: Bulk Import User Devices button in Enterprise segment]"
           },
           {
             name: "Hotel",
             description: "✅ Available - Maximum 3000 devices per import",
-            screenshot: "[Screenshot: Bulk Import Human button in Hotel segment]"
+            screenshot: "[Screenshot: Bulk Import User Devices button in Hotel segment]"
           },
           {
             name: "Miscellaneous",
             description: "✅ Available - Maximum 1000 devices per import",
-            screenshot: "[Screenshot: Bulk Import Human button in Miscellaneous segment]"
+            screenshot: "[Screenshot: Bulk Import User Devices button in Miscellaneous segment]"
           },
           {
             name: "Co-Living, Coworking, PG",
-            description: "❌ Not Available - Human devices not supported in these segments"
+            description: "❌ Not Available - User devices not supported in these segments"
           }
         ]
       },
@@ -1246,11 +1250,11 @@ export const knowledgeArticles = {
           },
           {
             issue: "Invalid device type",
-            solution: "Device type must be exactly: 'laptop', 'smartphone', or 'tablet' (lowercase)"
+            solution: "Device type must be exactly: 'laptop', 'mobile', or 'tablet' (lowercase)"
           },
           {
             issue: "Feature not available",
-            solution: "Human device imports are only available in Enterprise, Hotel, and Miscellaneous segments"
+            solution: "User device imports are only available in Enterprise, Hotel, and Miscellaneous segments"
           }
         ]
       }
@@ -1350,6 +1354,10 @@ export const knowledgeArticles = {
           {
             name: "Enterprise",
             description: "Maximum 2000 devices per import"
+          },
+          {
+            name: "Office",
+            description: "Maximum 1500 devices per import"
           },
           {
             name: "Hotel",

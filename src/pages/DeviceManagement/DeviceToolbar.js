@@ -1,27 +1,50 @@
 // src/pages/DeviceManagement/DeviceToolbar.js
 
-import React from "react";
-import { FaPlusCircle, FaQuestionCircle, FaUpload } from "react-icons/fa";
+import React, { useState, useRef, useEffect } from "react";
+import { FaPlusCircle, FaQuestionCircle, FaUpload, FaFileCsv, FaChevronDown } from "react-icons/fa";
 import Button from "../../components/Button";
 import "./DeviceToolbar.css";
 
 function DeviceToolbar({
   searchValue,
   onSearchChange,
-  typeFilter,
-  onTypeChange,
+  primaryTypeFilter,
+  onPrimaryTypeChange,
+  subTypeFilter,
+  onSubTypeChange,
   statusFilter,
   onStatusChange,
   onRegisterDevice,
   disableRegisterDevice,
-  onBulkImportHuman,
-  disableBulkImportHuman,
-  onBulkImportOther,
-  disableBulkImportOther,
-  deviceTypes = [],
+  onBulkImport,
+  disableBulkImport,
+  showBulkImportUser,
+  showBulkImportSmartDigital,
+  onExportCSV,
+  disableExportCSV,
+  primaryDeviceTypes = [],
+  subDeviceTypes = [],
   statusOptions = [],
   segment = "enterprise"
 }) {
+  const [showBulkImportMenu, setShowBulkImportMenu] = useState(false);
+  const bulkImportRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (bulkImportRef.current && !bulkImportRef.current.contains(event.target)) {
+        setShowBulkImportMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleBulkImportClick = (type) => {
+    setShowBulkImportMenu(false);
+    onBulkImport(type);
+  };
   return (
     <div className="device-toolbar-content">
       <div className="device-toolbar">
@@ -47,37 +70,67 @@ function DeviceToolbar({
               Register Device
             </Button>
 
-            {onBulkImportHuman && (
-              <Button
-                onClick={onBulkImportHuman}
-                variant="success"
-                disabled={disableBulkImportHuman}
-                title={
-                  disableBulkImportHuman
-                    ? "Permission required to bulk import human devices"
-                    : "Bulk import human devices from CSV"
-                }
-                aria-label="Bulk Import Human Devices"
-              >
-                <FaUpload style={{ marginRight: 6 }} />
-                Bulk Import Human
-              </Button>
+            {(showBulkImportUser || showBulkImportSmartDigital) && (
+              <div style={{ position: 'relative' }} ref={bulkImportRef}>
+                <Button
+                  onClick={() => setShowBulkImportMenu(!showBulkImportMenu)}
+                  variant="success"
+                  disabled={disableBulkImport}
+                  title={
+                    disableBulkImport
+                      ? "Permission required to bulk import devices"
+                      : "Bulk import devices from CSV"
+                  }
+                  aria-label="Bulk Import Devices"
+                  aria-haspopup="true"
+                  aria-expanded={showBulkImportMenu}
+                >
+                  <FaUpload style={{ marginRight: 6 }} />
+                  Bulk Import
+                  <FaChevronDown style={{ marginLeft: 6, fontSize: '0.75em' }} />
+                </Button>
+
+                {showBulkImportMenu && (
+                  <div className="bulk-import-dropdown">
+                    {showBulkImportUser && (
+                      <button
+                        className="bulk-import-option"
+                        onClick={() => handleBulkImportClick('userDevices')}
+                        aria-label="Bulk Import User Devices"
+                      >
+                        <FaUpload style={{ marginRight: 8 }} />
+                        User Devices
+                      </button>
+                    )}
+                    {showBulkImportSmartDigital && (
+                      <button
+                        className="bulk-import-option"
+                        onClick={() => handleBulkImportClick('smartDigitalDevices')}
+                        aria-label="Bulk Import Smart/Digital Devices"
+                      >
+                        <FaUpload style={{ marginRight: 8 }} />
+                        Smart/Digital Devices
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
             )}
 
-            {onBulkImportOther && (
+            {onExportCSV && (
               <Button
-                onClick={onBulkImportOther}
-                variant="success"
-                disabled={disableBulkImportOther}
+                onClick={onExportCSV}
+                variant="secondary"
+                disabled={disableExportCSV}
                 title={
-                  disableBulkImportOther
-                    ? "Permission required to bulk import other devices"
-                    : "Bulk import IoT and other devices from CSV"
+                  disableExportCSV
+                    ? "No devices to export"
+                    : "Export device list to CSV"
                 }
-                aria-label="Bulk Import Other Devices"
+                aria-label="Export Devices to CSV"
               >
-                <FaUpload style={{ marginRight: 6 }} />
-                Bulk Import Other
+                <FaFileCsv style={{ marginRight: 6 }} />
+                Export CSV
               </Button>
             )}
           </div>
@@ -93,11 +146,23 @@ function DeviceToolbar({
             />
             <select
               className="toolbar-select"
-              value={typeFilter}
-              onChange={onTypeChange}
-              aria-label="Filter by device type"
+              value={primaryTypeFilter}
+              onChange={onPrimaryTypeChange}
+              aria-label="Filter by primary device type"
             >
-              {deviceTypes.map((t) => (
+              {primaryDeviceTypes.map((t) => (
+                <option key={t.value} value={t.value}>
+                  {t.label}
+                </option>
+              ))}
+            </select>
+            <select
+              className="toolbar-select"
+              value={subTypeFilter}
+              onChange={onSubTypeChange}
+              aria-label="Filter by device sub-type"
+            >
+              {subDeviceTypes.map((t) => (
                 <option key={t.value} value={t.value}>
                   {t.label}
                 </option>
@@ -107,7 +172,7 @@ function DeviceToolbar({
               className="toolbar-select"
               value={statusFilter}
               onChange={onStatusChange}
-              aria-label="Filter by status"
+              aria-label="Filter by device status"
             >
               {statusOptions.map((s) => (
                 <option key={s.value} value={s.value}>

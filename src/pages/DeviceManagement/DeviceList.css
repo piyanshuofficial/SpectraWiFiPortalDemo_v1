@@ -213,9 +213,9 @@
 }
 
 .device-link {
-  color: #1687d9;
-  text-decoration: underline;
-  cursor: pointer;
+  color: #333;
+  text-decoration: none;
+  cursor: default;
 }
 
 .device-card-actions {

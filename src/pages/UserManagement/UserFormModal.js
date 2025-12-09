@@ -6,9 +6,11 @@ import Button from "../../components/Button";
 import ConfirmationModal from "../../components/ConfirmationModal";
 import { segmentFieldConfig } from "../../config/segmentFieldConfig";
 import siteConfig from "../../config/siteConfig";
+import SEGMENT_DEVICE_AVAILABILITY from "../../config/segmentDeviceConfig";
 import policyConfig from "../../config/policyConfig";
 import { isEmailValid, isRequired } from "../../utils/validationUtils";
 import notifications from "../../utils/notifications";
+import { checkLicenseAvailability, getLicenseSummary } from "../../utils/licenseUtils";
 import "./UserFormModal.css";
 import UserLicenseBar from '../../components/common/UserLicenseBar';
 import { DATE_TIME, DATA_LIMITS, ANIMATION } from '../../constants/appConstants';
@@ -60,42 +62,67 @@ const UserFormModal = ({
   segment,
   submitting = false
 }) => {
+  // Get site configuration for current segment
+  const siteSettings = useMemo(() => {
+    return siteConfig.segmentSites[segment] || {};
+  }, [segment]);
+
+  // Determine if site uses fixed bandwidth or user level policies
+  const isFixedBandwidthSite = siteSettings.bandwidthType === "fixed";
+  const maxBandwidth = siteSettings.maxBandwidth || 200;
+
   // Segment-specific cycle types
   const allowedCycleTypes = useMemo(() => {
+    // Use dataCycleType from site config if available
+    if (siteSettings.dataCycleType) {
+      return [siteSettings.dataCycleType];
+    }
     if (segment === "pg") {
       return ["Monthly"]; // PG only allows monthly
     } else if (segment === "miscellaneous") {
-      // Get from site config - configured during site provisioning
-      const miscConfig = siteConfig.segmentSites.miscellaneous;
-      const configuredType = miscConfig?.dataCycleType || "Monthly";
-      return [configuredType]; // Only the configured type
+      return ["Monthly"]; // Default for demo portal
     }
     return ["Daily", "Monthly"]; // Default for other segments
-  }, [segment]);
+  }, [segment, siteSettings]);
 
-  // Get site policies for current segment
-  const sitePolicies = useMemo(() => {
-    return siteConfig.segmentSites[segment]?.policies || [];
-  }, [segment]);
+  // Get user policies for current segment (for userLevel sites)
+  const userPolicies = useMemo(() => {
+    return siteSettings.userPolicies || [];
+  }, [siteSettings]);
 
-  // Get initial allowed options based on data cycle type
+  // Get initial allowed options based on site type and data cycle
   const allowedSpeeds = useMemo(() => {
-    if (!sitePolicies.length) return policyConfig.getSpeedOptions(allowedCycleTypes[0]);
-    const available = policyConfig.getAvailableOptionsFromPolicies(sitePolicies, allowedCycleTypes[0]);
+    if (isFixedBandwidthSite) {
+      // Fixed bandwidth: filter by maxBandwidth
+      return policyConfig.getSpeedOptionsWithMaxBandwidth(allowedCycleTypes[0], maxBandwidth);
+    }
+    // User level: get from userPolicies
+    if (!userPolicies.length) return policyConfig.getSpeedOptions(allowedCycleTypes[0]);
+    const available = policyConfig.getAvailableOptionsFromPolicies(userPolicies, allowedCycleTypes[0]);
     return available.speeds.length > 0 ? available.speeds : policyConfig.getSpeedOptions(allowedCycleTypes[0]);
-  }, [segment, sitePolicies, allowedCycleTypes]);
+  }, [isFixedBandwidthSite, maxBandwidth, userPolicies, allowedCycleTypes]);
 
   const allowedVolumes = useMemo(() => {
-    if (!sitePolicies.length) return policyConfig.getDataOptions(allowedCycleTypes[0]);
-    const available = policyConfig.getAvailableOptionsFromPolicies(sitePolicies, allowedCycleTypes[0]);
+    if (isFixedBandwidthSite) {
+      // Fixed bandwidth: all data options available
+      return policyConfig.getDataOptions(allowedCycleTypes[0]);
+    }
+    // User level: get from userPolicies
+    if (!userPolicies.length) return policyConfig.getDataOptions(allowedCycleTypes[0]);
+    const available = policyConfig.getAvailableOptionsFromPolicies(userPolicies, allowedCycleTypes[0]);
     return available.dataVolumes.length > 0 ? available.dataVolumes : policyConfig.getDataOptions(allowedCycleTypes[0]);
-  }, [segment, sitePolicies, allowedCycleTypes]);
+  }, [isFixedBandwidthSite, userPolicies, allowedCycleTypes]);
 
   const allowedDeviceCounts = useMemo(() => {
-    if (!sitePolicies.length) return policyConfig.getDeviceOptions();
-    const available = policyConfig.getAvailableOptionsFromPolicies(sitePolicies, allowedCycleTypes[0]);
+    if (isFixedBandwidthSite) {
+      // Fixed bandwidth: all device options available
+      return policyConfig.getDeviceOptions();
+    }
+    // User level: get from userPolicies
+    if (!userPolicies.length) return policyConfig.getDeviceOptions();
+    const available = policyConfig.getAvailableOptionsFromPolicies(userPolicies, allowedCycleTypes[0]);
     return available.deviceCounts.length > 0 ? available.deviceCounts : policyConfig.getDeviceOptions();
-  }, [segment, sitePolicies, allowedCycleTypes]);
+  }, [isFixedBandwidthSite, userPolicies, allowedCycleTypes]);
 
   // Determine if cycle type should be non-editable
   const isCycleTypeStatic = useMemo(() => {
@@ -145,34 +172,49 @@ const UserFormModal = ({
 
   // Dynamic filtering based on current selections and data cycle type
   const filteredSpeedOptions = useMemo(() => {
-    if (!sitePolicies.length) return policyConfig.getSpeedOptions(form.dataCycleType);
+    if (isFixedBandwidthSite) {
+      // Fixed bandwidth: filter by maxBandwidth only
+      return policyConfig.getSpeedOptionsWithMaxBandwidth(form.dataCycleType, maxBandwidth);
+    }
+    // User level: cascading filter based on current selections
+    if (!userPolicies.length) return policyConfig.getSpeedOptions(form.dataCycleType);
     const valid = policyConfig.getValidCombinations(
-      sitePolicies,
+      userPolicies,
       { speed: null, dataVolume: form.dataVolume, deviceCount: form.deviceLimit },
       form.dataCycleType
     );
     return valid.speeds.length > 0 ? valid.speeds : policyConfig.getSpeedOptions(form.dataCycleType);
-  }, [sitePolicies, form.dataCycleType, form.dataVolume, form.deviceLimit]);
+  }, [isFixedBandwidthSite, maxBandwidth, userPolicies, form.dataCycleType, form.dataVolume, form.deviceLimit]);
 
   const filteredDataOptions = useMemo(() => {
-    if (!sitePolicies.length) return policyConfig.getDataOptions(form.dataCycleType);
+    if (isFixedBandwidthSite) {
+      // Fixed bandwidth: all data options available
+      return policyConfig.getDataOptions(form.dataCycleType);
+    }
+    // User level: cascading filter based on current selections
+    if (!userPolicies.length) return policyConfig.getDataOptions(form.dataCycleType);
     const valid = policyConfig.getValidCombinations(
-      sitePolicies,
+      userPolicies,
       { speed: form.speed, dataVolume: null, deviceCount: form.deviceLimit },
       form.dataCycleType
     );
     return valid.dataVolumes.length > 0 ? valid.dataVolumes : policyConfig.getDataOptions(form.dataCycleType);
-  }, [sitePolicies, form.dataCycleType, form.speed, form.deviceLimit]);
+  }, [isFixedBandwidthSite, userPolicies, form.dataCycleType, form.speed, form.deviceLimit]);
 
   const filteredDeviceOptions = useMemo(() => {
-    if (!sitePolicies.length) return policyConfig.getDeviceOptions();
+    if (isFixedBandwidthSite) {
+      // Fixed bandwidth: all device options available
+      return policyConfig.getDeviceOptions();
+    }
+    // User level: cascading filter based on current selections
+    if (!userPolicies.length) return policyConfig.getDeviceOptions();
     const valid = policyConfig.getValidCombinations(
-      sitePolicies,
+      userPolicies,
       { speed: form.speed, dataVolume: form.dataVolume, deviceCount: null },
       form.dataCycleType
     );
     return valid.deviceCounts.length > 0 ? valid.deviceCounts : policyConfig.getDeviceOptions();
-  }, [sitePolicies, form.dataCycleType, form.speed, form.dataVolume]);
+  }, [isFixedBandwidthSite, userPolicies, form.dataCycleType, form.speed, form.dataVolume]);
 
   useEffect(() => {
     let mounted = true;
@@ -267,6 +309,14 @@ const UserFormModal = ({
   const isHotelMonthly = segment === "hotel" && form.dataCycleType === "Monthly";
   const isEmailRequired = EMAIL_REQUIRED_SEGMENTS[segment] ?? false;
 
+  // Field editability based on segment configuration
+  const segmentConfig = SEGMENT_DEVICE_AVAILABILITY[segment] || {};
+  const allowEmailEdit = segmentConfig.allowEmailEdit ?? true;
+  const allowMobileEdit = segmentConfig.allowMobileEdit ?? true;
+  // In edit mode, check if field is editable for this segment
+  const isEmailEditable = !user || allowEmailEdit;
+  const isMobileEditable = !user || allowMobileEdit;
+
   const validate = () => {
     const newErrors = {};
     if (!isRequired(form.id)) newErrors.id = "User ID is required.";
@@ -338,114 +388,90 @@ const UserFormModal = ({
 
   const handleSubmit = async e => {
     e.preventDefault();
-    
-    if (licensesFull && !user) {
-      notifications.licenseFull();
+
+    if (!validate()) {
+      notifications.validationError();
       return;
     }
-    
-    if (validate()) {
-      const userCategory = USER_CATEGORY_SEGMENT[segment] || "user";
 
-      // Generate policy ID from speed, data, and device selections
-      const policyId = policyConfig.generatePolicyId(
-        segment,
-        form.speed,
-        form.dataVolume,
-        form.deviceLimit,
-        form.dataCycleType
-      );
+    const userCategory = USER_CATEGORY_SEGMENT[segment] || "user";
 
-      const newUser = {
-        ...form,
-        policyId, // Include generated policy ID
-        status: "Active",
-        userCategory,
-        password: randomPassword(),
-      };
+    // Generate policy ID from speed, data, and device selections
+    // Include dataCycleType suffix for proper policy matching
+    const policyId = `${policyConfig.generatePolicyId(
+      segment,
+      form.speed,
+      form.dataVolume,
+      form.deviceLimit,
+      form.dataCycleType
+    )}_${form.dataCycleType}`;
 
-      // ========================================
-      // TODO: Backend Integration - User Creation/Update
-      // ========================================
-      // Before calling onSubmit, integrate with backend API
-      // 
-      // For NEW USER:
-      // 1. POST request to /api/users/create
-      // 2. Payload should include: user data, segment, siteId, policy details
-      // 3. Backend should:
-      //    - Create user in UMP (User Management Portal)
-      //    - Provision in AAA (Alepo) with generated password
-      //    - Update license count in database
-      //    - Create audit log entry
-      //    - Send welcome SMS/email with credentials
-      // 4. Response should include: userId, accountId, can_id, provision status
-      // 
-      // For UPDATE USER:
-      // 1. PUT request to /api/users/{userId}/update
-      // 2. Backend should:
-      //    - Update user details in UMP
-      //    - Sync changes to AAA system
-      //    - Update policy if changed (call Alepo API)
-      //    - Create audit log entry for changes
-      //    - Send notification if critical fields changed
-      // 3. Handle special cases:
-      //    - Check-in/Check-out date changes (schedule auto-deactivation)
-      //    - Policy changes (update AAA immediately)
-      //    - Segment-specific field updates
-      // 
-      // Error Handling:
-      // - Network failures: Retry logic with exponential backoff
-      // - Validation errors from backend: Display to user
-      // - AAA provisioning failures: Rollback UMP changes
-      // - License conflicts: Check availability before submit
-      // 
-      // Example API call structure:
-      // ```
-      // const apiEndpoint = user ? `/api/users/${user.id}` : '/api/users/create';
-      // const method = user ? 'PUT' : 'POST';
-      // const response = await fetch(apiEndpoint, {
-      //   method,
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({
-      //     ...newUser,
-      //     siteId: siteConfig.siteId,
-      //     segment,
-      //     action: user ? 'update' : 'create'
-      //   })
-      // });
-      // const result = await response.json();
-      // if (result.success) {
-      //   // Proceed with onSubmit
-      // }
-      // ```
-      // ========================================
+    // Check license availability (both overall and per-policy for userLevel sites)
+    const licenseCheck = checkLicenseAvailability(
+      segment,
+      policyId,
+      user?.id || null,
+      user?.policyId || null
+    );
 
-      // If updating existing user, show confirmation modal
-      if (user) {
-        setPendingUserData(newUser);
-        setShowUpdateConfirmation(true);
-        return;
-      }
-
-      // For new users, submit directly
-      await onSubmit(newUser);
-
-      // ========================================
-      // TODO: Backend Integration - Post-Submit Actions
-      // ========================================
-      // After successful user creation/update:
-      // 1. Update license count in real-time (WebSocket or polling)
-      // 2. Trigger background jobs:
-      //    - Auto-deactivation scheduling (if applicable)
-      //    - Welcome email/SMS queue
-      //    - Analytics tracking
-      // 3. Sync with external systems:
-      //    - Update CRM if integrated
-      //    - Push to monitoring dashboard
-      // ========================================
-    } else {
-      notifications.validationError();
+    if (!licenseCheck.available) {
+      notifications.showError(licenseCheck.error);
+      return;
     }
+
+    const newUser = {
+      ...form,
+      policyId, // Include generated policy ID
+      status: "Active",
+      userCategory,
+      password: randomPassword(),
+    };
+
+    // ========================================
+    // TODO: Backend Integration - User Creation/Update
+    // ========================================
+    // Before calling onSubmit, integrate with backend API
+    //
+    // For NEW USER:
+    // 1. POST request to /api/users/create
+    // 2. Payload should include: user data, segment, siteId, policy details
+    // 3. Backend should:
+    //    - Create user in UMP (User Management Portal)
+    //    - Provision in AAA (Alepo) with generated password
+    //    - Update license count in database
+    //    - Create audit log entry
+    //    - Send welcome SMS/email with credentials
+    // 4. Response should include: userId, accountId, can_id, provision status
+    //
+    // For UPDATE USER:
+    // 1. PUT request to /api/users/{userId}/update
+    // 2. Backend should:
+    //    - Update user details in UMP
+    //    - Sync changes to AAA system
+    //    - Update policy if changed (call Alepo API)
+    //    - Create audit log entry for changes
+    //    - Send notification if critical fields changed
+    // 3. Handle special cases:
+    //    - Check-in/Check-out date changes (schedule auto-deactivation)
+    //    - Policy changes (update AAA immediately)
+    //    - Segment-specific field updates
+    //
+    // Error Handling:
+    // - Network failures: Retry logic with exponential backoff
+    // - Validation errors from backend: Display to user
+    // - AAA provisioning failures: Rollback UMP changes
+    // - License conflicts: Check availability before submit
+    // ========================================
+
+    // If updating existing user, show confirmation modal
+    if (user) {
+      setPendingUserData(newUser);
+      setShowUpdateConfirmation(true);
+      return;
+    }
+
+    // For new users, submit directly
+    await onSubmit(newUser);
   };
 
   const handleConfirmUpdate = async () => {
@@ -537,17 +563,20 @@ const UserFormModal = ({
           </div>
 
           <div className="user-form-row">
-            <label htmlFor="mobile">Mobile <span className="required-asterisk">*</span></label>
-            <input 
-              id="mobile" 
-              name="mobile" 
-              value={form.mobile} 
-              onChange={handleChange} 
+            <label htmlFor="mobile">
+              Mobile <span className="required-asterisk">*</span>
+              {user && !allowMobileEdit && <span style={{ fontSize: '0.85em', color: '#666' }}> (Non-editable for this segment)</span>}
+            </label>
+            <input
+              id="mobile"
+              name="mobile"
+              value={form.mobile}
+              onChange={handleChange}
               className={errors.mobile ? 'error' : ''}
-              aria-invalid={!!errors.mobile} 
-              aria-describedby="mobile-error" 
-              required 
-              disabled={submitting}
+              aria-invalid={!!errors.mobile}
+              aria-describedby="mobile-error"
+              required
+              disabled={submitting || !isMobileEditable}
             />
             {errors.mobile && <div className="error-message" id="mobile-error" role="alert">{errors.mobile}</div>}
             {/* ========================================
@@ -562,17 +591,18 @@ const UserFormModal = ({
           <div className="user-form-row">
             <label htmlFor="email">
               Email{isEmailRequired && <span className="required-asterisk">*</span>}
+              {user && !allowEmailEdit && <span style={{ fontSize: '0.85em', color: '#666' }}> (Non-editable for this segment)</span>}
             </label>
-            <input 
-              id="email" 
-              name="email" 
-              value={form.email} 
-              onChange={handleChange} 
+            <input
+              id="email"
+              name="email"
+              value={form.email}
+              onChange={handleChange}
               className={errors.email ? 'error' : ''}
-              aria-invalid={!!errors.email} 
-              aria-describedby="email-error" 
-              required={isEmailRequired} 
-              disabled={submitting}
+              aria-invalid={!!errors.email}
+              aria-describedby="email-error"
+              required={isEmailRequired}
+              disabled={submitting || !isEmailEditable}
             />
             {errors.email && <div className="error-message" id="email-error" role="alert">{errors.email}</div>}
           </div>

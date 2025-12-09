@@ -301,14 +301,15 @@ export async function exportReportPDF({
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
   doc.setTextColor("#666");
-  const reportDate = new Date().toLocaleDateString("en-US", { 
-    year: "numeric", 
-    month: "long", 
-    day: "numeric" 
+  const reportDate = new Date().toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric"
   });
-  const reportTime = new Date().toLocaleTimeString("en-US", {
+  const reportTime = new Date().toLocaleTimeString("en-IN", {
     hour: "2-digit",
-    minute: "2-digit"
+    minute: "2-digit",
+    hour12: true
   });
   doc.text("Generated on " + reportDate + " at " + reportTime, pageWidth / 2, 140, { align: "center" });
 

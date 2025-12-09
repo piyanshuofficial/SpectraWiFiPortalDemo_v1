@@ -1,5 +1,11 @@
 /* src/pages/Dashboard.css */
 
+/* Dashboard Container - matches device-mgmt-main padding */
+.main-content[aria-label="Dashboard"] {
+  padding: 0 2rem 2rem 2rem;
+}
+
+/* Page Title - matches device-mgmt-title and user-management-title */
 .dashboard-title {
   font-size: var(--font-5xl);
   font-weight: 700;
@@ -7,13 +13,21 @@
   margin: 0.5rem 0 1.25rem 0.125rem;
 }
 
+[data-theme="dark"] .dashboard-title {
+  color: var(--color-text-primary);
+}
+
 .dashboard-section-title {
   font-size: var(--font-3xl);
   font-weight: 600;
   letter-spacing: 0.01em;
-  margin: 0.5rem 0 0.75rem 0.0625rem;
-  color: #233466;
+  margin: 0.5rem 0 0.75rem 0.125rem;
+  color: #153874;
   pointer-events: none;
+}
+
+[data-theme="dark"] .dashboard-section-title {
+  color: var(--color-text-primary);
 }
 
 .dashboard-cards {
@@ -39,14 +53,14 @@
 }
 
 .quick-action-card {
-  background: #fff;
+  background: var(--color-card-bg);
   border-radius: 0.625rem;
-  box-shadow: 0 0.0625rem 0.5rem rgba(30, 60, 120, 0.08);
+  box-shadow: var(--shadow-sm);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: box-shadow 0.15s, transform 0.12s, background 0.12s;
+  transition: box-shadow 0.15s, transform 0.12s, background var(--transition-base);
   min-width: 0;
   min-height: 5rem;
   height: 5rem;
@@ -59,9 +73,9 @@
 
 .quick-action-card:hover,
 .quick-action-card:focus {
-  box-shadow: 0 0.25rem 1rem rgba(0, 80, 180, 0.12), 0 0.0625rem 0.5rem rgba(30, 60, 120, 0.08);
+  box-shadow: var(--shadow-md);
   transform: translateY(-0.0625rem) scale(1.02);
-  background: #f6f8fc;
+  background: var(--color-bg-hover);
 }
 
 .quick-action-content {
@@ -74,19 +88,21 @@
 
 .quick-action-icon {
   font-size: 1.8rem;
-  color: #253272;
+  color: var(--color-accent);
   margin-bottom: 0.5rem;
   pointer-events: none;
+  transition: color var(--transition-base);
 }
 
 .quick-action-label {
   margin-top: 0;
   font-size: var(--font-sm);
   font-weight: 600;
-  color: #22274a;
+  color: var(--color-text-primary);
   text-align: center;
   letter-spacing: 0.01em;
   pointer-events: none;
+  transition: color var(--transition-base);
 }
 
 .Card {
@@ -95,11 +111,12 @@
   justify-content: space-between;
   padding: 1.125rem 1.25rem;
   border-radius: var(--radius-md);
-  background: var(--card-bg, #fff);
-  box-shadow: 0 0.0625rem 0.5rem rgba(0, 0, 0, 0.05);
+  background: var(--color-card-bg);
+  box-shadow: var(--shadow-sm);
   height: 100%;
   min-height: 6.25rem;
   pointer-events: auto;
+  transition: background-color var(--transition-base);
 }
 
 .Card .card-title,
@@ -107,7 +124,7 @@
 .Card .card-title * {
   font-size: var(--font-lg) !important;
   font-weight: 600 !important;
-  color: #173069 !important;
+  color: var(--color-text-primary) !important;
   margin-bottom: var(--space-xs);
   pointer-events: none;
 }
@@ -180,11 +197,11 @@
 
 .activity-item {
   padding: 0.5rem 0.75rem;
-  border-bottom: 0.0625rem solid var(--border-color, #e5e5e5);
+  border-bottom: 0.0625rem solid var(--color-border-light);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  color: var(--text-color, #333);
+  color: var(--color-text-primary);
   transition: background 0.15s ease;
   cursor: default;
   pointer-events: auto;
@@ -208,13 +225,13 @@
 .activity-text {
   flex: 1;
   font-size: var(--font-base);
-  color: var(--text-color, #333);
+  color: var(--color-text-primary);
   pointer-events: none;
 }
 
 .activity-time {
   font-style: italic;
-  color: var(--text-muted, #888);
+  color: var(--color-text-muted);
   margin-left: 0.5rem;
   font-size: var(--font-sm);
   white-space: nowrap;
@@ -222,12 +239,12 @@
 }
 
 .no-quick-actions {
-  background: #f8f9fa;
-  border: 0.0625rem dashed #ccc;
+  background: var(--color-bg-tertiary);
+  border: 0.0625rem dashed var(--color-border);
   border-radius: var(--radius-md);
   padding: 2.5rem 1.25rem;
   text-align: center;
-  color: #666;
+  color: var(--color-text-secondary);
   font-style: italic;
   width: 100%;
 }
@@ -253,11 +270,17 @@
   }
 }
 
+@media (max-width: 900px) {
+  .main-content[aria-label="Dashboard"] {
+    padding: 0 1rem 1.5rem 1rem;
+  }
+}
+
 @media (max-width: 800px) {
   .quick-actions-row {
     grid-template-columns: repeat(2, 1fr);
   }
-  
+
   .activity-item {
     flex-direction: column;
     align-items: flex-start;
@@ -270,8 +293,24 @@
   }
 }
 
+@media (max-width: 700px) {
+  .main-content[aria-label="Dashboard"] {
+    padding: 0 0.75rem 1.125rem 0.75rem;
+  }
+
+  .dashboard-title {
+    font-size: var(--font-4xl);
+  }
+}
+
 @media (max-width: 520px) {
   .quick-actions-row {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .main-content[aria-label="Dashboard"] {
+    padding: 0 0.5rem 1rem 0.5rem;
   }
 }

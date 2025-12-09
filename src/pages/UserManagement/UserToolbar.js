@@ -22,9 +22,9 @@ function UserToolbar({
   segment = "enterprise"
 }) {
 
-  const allowHuman = SEGMENTDEVICEAVAILABILITY[segment]?.allowHuman ?? false;
-  const allowNonHuman = SEGMENTDEVICEAVAILABILITY[segment]?.allowNonHuman ?? false;
-  const showAddDevice = allowHuman || allowNonHuman;
+  const allowUserDevices = SEGMENTDEVICEAVAILABILITY[segment]?.allowUserDevices ?? false;
+  const allowDigitalDevices = SEGMENTDEVICEAVAILABILITY[segment]?.allowDigitalDevices ?? false;
+  const showAddDevice = allowUserDevices || allowDigitalDevices;
 
   // ========================================
   // TODO: Backend Integration - Search Debouncing

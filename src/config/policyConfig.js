@@ -98,6 +98,7 @@ export const DEVICE_COUNT_OPTIONS = ["1", "2", "3", "4", "5"];
 
 export const SEGMENT_PREFIXES = {
   enterprise: "ENT",
+  office: "OFF",
   coLiving: "COL",
   coWorking: "COW",
   hotel: "HTL",
@@ -289,6 +290,26 @@ export const findPolicyId = (sitePolicies, speed, dataVolume, deviceCount, segme
 };
 
 /**
+ * Get speed options filtered by maximum bandwidth limit (for fixed bandwidth sites)
+ * @param {string} dataCycleType - "Daily" or "Monthly"
+ * @param {number} maxBandwidth - Maximum allowed bandwidth in Mbps
+ * @returns {Array<string>} Array of speed options <= maxBandwidth
+ */
+export const getSpeedOptionsWithMaxBandwidth = (dataCycleType, maxBandwidth) => {
+  const allSpeeds = getSpeedOptions(dataCycleType);
+
+  return allSpeeds.filter(speed => {
+    if (speed === "Unlimited") return true; // Unlimited is always allowed
+    const match = speed.match(/(\d+)\s*Mbps/);
+    if (match) {
+      const speedValue = parseInt(match[1], 10);
+      return speedValue <= maxBandwidth;
+    }
+    return true;
+  });
+};
+
+/**
  * Get valid combinations for selected values
  * When user selects speed, this returns valid data/device combinations
  * @param {Array<Object>} sitePolicies - Array of policy objects
@@ -361,6 +382,7 @@ export default {
   getSpeedOptions,
   getDataOptions,
   getDeviceOptions,
+  getSpeedOptionsWithMaxBandwidth,
   generatePolicyId,
   parsePolicyId,
   getAvailableOptionsFromPolicies,

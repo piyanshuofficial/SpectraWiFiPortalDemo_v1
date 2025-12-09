@@ -8,54 +8,59 @@ import {
   FaWifi,
   FaFileAlt,
   FaBook,
+  FaClipboardList,
   FaBars,
   FaTimes,
 } from "react-icons/fa";
 import { usePermissions } from "@hooks/usePermissions";
 import { preloadRoute } from "@config/routes";
+import { useTranslation } from "react-i18next";
 import logoMark from "@assets/images/spectra-logo-white.png";
 import "@components/Sidebar.css";
 
+// Sidebar items with translation keys
 const sidebarItems = [
-  { 
-    to: "/dashboard", 
-    icon: FaTachometerAlt, 
-    label: "Wi-Fi Dashboard", 
-    aria: "Wi-Fi Dashboard",
+  {
+    to: "/dashboard",
+    icon: FaTachometerAlt,
+    labelKey: "nav.dashboard",
     permission: "canViewReports"
   },
-  { 
-    to: "/users", 
-    icon: FaUsers, 
-    label: "User Management", 
-    aria: "User Management",
+  {
+    to: "/users",
+    icon: FaUsers,
+    labelKey: "nav.userManagement",
     permission: "canEditUsers"
   },
-  { 
-    to: "/devices", 
-    icon: FaWifi, 
-    label: "Device Management", 
-    aria: "Device Management",
+  {
+    to: "/devices",
+    icon: FaWifi,
+    labelKey: "nav.deviceManagement",
     permission: "canManageDevices"
   },
-  { 
-    to: "/reports", 
-    icon: FaFileAlt, 
-    label: "Reporting", 
-    aria: "Reporting",
+  {
+    to: "/reports",
+    icon: FaFileAlt,
+    labelKey: "nav.reporting",
     permission: "canViewReports"
   },
-  { 
-    to: "/knowledge", 
-    icon: FaBook, 
-    label: "Knowledge Center", 
-    aria: "Knowledge Center",
+  {
+    to: "/knowledge",
+    icon: FaBook,
+    labelKey: "nav.knowledgeCenter",
     permission: "canViewReports"
+  },
+  {
+    to: "/logs",
+    icon: FaClipboardList,
+    labelKey: "nav.activityLogs",
+    permission: "canViewLogs"
   },
 ];
 
 const Sidebar = () => {
   const { hasPermission } = usePermissions();
+  const { t } = useTranslation();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -191,7 +196,7 @@ const Sidebar = () => {
         </div>
         <nav aria-label="Main navigation">
           <ul className="sidebar-nav">
-            {accessibleItems.map(({ to, icon: Icon, label, aria }) => (
+            {accessibleItems.map(({ to, icon: Icon, labelKey }) => (
               <li key={to} className="sidebar-nav-li">
                 <NavLink
                   to={to}
@@ -199,7 +204,7 @@ const Sidebar = () => {
                     "sidebar-nav-item" + (isActive ? " active-link" : "")
                   }
                   aria-current={({ isActive }) => (isActive ? "page" : undefined)}
-                  aria-label={aria}
+                  aria-label={t(labelKey)}
                   onMouseEnter={() => handleMouseEnter(to)}
                   onFocus={() => handleMouseEnter(to)}
                   onClick={closeMobileMenu}
@@ -207,7 +212,7 @@ const Sidebar = () => {
                   <span className="sidebar-nav-icon" aria-hidden="true">
                     <Icon />
                   </span>
-                  <span className="sidebar-nav-label">{label}</span>
+                  <span className="sidebar-nav-label">{t(labelKey)}</span>
                 </NavLink>
               </li>
             ))}

@@ -19,6 +19,13 @@ export const useSegmentActivities = () => {
         { text: "Network health check passed for all access points", time: "3 hours ago" },
         { text: "Security policy updated for corporate WiFi", time: "4 hours ago" },
       ],
+      office: [
+        { text: "User 'Srinivas Reddy' connected from Hyderabad Tech Park", time: "8 mins ago" },
+        { text: "New employee 'Priya Venkat' onboarded successfully", time: "45 mins ago" },
+        { text: "Conference room WiFi bandwidth optimized", time: "1 hour ago" },
+        { text: "Device 'Dell Latitude' registered for IT team", time: "2 hours ago" },
+        { text: "Monthly usage report generated for Office users", time: "3 hours ago" },
+      ],
       coLiving: [
         { text: "New resident 'Priya Sharma' registered in Building A", time: "15 mins ago" },
         { text: "Device 'MacBook Pro' connected to common area WiFi", time: "30 mins ago" },

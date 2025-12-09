@@ -8,6 +8,10 @@ import { AuthProvider } from './context/AuthContext';
 import { UserProvider } from './context/UserContext';
 import { LoadingProvider } from './context/LoadingContext';
 import { SegmentProvider } from './context/SegmentContext';
+import { ThemeProvider } from './context/ThemeContext';
+
+// Initialize i18n before App
+import './i18n';
 
 // Initialize Chart.js configuration globally
 import './config/chartConfig';
@@ -15,14 +19,16 @@ import './config/chartConfig';
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <AuthProvider>
-      <SegmentProvider>
-        <UserProvider>
-          <LoadingProvider>
-            <App />
-          </LoadingProvider>
-        </UserProvider>
-      </SegmentProvider>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <SegmentProvider>
+          <UserProvider>
+            <LoadingProvider>
+              <App />
+            </LoadingProvider>
+          </UserProvider>
+        </SegmentProvider>
+      </AuthProvider>
+    </ThemeProvider>
   </React.StrictMode>
 );

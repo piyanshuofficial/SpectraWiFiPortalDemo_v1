@@ -42,6 +42,7 @@ export const Permissions = {
       canManageBilling: false,
       canConfigureSystem: false,
       canManageRoles: false,
+      canViewLogs: true,
     },
     [Roles.MANAGER]: {
       canEditUsers: true,
@@ -55,6 +56,7 @@ export const Permissions = {
       canManageBilling: false,
       canConfigureSystem: false,
       canManageRoles: false,
+      canViewLogs: true,
     },
     [Roles.USER]: {
       canEditUsers: false,
@@ -68,6 +70,7 @@ export const Permissions = {
       canManageBilling: false,
       canConfigureSystem: false,
       canManageRoles: false,
+      canViewLogs: false,
     },
     [Roles.VIEWER]: {
       canEditUsers: false,
@@ -81,6 +84,7 @@ export const Permissions = {
       canManageBilling: false,
       canConfigureSystem: false,
       canManageRoles: false,
+      canViewLogs: false,
     },
   },
 
@@ -98,6 +102,7 @@ export const Permissions = {
       canManageBilling: false,
       canConfigureSystem: false,
       canManageRoles: false,
+      canViewLogs: true,
     },
     [Roles.MANAGER]: {
       canEditUsers: true,
@@ -111,6 +116,7 @@ export const Permissions = {
       canManageBilling: false,
       canConfigureSystem: false,
       canManageRoles: false,
+      canViewLogs: true,
     },
     [Roles.USER]: {
       canEditUsers: false,
@@ -124,6 +130,7 @@ export const Permissions = {
       canManageBilling: false,
       canConfigureSystem: false,
       canManageRoles: false,
+      canViewLogs: false,
     },
     [Roles.VIEWER]: {
       canEditUsers: false,
@@ -137,6 +144,7 @@ export const Permissions = {
       canManageBilling: false,
       canConfigureSystem: false,
       canManageRoles: false,
+      canViewLogs: false,
     },
   },
 
@@ -154,6 +162,7 @@ export const Permissions = {
       canManageBilling: true,
       canConfigureSystem: false,
       canManageRoles: true,
+      canViewLogs: true,
     },
     [Roles.MANAGER]: {
       canEditUsers: true,
@@ -167,6 +176,7 @@ export const Permissions = {
       canManageBilling: false,
       canConfigureSystem: false,
       canManageRoles: false,
+      canViewLogs: true,
     },
     [Roles.USER]: {
       canEditUsers: false,
@@ -180,6 +190,7 @@ export const Permissions = {
       canManageBilling: false,
       canConfigureSystem: false,
       canManageRoles: false,
+      canViewLogs: false,
     },
     [Roles.VIEWER]: {
       canEditUsers: false,
@@ -193,6 +204,7 @@ export const Permissions = {
       canManageBilling: false,
       canConfigureSystem: false,
       canManageRoles: false,
+      canViewLogs: false,
     },
   },
 
@@ -210,6 +222,7 @@ export const Permissions = {
       canManageBilling: true,
       canConfigureSystem: true,
       canManageRoles: true,
+      canViewLogs: true,
     },
     [Roles.MANAGER]: {
       canEditUsers: true,
@@ -223,6 +236,7 @@ export const Permissions = {
       canManageBilling: true,
       canConfigureSystem: false,
       canManageRoles: false,
+      canViewLogs: true,
     },
     [Roles.USER]: {
       canEditUsers: false,
@@ -236,6 +250,7 @@ export const Permissions = {
       canManageBilling: false,
       canConfigureSystem: false,
       canManageRoles: false,
+      canViewLogs: false,
     },
     [Roles.VIEWER]: {
       canEditUsers: false,
@@ -249,6 +264,7 @@ export const Permissions = {
       canManageBilling: false,
       canConfigureSystem: false,
       canManageRoles: false,
+      canViewLogs: false,
     },
   },
 
@@ -266,6 +282,7 @@ export const Permissions = {
       canManageBilling: true,
       canConfigureSystem: true,
       canManageRoles: true,
+      canViewLogs: true,
     },
     [Roles.MANAGER]: {
       canEditUsers: true,
@@ -279,6 +296,7 @@ export const Permissions = {
       canManageBilling: true,
       canConfigureSystem: false,
       canManageRoles: true,
+      canViewLogs: true,
     },
     [Roles.USER]: {
       canEditUsers: false,
@@ -292,6 +310,7 @@ export const Permissions = {
       canManageBilling: false,
       canConfigureSystem: false,
       canManageRoles: false,
+      canViewLogs: false,
     },
     [Roles.VIEWER]: {
       canEditUsers: false,
@@ -305,6 +324,7 @@ export const Permissions = {
       canManageBilling: false,
       canConfigureSystem: false,
       canManageRoles: false,
+      canViewLogs: false,
     },
   },
 };

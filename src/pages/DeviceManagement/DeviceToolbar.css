@@ -75,6 +75,42 @@
   cursor: pointer;
 }
 
+/* Bulk Import Dropdown */
+.bulk-import-dropdown {
+  position: absolute;
+  top: calc(100% + 0.25rem);
+  left: 0;
+  background: white;
+  border: 0.0625rem solid #dadbe7;
+  border-radius: var(--radius-base);
+  box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.1);
+  z-index: 10;
+  min-width: 12.5rem;
+  overflow: hidden;
+}
+
+.bulk-import-option {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  background: white;
+  border: none;
+  font-size: var(--font-sm);
+  color: #333;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  text-align: left;
+}
+
+.bulk-import-option:hover {
+  background: #f0f4f8;
+}
+
+.bulk-import-option:active {
+  background: #e3eaf1;
+}
+
 @media (max-width: 900px) {
   .device-toolbar-content {
     flex-direction: column;

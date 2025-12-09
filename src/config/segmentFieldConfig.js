@@ -6,6 +6,11 @@ export const segmentFieldConfig = {
     { name: "department", label: "Department", type: "text", required: false },
     { name: "title", label: "Job Title", type: "text", required: false },
   ],
+  office: [
+    { name: "employeeId", label: "Employee ID", type: "text", required: false },
+    { name: "department", label: "Department", type: "text", required: false },
+    { name: "designation", label: "Designation", type: "text", required: false },
+  ],
   coLiving: [
   //  { name: "residentType", label: "Resident Type", type: "select", required: true, options: ["Long-Term", "Short-Term"] },
     { name: "roomNumber", label: "Room Number", type: "text", required: false },

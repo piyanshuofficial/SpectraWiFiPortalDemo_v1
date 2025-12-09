@@ -1,6 +1,7 @@
 // src/pages/UserManagement/UserList.js
 
 import React, { useState, useMemo, useEffect, useCallback } from "react";
+import { useTranslation } from 'react-i18next';
 import UserFormModal from "./UserFormModal";
 import UserToolbar from "./UserToolbar";
 import UserDetailsModal from "./UserDetailsModal";
@@ -165,9 +166,9 @@ const UserList = () => {
   const [showDeviceModal, setShowDeviceModal] = useState(false);
 
   const segmentDeviceConfig = SEGMENT_DEVICE_AVAILABILITY[segmentFilter] || {};
-  const allowHuman = segmentDeviceConfig.allowHuman ?? false;
-  const allowNonHuman = segmentDeviceConfig.allowNonHuman ?? false;
-  const showAddDevice = allowHuman || allowNonHuman;
+  const allowUserDevices = segmentDeviceConfig.allowUserDevices ?? false;
+  const allowDigitalDevices = segmentDeviceConfig.allowDigitalDevices ?? false;
+  const showAddDevice = allowUserDevices || allowDigitalDevices;
 
   const columns = useMemo(() => {
     const segmentCols = segmentSpecificFields[segmentFilter] || [];

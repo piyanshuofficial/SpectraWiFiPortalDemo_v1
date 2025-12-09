@@ -17,6 +17,7 @@ import LoadingOverlay from "../../components/Loading/LoadingOverlay";
 import SkeletonLoader from "../../components/Loading/SkeletonLoader";
 import ConfirmationModal from "../../components/ConfirmationModal";
 import notifications from "../../utils/notifications";
+import { exportChartDataToCSV } from "../../utils/exportUtils";
 import "./DeviceList.css";
 import { PAGINATION } from "../../constants/appConstants";
 import SEGMENT_DEVICE_AVAILABILITY from "../../config/segmentDeviceConfig";
@@ -88,7 +89,7 @@ const DeviceCard = React.memo(({
           <span className="device-link">{device.lastUsageDate}</span>
         </span>
         <span>
-          Data Usage:{" "}
+          Data Usage (Current Session):{" "}
           <span className="device-link">{device.dataUsage}</span>
         </span>
       </div>
@@ -147,13 +148,13 @@ const DeviceList = () => {
   const { hasPermission } = usePermissions();
   const { isLoading } = useLoading();
   const { currentSegment } = useSegment();
-  const { canBulkAddHumanDevices, canBulkAddOtherDevices } = useBulkOperations();
+  const { canBulkAddUserDevices, canBulkAddSmartDigitalDevices } = useBulkOperations();
 
   const [devices, setDevices] = useState([]);
   const [showDeviceModal, setShowDeviceModal] = useState(false);
   const [editingDevice, setEditingDevice] = useState(null);
   const [showBulkImportModal, setShowBulkImportModal] = useState(false);
-  const [bulkImportType, setBulkImportType] = useState(null); // 'humanDevices' or 'otherDevices'
+  const [bulkImportType, setBulkImportType] = useState(null); // 'userDevices' or 'smartDigitalDevices'
   const [initialLoad, setInitialLoad] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [disconnectingDeviceId, setDisconnectingDeviceId] = useState(null);
@@ -175,11 +176,11 @@ const DeviceList = () => {
   } = useTableState(PAGINATION.DEVICE_LIST_DEFAULT);
 
   const segmentDeviceConfig = SEGMENT_DEVICE_AVAILABILITY[segmentFilter] || {};
-  const allowHuman = segmentDeviceConfig.allowHuman ?? false;
-  const allowNonHuman = segmentDeviceConfig.allowNonHuman ?? false;
+  const allowUserDevices = segmentDeviceConfig.allowUserDevices ?? false;
+  const allowDigitalDevices = segmentDeviceConfig.allowDigitalDevices ?? false;
   const allowDeviceEdit = segmentDeviceConfig.allowDeviceEdit ?? false;
   const allowDeviceDelete = segmentDeviceConfig.allowDeviceDelete ?? false;
-  const showRegisterDevice = allowHuman || allowNonHuman;
+  const showRegisterDevice = allowUserDevices || allowDigitalDevices;
 
   const hasDevicePermission = hasPermission('canManageDevices');
   const canRegisterDevice = hasDevicePermission && showRegisterDevice;
@@ -194,18 +195,37 @@ const DeviceList = () => {
     return new Set(segmentUsers.map(user => user.id));
   }, [segmentUsers]);
 
-  const deviceFilterFunction = useCallback((device, { searchTerm = '', typeFilter = 'all', statusFilter = 'all' }) => {
+  const deviceFilterFunction = useCallback((device, { searchTerm = '', primaryTypeFilter = 'all', subTypeFilter = 'all', statusFilter = 'all' }) => {
     if (!segmentUserIds.has(device.userId)) return false;
-    if (typeFilter && typeFilter !== "all" && device.type !== typeFilter) return false;
+
+    // Primary type filter (User Devices vs Smart/Digital Devices)
+    if (primaryTypeFilter && primaryTypeFilter !== "all") {
+      const userDeviceCategories = ['Mobile', 'Laptop', 'Tablet', 'iPad', 'Smart Speaker', 'Miscellaneous'];
+      const isUserDevice = userDeviceCategories.some(cat =>
+        device.category && device.category.toLowerCase().includes(cat.toLowerCase())
+      );
+
+      if (primaryTypeFilter === "user" && !isUserDevice) return false;
+      if (primaryTypeFilter === "smartDigital" && isUserDevice) return false;
+    }
+
+    // Sub-type filter (specific device type)
+    if (subTypeFilter && subTypeFilter !== "all" && device.type !== subTypeFilter) return false;
+
+    // Status filter
     if (statusFilter === "online" && !device.online) return false;
+    if (statusFilter === "offline" && device.online) return false;
     if (statusFilter === "blocked" && device.blocked !== true) return false;
+
+    // Search term filter
     if (searchTerm) {
       const searchLower = searchTerm.toLowerCase();
       if (
         !(
           device.name.toLowerCase().includes(searchLower) ||
           device.mac.toLowerCase().includes(searchLower) ||
-          device.owner.toLowerCase().includes(searchLower)
+          device.owner.toLowerCase().includes(searchLower) ||
+          (device.category && device.category.toLowerCase().includes(searchLower))
         )
       ) {
         return false;
@@ -222,7 +242,8 @@ const DeviceList = () => {
     setFilter
   } = useFilter(devices, deviceFilterFunction);
 
-  const typeFilter = filters.typeFilter || "all";
+  const primaryTypeFilter = filters.primaryTypeFilter || "all";
+  const subTypeFilter = filters.subTypeFilter || "all";
   const statusFilter = filters.statusFilter || "all";
 
   const segmentDeviceStats = useMemo(() => {
@@ -258,16 +279,43 @@ const DeviceList = () => {
     ];
   }, [devices, segmentUserIds]);
 
-  const deviceTypes = useMemo(() => [
-    { value: "all", label: "All Device Types" },
-    { value: "mobile", label: "Mobile/Phone" },
-    { value: "tablet", label: "Tablet" },
-    { value: "laptop", label: "Laptop" }
-  ], []);
+  // Primary device types - dynamic based on segment configuration
+  const primaryDeviceTypes = useMemo(() => {
+    const types = [{ value: "all", label: "All Device Types" }];
+
+    // Only show User Devices option if segment allows user devices
+    if (allowUserDevices) {
+      types.push({ value: "user", label: "User Devices" });
+    }
+
+    // Only show Smart/Digital Devices option if segment allows digital devices
+    if (allowDigitalDevices) {
+      types.push({ value: "smartDigital", label: "Smart/Digital Devices" });
+    }
+
+    return types;
+  }, [allowUserDevices, allowDigitalDevices]);
+
+  // Get segment-specific device subtypes from config
+  const subDeviceTypes = useMemo(() => {
+    let baseOptions = [{ value: "all", label: "All Sub-Types" }];
+
+    if (primaryTypeFilter === "user") {
+      // Use segment-specific user device subtypes from config
+      const userSubTypes = segmentDeviceConfig.userDeviceSubtypes || [];
+      return [...baseOptions, ...userSubTypes];
+    } else if (primaryTypeFilter === "smartDigital") {
+      // Use segment-specific smart/digital device subtypes from config
+      const smartDigitalSubTypes = segmentDeviceConfig.smartDigitalSubtypes || [];
+      return [...baseOptions, ...smartDigitalSubTypes];
+    }
+    return baseOptions;
+  }, [primaryTypeFilter, segmentDeviceConfig]);
 
   const statusOptions = useMemo(() => [
     { value: "all", label: "All Status" },
     { value: "online", label: "Online" },
+    { value: "offline", label: "Offline" },
     { value: "blocked", label: "Blocked" }
   ], []);
 
@@ -534,7 +582,7 @@ const DeviceList = () => {
 
   useEffect(() => {
     resetToPage1();
-  }, [typeFilter, statusFilter, searchTerm, rowsPerPage, segmentFilter, resetToPage1]);
+  }, [primaryTypeFilter, subTypeFilter, statusFilter, searchTerm, rowsPerPage, segmentFilter, resetToPage1]);
 
   const handleDeviceSubmit = useCallback(async (deviceInfo) => {
     setSubmitting(true);
@@ -857,12 +905,12 @@ const DeviceList = () => {
    */
   const handleBulkImportDevices = useCallback((importedDevices) => {
     try {
-      const isHumanDevice = bulkImportType === 'humanDevices';
+      const isUserDevice = bulkImportType === 'userDevices';
 
       // Generate new device entries
       const newDevices = importedDevices.map((deviceData, index) => {
-        if (isHumanDevice) {
-          // Human device mapping
+        if (isUserDevice) {
+          // User device mapping
           return {
             id: `HD${Date.now()}${index}`,
             name: `${deviceData.deviceType}-${deviceData.assignedUserId}`,
@@ -877,13 +925,13 @@ const DeviceList = () => {
             online: true,
             blocked: false,
             segment: segmentFilter,
-            deviceType: 'human',
+            deviceType: 'user',
             assignedUserId: deviceData.assignedUserId,
             priority: deviceData.priority || 'medium',
             notes: deviceData.notes || ''
           };
         } else {
-          // Other device mapping
+          // Smart/Digital device mapping
           return {
             id: `OD${Date.now()}${index}`,
             name: deviceData.deviceName,
@@ -897,7 +945,7 @@ const DeviceList = () => {
             online: deviceData.status === 'active',
             blocked: deviceData.status === 'blocked',
             segment: segmentFilter,
-            deviceType: 'other',
+            deviceType: 'smartDigital',
             manufacturer: deviceData.manufacturer || '',
             location: deviceData.location || '',
             status: deviceData.status || 'active',
@@ -910,7 +958,7 @@ const DeviceList = () => {
       setDevices(prevDevices => [...newDevices, ...prevDevices]);
 
       // Show success notification
-      const deviceTypeLabel = isHumanDevice ? 'human device' : 'other device';
+      const deviceTypeLabel = isUserDevice ? 'user device' : 'smart/digital device';
       notifications.success(`Successfully imported ${newDevices.length} ${deviceTypeLabel}${newDevices.length > 1 ? 's' : ''}`);
 
       // Close modal and reset type
@@ -938,40 +986,74 @@ const DeviceList = () => {
   }, [bulkImportType, segmentFilter]);
 
   /**
-   * Open bulk import modal for human devices
+   * Handle bulk import with type selection
    */
-  const handleBulkImportHumanDevices = useCallback(() => {
+  const handleBulkImport = useCallback((type) => {
     if (!hasDevicePermission) {
       notifications.noPermission("import devices");
       return;
     }
 
-    if (!canBulkAddHumanDevices) {
-      notifications.showError(`Bulk import of human devices is not available for ${segmentFilter} segment.`);
+    if (type === 'userDevices' && !canBulkAddUserDevices) {
+      notifications.showError(`Bulk import of user devices is not available for ${segmentFilter} segment.`);
       return;
     }
 
-    setBulkImportType('humanDevices');
+    if (type === 'smartDigitalDevices' && !canBulkAddSmartDigitalDevices) {
+      notifications.showError(`Bulk import of smart/digital devices is not available for ${segmentFilter} segment.`);
+      return;
+    }
+
+    setBulkImportType(type);
     setShowBulkImportModal(true);
-  }, [hasDevicePermission, canBulkAddHumanDevices, segmentFilter]);
+  }, [hasDevicePermission, canBulkAddUserDevices, canBulkAddSmartDigitalDevices, segmentFilter]);
 
   /**
-   * Open bulk import modal for other devices
+   * Export device list to CSV
    */
-  const handleBulkImportOtherDevices = useCallback(() => {
-    if (!hasDevicePermission) {
-      notifications.noPermission("import devices");
+  const handleExportCSV = useCallback(() => {
+    if (!filteredDevices || filteredDevices.length === 0) {
+      notifications.showError('No devices to export');
       return;
     }
 
-    if (!canBulkAddOtherDevices) {
-      notifications.showError(`Bulk import of other devices is not available for ${segmentFilter} segment.`);
-      return;
-    }
+    try {
+      // Prepare CSV headers
+      const headers = [
+        'Device Name',
+        'MAC Address',
+        'Owner',
+        'Category',
+        'IP Address',
+        'Status',
+        'Last Connected',
+        'Data Usage (Current Session)'
+      ];
 
-    setBulkImportType('otherDevices');
-    setShowBulkImportModal(true);
-  }, [hasDevicePermission, canBulkAddOtherDevices, segmentFilter]);
+      // Prepare CSV rows
+      const rows = filteredDevices.map(device => [
+        device.name || '',
+        device.mac || '',
+        device.owner || '',
+        device.category || '',
+        device.ip || '',
+        device.online ? 'Online' : (device.blocked ? 'Blocked' : 'Offline'),
+        device.lastUsageDate || '',
+        device.dataUsage || ''
+      ]);
+
+      // Generate filename with timestamp
+      const timestamp = new Date().toISOString().split('T')[0];
+      const filename = `devices_${segmentFilter}_${timestamp}.csv`;
+
+      // Export to CSV
+      exportChartDataToCSV({ headers, rows }, filename);
+      notifications.exportSuccess('CSV');
+    } catch (error) {
+      console.error('Export failed:', error);
+      notifications.exportFailed('CSV');
+    }
+  }, [filteredDevices, segmentFilter]);
 
   if (initialLoad) {
     return (
@@ -1014,17 +1096,25 @@ const DeviceList = () => {
       <DeviceToolbar
         searchValue={searchTerm}
         onSearchChange={e => setSearchTerm(e.target.value)}
-        typeFilter={typeFilter}
-        onTypeChange={e => setFilter('typeFilter', e.target.value)}
+        primaryTypeFilter={primaryTypeFilter}
+        onPrimaryTypeChange={e => {
+          setFilter('primaryTypeFilter', e.target.value);
+          setFilter('subTypeFilter', 'all'); // Reset sub-type when primary changes
+        }}
+        subTypeFilter={subTypeFilter}
+        onSubTypeChange={e => setFilter('subTypeFilter', e.target.value)}
         statusFilter={statusFilter}
         onStatusChange={e => setFilter('statusFilter', e.target.value)}
         onRegisterDevice={handleRegisterDeviceClick}
         disableRegisterDevice={!canRegisterDevice || isLoading('devices') || submitting}
-        onBulkImportHuman={canBulkAddHumanDevices ? handleBulkImportHumanDevices : undefined}
-        disableBulkImportHuman={!hasDevicePermission || isLoading('devices') || submitting}
-        onBulkImportOther={canBulkAddOtherDevices ? handleBulkImportOtherDevices : undefined}
-        disableBulkImportOther={!hasDevicePermission || isLoading('devices') || submitting}
-        deviceTypes={deviceTypes}
+        onBulkImport={handleBulkImport}
+        disableBulkImport={!hasDevicePermission || isLoading('devices') || submitting}
+        showBulkImportUser={canBulkAddUserDevices}
+        showBulkImportSmartDigital={canBulkAddSmartDigitalDevices}
+        onExportCSV={handleExportCSV}
+        disableExportCSV={!filteredDevices || filteredDevices.length === 0}
+        primaryDeviceTypes={primaryDeviceTypes}
+        subDeviceTypes={subDeviceTypes}
         statusOptions={statusOptions}
         segment={segmentFilter}
       />

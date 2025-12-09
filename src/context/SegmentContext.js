@@ -6,6 +6,7 @@ const SegmentContext = createContext();
 
 export const SEGMENTS = {
   ENTERPRISE: "enterprise",
+  OFFICE: "office",
   CO_LIVING: "coLiving",
   CO_WORKING: "coWorking",
   HOTEL: "hotel",
@@ -15,6 +16,7 @@ export const SEGMENTS = {
 
 export const SEGMENT_LABELS = {
   [SEGMENTS.ENTERPRISE]: "Enterprise",
+  [SEGMENTS.OFFICE]: "Office",
   [SEGMENTS.CO_LIVING]: "Co-Living",
   [SEGMENTS.CO_WORKING]: "Co-Working",
   [SEGMENTS.HOTEL]: "Hotel",

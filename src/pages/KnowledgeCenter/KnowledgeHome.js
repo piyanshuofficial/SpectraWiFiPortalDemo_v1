@@ -60,6 +60,11 @@ const KnowledgeHome = () => {
             helpSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
           }
         }, ANIMATION.SCROLL_DELAY);
+
+        // Auto-remove highlight after 3 seconds
+        setTimeout(() => {
+          setSupportHighlight(false);
+        }, 3000);
       }
     };
     window.addEventListener('triggerSupportHighlight', handler);
@@ -71,6 +76,11 @@ const KnowledgeHome = () => {
           helpSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
       }, 60);
+
+      // Auto-remove highlight after 3 seconds
+      setTimeout(() => {
+        setSupportHighlight(false);
+      }, 3000);
     }
 
     return () => window.removeEventListener('triggerSupportHighlight', handler);
@@ -154,7 +164,7 @@ const KnowledgeHome = () => {
       id: 'device-registration',
       category: 'Device Management',
       title: 'Device Registration',
-      description: 'Register new devices with MAC address binding, assign devices to users, and configure human vs non-human device types'
+      description: 'Register new devices with MAC address binding, assign devices to users, and configure user vs digital device types'
     },
     {
       id: 'device-registration', // Reuse existing article
@@ -304,7 +314,7 @@ const KnowledgeHome = () => {
       id: 'device-registration',
       category: 'Device Management',
       title: 'Resident Device Registration',
-      description: 'Allow residents to self-register smartphones, laptops, smart TVs, and streaming devices with automated MAC binding'
+      description: 'Allow residents to self-register mobile phones, laptops, smart TVs, and streaming devices with automated MAC binding'
     },
     {
       id: 'device-registration',
@@ -600,7 +610,7 @@ const KnowledgeHome = () => {
       id: 'device-registration',
       category: 'Device Management',
       title: 'Device Registration',
-      description: 'Register new devices with MAC address binding, assign devices to users, and configure human vs non-human device types'
+      description: 'Register new devices with MAC address binding, assign devices to users, and configure user vs digital device types'
     },
     {
       id: 'dashboard-overview',
@@ -672,13 +682,13 @@ const KnowledgeHome = () => {
       id: 'faq-5',
       category: 'Device Registration',
       question: 'How do I register a new device?',
-      answer: 'Go to Device Management, click "Register Device", enter the MAC address, select device type (Human/Non-Human), choose owner from the user list, optionally enter a device name, and click "Register". The device will be bound to the user account.'
+      answer: 'Go to Device Management, click "Register Device", enter the MAC address, select device type (User/Digital), choose owner from the user list, optionally enter a device name, and click "Register". The device will be bound to the user account.'
     },
     {
       id: 'faq-6',
       category: 'Device Registration',
-      question: 'What is the difference between Human and Non-Human devices?',
-      answer: 'Human devices are user-operated devices like smartphones, laptops, and tablets. Non-Human devices are IoT devices, smart TVs, printers, and other automated devices. Some segments restrict certain device types for security and performance reasons.'
+      question: 'What is the difference between User and Digital devices?',
+      answer: 'User devices are user-operated devices like mobile phones, laptops, and tablets. Digital devices are IoT devices, smart TVs, printers, and other automated devices. Some segments restrict certain device types for security and performance reasons.'
     },
     {
       id: 'faq-7',
@@ -702,7 +712,7 @@ const KnowledgeHome = () => {
       id: 'faq-10',
       category: 'Troubleshooting',
       question: 'Device registration fails with MAC address error?',
-      answer: 'Ensure MAC address format is correct (XX:XX:XX:XX:XX:XX or XX-XX-XX-XX-XX-XX). Check that the MAC address is not already registered. Verify device type is allowed for the user\'s segment. Some segments restrict non-human devices.'
+      answer: 'Ensure MAC address format is correct (XX:XX:XX:XX:XX:XX or XX-XX-XX-XX-XX-XX). Check that the MAC address is not already registered. Verify device type is allowed for the user\'s segment. Some segments restrict digital devices.'
     }
   ],
   [SEGMENTS.CO_LIVING]: [
@@ -862,13 +872,13 @@ const KnowledgeHome = () => {
       id: 'faq-5',
       category: 'Device Registration',
       question: 'How do I register a new device?',
-      answer: 'Go to Device Management, click "Register Device", enter the MAC address, select device type (Human/Non-Human), choose owner from the user list, optionally enter a device name, and click "Register". The device will be bound to the user account.'
+      answer: 'Go to Device Management, click "Register Device", enter the MAC address, select device type (User/Digital), choose owner from the user list, optionally enter a device name, and click "Register". The device will be bound to the user account.'
     },
     {
       id: 'faq-6',
       category: 'Device Registration',
-      question: 'What is the difference between Human and Non-Human devices?',
-      answer: 'Human devices are user-operated devices like smartphones, laptops, and tablets. Non-Human devices are IoT devices, smart TVs, printers, and other automated devices. Some segments restrict certain device types for security and performance reasons.'
+      question: 'What is the difference between User and Digital devices?',
+      answer: 'User devices are user-operated devices like mobile phones, laptops, and tablets. Digital devices are IoT devices, smart TVs, printers, and other automated devices. Some segments restrict certain device types for security and performance reasons.'
     },
     {
       id: 'faq-7',
@@ -892,7 +902,7 @@ const KnowledgeHome = () => {
       id: 'faq-10',
       category: 'Troubleshooting',
       question: 'Device registration fails with MAC address error?',
-      answer: 'Ensure MAC address format is correct (XX:XX:XX:XX:XX:XX or XX-XX-XX-XX-XX-XX). Check that the MAC address is not already registered. Verify device type is allowed for the user\'s segment. Some segments restrict non-human devices.'
+      answer: 'Ensure MAC address format is correct (XX:XX:XX:XX:XX:XX or XX-XX-XX-XX-XX-XX). Check that the MAC address is not already registered. Verify device type is allowed for the user\'s segment. Some segments restrict digital devices.'
     }
   ]
 }), []);
@@ -1609,7 +1619,7 @@ const KnowledgeHome = () => {
             onKeyPress={(e) => e.key === 'Enter' && handleArticleClick('device-registration')}
           >
             <b>Device Registration</b><br />
-            Register new devices with MAC address binding, assign devices to users, and configure human vs non-human device types
+            Register new devices with MAC address binding, assign devices to users, and configure user vs digital device types
           </div>
           <div
             className="block-entry clickable"

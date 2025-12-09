@@ -3,6 +3,9 @@
 .spinner {
   display: inline-block;
   position: relative;
+  /* CRITICAL: Ensure spinner container itself never rotates */
+  transform: none !important;
+  animation: none !important;
 }
 
 .spinner-inner {
@@ -10,6 +13,7 @@
   border-radius: 50%;
   border-style: solid;
   border-color: currentColor transparent transparent transparent;
+  /* ONLY the inner element should rotate */
   animation: spinner-rotate 0.8s linear infinite;
 }
 
@@ -58,4 +62,21 @@
     border-color: currentColor;
     opacity: 0.6;
   }
+}
+
+/* CRITICAL FIX: Ensure text elements adjacent to or containing spinners never rotate */
+.spinner ~ p,
+.spinner ~ span,
+.spinner ~ div,
+div:has(> .spinner) > p,
+div:has(> .spinner) > span,
+div:has(> .spinner) > div:not(.spinner) {
+  transform: none !important;
+  animation: none !important;
+}
+
+/* Ensure sr-only text within spinner never rotates */
+.spinner .sr-only {
+  transform: none !important;
+  animation: none !important;
 }

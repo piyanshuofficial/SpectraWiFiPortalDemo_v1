@@ -21,6 +21,7 @@ const UserList = lazy(() => import(/* webpackChunkName: "user-management" */ '..
 const DeviceList = lazy(() => import(/* webpackChunkName: "device-management" */ '../pages/DeviceManagement/DeviceList'));
 const ReportDashboard = lazy(() => import(/* webpackChunkName: "reports" */ '../pages/Reports/ReportDashboard'));
 const KnowledgeHome = lazy(() => import(/* webpackChunkName: "knowledge-center" */ '../pages/KnowledgeCenter/KnowledgeHome'));
+const ActivityLogs = lazy(() => import(/* webpackChunkName: "activity-logs" */ '../pages/ActivityLogs/ActivityLogs'));
 
 // ============================================
 // ROUTE DEFINITIONS
@@ -83,6 +84,15 @@ export const routes = [
     title: 'Knowledge Center',
     exact: true,
     chunkName: 'knowledge-center'
+  },
+  {
+    path: '/logs',
+    component: ActivityLogs,
+    requiredPermission: 'canViewLogs',
+    fallbackMessage: 'You need administrator or manager access to view activity logs.',
+    title: 'Activity Logs',
+    exact: true,
+    chunkName: 'activity-logs'
   }
 ];
 

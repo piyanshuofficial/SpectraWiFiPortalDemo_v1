@@ -16,6 +16,45 @@
   position: relative;
   border: 0.0625rem solid #e0e0e0;
   border-radius: 0.25rem;
+  /* Improved touch scrolling */
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+/* Scroll shadow indicators for horizontal scroll */
+.report-table-outer {
+  position: relative;
+}
+
+.report-table-outer::before,
+.report-table-outer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1.25rem;
+  pointer-events: none;
+  z-index: 5;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.report-table-outer::before {
+  left: 0;
+  background: linear-gradient(to right, rgba(0, 0, 0, 0.08), transparent);
+}
+
+.report-table-outer::after {
+  right: 0;
+  background: linear-gradient(to left, rgba(0, 0, 0, 0.08), transparent);
+}
+
+.report-table-outer.scroll-left::before {
+  opacity: 1;
+}
+
+.report-table-outer.scroll-right::after {
+  opacity: 1;
 }
 
 .report-table-wrapper:focus {
@@ -113,6 +152,9 @@
   flex-direction: column;
   align-items: center;
   gap: 1rem;
+  /* CRITICAL: Ensure container never rotates */
+  transform: none !important;
+  animation: none !important;
 }
 
 /* Spinner styles removed - now using Spinner component */
@@ -121,6 +163,9 @@
   color: #666;
   font-size: 0.9375rem;
   margin: 0;
+  /* CRITICAL: Ensure text never rotates */
+  transform: none !important;
+  animation: none !important;
 }
 
 /* Error State */
@@ -390,6 +435,45 @@
     font-size: 0.75rem;
   }
 
+  /* Sticky first column on mobile for better context */
+  .report-table thead th:first-child,
+  .report-table tbody td:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    background: inherit;
+  }
+
+  .report-table thead th:first-child {
+    background: linear-gradient(135deg, #17418f 0%, #204094 100%);
+    z-index: 12;
+  }
+
+  .report-table tbody tr:nth-child(odd) td:first-child {
+    background: #fff;
+  }
+
+  .report-table tbody tr:nth-child(even) td:first-child {
+    background: #fafbfd;
+  }
+
+  .report-table tbody tr:hover td:first-child {
+    background: #f8f9fd;
+  }
+
+  /* Add shadow to sticky column */
+  .report-table thead th:first-child::after,
+  .report-table tbody td:first-child::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: -0.5rem;
+    bottom: 0;
+    width: 0.5rem;
+    background: linear-gradient(to right, rgba(0, 0, 0, 0.06), transparent);
+    pointer-events: none;
+  }
+
   .report-table-state {
     padding: 2.5rem 1rem;
     min-height: 15.625rem;
@@ -563,6 +647,40 @@
 
 [data-theme="dark"] .report-table tbody tr:nth-child(even):hover {
   background-color: #374151;
+}
+
+/* Dark mode sticky column backgrounds */
+@media (max-width: 768px) {
+  [data-theme="dark"] .report-table thead th:first-child {
+    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+  }
+
+  [data-theme="dark"] .report-table tbody tr:nth-child(odd) td:first-child {
+    background: #1f2937;
+  }
+
+  [data-theme="dark"] .report-table tbody tr:nth-child(even) td:first-child {
+    background: #2d3748;
+  }
+
+  [data-theme="dark"] .report-table tbody tr:hover td:first-child {
+    background: #374151;
+  }
+
+  /* Dark mode sticky column shadow */
+  [data-theme="dark"] .report-table thead th:first-child::after,
+  [data-theme="dark"] .report-table tbody td:first-child::after {
+    background: linear-gradient(to right, rgba(0, 0, 0, 0.15), transparent);
+  }
+}
+
+/* Dark mode scroll shadows */
+[data-theme="dark"] .report-table-outer::before {
+  background: linear-gradient(to right, rgba(0, 0, 0, 0.2), transparent);
+}
+
+[data-theme="dark"] .report-table-outer::after {
+  background: linear-gradient(to left, rgba(0, 0, 0, 0.2), transparent);
 }
 
 [data-theme="dark"] .report-table tbody td {

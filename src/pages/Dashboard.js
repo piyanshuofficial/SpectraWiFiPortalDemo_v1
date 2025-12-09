@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import Card from "../components/Card";
 import Button from "../components/Button";
 import { Line, Bar, Pie } from "react-chartjs-2";
-import { FaUsers, FaUserFriends, FaChartPie, FaExclamationCircle, FaFileCsv, FaFilePdf, FaLifeRing } from "react-icons/fa";
+import { FaUsers, FaUserFriends, FaChartPie, FaCheckCircle, FaFileCsv, FaFilePdf, FaLifeRing, FaExclamationCircle } from "react-icons/fa";
 import { usePermissions } from "../hooks/usePermissions";
 import { useLoading } from "../context/LoadingContext";
 import { useSegment } from "../context/SegmentContext";
@@ -16,6 +16,7 @@ import { exportChartDataToCSV } from "../utils/exportUtils";
 import { exportReportPDF } from "../utils/exportReportPDF";
 import { useNavigate } from "react-router-dom";
 import { ANIMATION, ACTIVITY } from '../constants/appConstants';
+import { useTranslation } from "react-i18next";
 import LoadingOverlay from "../components/Loading/LoadingOverlay";
 import SkeletonLoader from "../components/Loading/SkeletonLoader";
 import notifications from "../utils/notifications";
@@ -24,6 +25,7 @@ import "./Dashboard.css";
 
 
 const Dashboard = () => {
+  const { t } = useTranslation();
   const { currentSegment } = useSegment();
 
   // Calculate segment-specific metrics with realistic variation
@@ -34,37 +36,37 @@ const Dashboard = () => {
         baseUsers: 850,
         licensePercent: 68,
         dataUsageTB: 2.8,
-        alerts: 3
+        uptimePercent: 99.92
       },
       coLiving: {
         baseUsers: 320,
         licensePercent: 45,
         dataUsageTB: 1.5,
-        alerts: 1
+        uptimePercent: 99.85
       },
       hotel: {
         baseUsers: 450,
         licensePercent: 52,
         dataUsageTB: 1.8,
-        alerts: 2
+        uptimePercent: 99.88
       },
       coWorking: {
         baseUsers: 280,
         licensePercent: 38,
         dataUsageTB: 1.2,
-        alerts: 1
+        uptimePercent: 99.78
       },
       pg: {
         baseUsers: 180,
         licensePercent: 25,
         dataUsageTB: 0.6,
-        alerts: 0
+        uptimePercent: 99.65
       },
       miscellaneous: {
         baseUsers: 95,
         licensePercent: 15,
         dataUsageTB: 0.3,
-        alerts: 0
+        uptimePercent: 99.58
       }
     };
 
@@ -77,8 +79,8 @@ const Dashboard = () => {
       licenseUsageDelta: 2,
       dataUsageTB: segmentConfig.dataUsageTB,
       dataUsageDelta: Math.round(segmentConfig.dataUsageTB * 0.04 * 100) / 100, // 4% delta
-      currentAlerts: segmentConfig.alerts,
-      alertsDelta: -1
+      networkUptime: segmentConfig.uptimePercent,
+      uptimeDelta: 0.05 // Small positive delta
     };
   }, [currentSegment]);
 
@@ -167,6 +169,50 @@ const Dashboard = () => {
         beginAtZero: true
       }
     }
+  };
+
+  // Separate options for pie/doughnut charts - no scales (gridlines/axes)
+  const pieChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'top',
+        labels: {
+          font: { size: 14 },
+          usePointStyle: true,
+          padding: 15,
+        }
+      },
+      tooltip: {
+        enabled: true,
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        titleColor: '#fff',
+        bodyColor: '#fff',
+        borderColor: 'rgba(255, 255, 255, 0.2)',
+        borderWidth: 1,
+        padding: 12,
+        displayColors: true,
+        boxPadding: 6,
+        titleFont: {
+          size: 14,
+          weight: 'bold'
+        },
+        bodyFont: {
+          size: 13,
+        },
+        callbacks: {
+          label: function(context) {
+            const label = context.label || '';
+            const value = context.parsed || 0;
+            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+            const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+            return `${label}: ${value} (${percentage}%)`;
+          }
+        }
+      }
+    }
+    // No scales property - pie charts don't have axes
   };
 
   // Get segment-specific data for dashboard charts
@@ -351,16 +397,16 @@ useEffect(() => {
         {safeNumber(metrics.dataUsageTB)} TB Used This Week
       </Card>
       <Card
-        title="Alerts"
-        icon={<FaExclamationCircle />}
+        title="Network Uptime"
+        icon={<FaCheckCircle />}
         trendData={[
-          3, 2, 2, 1, 0,
-          safeNumber(metrics.currentAlerts + 1),
-          safeNumber(metrics.currentAlerts)
+          99.65, 99.72, 99.78, 99.85,
+          safeNumber(metrics.networkUptime - 0.05),
+          safeNumber(metrics.networkUptime)
         ]}
-        trendIncrease={safeNumber(metrics.alertsDelta, 0) <= 0}
+        trendIncrease={safeNumber(metrics.uptimeDelta, 0) >= 0}
       >
-        {safeNumber(metrics.currentAlerts) === 0 ? "No Current Alerts" : `${safeNumber(metrics.currentAlerts)} Alerts`}
+        {safeNumber(metrics.networkUptime)}% This Month
       </Card>
     </>
   );
@@ -467,11 +513,9 @@ useEffect(() => {
 
   const handleSupportQuickAction = () => {
     navigate('/knowledge');
-    let timeoutId = setTimeout(() => {
+    setTimeout(() => {
       window.dispatchEvent(new CustomEvent('triggerSupportHighlight', { detail: 'highlight-support' }));
     }, ANIMATION.HIGHLIGHT_DURATION);
-    
-    return () => clearTimeout(timeoutId);
   };
 
   const handleQuickAction = (path, requiredPermission) => {
@@ -485,33 +529,33 @@ useEffect(() => {
   const quickActions = [
     {
       icon: FaUsers,
-      label: "Add User",
+      labelKey: "dashboard.addUser",
       onClick: () => handleQuickAction('/users?add=1', 'canEditUsers'),
       permission: 'canEditUsers',
     },
     {
       icon: FaUserFriends,
-      label: "View Users",
+      labelKey: "dashboard.viewUsers",
       onClick: () => handleQuickAction('/users', 'canEditUsers'),
       permission: 'canEditUsers',
     },
     {
       icon: FaChartPie,
-      label: "Reports",
+      labelKey: "nav.reporting",
       onClick: () => handleQuickAction('/reports', 'canViewReports'),
       permission: 'canViewReports',
     },
     {
       icon: FaLifeRing,
-      label: "Support",
+      labelKey: "dashboard.support",
       onClick: handleSupportQuickAction,
       permission: 'canViewReports',
     },
     {
       icon: FaExclamationCircle,
-      label: "Alerts & Logs",
-      onClick: () => handleQuickAction('/alerts', 'canViewReports'),
-      permission: 'canViewReports',
+      labelKey: "dashboard.logs",
+      onClick: () => handleQuickAction('/logs', 'canViewLogs'),
+      permission: 'canViewLogs',
     },
   ];
 
@@ -523,22 +567,22 @@ useEffect(() => {
   if (initialLoad) {
     return (
       <main className="main-content" role="main" aria-label="Dashboard">
-        <h1 className="dashboard-title">WiFi Dashboard</h1>
-        <h2 className="dashboard-section-title">Overview</h2>
+        <h1 className="dashboard-title">{t('dashboard.title')}</h1>
+        <h2 className="dashboard-section-title">{t('dashboard.overview')}</h2>
         <section className="dashboard-cards">
           {[...Array(4)].map((_, i) => (
             <SkeletonLoader key={i} variant="card" />
           ))}
         </section>
         
-        <h2 className="dashboard-section-title">Quick Actions</h2>
+        <h2 className="dashboard-section-title">{t('dashboard.quickActions')}</h2>
         <div className="quick-actions-row">
           {[...Array(5)].map((_, i) => (
             <SkeletonLoader key={i} variant="rect" height={80} />
           ))}
         </div>
 
-        <h2 className="dashboard-section-title">Network Analytics</h2>
+        <h2 className="dashboard-section-title">{t('dashboard.networkAnalytics')}</h2>
         <section className="dashboard-charts">
           {[...Array(3)].map((_, i) => (
             <div key={i} style={{ background: '#fff', borderRadius: '8px', padding: '16px' }}>
@@ -547,7 +591,7 @@ useEffect(() => {
           ))}
         </section>
 
-        <h2 className="dashboard-section-title">Recent Activities</h2>
+        <h2 className="dashboard-section-title">{t('dashboard.recentActivities')}</h2>
         <SkeletonLoader variant="card" />
       </main>
     );
@@ -568,17 +612,17 @@ useEffect(() => {
         />
       )}
 
-      <h1 className="dashboard-title">WiFi Dashboard</h1>
-      <h2 className="dashboard-section-title">Overview</h2>
+      <h1 className="dashboard-title">{t('dashboard.title')}</h1>
+      <h2 className="dashboard-section-title">{t('dashboard.overview')}</h2>
       <section className="dashboard-cards" aria-label="Dashboard summary cards">
         {renderDashboardForSegment()}
       </section>
 
-      <h2 className="dashboard-section-title">Quick Actions</h2>
+      <h2 className="dashboard-section-title">{t('dashboard.quickActions')}</h2>
       <section className="dashboard-quick-actions" aria-label="Quick actions">
         {accessibleQuickActions.length === 0 ? (
           <div className="no-quick-actions">
-            <p>No quick actions available with your current permissions.</p>
+            <p>{t('dashboard.noQuickActions')}</p>
           </div>
         ) : (
           <div className="quick-actions-row">
@@ -588,7 +632,7 @@ useEffect(() => {
                 className="quick-action-card"
                 tabIndex={0}
                 role="button"
-                aria-label={action.label}
+                aria-label={t(action.labelKey)}
                 onClick={action.onClick}
                 onKeyPress={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
@@ -596,14 +640,14 @@ useEffect(() => {
                     e.preventDefault();
                   }
                 }}
-                style={{ 
+                style={{
                   cursor: 'pointer',
                   pointerEvents: 'auto'
                 }}
               >
                 <div className="quick-action-content">
                   <action.icon className="quick-action-icon" />
-                  <span className="quick-action-label">{action.label}</span>
+                  <span className="quick-action-label">{t(action.labelKey)}</span>
                 </div>
               </div>
             ))}
@@ -611,7 +655,7 @@ useEffect(() => {
         )}
       </section>
 
-      <h2 className="dashboard-section-title">Network Analytics</h2>
+      <h2 className="dashboard-section-title">{t('dashboard.networkAnalytics')}</h2>
       <section className="dashboard-charts" aria-label="Dashboard charts section">
         <Card title="Network Usage (GB)">
           <div id="chart-network-usage" className="chart-container">
@@ -746,7 +790,7 @@ useEffect(() => {
                   },
                 ],
               }}
-              options={chartOptions}
+              options={pieChartOptions}
             />
           </div>
           <div className="export-btn-group">
@@ -792,7 +836,7 @@ useEffect(() => {
         </Card>
       </section>
 
-      <h2 className="dashboard-section-title">Recent Activities</h2>
+      <h2 className="dashboard-section-title">{t('dashboard.recentActivities')}</h2>
       <Card title="" className="recent-activities-card" aria-label="Recent user activities">
         <ul className="activity-list">
           {recentActivities.slice(0, ACTIVITY.MAX_RECENT_ITEMS).map((activity, i) => (

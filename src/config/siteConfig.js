@@ -11,20 +11,37 @@ const siteConfig = {
   accessLevel: "Site",
   
   // Segment-specific site configurations
+  // bandwidthType: "fixed" - Speed can be any value <= maxBandwidth, data/device options are independent
+  // bandwidthType: "userLevel" - Only specific policy combinations are allowed (cascading dropdowns)
+  // For userLevel sites: userPolicies (mandatory) and digitalDevicePolicies (optional) are separate
   segmentSites: {
     enterprise: {
       siteName: "Mumbai Corporate Office",
       siteId: "SITE-MUM-ENT-001",
       location: "Mumbai, Maharashtra",
       address: "Corporate Business Park, Andheri East, Mumbai - 400069",
-      policies: [
-        { policyId: "ENT_WIFI_10Mbps_50GB_3Devices" },
-        { policyId: "ENT_WIFI_25Mbps_100GB_3Devices" },
-        { policyId: "ENT_WIFI_50Mbps_200GB_4Devices" },
-        { policyId: "ENT_WIFI_50Mbps_Unlimited_3Devices" },
-        { policyId: "ENT_WIFI_100Mbps_Unlimited_5Devices" },
-        { policyId: "ENT_WIFI_150Mbps_500GB_5Devices" },
-        { policyId: "ENT_WIFI_200Mbps_Unlimited_5Devices" }
+      bandwidthType: "fixed",
+      maxBandwidth: 200, // Maximum allowed speed in Mbps
+      dataCycleType: "Monthly",
+      totalLicenseLimit: 500, // Overall site license limit
+      digitalDevicePolicies: [
+        { policyId: "ENT_DEVICE_50Mbps_Unlimited_1Device_Monthly", name: "Enterprise Digital Device", speed: "50 Mbps", limit: "unlimited", licenseLimit: 100 },
+        { policyId: "ENT_DEVICE_100Mbps_Unlimited_1Device_Monthly", name: "Enterprise Digital Device Premium", speed: "100 Mbps", limit: "unlimited", licenseLimit: 50 }
+      ]
+    },
+    office: {
+      siteName: "Hyderabad Tech Park",
+      siteId: "SITE-HYD-OFF-007",
+      location: "Hyderabad, Telangana",
+      address: "HITEC City, Madhapur, Hyderabad - 500081",
+      bandwidthType: "userLevel",
+      dataCycleType: "Monthly",
+      totalLicenseLimit: 200,
+      userPolicies: [
+        { policyId: "OFF_WIFI_50Mbps_150GB_3Devices_Monthly", licenseLimit: 200 }
+      ],
+      digitalDevicePolicies: [
+        { policyId: "OFF_DEVICE_25Mbps_Unlimited_1Device_Monthly", name: "Office Digital Device", speed: "25 Mbps", limit: "unlimited", licenseLimit: 40 }
       ]
     },
     coLiving: {
@@ -32,14 +49,17 @@ const siteConfig = {
       siteId: "SITE-BLR-COL-002",
       location: "Bangalore, Karnataka",
       address: "Koramangala, Bangalore - 560034",
-      policies: [
-        { policyId: "COL_WIFI_10Mbps_50GB_1Devices" },
-        { policyId: "COL_WIFI_15Mbps_75GB_2Devices" },
-        { policyId: "COL_WIFI_20Mbps_100GB_3Devices" },
-        { policyId: "COL_WIFI_25Mbps_150GB_3Devices" },
-        { policyId: "COL_WIFI_30Mbps_200GB_4Devices" },
-        { policyId: "COL_WIFI_50Mbps_300GB_5Devices" },
-        { policyId: "COL_WIFI_75Mbps_Unlimited_5Devices" }
+      bandwidthType: "userLevel",
+      dataCycleType: "Monthly",
+      totalLicenseLimit: 300,
+      userPolicies: [
+        { policyId: "COL_WIFI_10Mbps_50GB_1Devices_Monthly", licenseLimit: 100 },
+        { policyId: "COL_WIFI_20Mbps_100GB_2Devices_Monthly", licenseLimit: 100 },
+        { policyId: "COL_WIFI_30Mbps_150GB_3Devices_Monthly", licenseLimit: 75 },
+        { policyId: "COL_WIFI_50Mbps_Unlimited_4Devices_Monthly", licenseLimit: 50 }
+      ],
+      digitalDevicePolicies: [
+        { policyId: "COL_DEVICE_10Mbps_Unlimited_1Device_Monthly", name: "CoLiving Digital Device", speed: "10 Mbps", limit: "unlimited", licenseLimit: 50 }
       ]
     },
     coWorking: {
@@ -47,14 +67,17 @@ const siteConfig = {
       siteId: "SITE-PUN-COW-003",
       location: "Pune, Maharashtra",
       address: "Hinjewadi IT Park, Pune - 411057",
-      policies: [
-        { policyId: "COW_WIFI_10Mbps_50GB_1Devices" },
-        { policyId: "COW_WIFI_15Mbps_75GB_2Devices" },
-        { policyId: "COW_WIFI_20Mbps_100GB_3Devices" },
-        { policyId: "COW_WIFI_30Mbps_200GB_4Devices" },
-        { policyId: "COW_WIFI_50Mbps_300GB_5Devices" },
-        { policyId: "COW_WIFI_75Mbps_500GB_5Devices" },
-        { policyId: "COW_WIFI_100Mbps_Unlimited_5Devices" }
+      bandwidthType: "userLevel",
+      dataCycleType: "Daily",
+      totalLicenseLimit: 250,
+      userPolicies: [
+        { policyId: "COW_WIFI_15Mbps_5GB_1Devices_Daily", licenseLimit: 80 },
+        { policyId: "COW_WIFI_25Mbps_10GB_2Devices_Daily", licenseLimit: 80 },
+        { policyId: "COW_WIFI_50Mbps_20GB_3Devices_Daily", licenseLimit: 60 },
+        { policyId: "COW_WIFI_100Mbps_Unlimited_5Devices_Daily", licenseLimit: 30 }
+      ],
+      digitalDevicePolicies: [
+        { policyId: "COW_DEVICE_20Mbps_Unlimited_1Device_Daily", name: "CoWorking Digital Device", speed: "20 Mbps", limit: "unlimited", licenseLimit: 30 }
       ]
     },
     hotel: {
@@ -62,14 +85,16 @@ const siteConfig = {
       siteId: "SITE-GOA-HTL-004",
       location: "Goa",
       address: "Calangute Beach Road, Goa - 403516",
-      policies: [
-        { policyId: "HTL_WIFI_10Mbps_5GB_1Devices" },
-        { policyId: "HTL_WIFI_15Mbps_10GB_2Devices" },
-        { policyId: "HTL_WIFI_20Mbps_Unlimited_3Devices" },
-        { policyId: "HTL_WIFI_25Mbps_5GB_2Devices" },
-        { policyId: "HTL_WIFI_30Mbps_10GB_3Devices" },
-        { policyId: "HTL_WIFI_50Mbps_Unlimited_4Devices" },
-        { policyId: "HTL_WIFI_75Mbps_Unlimited_5Devices" }
+      bandwidthType: "userLevel",
+      dataCycleType: "Daily",
+      totalLicenseLimit: 400,
+      userPolicies: [
+        { policyId: "HTL_WIFI_10Mbps_2GB_1Devices_Daily", licenseLimit: 200 },
+        { policyId: "HTL_WIFI_20Mbps_5GB_2Devices_Daily", licenseLimit: 150 },
+        { policyId: "HTL_WIFI_50Mbps_Unlimited_3Devices_Daily", licenseLimit: 50 }
+      ],
+      digitalDevicePolicies: [
+        { policyId: "HTL_DEVICE_10Mbps_Unlimited_1Device_Daily", name: "Hotel Digital Device", speed: "10 Mbps", limit: "unlimited", licenseLimit: 100 }
       ]
     },
     pg: {
@@ -77,14 +102,14 @@ const siteConfig = {
       siteId: "SITE-CHN-PGR-005",
       location: "Chennai, Tamil Nadu",
       address: "Adyar, Chennai - 600020",
-      policies: [
-        { policyId: "PG_WIFI_10Mbps_50GB_1Devices" },
-        { policyId: "PG_WIFI_15Mbps_75GB_2Devices" },
-        { policyId: "PG_WIFI_20Mbps_100GB_3Devices" },
-        { policyId: "PG_WIFI_25Mbps_100GB_4Devices" },
-        { policyId: "PG_WIFI_30Mbps_150GB_4Devices" },
-        { policyId: "PG_WIFI_40Mbps_200GB_5Devices" },
-        { policyId: "PG_WIFI_50Mbps_300GB_5Devices" }
+      bandwidthType: "userLevel",
+      dataCycleType: "Monthly",
+      totalLicenseLimit: 150,
+      userPolicies: [
+        { policyId: "PG_WIFI_25Mbps_100GB_2Devices_Monthly", licenseLimit: 150 }
+      ],
+      digitalDevicePolicies: [
+        { policyId: "PG_DEVICE_10Mbps_Unlimited_1Device_Monthly", name: "PG Digital Device", speed: "10 Mbps", limit: "unlimited", licenseLimit: 30 }
       ]
     },
     miscellaneous: {
@@ -92,25 +117,10 @@ const siteConfig = {
       siteId: "SITE-DEL-MIS-006",
       location: "Delhi",
       address: "Connaught Place, New Delhi - 110001",
-      // Data cycle type configuration (set during site provisioning)
-      // ========================================
-      // TODO: Backend Integration - Site Provisioning Configuration
-      // ========================================
-      // This should be configured during site setup by IT team
-      // Backend endpoint: POST /api/sites/{siteId}/configure
-      // Payload: { dataCycleType: 'Daily' | 'Monthly' }
-      // Store in site_config table and fetch during site load
-      // ========================================
-      dataCycleType: "Monthly", // Default for demo portal, can be 'Daily' or 'Monthly'
-      policies: [
-        { policyId: "MIS_WIFI_10Mbps_10GB_1Devices" },
-        { policyId: "MIS_WIFI_20Mbps_50GB_3Devices" },
-        { policyId: "MIS_WIFI_30Mbps_75GB_3Devices" },
-        { policyId: "MIS_WIFI_50Mbps_100GB_4Devices" },
-        { policyId: "MIS_WIFI_75Mbps_200GB_5Devices" },
-        { policyId: "MIS_WIFI_100Mbps_500GB_5Devices" },
-        { policyId: "MIS_WIFI_Unlimited_Unlimited_5Devices" }
-      ]
+      bandwidthType: "fixed",
+      maxBandwidth: 100, // Maximum allowed speed in Mbps
+      dataCycleType: "Monthly",
+      totalLicenseLimit: 200
     }
   },
   
@@ -200,7 +210,7 @@ const siteConfig = {
     mobileDevices: 2234,
     laptopDevices: 1658,
     categories: {
-      smartphones: 1687,
+      mobile: 1687,
       tablets: 547,
       laptops: 1658,
       iot: 0

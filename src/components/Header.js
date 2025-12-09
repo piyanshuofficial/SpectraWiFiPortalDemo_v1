@@ -1,7 +1,7 @@
 // src/components/Header.js
 
 import React, { useState, useEffect, useRef } from 'react';
-import { FaBell, FaUserCircle } from 'react-icons/fa';
+import { FaBell, FaUserCircle, FaGlobe, FaChevronDown } from 'react-icons/fa';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import '../styles/toastify-overrides.css'; // CRITICAL: Must be imported AFTER ReactToastify.css
@@ -11,15 +11,28 @@ import { showInfo } from '@utils/notifications';
 import RoleAccessSelector from '@components/RoleAccessSelector';
 import { useSiteConfig } from '@hooks/useSiteConfig';
 import { useSegmentActivities } from '@hooks/useSegmentActivities';
+import { useTranslation } from 'react-i18next';
+import { LANGUAGES } from '../i18n';
 
 const MAX_NOTIFICATIONS = 5;
 
 const Header = () => {
   const { siteName } = useSiteConfig();
+  const { t, i18n } = useTranslation();
   const [notifOpen, setNotifOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [langOpen, setLangOpen] = useState(false);
   const notifRef = useRef();
   const profileRef = useRef();
+  const langRef = useRef();
+
+  // Get current language
+  const currentLang = LANGUAGES.find(lang => lang.code === i18n.language) || LANGUAGES[0];
+
+  const changeLanguage = (langCode) => {
+    i18n.changeLanguage(langCode);
+    setLangOpen(false);
+  };
 
   // Get segment-specific activities (same as Recent Activities on Dashboard)
   const allActivities = useSegmentActivities();
@@ -29,6 +42,7 @@ const Header = () => {
     const handleClickOutside = (event) => {
       if (notifRef.current && !notifRef.current.contains(event.target)) setNotifOpen(false);
       if (profileRef.current && !profileRef.current.contains(event.target)) setProfileOpen(false);
+      if (langRef.current && !langRef.current.contains(event.target)) setLangOpen(false);
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
@@ -58,15 +72,50 @@ const Header = () => {
               onClick={handleBackToSpectraOne}
               onKeyPress={e => e.key === "Enter" && handleBackToSpectraOne()}
               style={{ cursor: "pointer" }}
-              aria-label="Navigate back to Site Dashboard"
+              aria-label={t('header.backToSite')}
             >
-              Back To Site Dashboard
+              {t('header.backToSite')}
             </span>
           </div>
           <div className="header-center">
             <span className="header-site">{siteName}</span>
           </div>
           <div className="header-actions">
+            {/* Language Selector */}
+            <div
+              className="language-selector"
+              ref={langRef}
+              tabIndex={0}
+              role="button"
+              aria-haspopup="true"
+              aria-expanded={langOpen}
+              title={t('header.language')}
+              aria-label={t('header.language')}
+              onClick={() => setLangOpen(!langOpen)}
+              onKeyPress={e => e.key === 'Enter' && setLangOpen(!langOpen)}
+            >
+              <FaGlobe aria-hidden="true" />
+              <span className="lang-current">{currentLang.nativeName}</span>
+              <FaChevronDown className={`lang-chevron ${langOpen ? 'open' : ''}`} aria-hidden="true" />
+              {langOpen && (
+                <div className="language-dropdown">
+                  {LANGUAGES.map(lang => (
+                    <div
+                      key={lang.code}
+                      className={`language-option ${lang.code === currentLang.code ? 'active' : ''}`}
+                      role="menuitem"
+                      tabIndex={0}
+                      onClick={(e) => { e.stopPropagation(); changeLanguage(lang.code); }}
+                      onKeyPress={(e) => { if (e.key === 'Enter') { e.stopPropagation(); changeLanguage(lang.code); } }}
+                    >
+                      <span className="lang-native">{lang.nativeName}</span>
+                      <span className="lang-english">{lang.name}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <div
               className="notification-icon"
               ref={notifRef}
@@ -86,14 +135,14 @@ const Header = () => {
               {notifOpen && (
                 <div className="notification-panel">
                   <div className="notification-panel-header">
-                    <span className="notif-title">Recent Notifications</span>
+                    <span className="notif-title">{t('header.notifications')}</span>
                     <span className="notif-count-badge" aria-hidden="true">
                       {String(notifications.length).padStart(2, '0')}
                     </span>
                   </div>
                   <div className="notification-panel-content">
                     {notifications.length ? (
-                      <ul className="notification-list" role="menu" aria-label="Notifications list">
+                      <ul className="notification-list" role="menu" aria-label={t('header.notifications')}>
                         {notifications.map((note, idx) => (
                           <li key={idx} role="menuitem">
                             <span>{note.text}</span>{' '}
@@ -102,7 +151,7 @@ const Header = () => {
                         ))}
                       </ul>
                     ) : (
-                      <div className="notification-empty">No New Notifications</div>
+                      <div className="notification-empty">{t('header.noNotifications')}</div>
                     )}
                   </div>
                 </div>
@@ -131,7 +180,7 @@ const Header = () => {
                     onClick={handleChangePassword}
                     onKeyPress={e => e.key === 'Enter' && handleChangePassword()}
                   >
-                    Change Password
+                    {t('header.changePassword')}
                   </div>
                   <div
                     className="profile-menu-option"
@@ -140,7 +189,7 @@ const Header = () => {
                     onClick={handleLogout}
                     onKeyPress={e => e.key === 'Enter' && handleLogout()}
                   >
-                    Logout
+                    {t('header.logout')}
                   </div>
                 </div>
               )}

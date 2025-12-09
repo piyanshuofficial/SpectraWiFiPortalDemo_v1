@@ -52,12 +52,12 @@
 }
 
 .btn-secondary {
-  background-color: #e0e0e0;
-  color: #222;
+  background-color: var(--color-bg-hover);
+  color: var(--color-text-primary);
 }
 
 .btn-secondary:hover:not(.btn-disabled) {
-  background-color: #ccc;
+  background-color: var(--color-border);
 }
 
 .btn-danger {
@@ -109,6 +109,8 @@
   position: relative;
   pointer-events: none;
   opacity: 0.7;
+  /* CRITICAL: Ensure button container never rotates */
+  transform: none !important;
 }
 
 .btn-loader {
@@ -118,6 +120,7 @@
   border: 0.125rem solid rgba(255, 255, 255, 0.3);
   border-top-color: #ffffff;
   border-radius: 50%;
+  /* ONLY the loader should rotate */
   animation: btn-loader-spin 0.8s linear infinite;
   margin-right: var(--space-xs);
 }
@@ -133,6 +136,15 @@
   align-items: center;
   justify-content: center;
   gap: var(--space-xs);
+  /* CRITICAL: Ensure content never rotates */
+  transform: none !important;
+  animation: none !important;
+}
+
+/* CRITICAL FIX: Ensure button text never rotates */
+.btn-loading > *:not(.btn-loader) {
+  transform: none !important;
+  animation: none !important;
 }
 
 /* Icon sizing using rem */

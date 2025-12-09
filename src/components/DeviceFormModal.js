@@ -5,18 +5,25 @@ import Modal from '@components/Modal';
 import Button from '@components/Button';
 import '@components/DeviceFormModal.css';
 import SEGMENT_DEVICE_AVAILABILITY from '@config/segmentDeviceConfig';
+import siteConfig from '@config/siteConfig';
 import { DATA_LIMITS, ANIMATION, DEVICE } from '@constants/appConstants';
 import { VALIDATION } from '@constants/appConstants';
+import {
+  getDigitalDevicePolicyAvailability,
+  checkDigitalDeviceLicenseAvailability,
+  getDigitalDeviceLicenseSummary
+} from '@utils/licenseUtils';
 
-const HUMAN_DEVICE_CATEGORIES = [
+const USER_DEVICE_CATEGORIES = [
   'Mobile',
   'Laptop',
   'Tablet',
   'iPad',
-  'Smart Speaker'
+  'Smart Speaker',
+  'Miscellaneous'
 ];
 
-const NONHUMAN_DEVICE_CATEGORIES = [
+const SMART_DIGITAL_DEVICE_CATEGORIES = [
   'Security Camera',
   'IP Camera',
   'Video Recording Server',
@@ -110,7 +117,8 @@ function DeviceFormModal({
   devices = [],
   segment = 'enterprise',
   siteUserList = [],
-  submitting = false
+  submitting = false,
+  currentUser = null // The portal user who is registering the device
 }) {
   const [mode, setMode] = useState('bindUser');
   const [searchTerm, setSearchTerm] = useState('');
@@ -119,6 +127,7 @@ function DeviceFormModal({
   const [deviceName, setDeviceName] = useState('');
   const [userId, setUserId] = useState('');
   const [macAddress, setMacAddress] = useState('');
+  const [selectedPolicyId, setSelectedPolicyId] = useState('');
   const [errors, setErrors] = useState({});
   const firstInputRef = useRef(null);
 
@@ -128,7 +137,39 @@ function DeviceFormModal({
     [devices]
   );
 
-  const { allowHuman = true, allowNonHuman = true } = SEGMENT_DEVICE_AVAILABILITY[segment] || {};
+  const { allowUserDevices = true, allowDigitalDevices = true } = SEGMENT_DEVICE_AVAILABILITY[segment] || {};
+
+  // Check digital device policy availability for this segment
+  const digitalDeviceAvailability = useMemo(() => {
+    return getDigitalDevicePolicyAvailability(segment);
+  }, [segment]);
+
+  // Get digital device license summary
+  const digitalLicenseSummary = useMemo(() => {
+    return getDigitalDeviceLicenseSummary(segment);
+  }, [segment]);
+
+  // Get digital device policies (if available)
+  const digitalDevicePolicies = useMemo(() => {
+    if (!digitalDeviceAvailability.available || digitalDeviceAvailability.policies.length === 0) {
+      return [];
+    }
+    return digitalDeviceAvailability.policies;
+  }, [digitalDeviceAvailability]);
+
+  // Check if user needs to select a policy (only when multiple policies exist)
+  const requiresPolicySelection = digitalDevicePolicies.length > 1;
+
+  // Get the effective policy (selected or auto-assigned if only one exists)
+  const effectivePolicy = useMemo(() => {
+    if (digitalDevicePolicies.length === 0) return null;
+    if (digitalDevicePolicies.length === 1) return digitalDevicePolicies[0];
+    return digitalDevicePolicies.find(p => p.policyId === selectedPolicyId) || null;
+  }, [digitalDevicePolicies, selectedPolicyId]);
+
+  // Check if digital device registration is actually allowed
+  // It requires both: 1) segment allows digital devices AND 2) digital device policies are configured
+  const canRegisterDigitalDevice = allowDigitalDevices && digitalDeviceAvailability.available;
 
   useEffect(() => {
     if (open) {
@@ -162,8 +203,10 @@ function DeviceFormModal({
         setErrors({});
       } else {
         // Creating new device - reset form
-        if (allowHuman && !allowNonHuman) setMode('bindUser');
-        else if (!allowHuman && allowNonHuman) setMode('deviceUser');
+        // Use canRegisterDigitalDevice instead of allowDigitalDevices
+        // to account for digital device policy availability
+        if (allowUserDevices && !canRegisterDigitalDevice) setMode('bindUser');
+        else if (!allowUserDevices && canRegisterDigitalDevice) setMode('deviceUser');
         else setMode('bindUser');
         setSearchTerm('');
         setSelectedUser(null);
@@ -171,11 +214,17 @@ function DeviceFormModal({
         setDeviceName('');
         setUserId('');
         setMacAddress('');
+        // Auto-select policy if only one exists, otherwise reset selection
+        if (digitalDevicePolicies.length === 1) {
+          setSelectedPolicyId(digitalDevicePolicies[0].policyId);
+        } else {
+          setSelectedPolicyId('');
+        }
         setErrors({});
       }
       setTimeout(() => firstInputRef.current && firstInputRef.current.focus(), ANIMATION.AUTO_FOCUS_DELAY);
     }
-  }, [open, allowHuman, allowNonHuman, device, siteUserList]);
+  }, [open, allowUserDevices, canRegisterDigitalDevice, device, siteUserList, digitalDevicePolicies]);
 
   useEffect(() => {
     if (mode === 'deviceUser' && deviceCategory) {
@@ -224,6 +273,23 @@ function DeviceFormModal({
       if (existingDeviceUserIds.includes(userId.trim()) && (!device || device.userId !== userId.trim())) {
         errs.userId = 'Suggested User ID already in use, try a new category or edit.';
       }
+
+      // Validate policy selection if multiple policies exist
+      if (requiresPolicySelection && !selectedPolicyId) {
+        errs.policyId = 'Please select a policy for the digital device';
+      }
+
+      // Check digital device license availability (1 device = 1 license)
+      if (!device && effectivePolicy) {
+        const licenseCheck = checkDigitalDeviceLicenseAvailability(
+          segment,
+          effectivePolicy.policyId,
+          null
+        );
+        if (!licenseCheck.available) {
+          errs.deviceCategory = licenseCheck.error;
+        }
+      }
     }
     setErrors(errs);
     return Object.keys(errs).length === 0;
@@ -240,15 +306,21 @@ function DeviceFormModal({
         userId: selectedUser.id,
         deviceCategory,
         deviceName: deviceName.trim(),
-        macAddress: macAddress.trim().toUpperCase()
+        macAddress: macAddress.trim().toUpperCase(),
+        type: 'human' // Human user device
       };
     } else {
+      // Digital/Smart device registration
       deviceData = {
         mode,
         userId: userId.trim(),
+        deviceUserName: deviceName.trim(), // The auto-generated/editable device user name
         deviceCategory,
         deviceName: deviceName.trim(),
-        macAddress: macAddress.trim().toUpperCase()
+        macAddress: macAddress.trim().toUpperCase(),
+        type: 'digital', // Smart/digital device
+        policyId: effectivePolicy?.policyId || null, // Assign digital device policy
+        registeredBy: currentUser?.id || currentUser?.email || 'system' // Portal user registering the device
       };
     }
 
@@ -262,34 +334,111 @@ function DeviceFormModal({
     // TODO: Backend Integration - Device Registration/Update
     // ========================================
     // This is where device data needs to be persisted to backend
-    // 
+    //
     // API Endpoint:
     // - Create: POST /api/devices/register
     // - Update: PUT /api/devices/{deviceId}/update
-    // 
+    //
     // Request Payload:
     // {
     //   mode: 'bindUser' | 'deviceUser',
+    //   type: 'human' | 'digital', // Device type
     //   userId: string, // Human user ID or device user ID
     //   deviceCategory: string,
     //   deviceName: string,
     //   macAddress: string (uppercase, format: AA:BB:CC:DD:EE:FF),
+    //   policyId: string, // For digital devices - the assigned digital device policy
     //   siteId: string,
     //   segment: string,
     //   registeredBy: currentUserId,
     //   timestamp: ISO8601
     // }
-    // 
+    //
     // Backend Processing:
-    // 
+    //
     // 1. MAC Address Validation:
     //    - Check uniqueness across site (or cluster if roaming enabled)
     //    - Query: SELECT * FROM devices WHERE mac_address = ? AND site_id = ?
     //    - If exists and not same device being edited: Return 409 Conflict
     //    - Validate MAC format and check against random MAC patterns
     //    - Query OUI database to get vendor/manufacturer info
-    // 
-    // 2. Device User Creation (if mode === 'deviceUser'):
+    //
+    // ========================================
+    // TRIGGER: NON-HUMAN USER CREATION (Smart/Digital Device)
+    // ========================================
+    // 2. Smart/Digital Device Registration (if mode === 'deviceUser' && type === 'digital'):
+    //
+    //    IMPORTANT: Each smart/digital device requires a NON-HUMAN USER to be created
+    //    at the backend. This is a 1:1 relationship (1 license = 1 device).
+    //
+    //    Backend Steps:
+    //    a) Create Non-Human User Account:
+    //       - POST /api/users/create-non-human
+    //       - Request: {
+    //           userId: deviceData.userId, // e.g., "TV-0001", "DVR-0001"
+    //           userType: 'non_human',
+    //           deviceCategory: deviceData.deviceCategory,
+    //           displayName: deviceData.deviceName,
+    //           policyId: deviceData.policyId, // Digital device policy
+    //           siteId: currentSiteId,
+    //           segment: segment,
+    //           createdBy: currentUser.id,
+    //           macAddress: deviceData.macAddress
+    //         }
+    //       - This user will NOT have login credentials (non-authenticating)
+    //       - Set user_category = 'device' or 'non_human'
+    //       - Set is_human = false in users table
+    //
+    //    b) Assign Digital Device Policy:
+    //       - The policyId from digitalDevicePolicies is assigned to this non-human user
+    //       - Policy defines bandwidth limits for the device
+    //       - Example: "PG_DEVICE_10Mbps_Unlimited_1Device_Monthly"
+    //
+    //    c) License Validation:
+    //       - Check digital device license availability BEFORE creating user
+    //       - Rule: 1 license = 1 device (max 1 device per license)
+    //       - If no license available: Return 422 with error message
+    //       - Decrement available license count after successful creation
+    //
+    //    d) MAC Binding:
+    //       - Bind MAC address to the newly created non-human user
+    //       - This allows the device network access without authentication
+    //       - Configure RADIUS/AAA for MAC-based access
+    //
+    //    Implementation Example:
+    //    if (deviceData.mode === 'deviceUser' && deviceData.type === 'digital') {
+    //      // Step 1: Create non-human user
+    //      const nonHumanUserResponse = await fetch('/api/users/create-non-human', {
+    //        method: 'POST',
+    //        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+    //        body: JSON.stringify({
+    //          userId: deviceData.userId,
+    //          userType: 'non_human',
+    //          deviceCategory: deviceData.deviceCategory,
+    //          displayName: deviceData.deviceName,
+    //          policyId: deviceData.policyId,
+    //          siteId: currentSiteId,
+    //          segment: segment,
+    //          macAddress: deviceData.macAddress
+    //        })
+    //      });
+    //
+    //      if (!nonHumanUserResponse.ok) {
+    //        const error = await nonHumanUserResponse.json();
+    //        if (nonHumanUserResponse.status === 422) {
+    //          // License limit reached
+    //          setErrors({ deviceCategory: error.message });
+    //          return;
+    //        }
+    //        throw new Error(error.message);
+    //      }
+    //
+    //      const nonHumanUser = await nonHumanUserResponse.json();
+    //      deviceData.nonHumanUserId = nonHumanUser.data.userId;
+    //    }
+    // ========================================
+    //
+    // 3. Device User Creation (if mode === 'deviceUser' - legacy human device user):
     //    - Create a "Device User" account in UMP
     //    - Do NOT provision in AAA (device users don't authenticate)
     //    - Generate device credentials for MAC binding
@@ -424,9 +573,9 @@ function DeviceFormModal({
   }
 
   const allowOverride = SEGMENT_ALLOW_MANUAL_OVERRIDE[segment] ?? true;
-  const categoryOptions = mode === 'bindUser' ? HUMAN_DEVICE_CATEGORIES : NONHUMAN_DEVICE_CATEGORIES;
+  const categoryOptions = mode === 'bindUser' ? USER_DEVICE_CATEGORIES : SMART_DIGITAL_DEVICE_CATEGORIES;
 
-  if (!open || (!allowHuman && !allowNonHuman)) return null;
+  if (!open || (!allowUserDevices && !allowDigitalDevices)) return null;
 
   return (
     <Modal onClose={onClose}>
@@ -445,8 +594,6 @@ function DeviceFormModal({
         <div className="device-form-scrollable-content">
           <form onSubmit={handleSubmit} autoComplete="off" noValidate>
             <fieldset style={{ border: 'none', padding: 0, margin: 0 }}>
-              {!device && <legend className="sr-only">Device registration form</legend>}
-              
               <div className="device-form-row mapping-type-row">
                 <span id="mapping-type-label" className="form-label">
                   Mapping Type {device && <span style={{ fontSize: '0.85em', color: '#666' }}>(Non-editable)</span>}
@@ -456,7 +603,7 @@ function DeviceFormModal({
                   role="radiogroup"
                   aria-labelledby="mapping-type-label"
                 >
-                  {allowHuman && (
+                  {allowUserDevices && (
                     <label>
                       <input
                         type="radio"
@@ -464,28 +611,48 @@ function DeviceFormModal({
                         checked={mode === 'bindUser'}
                         onChange={() => setMode('bindUser')}
                         disabled={!!device}
-                        aria-label="Bind device to human user"
+                        aria-label="Bind device to user"
                       />
-                      <span>Bind to Human User</span>
+                      <span>Bind to User</span>
                     </label>
                   )}
-                  {allowNonHuman && (
-                    <label>
+                  {allowDigitalDevices && (
+                    <label
+                      title={!canRegisterDigitalDevice ? digitalDeviceAvailability.error : ''}
+                      className={!canRegisterDigitalDevice ? 'disabled-option' : ''}
+                    >
                       <input
                         type="radio"
                         name="mappingType"
                         checked={mode === 'deviceUser'}
-                        onChange={() => setMode('deviceUser')}
-                        disabled={!!device}
-                        aria-label="Register device as device user"
+                        onChange={() => canRegisterDigitalDevice && setMode('deviceUser')}
+                        disabled={!!device || !canRegisterDigitalDevice}
+                        aria-label="Register device as digital device"
                       />
-                      <span>Register as Device User</span>
+                      <span>Register as Digital Device</span>
                     </label>
                   )}
                 </div>
+                {/* Show message if digital device registration is not available */}
+                {allowDigitalDevices && !canRegisterDigitalDevice && (
+                  <div className="digital-device-unavailable-notice" role="alert">
+                    <span className="notice-icon">⚠️</span>
+                    <span className="notice-text">
+                      {digitalDeviceAvailability.error || 'Smart/digital device registration is not available for this site. Please contact Spectra support team to request digital device licenses.'}
+                    </span>
+                  </div>
+                )}
+                {/* Show license info if digital device registration is available */}
+                {mode === 'deviceUser' && canRegisterDigitalDevice && digitalLicenseSummary.policies.length > 0 && (
+                  <div className="digital-device-license-info">
+                    <span className="license-info-text">
+                      Available licenses: {digitalLicenseSummary.policies[0].available} of {digitalLicenseSummary.policies[0].limit}
+                    </span>
+                  </div>
+                )}
               </div>
 
-              {mode === 'bindUser' && allowHuman && (
+              {mode === 'bindUser' && allowUserDevices && (
                 <div className="device-form-row">
                   <label htmlFor="userSearch">
                     {device ? 'Owner' : 'Assign To User'}<span className="required-asterisk">*</span>
@@ -598,6 +765,9 @@ function DeviceFormModal({
               <div className="device-form-row">
                 <label htmlFor="devcat">
                   Device Category<span className="required-asterisk">*</span>
+                  {device && (
+                    <span style={{ fontSize: '0.79em', color: '#8aa' }}> (read-only)</span>
+                  )}
                 </label>
                 <select
                   id="devcat"
@@ -607,6 +777,7 @@ function DeviceFormModal({
                   className={errors.deviceCategory ? 'error' : ''}
                   aria-invalid={!!errors.deviceCategory}
                   aria-describedby={errors.deviceCategory ? "devcat-error" : undefined}
+                  disabled={!!device}
                 >
                   <option value="">Choose category...</option>
                   {categoryOptions.map(cat => (
@@ -620,7 +791,7 @@ function DeviceFormModal({
                 )}
               </div>
 
-              {mode === 'deviceUser' && allowNonHuman && (
+              {mode === 'deviceUser' && allowDigitalDevices && (
                 <div className="device-form-row">
                   <label htmlFor="userid">
                     Device User ID<span className="required-asterisk">*</span>
@@ -645,6 +816,51 @@ function DeviceFormModal({
                     <div className="error-message" id="userid-error" role="alert">
                       {errors.userId}
                     </div>
+                  )}
+                </div>
+              )}
+
+              {/* Policy selection for digital devices - only shown when multiple policies exist */}
+              {mode === 'deviceUser' && canRegisterDigitalDevice && digitalDevicePolicies.length > 0 && (
+                <div className="device-form-row">
+                  <label htmlFor="policySelect">
+                    Device Policy<span className="required-asterisk">*</span>
+                    {!requiresPolicySelection && (
+                      <span style={{ fontSize: '0.79em', color: '#8aa' }}> (auto-assigned)</span>
+                    )}
+                  </label>
+                  {requiresPolicySelection ? (
+                    <>
+                      <select
+                        id="policySelect"
+                        value={selectedPolicyId}
+                        onChange={e => setSelectedPolicyId(e.target.value)}
+                        required
+                        className={errors.policyId ? 'error' : ''}
+                        aria-invalid={!!errors.policyId}
+                        aria-describedby={errors.policyId ? "policy-error" : undefined}
+                      >
+                        <option value="">Select a policy...</option>
+                        {digitalDevicePolicies.map(policy => (
+                          <option key={policy.policyId} value={policy.policyId}>
+                            {policy.name} ({policy.speed}, {policy.limit === 'unlimited' ? 'Unlimited' : policy.limit})
+                          </option>
+                        ))}
+                      </select>
+                      {errors.policyId && (
+                        <div className="error-message" id="policy-error" role="alert">
+                          {errors.policyId}
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <input
+                      id="policySelect"
+                      value={effectivePolicy ? `${effectivePolicy.name} (${effectivePolicy.speed}, ${effectivePolicy.limit === 'unlimited' ? 'Unlimited' : effectivePolicy.limit})` : ''}
+                      disabled
+                      readOnly
+                      style={{ backgroundColor: '#f5f5f5', cursor: 'not-allowed' }}
+                    />
                   )}
                 </div>
               )}
@@ -678,6 +894,9 @@ function DeviceFormModal({
               <div className="device-form-row">
                 <label htmlFor="mac">
                   MAC Address<span className="required-asterisk">*</span>
+                  {device && (
+                    <span style={{ fontSize: '0.79em', color: '#8aa' }}> (read-only)</span>
+                  )}
                 </label>
                 <input
                   id="mac"
@@ -756,6 +975,7 @@ function DeviceFormModal({
                   required
                   aria-invalid={!!errors.macAddress}
                   aria-describedby={errors.macAddress ? "mac-error" : undefined}
+                  disabled={!!device}
                 />
                 {errors.macAddress && (
                   <div className="error-message" id="mac-error" role="alert">

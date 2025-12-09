@@ -91,10 +91,10 @@ const KnowledgeArticleModal = ({ article, onClose }) => {
   };
 
   const generatePDFContent = () => {
-    const currentDate = new Date().toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
+    const currentDate = new Date().toLocaleDateString('en-IN', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
     });
 
     let htmlContent = `

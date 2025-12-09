@@ -15,8 +15,8 @@ const CriteriaDisplay = ({ criteria, criteriaFields, onChangeCriteria }) => {
           const startDate = new Date(value.start);
           const endDate = new Date(value.end);
           return (
-            `${startDate.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })} - ` +
-            `${endDate.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}`
+            `${startDate.toLocaleDateString("en-IN", { day: "2-digit", month: "2-digit", year: "numeric" })} - ` +
+            `${endDate.toLocaleDateString("en-IN", { day: "2-digit", month: "2-digit", year: "numeric" })}`
           );
         }
         return "Invalid range";

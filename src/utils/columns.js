@@ -18,6 +18,11 @@ export const segmentSpecificFields = {
     { key: "department", label: "Department", optional: true },
     { key: "title", label: "Job Title", optional: true },
   ],
+  office: [
+    { key: "employeeId", label: "Employee ID", optional: true },
+    { key: "department", label: "Department", optional: true },
+    { key: "designation", label: "Designation", optional: true },
+  ],
   coLiving: [
     { key: "residentType", label: "Resident Type", optional: true },
     { key: "roomNumber", label: "Room Number", optional: true },

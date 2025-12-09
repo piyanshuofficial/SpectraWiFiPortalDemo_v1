@@ -22,12 +22,12 @@ export const useBulkOperations = () => {
     return isBulkOperationEnabled(currentSegment, 'bulkAddUsers');
   }, [currentSegment]);
 
-  const canBulkAddHumanDevices = useMemo(() => {
-    return isBulkOperationEnabled(currentSegment, 'bulkAddHumanDevices');
+  const canBulkAddUserDevices = useMemo(() => {
+    return isBulkOperationEnabled(currentSegment, 'bulkAddUserDevices');
   }, [currentSegment]);
 
-  const canBulkAddOtherDevices = useMemo(() => {
-    return isBulkOperationEnabled(currentSegment, 'bulkAddOtherDevices');
+  const canBulkAddSmartDigitalDevices = useMemo(() => {
+    return isBulkOperationEnabled(currentSegment, 'bulkAddSmartDigitalDevices');
   }, [currentSegment]);
 
   const allowExcelPaste = useMemo(() => {
@@ -41,8 +41,8 @@ export const useBulkOperations = () => {
 
     // Feature flags
     canBulkAddUsers,
-    canBulkAddHumanDevices,
-    canBulkAddOtherDevices,
+    canBulkAddUserDevices,
+    canBulkAddSmartDigitalDevices,
     allowExcelPaste,
 
     // Limits

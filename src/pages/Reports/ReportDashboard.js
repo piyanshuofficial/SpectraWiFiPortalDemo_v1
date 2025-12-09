@@ -318,11 +318,22 @@ const ReportDashboard = () => {
     return filteredData;
   }, [getReportData]);
 
+  /**
+   * Check if a report has data
+   */
+  const reportHasData = useCallback((reportId) => {
+    const reportData = selectedReportCriteria
+      ? filterReportData(reportId, selectedReportCriteria)
+      : getReportData(reportId);
+
+    return reportData && Array.isArray(reportData) && reportData.length > 0;
+  }, [selectedReportCriteria, filterReportData, getReportData]);
+
   const getCSVData = useCallback((report) => {
-    const reportData = selectedReportCriteria 
+    const reportData = selectedReportCriteria
       ? filterReportData(report.id, selectedReportCriteria)
       : getReportData(report.id);
-      
+
     if (!reportData) return { headers: [], rows: [] };
 
     const csvConfig = getCSVConfig(report.id);
@@ -363,6 +374,12 @@ const ReportDashboard = () => {
       return;
     }
 
+    // Check if report has data
+    if (!reportHasData(report.id)) {
+      notifications.showError("No data available to export");
+      return;
+    }
+
     setExportingCSV(true);
     setExportingReportId(report.id);
     let timeoutId = null;
@@ -385,6 +402,12 @@ const ReportDashboard = () => {
   const handleExportPDF = async (report) => {
     if (!rolePermissions.canViewReports) {
       notifications.noPermission("export reports");
+      return;
+    }
+
+    // Check if report has data
+    if (!reportHasData(report.id)) {
+      notifications.showError("No data available to export");
       return;
     }
 
@@ -484,32 +507,30 @@ const ReportDashboard = () => {
       <div className="report-detail-container">
         <div className="report-detail-header">
           <h2>{selectedReport.name}</h2>
-          {hasData && (
-            <div className="report-detail-actions">
-              <Button
-                variant="secondary"
-                onClick={() => handleDownloadCSV(selectedReport)}
-                title="Download CSV"
-                aria-label={`Download ${selectedReport.name} CSV`}
-                loading={exportingCSV && exportingReportId === selectedReport.id}
-                disabled={exportingPDF && exportingReportId === selectedReport.id}
-              >
-                <FaFileCsv style={{ marginRight: 6 }} />
-                Export CSV
-              </Button>
-              <Button
-                variant="secondary"
-                onClick={() => handleExportPDF(selectedReport)}
-                title="Download PDF"
-                aria-label={`Download ${selectedReport.name} PDF`}
-                loading={exportingPDF && exportingReportId === selectedReport.id}
-                disabled={exportingCSV && exportingReportId === selectedReport.id}
-              >
-                <FaFilePdf style={{ marginRight: 6 }} />
-                Export PDF
-              </Button>
-            </div>
-          )}
+          <div className="report-detail-actions">
+            <Button
+              variant="secondary"
+              onClick={() => handleDownloadCSV(selectedReport)}
+              title={hasData ? "Download CSV" : "No data available"}
+              aria-label={`Download ${selectedReport.name} CSV`}
+              loading={exportingCSV && exportingReportId === selectedReport.id}
+              disabled={!hasData || (exportingPDF && exportingReportId === selectedReport.id)}
+            >
+              <FaFileCsv style={{ marginRight: 6 }} />
+              Export CSV
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={() => handleExportPDF(selectedReport)}
+              title={hasData ? "Download PDF" : "No data available"}
+              aria-label={`Download ${selectedReport.name} PDF`}
+              loading={exportingPDF && exportingReportId === selectedReport.id}
+              disabled={!hasData || (exportingCSV && exportingReportId === selectedReport.id)}
+            >
+              <FaFilePdf style={{ marginRight: 6 }} />
+              Export PDF
+            </Button>
+          </div>
         </div>
 
         {selectedReportCriteria && selectedReport.criteriaFields && (
@@ -774,24 +795,24 @@ const ReportDashboard = () => {
                   <Button
                     variant="secondary"
                     onClick={() => handleDownloadCSV(report)}
-                    title="Download CSV"
+                    title={reportHasData(report.id) ? "Download CSV" : "No data available"}
                     aria-label={`Download ${report.name} CSV`}
                     loading={exportingCSV && exportingReportId === report.id}
-                    disabled={exportingPDF && exportingReportId === report.id}
+                    disabled={!reportHasData(report.id) || (exportingPDF && exportingReportId === report.id)}
                   >
                     <FaFileCsv style={{ marginRight: 6 }} />
                     CSV
                   </Button>
                 )}
-                
+
                 {report.exportFormats.includes('pdf') && (
                   <Button
                     variant="secondary"
                     onClick={() => handleExportPDF(report)}
-                    title="Download PDF"
+                    title={reportHasData(report.id) ? "Download PDF" : "No data available"}
                     aria-label={`Download ${report.name} PDF`}
                     loading={exportingPDF && exportingReportId === report.id}
-                    disabled={exportingCSV && exportingReportId === report.id}
+                    disabled={!reportHasData(report.id) || (exportingCSV && exportingReportId === report.id)}
                   >
                     <FaFilePdf style={{ marginRight: 6 }} />
                     PDF

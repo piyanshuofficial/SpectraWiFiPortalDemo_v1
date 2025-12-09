@@ -65,11 +65,25 @@ const PrivateRoute = ({ requiredPermission, children, fallbackMessage }) => {
 };
 
 /**
+ * Component to scroll to top on route change
+ */
+const ScrollToTop = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    // Scroll to top of page on route change
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [location.pathname]);
+
+  return null;
+};
+
+/**
  * Component to update document title based on current route
  */
 const DocumentTitle = () => {
   const location = useLocation();
-  
+
   useEffect(() => {
     const currentRoute = routes.find(route => route.path === location.pathname);
     if (currentRoute && currentRoute.title) {
@@ -78,7 +92,7 @@ const DocumentTitle = () => {
       document.title = 'Spectra Portal';
     }
   }, [location]);
-  
+
   return null;
 };
 
@@ -86,6 +100,7 @@ function App() {
   return (
     <ErrorBoundary>
       <Router>
+        <ScrollToTop />
         <DocumentTitle />
         <AppLayout>
           <Suspense fallback={<RouteLoader />}>
