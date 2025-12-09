@@ -19,6 +19,8 @@ export { useTableState } from './useTableState';
 export { useSiteConfig } from './useSiteConfig';
 export { useBulkOperations } from './useBulkOperations';
 export { useVideoDurations } from './useVideoDurations';
+export { useDebounce, useDebouncedCallback, useDebouncedSearch } from './useDebounce';
+export { useVirtualScroll, useInfiniteScroll } from './useVirtualScroll';
 
 /**
  * Hook Usage Guide:

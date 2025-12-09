@@ -1,10 +1,10 @@
 // src/pages/Dashboard.js
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Card from "../components/Card";
 import Button from "../components/Button";
 import { Line, Bar, Pie } from "react-chartjs-2";
-import { FaUsers, FaUserFriends, FaChartPie, FaCheckCircle, FaFileCsv, FaFilePdf, FaLifeRing, FaExclamationCircle } from "react-icons/fa";
+import { FaUsers, FaUserFriends, FaChartPie, FaCheckCircle, FaFileCsv, FaFilePdf, FaLifeRing, FaExclamationCircle, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { usePermissions } from "../hooks/usePermissions";
 import { useLoading } from "../context/LoadingContext";
 import { useSegment } from "../context/SegmentContext";
@@ -15,7 +15,7 @@ import { EXPORT_CANVAS_SIZES } from "../utils/exportConstants";
 import { exportChartDataToCSV } from "../utils/exportUtils";
 import { exportReportPDF } from "../utils/exportReportPDF";
 import { useNavigate } from "react-router-dom";
-import { ANIMATION, ACTIVITY } from '../constants/appConstants';
+import { ANIMATION } from '../constants/appConstants';
 import { useTranslation } from "react-i18next";
 import LoadingOverlay from "../components/Loading/LoadingOverlay";
 import SkeletonLoader from "../components/Loading/SkeletonLoader";
@@ -95,6 +95,11 @@ const Dashboard = () => {
   const [exportingCSV, setExportingCSV] = useState(false);
   const [exportingPDF, setExportingPDF] = useState(false);
   const [exportingChart, setExportingChart] = useState(null);
+  const [activityPage, setActivityPage] = useState(0);
+
+  // Activities carousel configuration
+  const ACTIVITIES_PER_PAGE = 5;
+  const HOURS_24_IN_MS = 24 * 60 * 60 * 1000;
 
   const darkMode = document.documentElement.getAttribute("data-theme") === "dark";
 
@@ -145,7 +150,7 @@ const Dashboard = () => {
                 label += context.parsed.y + ' GB';
               } else if (context.chart.canvas.id === 'chart-speed-tier') {
                 label += context.parsed.y + ' users';
-              } else if (context.chart.canvas.id === 'chart-alerts-summary') {
+              } else if (context.chart.canvas.id === 'chart-peak-usage') {
                 label += context.parsed.y;
               } else {
                 label += context.parsed.y;
@@ -285,45 +290,108 @@ const Dashboard = () => {
     return segmentSpeedDistributions[currentSegment] || segmentSpeedDistributions.enterprise;
   }, [currentSegment]);
 
-  const alertsData = useMemo(() => {
-    // Generate segment-specific alerts data with different patterns
-    const segmentAlertDistributions = {
+  const peakUsageData = useMemo(() => {
+    // Generate segment-specific peak usage hours data
+    // Shows percentage of daily traffic during different time periods
+    const segmentPeakUsage = {
       enterprise: [
-        { alertType: "Critical", count: 8 },
-        { alertType: "Warning", count: 42 },
-        { alertType: "Info", count: 125 }
+        { period: "6AM-9AM", usage: 15, label: "Morning" },
+        { period: "9AM-12PM", usage: 28, label: "Late Morning" },
+        { period: "12PM-3PM", usage: 22, label: "Afternoon" },
+        { period: "3PM-6PM", usage: 25, label: "Late Afternoon" },
+        { period: "6PM-9PM", usage: 8, label: "Evening" },
+        { period: "9PM-12AM", usage: 2, label: "Night" }
       ],
       coLiving: [
-        { alertType: "Critical", count: 2 },
-        { alertType: "Warning", count: 18 },
-        { alertType: "Info", count: 65 }
+        { period: "6AM-9AM", usage: 12, label: "Morning" },
+        { period: "9AM-12PM", usage: 8, label: "Late Morning" },
+        { period: "12PM-3PM", usage: 10, label: "Afternoon" },
+        { period: "3PM-6PM", usage: 15, label: "Late Afternoon" },
+        { period: "6PM-9PM", usage: 32, label: "Evening" },
+        { period: "9PM-12AM", usage: 23, label: "Night" }
       ],
       hotel: [
-        { alertType: "Critical", count: 5 },
-        { alertType: "Warning", count: 28 },
-        { alertType: "Info", count: 95 }
+        { period: "6AM-9AM", usage: 18, label: "Morning" },
+        { period: "9AM-12PM", usage: 12, label: "Late Morning" },
+        { period: "12PM-3PM", usage: 8, label: "Afternoon" },
+        { period: "3PM-6PM", usage: 10, label: "Late Afternoon" },
+        { period: "6PM-9PM", usage: 28, label: "Evening" },
+        { period: "9PM-12AM", usage: 24, label: "Night" }
       ],
       coWorking: [
-        { alertType: "Critical", count: 3 },
-        { alertType: "Warning", count: 15 },
-        { alertType: "Info", count: 48 }
+        { period: "6AM-9AM", usage: 10, label: "Morning" },
+        { period: "9AM-12PM", usage: 30, label: "Late Morning" },
+        { period: "12PM-3PM", usage: 25, label: "Afternoon" },
+        { period: "3PM-6PM", usage: 28, label: "Late Afternoon" },
+        { period: "6PM-9PM", usage: 5, label: "Evening" },
+        { period: "9PM-12AM", usage: 2, label: "Night" }
       ],
       pg: [
-        { alertType: "Critical", count: 0 },
-        { alertType: "Warning", count: 8 },
-        { alertType: "Info", count: 32 }
+        { period: "6AM-9AM", usage: 8, label: "Morning" },
+        { period: "9AM-12PM", usage: 5, label: "Late Morning" },
+        { period: "12PM-3PM", usage: 10, label: "Afternoon" },
+        { period: "3PM-6PM", usage: 12, label: "Late Afternoon" },
+        { period: "6PM-9PM", usage: 35, label: "Evening" },
+        { period: "9PM-12AM", usage: 30, label: "Night" }
       ],
       miscellaneous: [
-        { alertType: "Critical", count: 0 },
-        { alertType: "Warning", count: 4 },
-        { alertType: "Info", count: 18 }
+        { period: "6AM-9AM", usage: 14, label: "Morning" },
+        { period: "9AM-12PM", usage: 18, label: "Late Morning" },
+        { period: "12PM-3PM", usage: 16, label: "Afternoon" },
+        { period: "3PM-6PM", usage: 20, label: "Late Afternoon" },
+        { period: "6PM-9PM", usage: 18, label: "Evening" },
+        { period: "9PM-12AM", usage: 14, label: "Night" }
       ]
     };
 
-    return segmentAlertDistributions[currentSegment] || segmentAlertDistributions.enterprise;
+    return segmentPeakUsage[currentSegment] || segmentPeakUsage.enterprise;
   }, [currentSegment]);
 
   const safeNumber = (value, fallback = 0) => typeof value === "number" && !isNaN(value) ? value : fallback;
+
+  // Filter activities to last 24 hours and sort by most recent first
+  const filteredActivities = useMemo(() => {
+    const now = new Date();
+    const filtered = recentActivities.filter(activity => {
+      if (!activity.createdAt) return true; // Keep activities without timestamp
+      const activityTime = new Date(activity.createdAt);
+      return (now - activityTime) <= HOURS_24_IN_MS;
+    });
+
+    // Sort by createdAt descending (most recent first)
+    return filtered.sort((a, b) => {
+      const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return timeB - timeA; // Descending order
+    });
+  }, [recentActivities, HOURS_24_IN_MS]);
+
+  // Calculate total pages for the carousel
+  const totalPages = Math.max(1, Math.ceil(filteredActivities.length / ACTIVITIES_PER_PAGE));
+
+  // Get current page activities (page-level cyclic navigation, not item-level)
+  const currentActivities = useMemo(() => {
+    if (filteredActivities.length === 0) return [];
+    const startIndex = activityPage * ACTIVITIES_PER_PAGE;
+    const endIndex = startIndex + ACTIVITIES_PER_PAGE;
+    // Slice returns the actual items for this page (may be less than 5 on last page)
+    return filteredActivities.slice(startIndex, endIndex);
+  }, [filteredActivities, activityPage, ACTIVITIES_PER_PAGE]);
+
+  // Carousel navigation handlers (cyclic at page level)
+  const handlePrevActivities = useCallback(() => {
+    setActivityPage(prev => {
+      if (totalPages <= 1) return 0;
+      return prev === 0 ? totalPages - 1 : prev - 1;
+    });
+  }, [totalPages]);
+
+  const handleNextActivities = useCallback(() => {
+    setActivityPage(prev => {
+      if (totalPages <= 1) return 0;
+      return (prev + 1) % totalPages;
+    });
+  }, [totalPages]);
 
 useEffect(() => {
   let mounted = true;
@@ -361,7 +429,7 @@ useEffect(() => {
   const renderDashboardForSegment = () => (
     <>
       <Card
-        title="Active Users"
+        title={t('dashboard.activeUsersCard')}
         icon={<FaUsers />}
         trendData={[
           1100, 1120, 1150, 1170, 1200,
@@ -370,10 +438,10 @@ useEffect(() => {
         ]}
         trendIncrease={safeNumber(metrics.activeUsersDelta, 0) >= 0}
       >
-        {safeNumber(metrics.activeUsers)} Active Users
+        {t('dashboard.activeUsersValue', { count: safeNumber(metrics.activeUsers) })}
       </Card>
       <Card
-        title="License Usage"
+        title={t('dashboard.licenseUsageCard')}
         icon={<FaChartPie />}
         trendData={[
           72, 73, 75, 76,
@@ -382,10 +450,10 @@ useEffect(() => {
         ]}
         trendIncrease={safeNumber(metrics.licenseUsageDelta, 0) >= 0}
       >
-        {safeNumber(metrics.licenseUsagePercent)}% Licenses Used
+        {t('dashboard.licensesUsedValue', { percent: safeNumber(metrics.licenseUsagePercent) })}
       </Card>
       <Card
-        title="Data Usage"
+        title={t('dashboard.dataUsageCard')}
         icon={<FaUserFriends />}
         trendData={[
           1.0, 1.05, 1.1, 1.15,
@@ -394,10 +462,10 @@ useEffect(() => {
         ]}
         trendIncrease={safeNumber(metrics.dataUsageDelta, 0) >= 0}
       >
-        {safeNumber(metrics.dataUsageTB)} TB Used This Week
+        {t('dashboard.dataUsedValue', { value: safeNumber(metrics.dataUsageTB) })}
       </Card>
       <Card
-        title="Network Uptime"
+        title={t('dashboard.networkUptimeCard')}
         icon={<FaCheckCircle />}
         trendData={[
           99.65, 99.72, 99.78, 99.85,
@@ -406,7 +474,7 @@ useEffect(() => {
         ]}
         trendIncrease={safeNumber(metrics.uptimeDelta, 0) >= 0}
       >
-        {safeNumber(metrics.networkUptime)}% This Month
+        {t('dashboard.uptimeValue', { percent: safeNumber(metrics.networkUptime) })}
       </Card>
     </>
   );
@@ -657,14 +725,14 @@ useEffect(() => {
 
       <h2 className="dashboard-section-title">{t('dashboard.networkAnalytics')}</h2>
       <section className="dashboard-charts" aria-label="Dashboard charts section">
-        <Card title="Network Usage (GB)">
+        <Card title={t('charts.networkUsage')}>
           <div id="chart-network-usage" className="chart-container">
             <Line
               data={{
                 labels: networkData.map((n) => n.day),
                 datasets: [
                   {
-                    label: "Network Usage (GB)",
+                    label: t('charts.networkUsage'),
                     data: networkData.map((n) => n.usageGB),
                     borderColor: "#004aad",
                     backgroundColor: "rgba(0,74,173,0.2)",
@@ -681,25 +749,25 @@ useEffect(() => {
               variant="secondary"
               onClick={() =>
                 handleDashboardExportCSV(
-                  ["Day", "Network Usage (GB)"],
+                  [t('dashboard.day'), t('charts.networkUsage')],
                   networkData.map((n) => [n.day, n.usageGB]),
                   "network_usage.csv",
                   "network-usage"
                 )
               }
-              aria-label="Export Network Usage CSV"
+              aria-label={t('common.exportCsv')}
               loading={exportingCSV && exportingChart === "network-usage"}
               disabled={exportingPDF || (exportingCSV && exportingChart !== "network-usage")}
             >
               <FaFileCsv style={{ marginRight: 6 }} />
-              Export CSV
+              {t('common.exportCsv')}
             </Button>
             <Button
               variant="secondary"
               onClick={() =>
                 handleDashboardExportPDF(
-                  "Network Usage (GB)",
-                  ["Day", "Network Usage (GB)"],
+                  t('charts.networkUsage'),
+                  [t('dashboard.day'), t('charts.networkUsage')],
                   networkData.map((n) => [n.day, n.usageGB]),
                   "line",
                   networkData,
@@ -708,24 +776,24 @@ useEffect(() => {
                   "network-usage"
                 )
               }
-              aria-label="Export Network Usage PDF"
+              aria-label={t('common.exportPdf')}
               loading={exportingPDF && exportingChart === "network-usage"}
               disabled={exportingCSV || (exportingPDF && exportingChart !== "network-usage")}
             >
               <FaFilePdf style={{ marginRight: 6 }} />
-              Export PDF
+              {t('common.exportPdf')}
             </Button>
           </div>
         </Card>
 
-        <Card title="Users by Speed Tier">
+        <Card title={t('charts.usersBySpeedTier')}>
           <div id="chart-speed-tier" className="chart-container">
             <Bar
               data={{
                 labels: speedTierData.map((d) => d.speedTier),
                 datasets: [
                   {
-                    label: "User Count",
+                    label: t('dashboard.userCount'),
                     data: speedTierData.map((d) => d.userCount),
                     backgroundColor: ["#004aad", "#3f51b5", "#7986cb", "#c5cae9"],
                     borderWidth: 1,
@@ -740,25 +808,25 @@ useEffect(() => {
               variant="secondary"
               onClick={() =>
                 handleDashboardExportCSV(
-                  ["Speed Tier", "User Count"],
+                  [t('dashboard.speedTier'), t('dashboard.userCount')],
                   speedTierData.map((d) => [d.speedTier, d.userCount]),
                   "users_by_speed_tier.csv",
                   "speed-tier"
                 )
               }
-              aria-label="Export Users by Speed Tier CSV"
+              aria-label={t('common.exportCsv')}
               loading={exportingCSV && exportingChart === "speed-tier"}
               disabled={exportingPDF || (exportingCSV && exportingChart !== "speed-tier")}
             >
               <FaFileCsv style={{ marginRight: 6 }} />
-              Export CSV
+              {t('common.exportCsv')}
             </Button>
             <Button
               variant="secondary"
               onClick={() =>
                 handleDashboardExportPDF(
-                  "Users by Speed Tier",
-                  ["Speed Tier", "User Count"],
+                  t('charts.usersBySpeedTier'),
+                  [t('dashboard.speedTier'), t('dashboard.userCount')],
                   speedTierData.map((d) => [d.speedTier, d.userCount]),
                   "bar",
                   speedTierData,
@@ -767,30 +835,49 @@ useEffect(() => {
                   "speed-tier"
                 )
               }
-              aria-label="Export Users by Speed Tier PDF"
+              aria-label={t('common.exportPdf')}
               loading={exportingPDF && exportingChart === "speed-tier"}
               disabled={exportingCSV || (exportingPDF && exportingChart !== "speed-tier")}
             >
               <FaFilePdf style={{ marginRight: 6 }} />
-              Export PDF
+              {t('common.exportPdf')}
             </Button>
           </div>
         </Card>
 
-        <Card title="Alerts Summary">
-          <div id="chart-alerts-summary" className="chart-container">
-            <Pie
+        <Card title={t('charts.peakUsageHours')}>
+          <div id="chart-peak-usage" className="chart-container">
+            <Bar
               data={{
-                labels: alertsData.map((a) => a.alertType),
+                labels: peakUsageData.map((p) => p.period),
                 datasets: [
                   {
-                    label: "Alerts",
-                    data: alertsData.map((a) => a.count),
-                    backgroundColor: ["#4caf50", "#ff9800", "#f44336"],
+                    label: t('charts.usagePercent'),
+                    data: peakUsageData.map((p) => p.usage),
+                    backgroundColor: peakUsageData.map((_, i) => {
+                      const colors = ['#4caf50', '#8bc34a', '#ffeb3b', '#ff9800', '#ff5722', '#9c27b0'];
+                      return colors[i % colors.length];
+                    }),
+                    borderRadius: 4,
                   },
                 ],
               }}
-              options={pieChartOptions}
+              options={{
+                ...chartOptions,
+                plugins: {
+                  ...chartOptions.plugins,
+                  legend: { display: false },
+                },
+                scales: {
+                  y: {
+                    beginAtZero: true,
+                    max: 40,
+                    ticks: {
+                      callback: (value) => `${value}%`
+                    }
+                  }
+                }
+              }}
             />
           </div>
           <div className="export-btn-group">
@@ -798,39 +885,39 @@ useEffect(() => {
               variant="secondary"
               onClick={() =>
                 handleDashboardExportCSV(
-                  ["Alert Type", "Count"],
-                  alertsData.map((a) => [a.alertType, a.count]),
-                  "alert_summary.csv",
-                  "alerts-summary"
+                  [t('dashboard.timePeriod'), t('charts.usagePercent')],
+                  peakUsageData.map((p) => [p.period, `${p.usage}%`]),
+                  "peak_usage_hours.csv",
+                  "peak-usage"
                 )
               }
-              aria-label="Export Alerts Summary CSV"
-              loading={exportingCSV && exportingChart === "alerts-summary"}
-              disabled={exportingPDF || (exportingCSV && exportingChart !== "alerts-summary")}
+              aria-label={t('common.exportCsv')}
+              loading={exportingCSV && exportingChart === "peak-usage"}
+              disabled={exportingPDF || (exportingCSV && exportingChart !== "peak-usage")}
             >
               <FaFileCsv style={{ marginRight: 6 }} />
-              Export CSV
+              {t('common.exportCsv')}
             </Button>
             <Button
               variant="secondary"
               onClick={() =>
                 handleDashboardExportPDF(
-                  "Alerts Summary",
-                  ["Alert Type", "Count"],
-                  alertsData.map((a) => [a.alertType, a.count]),
-                  "pie",
-                  alertsData,
-                  "alert_summary.pdf",
-                  "alerts_summary",
-                  "alerts-summary"
+                  t('charts.peakUsageHours'),
+                  [t('dashboard.timePeriod'), t('charts.usagePercent')],
+                  peakUsageData.map((p) => [p.period, `${p.usage}%`]),
+                  "bar",
+                  peakUsageData,
+                  "peak_usage_hours.pdf",
+                  "peak_usage",
+                  "peak-usage"
                 )
               }
-              aria-label="Export Alerts Summary PDF"
-              loading={exportingPDF && exportingChart === "alerts-summary"}
-              disabled={exportingCSV || (exportingPDF && exportingChart !== "alerts-summary")}
+              aria-label={t('common.exportPdf')}
+              loading={exportingPDF && exportingChart === "peak-usage"}
+              disabled={exportingCSV || (exportingPDF && exportingChart !== "peak-usage")}
             >
               <FaFilePdf style={{ marginRight: 6 }} />
-              Export PDF
+              {t('common.exportPdf')}
             </Button>
           </div>
         </Card>
@@ -838,14 +925,47 @@ useEffect(() => {
 
       <h2 className="dashboard-section-title">{t('dashboard.recentActivities')}</h2>
       <Card title="" className="recent-activities-card" aria-label="Recent user activities">
-        <ul className="activity-list">
-          {recentActivities.slice(0, ACTIVITY.MAX_RECENT_ITEMS).map((activity, i) => (
-            <li key={i} className="activity-item" tabIndex={0}>
-              <span className="activity-text">{activity.text}</span>
-              <span className="activity-time">{activity.time}</span>
-            </li>
-          ))}
-        </ul>
+        <div className="activities-carousel">
+          <button
+            className="carousel-nav carousel-nav-left"
+            onClick={handlePrevActivities}
+            aria-label={t('common.previous')}
+            disabled={totalPages <= 1}
+          >
+            <FaChevronLeft />
+          </button>
+
+          <ul className="activity-list">
+            {currentActivities.map((activity, i) => (
+              <li key={`${activity.id || i}-${activityPage}`} className="activity-item" tabIndex={0}>
+                <span className="activity-text">{activity.text}</span>
+                <span className="activity-time">{activity.time}</span>
+              </li>
+            ))}
+            {currentActivities.length === 0 && (
+              <li className="activity-item activity-empty">
+                <span className="activity-text">{t('activities.noActivities')}</span>
+              </li>
+            )}
+          </ul>
+
+          <button
+            className="carousel-nav carousel-nav-right"
+            onClick={handleNextActivities}
+            aria-label={t('common.next')}
+            disabled={totalPages <= 1}
+          >
+            <FaChevronRight />
+          </button>
+        </div>
+
+        {totalPages > 1 && (
+          <div className="activities-pagination">
+            <span className="pagination-info">
+              {activityPage + 1} / {totalPages}
+            </span>
+          </div>
+        )}
       </Card>
     </main>
   );

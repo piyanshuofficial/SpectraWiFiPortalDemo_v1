@@ -14,6 +14,7 @@ import {
   FaClipboardList,
   FaQuestionCircle
 } from 'react-icons/fa';
+import { useTranslation } from 'react-i18next';
 import Button from '../../components/Button';
 import Badge from '../../components/Badge';
 import Pagination from '../../components/Pagination';
@@ -139,6 +140,7 @@ LogTableRow.displayName = 'LogTableRow';
 const ActivityLogs = () => {
   const { currentSegment } = useSegment();
   const { hasPermission } = usePermissions();
+  const { t } = useTranslation();
 
   // State for filters
   const [searchQuery, setSearchQuery] = useState('');
@@ -278,7 +280,7 @@ const ActivityLogs = () => {
 
   const handleExportCSV = async () => {
     if (filteredLogs.length === 0) {
-      notifications.showWarning('No logs to export');
+      notifications.showWarning(t('logs.noLogsToExport'));
       return;
     }
 
@@ -316,14 +318,14 @@ const ActivityLogs = () => {
   // Check permission
   if (!hasPermission('canViewLogs')) {
     return (
-      <main className="main-content" role="main" aria-label="Activity Logs">
+      <main className="main-content" role="main" aria-label={t('logs.pageAriaLabel')}>
         <div className="logs-container">
           <div className="logs-permission-denied">
             <FaClipboardList className="permission-denied-icon" />
-            <h2>Access Restricted</h2>
-            <p>You don't have permission to view activity logs.</p>
+            <h2>{t('logs.accessRestricted')}</h2>
+            <p>{t('logs.noPermission')}</p>
             <p className="permission-denied-help">
-              Only administrators and managers can access this section.
+              {t('logs.permissionHelp')}
             </p>
           </div>
         </div>
@@ -332,9 +334,9 @@ const ActivityLogs = () => {
   }
 
   return (
-    <main className="main-content" role="main" aria-label="Activity Logs">
+    <main className="main-content" role="main" aria-label={t('logs.pageAriaLabel')}>
       <div className="logs-container">
-        <h1 className="logs-page-title">Activity Logs</h1>
+        <h1 className="logs-page-title">{t('logs.title')}</h1>
 
         {/* Toolbar - matches DeviceToolbar pattern */}
         <div className="logs-toolbar-content">
@@ -346,58 +348,58 @@ const ActivityLogs = () => {
                   onClick={handleExportCSV}
                   loading={exportingCSV}
                   disabled={filteredLogs.length === 0}
-                  title={filteredLogs.length === 0 ? 'No logs to export' : 'Export logs to CSV'}
-                  aria-label="Export logs to CSV"
+                  title={filteredLogs.length === 0 ? t('logs.noLogsToExport') : t('logs.exportCsvAria')}
+                  aria-label={t('logs.exportCsvAria')}
                 >
                   <FaFileCsv style={{ marginRight: 6 }} />
-                  Export CSV
+                  {t('logs.exportCsv')}
                 </Button>
               </div>
               <div className="toolbar-right">
                 <input
                   type="search"
                   className="toolbar-search"
-                  placeholder="Search logs..."
+                  placeholder={t('logs.searchPlaceholder')}
                   value={searchQuery}
                   onChange={(e) => handleFilterChange(setSearchQuery)(e.target.value)}
-                  aria-label="Search activity logs"
+                  aria-label={t('logs.searchAriaLabel')}
                 />
                 <select
                   className="toolbar-select"
                   value={categoryFilter}
                   onChange={(e) => handleFilterChange(setCategoryFilter)(e.target.value)}
-                  aria-label="Filter by category"
+                  aria-label={t('logs.filterByCategory')}
                 >
-                  <option value="all">All Categories</option>
-                  <option value="user">User Management</option>
-                  <option value="device">Device Management</option>
-                  <option value="system">System Config</option>
+                  <option value="all">{t('logs.allCategories')}</option>
+                  <option value="user">{t('logs.categories.user')}</option>
+                  <option value="device">{t('logs.categories.device')}</option>
+                  <option value="system">{t('logs.categories.system')}</option>
                 </select>
                 <select
                   className="toolbar-select"
                   value={actionFilter}
                   onChange={(e) => handleFilterChange(setActionFilter)(e.target.value)}
-                  aria-label="Filter by action"
+                  aria-label={t('logs.filterByAction')}
                 >
-                  <option value="all">All Actions</option>
-                  <option value="CREATE">Created</option>
-                  <option value="UPDATE">Updated</option>
-                  <option value="DELETE">Deleted</option>
+                  <option value="all">{t('logs.allActions')}</option>
+                  <option value="CREATE">{t('logs.actions.created')}</option>
+                  <option value="UPDATE">{t('logs.actions.updated')}</option>
+                  <option value="DELETE">{t('logs.actions.deleted')}</option>
                 </select>
                 <select
                   className="toolbar-select"
                   value={dateRangeFilter}
                   onChange={(e) => handleFilterChange(setDateRangeFilter)(e.target.value)}
-                  aria-label="Filter by date range"
+                  aria-label={t('logs.filterByDateRange')}
                 >
-                  <option value="1">Last 24 hours</option>
-                  <option value="7">Last 7 days</option>
-                  <option value="14">Last 14 days</option>
-                  <option value="30">Last 30 days</option>
+                  <option value="1">{t('logs.dateRanges.last24Hours')}</option>
+                  <option value="7">{t('logs.dateRanges.last7Days')}</option>
+                  <option value="14">{t('logs.dateRanges.last14Days')}</option>
+                  <option value="30">{t('logs.dateRanges.last30Days')}</option>
                 </select>
                 <FaQuestionCircle
                   className="help-icon"
-                  title="Activity logs help"
+                  title={t('logs.activityLogsHelp')}
                   aria-hidden="true"
                 />
               </div>
@@ -408,8 +410,8 @@ const ActivityLogs = () => {
         {/* Results Summary */}
         <div className="logs-summary-bar">
           <span className="logs-count">
-            Showing {paginatedLogs.length} of {filteredLogs.length} logs
-            {filteredLogs.length !== allLogs.length && ` (filtered from ${allLogs.length} total)`}
+            {t('logs.showingLogs', { showing: paginatedLogs.length, total: filteredLogs.length })}
+            {filteredLogs.length !== allLogs.length && ` ${t('logs.filteredFrom', { allTotal: allLogs.length })}`}
           </span>
         </div>
 
@@ -418,10 +420,10 @@ const ActivityLogs = () => {
           {filteredLogs.length === 0 ? (
             <div className="logs-empty-state">
               <FaClipboardList className="empty-icon" />
-              <p>No activity logs found matching your criteria.</p>
+              <p>{t('logs.noLogsFound')}</p>
             </div>
           ) : (
-            <table className="logs-table" role="grid" aria-label="Activity logs table">
+            <table className="logs-table" role="grid" aria-label={t('logs.tableAriaLabel')}>
               <thead>
                 <tr>
                   <th
@@ -429,7 +431,7 @@ const ActivityLogs = () => {
                     onClick={() => handleSort('timestamp')}
                     aria-sort={sortColumn === 'timestamp' ? sortDirection : 'none'}
                   >
-                    <span>Timestamp</span>
+                    <span>{t('logs.timestamp')}</span>
                     {renderSortIcon('timestamp')}
                   </th>
                   <th
@@ -437,7 +439,7 @@ const ActivityLogs = () => {
                     onClick={() => handleSort('action')}
                     aria-sort={sortColumn === 'action' ? sortDirection : 'none'}
                   >
-                    <span>Action</span>
+                    <span>{t('logs.action')}</span>
                     {renderSortIcon('action')}
                   </th>
                   <th
@@ -445,7 +447,7 @@ const ActivityLogs = () => {
                     onClick={() => handleSort('entity')}
                     aria-sort={sortColumn === 'entity' ? sortDirection : 'none'}
                   >
-                    <span>Entity</span>
+                    <span>{t('logs.entity')}</span>
                     {renderSortIcon('entity')}
                   </th>
                   <th
@@ -453,7 +455,7 @@ const ActivityLogs = () => {
                     onClick={() => handleSort('target')}
                     aria-sort={sortColumn === 'target' ? sortDirection : 'none'}
                   >
-                    <span>Target</span>
+                    <span>{t('logs.target')}</span>
                     {renderSortIcon('target')}
                   </th>
                   <th
@@ -461,11 +463,11 @@ const ActivityLogs = () => {
                     onClick={() => handleSort('performedBy')}
                     aria-sort={sortColumn === 'performedBy' ? sortDirection : 'none'}
                   >
-                    <span>Performed By</span>
+                    <span>{t('logs.performedBy')}</span>
                     {renderSortIcon('performedBy')}
                   </th>
-                  <th>Details</th>
-                  <th>IP Address</th>
+                  <th>{t('logs.details')}</th>
+                  <th>{t('logs.ipAddress')}</th>
                 </tr>
               </thead>
               <tbody>

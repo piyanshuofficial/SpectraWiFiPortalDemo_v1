@@ -144,6 +144,7 @@ const UserList = () => {
   const { canBulkAddUsers } = useBulkOperations();
   const location = useLocation();
   const { startLoading, stopLoading, isLoading } = useLoading();
+  const { t } = useTranslation();
   
   const [users, setUsers] = useState([]);
   const [devices, setDevices] = useState([]);
@@ -1261,7 +1262,7 @@ const UserList = () => {
   if (initialLoad) {
     return (
       <div className="user-list-container">
-        <h1 className="user-management-title">User Management</h1>
+        <h1 className="user-management-title">{t('users.title')}</h1>
         <div className="user-toolbar-ring-row">
           <div className="user-toolbar">
             <SkeletonLoader variant="rect" height={40} />
@@ -1274,9 +1275,9 @@ const UserList = () => {
 
   return (
     <div className="user-list-container">
-      <LoadingOverlay active={isLoading('users') || exportingCSV} message={exportingCSV ? "Exporting users..." : "Processing..."} />
+      <LoadingOverlay active={isLoading('users') || exportingCSV} message={exportingCSV ? t('users.exportingUsers') : t('common.processing')} />
 
-      <h1 className="user-management-title">User Management</h1>
+      <h1 className="user-management-title">{t('users.title')}</h1>
 
       <div className="user-toolbar-ring-row">
         <div className="user-toolbar">
@@ -1320,7 +1321,7 @@ const UserList = () => {
 
       <div className="column-controls-compact">
         <div className="column-controls-right">
-          <span className="compact-label">Columns:</span>
+          <span className="compact-label">{t('common.columns')}:</span>
           <div className="column-checkbox-compact">
             {columns
               .filter((c) => c.optional)
@@ -1346,8 +1347,8 @@ const UserList = () => {
         aria-controls="advanced-filters-panel"
       >
         {advancedFilterVisible
-          ? `Hide Advanced Filters${activeFilterCount > 0 ? ` (${activeFilterCount})` : ""}`
-          : `Show Advanced Filters${activeFilterCount > 0 ? ` (${activeFilterCount})` : ""}`}
+          ? `${t('common.hideAdvancedFilters')}${activeFilterCount > 0 ? ` (${activeFilterCount})` : ""}`
+          : `${t('common.showAdvancedFilters')}${activeFilterCount > 0 ? ` (${activeFilterCount})` : ""}`}
       </button>
 
       {advancedFilterVisible && (

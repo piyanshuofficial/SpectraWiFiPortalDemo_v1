@@ -1,0 +1,195 @@
+/* src/components/ExportProgress.css */
+
+.export-progress-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.export-progress-modal {
+  background: var(--card-bg, #fff);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  max-width: 420px;
+  padding: 24px;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.export-progress-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.export-progress-header .export-icon {
+  font-size: 24px;
+  color: var(--primary-color, #0066cc);
+}
+
+.export-progress-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-color, #333);
+}
+
+.export-progress-content {
+  margin-bottom: 20px;
+}
+
+.progress-bar-container {
+  height: 8px;
+  background: var(--border-color, #e0e0e0);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary-color, #0066cc), var(--primary-light, #3388dd));
+  border-radius: 4px;
+  transition: width 0.3s ease-out;
+}
+
+.progress-details {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  color: var(--text-secondary, #666);
+  margin-bottom: 12px;
+}
+
+.progress-percentage {
+  font-weight: 600;
+  color: var(--primary-color, #0066cc);
+}
+
+.progress-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--text-secondary, #666);
+}
+
+.progress-status .spinner {
+  animation: spin 1s linear infinite;
+  color: var(--primary-color, #0066cc);
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.export-success {
+  text-align: center;
+  padding: 16px;
+}
+
+.export-success .success-icon {
+  font-size: 48px;
+  color: var(--success-color, #28a745);
+  margin-bottom: 12px;
+}
+
+.export-success p {
+  margin: 0 0 8px;
+  color: var(--text-color, #333);
+}
+
+.export-success .file-name {
+  font-size: 13px;
+  color: var(--text-secondary, #666);
+  word-break: break-all;
+}
+
+.export-error {
+  text-align: center;
+  padding: 16px;
+}
+
+.export-error .error-icon {
+  font-size: 48px;
+  color: var(--error-color, #dc3545);
+  margin-bottom: 12px;
+}
+
+.export-error p {
+  margin: 0;
+  color: var(--error-color, #dc3545);
+}
+
+.export-progress-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.export-progress-actions button {
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cancel-button {
+  background: var(--card-bg, #fff);
+  border: 1px solid var(--border-color, #ddd);
+  color: var(--text-color, #333);
+}
+
+.cancel-button:hover {
+  background: var(--bg-secondary, #f5f5f5);
+}
+
+.close-button {
+  background: var(--primary-color, #0066cc);
+  border: none;
+  color: #fff;
+}
+
+.close-button:hover {
+  background: var(--primary-dark, #0052a3);
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .export-progress-modal {
+    padding: 20px;
+  }
+
+  .export-progress-header h3 {
+    font-size: 16px;
+  }
+}

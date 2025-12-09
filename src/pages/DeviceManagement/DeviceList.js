@@ -8,6 +8,7 @@ import { useTableState } from "../../hooks/useTableState";
 import { useBulkOperations } from "../../hooks/useBulkOperations";
 import { useLoading } from "../../context/LoadingContext";
 import { useSegment } from "../../context/SegmentContext";
+import { useTranslation } from "react-i18next";
 import Button from "../../components/Button";
 import Pagination from "../../components/Pagination";
 import DeviceFormModal from "../../components/DeviceFormModal";
@@ -46,8 +47,8 @@ const SummaryCard = React.memo(({ stat }) => (
     </div>
     <div className="devsc-valuecard">
       <span className="devsc-value">{stat.value.toLocaleString()}</span>
-      {stat.label === "Online Now" && <span className="devsc-dot green"></span>}
-      {stat.label === "Blocked" && <span className="devsc-dot red"></span>}
+      {stat.labelKey === "onlineNow" && <span className="devsc-dot green"></span>}
+      {stat.labelKey === "blocked" && <span className="devsc-dot red"></span>}
     </div>
   </div>
 ));
@@ -61,35 +62,36 @@ const DeviceCard = React.memo(({
   onDelete,
   canEdit,
   canDelete,
-  disconnectingDeviceId
+  disconnectingDeviceId,
+  t
 }) => (
   <div className="device-card">
     <div className="device-icon-bg">
       <device.Icon className="device-main-icon" />
       <span
         className={`device-status-indicator ${device.online ? "status-online" : "status-offline"}`}
-        title={device.online ? "Online" : "Offline"}
-        aria-label={device.online ? "Device is online" : "Device is offline"}
+        title={device.online ? t('status.online') : t('status.offline')}
+        aria-label={device.online ? t('devices.deviceOnline') : t('devices.deviceOffline')}
       >
         {device.online ? "●" : "●"}
       </span>
     </div>
     <div className="device-meta-col">
       <div className="device-card-title">{device.name}</div>
-      <div className="device-detail">Type: {device.category}</div>
-      <div className="device-detail">MAC: {device.mac}</div>
-      <div className="device-detail">Owner: {device.owner}</div>
+      <div className="device-detail">{t('devices.deviceType')}: {device.category}</div>
+      <div className="device-detail">{t('devices.macAddress')}: {device.mac}</div>
+      <div className="device-detail">{t('devices.owner')}: {device.owner}</div>
       <div className="device-card-info-row">
         <span>
-          IP Address:{" "}
+          {t('devices.ipAddress')}:{" "}
           <span className="device-link">{device.ip}</span>
         </span>
         <span>
-          Connected:{" "}
+          {t('devices.connected')}:{" "}
           <span className="device-link">{device.lastUsageDate}</span>
         </span>
         <span>
-          Data Usage (Current Session):{" "}
+          {t('devices.dataUsageSession')}:{" "}
           <span className="device-link">{device.dataUsage}</span>
         </span>
       </div>
@@ -99,32 +101,32 @@ const DeviceCard = React.memo(({
         <Button
           variant="primary"
           onClick={() => onEdit(device)}
-          aria-label={`Edit ${device.name}`}
+          aria-label={t('devices.editDeviceAria', { name: device.name })}
           disabled={disconnectingDeviceId === device.id}
-          title="Edit device name, type, and MAC address"
+          title={t('devices.editDeviceTitle')}
         >
-          Edit
+          {t('common.edit')}
         </Button>
       )}
       <Button
         variant="warning"
         onClick={() => onDisconnect(device)}
-        aria-label={`Disconnect ${device.name}`}
+        aria-label={t('devices.disconnectDeviceAria', { name: device.name })}
         disabled={!device.online}
         loading={disconnectingDeviceId === device.id}
-        title={!device.online ? "Device is already offline" : "Disconnect device from network"}
+        title={!device.online ? t('devices.alreadyOffline') : t('devices.disconnectTitle')}
       >
-        Disconnect
+        {t('devices.disconnect')}
       </Button>
       {canDelete && (
         <Button
           variant="danger"
           onClick={() => onDelete(device)}
-          aria-label={`Delete ${device.name}`}
+          aria-label={t('devices.deleteDeviceAria', { name: device.name })}
           disabled={disconnectingDeviceId === device.id}
-          title="Permanently delete this device"
+          title={t('devices.deleteDeviceTitle')}
         >
-          Delete
+          {t('common.delete')}
         </Button>
       )}
     </div>
@@ -149,6 +151,7 @@ const DeviceList = () => {
   const { isLoading } = useLoading();
   const { currentSegment } = useSegment();
   const { canBulkAddUserDevices, canBulkAddSmartDigitalDevices } = useBulkOperations();
+  const { t } = useTranslation();
 
   const [devices, setDevices] = useState([]);
   const [showDeviceModal, setShowDeviceModal] = useState(false);
@@ -210,7 +213,11 @@ const DeviceList = () => {
     }
 
     // Sub-type filter (specific device type)
-    if (subTypeFilter && subTypeFilter !== "all" && device.type !== subTypeFilter) return false;
+    // For user devices, check device.type; for digital devices, check device.subtype
+    if (subTypeFilter && subTypeFilter !== "all") {
+      const deviceSubtype = device.type === "digital" ? device.subtype : device.type;
+      if (deviceSubtype !== subTypeFilter) return false;
+    }
 
     // Status filter
     if (statusFilter === "online" && !device.online) return false;
@@ -253,52 +260,56 @@ const DeviceList = () => {
 
     return [
       {
-        label: "Total Devices",
+        label: t('devices.totalDevices'),
+        labelKey: "totalDevices",
         value: segmentDevices.length,
         Icon: FaDesktop,
         colorClass: "stat-blue"
       },
       {
-        label: "Online Now",
+        label: t('devices.onlineNow'),
+        labelKey: "onlineNow",
         value: onlineDevices,
         Icon: FaGlobeAmericas,
         colorClass: "stat-green"
       },
       {
-        label: "Offline",
+        label: t('status.offline'),
+        labelKey: "offline",
         value: offlineDevices,
         Icon: FaBan,
         colorClass: "stat-gray"
       },
       {
-        label: "Access Points",
+        label: t('devices.accessPoints'),
+        labelKey: "accessPoints",
         value: siteConfig.devices.accessPoints,
         Icon: FaWifi,
         colorClass: "stat-yellow"
       }
     ];
-  }, [devices, segmentUserIds]);
+  }, [devices, segmentUserIds, t]);
 
   // Primary device types - dynamic based on segment configuration
   const primaryDeviceTypes = useMemo(() => {
-    const types = [{ value: "all", label: "All Device Types" }];
+    const types = [{ value: "all", label: t('devices.allDeviceTypes') }];
 
     // Only show User Devices option if segment allows user devices
     if (allowUserDevices) {
-      types.push({ value: "user", label: "User Devices" });
+      types.push({ value: "user", label: t('devices.userDevices') });
     }
 
     // Only show Smart/Digital Devices option if segment allows digital devices
     if (allowDigitalDevices) {
-      types.push({ value: "smartDigital", label: "Smart/Digital Devices" });
+      types.push({ value: "smartDigital", label: t('devices.smartDigitalDevices') });
     }
 
     return types;
-  }, [allowUserDevices, allowDigitalDevices]);
+  }, [allowUserDevices, allowDigitalDevices, t]);
 
   // Get segment-specific device subtypes from config
   const subDeviceTypes = useMemo(() => {
-    let baseOptions = [{ value: "all", label: "All Sub-Types" }];
+    let baseOptions = [{ value: "all", label: t('devices.allSubTypes') }];
 
     if (primaryTypeFilter === "user") {
       // Use segment-specific user device subtypes from config
@@ -310,14 +321,14 @@ const DeviceList = () => {
       return [...baseOptions, ...smartDigitalSubTypes];
     }
     return baseOptions;
-  }, [primaryTypeFilter, segmentDeviceConfig]);
+  }, [primaryTypeFilter, segmentDeviceConfig, t]);
 
   const statusOptions = useMemo(() => [
-    { value: "all", label: "All Status" },
-    { value: "online", label: "Online" },
-    { value: "offline", label: "Offline" },
-    { value: "blocked", label: "Blocked" }
-  ], []);
+    { value: "all", label: t('common.all') },
+    { value: "online", label: t('status.online') },
+    { value: "offline", label: t('status.offline') },
+    { value: "blocked", label: t('status.blocked') }
+  ], [t]);
 
   useEffect(() => {
     let mounted = true;
@@ -1058,8 +1069,8 @@ const DeviceList = () => {
   if (initialLoad) {
     return (
       <main className="device-mgmt-main">
-        <h1 className="device-mgmt-title">Device Management</h1>
-        
+        <h1 className="device-mgmt-title">{t('devices.title')}</h1>
+
         <div className="device-summary-cards">
           {[...Array(4)].map((_, i) => (
             <SkeletonLoader key={i} variant="card" />
@@ -1081,11 +1092,11 @@ const DeviceList = () => {
     <main className="device-mgmt-main">
       <LoadingOverlay
         active={isLoading('devices')}
-        message="Processing devices..."
+        message={t('common.processing')}
         fullPage={false}
       />
 
-      <h1 className="device-mgmt-title" style={{ marginBottom: '1.5rem' }}>Device Management</h1>
+      <h1 className="device-mgmt-title" style={{ marginBottom: '1.5rem' }}>{t('devices.title')}</h1>
 
       <div className="device-summary-cards">
         {segmentDeviceStats.map(stat => (
@@ -1121,14 +1132,14 @@ const DeviceList = () => {
 
       <div className="device-card-list">
         {pagedDevices.length === 0 ? (
-          <div style={{ 
-            textAlign: "center", 
-            padding: "40px", 
+          <div style={{
+            textAlign: "center",
+            padding: "40px",
             color: "#666",
             gridColumn: "1 / -1",
             fontSize: "1.1rem"
           }}>
-            No devices found for this segment.
+            {t('devices.noDevicesFound')}
           </div>
         ) : (
           pagedDevices.map(device => (
@@ -1141,6 +1152,7 @@ const DeviceList = () => {
               canEdit={canEditDevice}
               canDelete={canDeleteDevice}
               disconnectingDeviceId={disconnectingDeviceId}
+              t={t}
             />
           ))
         )}
@@ -1189,14 +1201,14 @@ const DeviceList = () => {
         open={showDisconnectConfirmation}
         onClose={handleCancelDisconnect}
         onConfirm={handleConfirmDisconnect}
-        title="Disconnect Device"
+        title={t('devices.disconnectDevice')}
         message={
           deviceToDisconnect
-            ? `Are you sure you want to disconnect "${deviceToDisconnect.name}" from the network? The device will lose network access immediately.`
+            ? t('devices.disconnectConfirm', { name: deviceToDisconnect.name })
             : ''
         }
-        confirmText="Disconnect"
-        cancelText="Cancel"
+        confirmText={t('devices.disconnect')}
+        cancelText={t('common.cancel')}
         variant="warning"
         loading={disconnectingDeviceId === deviceToDisconnect?.id}
       />
@@ -1205,14 +1217,14 @@ const DeviceList = () => {
         open={showDeleteConfirmation}
         onClose={handleCancelDelete}
         onConfirm={handleConfirmDelete}
-        title="Delete Device"
+        title={t('devices.deleteDevice')}
         message={
           deviceToDelete
-            ? `Are you sure you want to permanently delete "${deviceToDelete.name}" (${deviceToDelete.mac})? This action cannot be undone.`
+            ? t('devices.deleteConfirm', { name: deviceToDelete.name, mac: deviceToDelete.mac })
             : ''
         }
-        confirmText="Delete"
-        cancelText="Cancel"
+        confirmText={t('common.delete')}
+        cancelText={t('common.cancel')}
         variant="danger"
         loading={deleting}
       />

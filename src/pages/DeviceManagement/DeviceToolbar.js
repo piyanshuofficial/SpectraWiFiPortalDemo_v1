@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { FaPlusCircle, FaQuestionCircle, FaUpload, FaFileCsv, FaChevronDown } from "react-icons/fa";
+import { useTranslation } from "react-i18next";
 import Button from "../../components/Button";
 import "./DeviceToolbar.css";
 
@@ -27,6 +28,7 @@ function DeviceToolbar({
   statusOptions = [],
   segment = "enterprise"
 }) {
+  const { t } = useTranslation();
   const [showBulkImportMenu, setShowBulkImportMenu] = useState(false);
   const bulkImportRef = useRef(null);
 
@@ -54,20 +56,12 @@ function DeviceToolbar({
               onClick={onRegisterDevice}
               variant="primary"
               disabled={disableRegisterDevice}
-              title={
-                disableRegisterDevice
-                  ? "Permission required or not available for this segment"
-                  : "Register New Device"
-              }
+              title={disableRegisterDevice ? t('devices.permissionRequired') : t('devices.registerDevice')}
               aria-disabled={disableRegisterDevice}
-              aria-label={
-                disableRegisterDevice
-                  ? "Register Device button disabled"
-                  : "Register New Device"
-              }
+              aria-label={disableRegisterDevice ? t('devices.registerDisabled') : t('devices.registerDevice')}
             >
               <FaPlusCircle style={{ marginRight: 6 }} />
-              Register Device
+              {t('devices.registerDevice')}
             </Button>
 
             {(showBulkImportUser || showBulkImportSmartDigital) && (
@@ -76,17 +70,13 @@ function DeviceToolbar({
                   onClick={() => setShowBulkImportMenu(!showBulkImportMenu)}
                   variant="success"
                   disabled={disableBulkImport}
-                  title={
-                    disableBulkImport
-                      ? "Permission required to bulk import devices"
-                      : "Bulk import devices from CSV"
-                  }
-                  aria-label="Bulk Import Devices"
+                  title={disableBulkImport ? t('devices.bulkImportDisabled') : t('common.bulkImport')}
+                  aria-label={t('common.bulkImport')}
                   aria-haspopup="true"
                   aria-expanded={showBulkImportMenu}
                 >
                   <FaUpload style={{ marginRight: 6 }} />
-                  Bulk Import
+                  {t('common.bulkImport')}
                   <FaChevronDown style={{ marginLeft: 6, fontSize: '0.75em' }} />
                 </Button>
 
@@ -96,20 +86,20 @@ function DeviceToolbar({
                       <button
                         className="bulk-import-option"
                         onClick={() => handleBulkImportClick('userDevices')}
-                        aria-label="Bulk Import User Devices"
+                        aria-label={t('devices.bulkImportUserDevices')}
                       >
                         <FaUpload style={{ marginRight: 8 }} />
-                        User Devices
+                        {t('devices.userDevices')}
                       </button>
                     )}
                     {showBulkImportSmartDigital && (
                       <button
                         className="bulk-import-option"
                         onClick={() => handleBulkImportClick('smartDigitalDevices')}
-                        aria-label="Bulk Import Smart/Digital Devices"
+                        aria-label={t('devices.bulkImportSmartDigital')}
                       >
                         <FaUpload style={{ marginRight: 8 }} />
-                        Smart/Digital Devices
+                        {t('devices.smartDigitalDevices')}
                       </button>
                     )}
                   </div>
@@ -122,15 +112,11 @@ function DeviceToolbar({
                 onClick={onExportCSV}
                 variant="secondary"
                 disabled={disableExportCSV}
-                title={
-                  disableExportCSV
-                    ? "No devices to export"
-                    : "Export device list to CSV"
-                }
-                aria-label="Export Devices to CSV"
+                title={disableExportCSV ? t('devices.noDevicesToExport') : t('common.exportCsv')}
+                aria-label={t('common.exportCsv')}
               >
                 <FaFileCsv style={{ marginRight: 6 }} />
-                Export CSV
+                {t('common.exportCsv')}
               </Button>
             )}
           </div>
@@ -139,20 +125,20 @@ function DeviceToolbar({
             <input
               type="search"
               className="toolbar-search"
-              placeholder="Search devices..."
+              placeholder={t('devices.searchDevices')}
               value={searchValue}
               onChange={onSearchChange}
-              aria-label="Search devices"
+              aria-label={t('devices.searchDevices')}
             />
             <select
               className="toolbar-select"
               value={primaryTypeFilter}
               onChange={onPrimaryTypeChange}
-              aria-label="Filter by primary device type"
+              aria-label={t('devices.filterByPrimaryType')}
             >
-              {primaryDeviceTypes.map((t) => (
-                <option key={t.value} value={t.value}>
-                  {t.label}
+              {primaryDeviceTypes.map((type) => (
+                <option key={type.value} value={type.value}>
+                  {type.label}
                 </option>
               ))}
             </select>
@@ -160,11 +146,11 @@ function DeviceToolbar({
               className="toolbar-select"
               value={subTypeFilter}
               onChange={onSubTypeChange}
-              aria-label="Filter by device sub-type"
+              aria-label={t('devices.filterBySubType')}
             >
-              {subDeviceTypes.map((t) => (
-                <option key={t.value} value={t.value}>
-                  {t.label}
+              {subDeviceTypes.map((type) => (
+                <option key={type.value} value={type.value}>
+                  {type.label}
                 </option>
               ))}
             </select>
@@ -172,7 +158,7 @@ function DeviceToolbar({
               className="toolbar-select"
               value={statusFilter}
               onChange={onStatusChange}
-              aria-label="Filter by device status"
+              aria-label={t('devices.filterByStatus')}
             >
               {statusOptions.map((s) => (
                 <option key={s.value} value={s.value}>
@@ -182,7 +168,7 @@ function DeviceToolbar({
             </select>
             <FaQuestionCircle
               className="help-icon"
-              title="Device management help"
+              title={t('devices.managementHelp')}
               aria-hidden="true"
             />
           </div>

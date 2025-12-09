@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { FaBookOpen, FaVideo, FaQuestionCircle, FaArrowLeft, FaChevronDown, FaChevronUp, FaPlay } from 'react-icons/fa';
+import { useTranslation } from 'react-i18next';
 import SkeletonLoader from '../../components/Loading/SkeletonLoader';
 import KnowledgeArticleModal from '../../components/KnowledgeArticleModal';
 import VideoPlayer from '../../components/VideoPlayer';
@@ -21,6 +22,7 @@ const SECTION_VIEWS = {
 
 const KnowledgeHome = () => {
   const { currentSegment } = useSegment();
+  const { t } = useTranslation();
   const [supportHighlight, setSupportHighlight] = useState(false);
   const [initialLoad, setInitialLoad] = useState(true);
   const [selectedArticle, setSelectedArticle] = useState(null);
@@ -1317,25 +1319,25 @@ const KnowledgeHome = () => {
 
   return (
     <main className="knowledge-center-main">
-      <h1 className="knowledge-center-title">Knowledge Center</h1>
+      <h1 className="knowledge-center-title">{t('knowledge.title')}</h1>
 
       <div className="knowledge-search-row">
         <input
           type="text"
           className="knowledge-search-input"
-          placeholder="Search for user management, network setup, reports, troubleshooting..."
-          aria-label="Search Knowledge Center"
+          placeholder={t('knowledge.searchPlaceholder')}
+          aria-label={t('knowledge.searchAriaLabel')}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
         />
-        <button className="knowledge-search-btn" onClick={handleSearch}>Search</button>
+        <button className="knowledge-search-btn" onClick={handleSearch}>{t('knowledge.searchButton')}</button>
       </div>
 
       {/* Back button - shown when in a section view */}
       {currentView !== SECTION_VIEWS.HOME && (
         <button className="knowledge-back-btn" onClick={handleBackToHome}>
-          <FaArrowLeft /> Back to Knowledge Center
+          <FaArrowLeft /> {t('knowledge.backToKnowledge')}
         </button>
       )}
 
@@ -1350,8 +1352,8 @@ const KnowledgeHome = () => {
             onKeyPress={(e) => e.key === 'Enter' && handleSectionClick(SECTION_VIEWS.GETTING_STARTED)}
           >
             <FaBookOpen className="feature-icon" />
-            <div className="feature-title">Getting Started</div>
-            <div className="feature-desc">Quick start guides for portal setup, user onboarding, and initial configuration of your WiFi management system</div>
+            <div className="feature-title">{t('knowledge.gettingStarted')}</div>
+            <div className="feature-desc">{t('knowledge.gettingStartedDesc')}</div>
           </div>
           <div
             className="knowledge-feature-card clickable"
@@ -1361,8 +1363,8 @@ const KnowledgeHome = () => {
             onKeyPress={(e) => e.key === 'Enter' && handleSectionClick(SECTION_VIEWS.VIDEO_TUTORIALS)}
           >
             <FaVideo className="feature-icon" />
-            <div className="feature-title">Video Tutorials</div>
-            <div className="feature-desc">Watch step-by-step video walkthroughs for managing users, devices, generating reports, and monitoring network performance</div>
+            <div className="feature-title">{t('knowledge.videoTutorials')}</div>
+            <div className="feature-desc">{t('knowledge.videoTutorialsDesc')}</div>
           </div>
           <div
             className="knowledge-feature-card clickable"
@@ -1372,8 +1374,8 @@ const KnowledgeHome = () => {
             onKeyPress={(e) => e.key === 'Enter' && handleSectionClick(SECTION_VIEWS.FAQ)}
           >
             <FaQuestionCircle className="feature-icon" />
-            <div className="feature-title">FAQ</div>
-            <div className="feature-desc">Answers to frequently asked questions about license management, user policies, device registration, and report generation</div>
+            <div className="feature-title">{t('knowledge.faq')}</div>
+            <div className="feature-desc">{t('knowledge.faqDesc')}</div>
           </div>
         </div>
       )}
@@ -1385,9 +1387,12 @@ const KnowledgeHome = () => {
           {searchTerm && (
             <div className="search-results-summary">
               <p className="search-results-text">
-                Found {filteredArticles.length} article{filteredArticles.length !== 1 ? 's' : ''}, {' '}
-                {filteredVideos.length} video{filteredVideos.length !== 1 ? 's' : ''}, and {' '}
-                {filteredFAQs.length} FAQ{filteredFAQs.length !== 1 ? 's' : ''} matching "{searchTerm}"
+                {t('knowledge.foundResults', {
+                  articles: filteredArticles.length,
+                  videos: filteredVideos.length,
+                  faqs: filteredFAQs.length,
+                  searchTerm
+                })}
               </p>
             </div>
           )}
@@ -1397,14 +1402,14 @@ const KnowledgeHome = () => {
             <div className="preview-section">
               <div className="preview-section-header">
                 <h2 className="preview-section-title">
-                  Getting Started
+                  {t('knowledge.gettingStarted')}
                   {searchTerm && ` (${filteredArticles.length})`}
                 </h2>
                 <button
                   className="view-all-btn"
                   onClick={() => setCurrentView(SECTION_VIEWS.GETTING_STARTED)}
                 >
-                  View All →
+                  {t('knowledge.viewAll')} →
                 </button>
               </div>
               <div className="preview-cards-grid">
@@ -1431,14 +1436,14 @@ const KnowledgeHome = () => {
             <div className="preview-section">
               <div className="preview-section-header">
                 <h2 className="preview-section-title">
-                  Video Tutorials
+                  {t('knowledge.videoTutorials')}
                   {searchTerm && ` (${filteredVideos.length})`}
                 </h2>
                 <button
                   className="view-all-btn"
                   onClick={() => setCurrentView(SECTION_VIEWS.VIDEO_TUTORIALS)}
                 >
-                  View All →
+                  {t('knowledge.viewAll')} →
                 </button>
               </div>
               <div className="preview-cards-grid">
@@ -1469,14 +1474,14 @@ const KnowledgeHome = () => {
             <div className="preview-section">
               <div className="preview-section-header">
                 <h2 className="preview-section-title">
-                  Frequently Asked Questions
+                  {t('knowledge.frequentlyAskedQuestions')}
                   {searchTerm && ` (${filteredFAQs.length})`}
                 </h2>
                 <button
                   className="view-all-btn"
                   onClick={() => setCurrentView(SECTION_VIEWS.FAQ)}
                 >
-                  View All →
+                  {t('knowledge.viewAll')} →
                 </button>
               </div>
               <div className="preview-faq-list">
@@ -1509,8 +1514,8 @@ const KnowledgeHome = () => {
           {/* No results message */}
           {searchTerm && filteredArticles.length === 0 && filteredVideos.length === 0 && filteredFAQs.length === 0 && (
             <div className="no-search-results">
-              <h3>No results found for "{searchTerm}"</h3>
-              <p>Try different keywords or browse our categories above.</p>
+              <h3>{t('knowledge.noResultsFound', { searchTerm })}</h3>
+              <p>{t('knowledge.tryDifferentKeywords')}</p>
             </div>
           )}
         </>
@@ -1519,12 +1524,12 @@ const KnowledgeHome = () => {
       {/* Getting Started Section View - Full Articles List */}
       {currentView === SECTION_VIEWS.GETTING_STARTED && (
         <>
-          <h2 className="section-view-title">Getting Started - Quick Start Guide</h2>
+          <h2 className="section-view-title">{t('knowledge.gettingStartedQuickGuide')}</h2>
 
           {/* Show search results count if searching */}
           {searchTerm && (
             <p className="search-results-text">
-              Found {filteredArticles.length} article{filteredArticles.length !== 1 ? 's' : ''} matching "{searchTerm}"
+              {t('knowledge.foundArticles', { count: filteredArticles.length, searchTerm })}
             </p>
           )}
 
@@ -1555,8 +1560,8 @@ const KnowledgeHome = () => {
             })
           ) : (
             <div className="no-search-results">
-              <h3>No articles found</h3>
-              <p>Try different keywords or clear your search.</p>
+              <h3>{t('knowledge.noArticlesFound')}</h3>
+              <p>{t('knowledge.tryDifferentOrClear')}</p>
             </div>
           )}
         </>
@@ -1837,10 +1842,10 @@ const KnowledgeHome = () => {
       {/* Video Tutorials Section View */}
       {currentView === SECTION_VIEWS.VIDEO_TUTORIALS && (
         <>
-          <h2 className="section-view-title">Video Tutorials</h2>
+          <h2 className="section-view-title">{t('knowledge.videoTutorials')}</h2>
           {searchTerm && (
             <p className="search-results-text">
-              Found {filteredVideos.length} video{filteredVideos.length !== 1 ? 's' : ''}
+              {t('knowledge.foundVideos', { count: filteredVideos.length })}
             </p>
           )}
           <div className="video-tutorials-grid">
@@ -1866,10 +1871,10 @@ const KnowledgeHome = () => {
       {/* FAQ Section View */}
       {currentView === SECTION_VIEWS.FAQ && (
         <>
-          <h2 className="section-view-title">Frequently Asked Questions</h2>
+          <h2 className="section-view-title">{t('knowledge.frequentlyAskedQuestions')}</h2>
           {searchTerm && (
             <p className="search-results-text">
-              Found {filteredFAQs.length} question{filteredFAQs.length !== 1 ? 's' : ''}
+              {t('knowledge.foundQuestions', { count: filteredFAQs.length })}
             </p>
           )}
           <div className="faq-container">
@@ -1907,8 +1912,8 @@ const KnowledgeHome = () => {
               onClose={handleCloseVideo}
             />
             <div className="video-modal-info">
-              <p><strong>Category:</strong> {selectedVideo.category}</p>
-              <p><strong>Duration:</strong> {selectedVideo.duration}</p>
+              <p><strong>{t('knowledge.category')}:</strong> {selectedVideo.category}</p>
+              <p><strong>{t('knowledge.duration')}:</strong> {selectedVideo.duration}</p>
               <p>{selectedVideo.description}</p>
             </div>
           </div>
@@ -1922,14 +1927,14 @@ const KnowledgeHome = () => {
         onClick={supportHighlight ? handleHighlightRemove : undefined}
         tabIndex={supportHighlight ? 0 : -1}
         style={{ outline: supportHighlight ? 'none' : undefined }}
-        aria-label="Support knowledge center section"
+        aria-label={t('knowledge.supportAriaLabel')}
       >
-        <div className="help-title">Need Additional Help?</div>
-        <div className="help-desc">Can't find what you're looking for? Our support team is ready to assist with portal navigation, technical issues, and configuration guidance.</div>
+        <div className="help-title">{t('knowledge.needHelp')}</div>
+        <div className="help-desc">{t('knowledge.needHelpDesc')}</div>
         <div className="help-buttons">
-          <button className="help-btn email">Email Support</button>
-          <button className="help-btn call">Call Support</button>
-          <button className="help-btn chat">Live Chat</button>
+          <button className="help-btn email">{t('knowledge.emailSupport')}</button>
+          <button className="help-btn call">{t('knowledge.callSupport')}</button>
+          <button className="help-btn chat">{t('knowledge.liveChat')}</button>
         </div>
       </div>
 

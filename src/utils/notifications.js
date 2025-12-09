@@ -2,7 +2,11 @@
 
 import React from 'react';
 import { toast } from "react-toastify";
+import i18next from 'i18next';
 import Spinner from '../components/Loading/Spinner';
+
+// Helper to get translated message
+const t = (key, options) => i18next.t(key, options);
 
 /**
  * Centralized notification system for the application
@@ -255,37 +259,43 @@ export const notifications = {
   showPromise,
 
   // User Management
-  userAdded: () => showSuccess("User added successfully"),
-  userUpdated: () => showSuccess("User updated successfully"),
-  userDeleted: () => showSuccess("User deleted successfully"),
-  userActivated: (userId) => showSuccess(`User ${userId} activated successfully`),
-  userSuspended: (userId) => showWarning(`User ${userId} suspended`),
-  userBlocked: (userId) => showError(`User ${userId} blocked`),
+  userAdded: () => showSuccess(t('notifications.userAdded')),
+  userUpdated: () => showSuccess(t('notifications.userUpdated')),
+  userDeleted: () => showSuccess(t('notifications.userDeleted')),
+  userActivated: (userId) => showSuccess(t('notifications.userActivated', { userId })),
+  userSuspended: (userId) => showWarning(t('notifications.userSuspended', { userId })),
+  userBlocked: (userId) => showError(t('notifications.userBlocked', { userId })),
 
   // Device Management
-  deviceRegistered: (deviceName) => showSuccess(`Device "${deviceName}" registered successfully`),
-  deviceBlocked: (deviceName) => showWarning(`${deviceName} has been blocked`),
-  deviceAlreadyBlocked: (deviceName) => showInfo(`${deviceName} is already blocked`),
+  deviceRegistered: (deviceName) => showSuccess(t('notifications.deviceRegistered', { name: deviceName })),
+  deviceBlocked: (deviceName) => showWarning(t('notifications.deviceBlocked', { name: deviceName })),
+  deviceAlreadyBlocked: (deviceName) => showInfo(t('notifications.deviceAlreadyBlocked', { name: deviceName })),
 
   // Export Operations
-  exportSuccess: (type = "file") => showSuccess(`${type} exported successfully`),
-  exportFailed: (type = "file") => showError(`Failed to export ${type}`),
+  exportSuccess: (type = "file") => showSuccess(t('notifications.exportSuccess', { type })),
+  exportFailed: (type = "file") => showError(t('notifications.exportFailed', { type })),
 
   // Permission Errors
-  noPermission: (action) => showError(`You don't have permission to ${action}. Please contact your administrator.`),
+  noPermission: (action) => showError(t('notifications.noPermission', { action })),
 
   // License Warnings
-  licenseFull: () => showError("Cannot add more users: all licenses are used. Please suspend or block an existing user or request additional licenses."),
+  licenseFull: () => showError(t('notifications.licenseFull')),
 
   // Generic Operations
-  operationSuccess: (operation) => showSuccess(`${operation} completed successfully`),
-  operationFailed: (operation) => showError(`${operation} failed`),
+  operationSuccess: (operation) => showSuccess(t('notifications.operationSuccess', { operation })),
+  operationFailed: (operation) => showError(t('notifications.operationFailed', { operation })),
 
   // Validation
-  validationError: (message = "Please fix errors before submitting") => showError(message),
+  validationError: (message) => showError(message || t('notifications.validationError')),
 
   // Loading
-  loading: (message = "Processing...") => showLoading(message),
+  loading: (message) => showLoading(message || t('common.processing')),
+
+  // Simple pass-through for direct messages
+  success: (message) => showSuccess(message),
+  error: (message) => showError(message),
+  warning: (message) => showWarning(message),
+  info: (message) => showInfo(message),
 
   // Custom
   custom: {

@@ -4,6 +4,7 @@ import React, { useState, useMemo, useEffect, useRef, useCallback } from "react"
 import { useAuth } from "../../context/AuthContext";
 import { Permissions } from "../../utils/accessLevels";
 import { useLoading } from "../../context/LoadingContext";
+import { useTranslation } from "react-i18next";
 import LoadingOverlay from "../../components/Loading/LoadingOverlay";
 import SkeletonLoader from "../../components/Loading/SkeletonLoader";
 import Button from "../../components/Button";
@@ -60,8 +61,9 @@ const hexToRgba = (hex, alpha) => {
 const ReportDashboard = () => {
   const { currentUser } = useAuth();
   const { isLoading } = useLoading();
+  const { t } = useTranslation();
   const rolePermissions = Permissions[currentUser.accessLevel]?.[currentUser.role] || {};
-  
+
   const [activeCategory, setActiveCategory] = useState(null);
   const [activeSubcategory, setActiveSubcategory] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
@@ -181,13 +183,13 @@ const ReportDashboard = () => {
         return prev.filter(id => id !== reportId);
       } else {
         if (prev.length >= MAX_PINNED_REPORTS) {
-          notifications.showWarning(`Maximum ${MAX_PINNED_REPORTS} pinned reports allowed`);
+          notifications.showWarning(t('reports.maxPinnedReports', { count: MAX_PINNED_REPORTS }));
           return prev;
         }
         return [...prev, reportId];
       }
     });
-  }, []);
+  }, [t]);
 
   const isPinned = useCallback((reportId) => {
     return pinnedReports.includes(reportId);
@@ -376,7 +378,7 @@ const ReportDashboard = () => {
 
     // Check if report has data
     if (!reportHasData(report.id)) {
-      notifications.showError("No data available to export");
+      notifications.showError(t('reports.noDataToExport'));
       return;
     }
 
@@ -407,7 +409,7 @@ const ReportDashboard = () => {
 
     // Check if report has data
     if (!reportHasData(report.id)) {
-      notifications.showError("No data available to export");
+      notifications.showError(t('reports.noDataToExport'));
       return;
     }
 
@@ -487,7 +489,7 @@ const ReportDashboard = () => {
     if (!selectedReport) {
       return (
         <div className="no-report-selected">
-          <p>Select a report to view details</p>
+          <p>{t('reports.selectReportToView')}</p>
         </div>
       );
     }
@@ -511,24 +513,24 @@ const ReportDashboard = () => {
             <Button
               variant="secondary"
               onClick={() => handleDownloadCSV(selectedReport)}
-              title={hasData ? "Download CSV" : "No data available"}
-              aria-label={`Download ${selectedReport.name} CSV`}
+              title={hasData ? t('reports.downloadCsv') : t('reports.noDataAvailable')}
+              aria-label={t('reports.downloadReportAria', { name: selectedReport.name, format: 'CSV' })}
               loading={exportingCSV && exportingReportId === selectedReport.id}
               disabled={!hasData || (exportingPDF && exportingReportId === selectedReport.id)}
             >
               <FaFileCsv style={{ marginRight: 6 }} />
-              Export CSV
+              {t('reports.exportCsv')}
             </Button>
             <Button
               variant="secondary"
               onClick={() => handleExportPDF(selectedReport)}
-              title={hasData ? "Download PDF" : "No data available"}
-              aria-label={`Download ${selectedReport.name} PDF`}
+              title={hasData ? t('reports.downloadPdf') : t('reports.noDataAvailable')}
+              aria-label={t('reports.downloadReportAria', { name: selectedReport.name, format: 'PDF' })}
               loading={exportingPDF && exportingReportId === selectedReport.id}
               disabled={!hasData || (exportingCSV && exportingReportId === selectedReport.id)}
             >
               <FaFilePdf style={{ marginRight: 6 }} />
-              Export PDF
+              {t('reports.exportPdf')}
             </Button>
           </div>
         </div>
@@ -547,7 +549,7 @@ const ReportDashboard = () => {
           ) : (
             <div className="report-placeholder">
               <p>{selectedReport.description}</p>
-              <p className="report-placeholder-note">Full report visualization coming soon...</p>
+              <p className="report-placeholder-note">{t('reports.visualizationComingSoon')}</p>
             </div>
           )}
         </div>
@@ -557,8 +559,8 @@ const ReportDashboard = () => {
 
   if (initialLoad) {
     return (
-      <div className="report-dashboard-container" role="region" aria-label="Reports Dashboard">
-        <h1 className="reports-title">Reporting</h1>
+      <div className="report-dashboard-container" role="region" aria-label={t('reports.reportDashboard')}>
+        <h1 className="reports-title">{t('reports.title')}</h1>
         <div className="pinned-shortcuts-section">
           <SkeletonLoader variant="rect" height={30} width="40%" style={{ marginBottom: '20px' }} />
           <div className="shortcuts-grid">
@@ -582,13 +584,13 @@ const ReportDashboard = () => {
   }
 
   return (
-    <div className="report-dashboard-container" role="region" aria-label="Reports Dashboard">
+    <div className="report-dashboard-container" role="region" aria-label={t('reports.reportDashboard')}>
       <LoadingOverlay
         active={isLoading('export') || exportingCSV || exportingPDF}
-        message={exportingCSV ? "Preparing CSV..." : "Generating PDF..."}
+        message={exportingCSV ? t('reports.preparingCsv') : t('reports.generatingPdf')}
       />
 
-      <h1 className="reports-title">Reporting</h1>
+      <h1 className="reports-title">{t('reports.title')}</h1>
 
       <ReportCriteriaModal
         open={criteriaModalOpen}
@@ -603,15 +605,15 @@ const ReportDashboard = () => {
       <div className="pinned-shortcuts-section">
         <div className="shortcuts-header">
           <h3 className="shortcuts-title">
-            <FaStar className="shortcuts-icon" /> Pinned Reports
+            <FaStar className="shortcuts-icon" /> {t('reports.pinnedReports')}
           </h3>
           <span className="shortcuts-count">({pinnedReportObjects.length}/{MAX_PINNED_REPORTS})</span>
         </div>
-        
+
         <div className="shortcuts-grid">
           {pinnedReportObjects.length === 0 ? (
             <div className="no-shortcuts">
-              <p>No pinned reports. Click the star icon on any report to pin it here.</p>
+              <p>{t('reports.noPinnedReports')}</p>
             </div>
           ) : (
             pinnedReportObjects.map((report) => {
@@ -646,8 +648,8 @@ const ReportDashboard = () => {
                       e.stopPropagation();
                       togglePin(report.id);
                     }}
-                    title="Unpin report"
-                    aria-label="Unpin report"
+                    title={t('reports.unpinReport')}
+                    aria-label={t('reports.unpinReport')}
                   >
                     <FaTimes />
                   </button>
@@ -661,7 +663,7 @@ const ReportDashboard = () => {
       {recentReportObjects.length > 0 && (
         <div className="recent-reports-section">
           <h3 className="recent-title">
-            <FaClock className="recent-icon" /> Recently Viewed
+            <FaClock className="recent-icon" /> {t('reports.recentlyViewed')}
           </h3>
           <div className="recent-list">
             {recentReportObjects.map(report => (
@@ -685,16 +687,16 @@ const ReportDashboard = () => {
             ref={searchInputRef}
             type="search"
             className="search-input"
-            placeholder="Search reports by name, category, keywords..."
+            placeholder={t('reports.searchPlaceholder')}
             value={searchTerm}
             onChange={handleSearchChange}
-            aria-label="Search reports"
+            aria-label={t('reports.searchReports')}
           />
           {searchTerm && (
             <button
               className="search-clear-btn"
               onClick={clearSearch}
-              aria-label="Clear search"
+              aria-label={t('common.clearSearch')}
             >
               <FaTimes />
             </button>
@@ -702,7 +704,7 @@ const ReportDashboard = () => {
         </div>
         {searchTerm && (
           <div className="search-results-info">
-            Found {filteredReports.length} report{filteredReports.length !== 1 ? 's' : ''}
+            {t('reports.foundReports', { count: filteredReports.length })}
           </div>
         )}
       </div>
@@ -727,7 +729,7 @@ const ReportDashboard = () => {
       {!searchTerm && activeCategory && subcategories.length > 0 && (
         <div className="subcategory-section">
           <label htmlFor="subcategory-select" className="subcategory-label">
-            Filter by Subcategory:
+            {t('reports.filterBySubcategory')}:
           </label>
           <select
             id="subcategory-select"
@@ -735,7 +737,7 @@ const ReportDashboard = () => {
             value={activeSubcategory}
             onChange={(e) => setActiveSubcategory(e.target.value)}
           >
-            <option value="">All Subcategories</option>
+            <option value="">{t('reports.allSubcategories')}</option>
             {subcategories.map(sub => (
               <option key={sub} value={sub}>{sub}</option>
             ))}
@@ -746,10 +748,10 @@ const ReportDashboard = () => {
       <div className="reports-grid">
         {filteredReports.length === 0 ? (
           <div className="no-reports">
-            <p>No reports found matching your criteria.</p>
+            <p>{t('reports.noReportsFound')}</p>
             {searchTerm && (
               <button className="btn btn-secondary" onClick={clearSearch}>
-                Clear Search
+                {t('common.clearSearch')}
               </button>
             )}
           </div>
@@ -761,8 +763,8 @@ const ReportDashboard = () => {
                 <button
                   className={`pin-btn ${isPinned(report.id) ? 'pinned' : ''}`}
                   onClick={() => togglePin(report.id)}
-                  title={isPinned(report.id) ? "Unpin report" : "Pin report"}
-                  aria-label={isPinned(report.id) ? "Unpin report" : "Pin report"}
+                  title={isPinned(report.id) ? t('reports.unpinReport') : t('reports.pinReport')}
+                  aria-label={isPinned(report.id) ? t('reports.unpinReport') : t('reports.pinReport')}
                 >
                   {isPinned(report.id) ? <FaStar /> : <FaRegStar />}
                 </button>
@@ -784,19 +786,19 @@ const ReportDashboard = () => {
                 <Button
                   variant="primary"
                   onClick={() => handleViewReport(report)}
-                  title="View report"
-                  aria-label={`View ${report.name}`}
+                  title={t('reports.viewReport')}
+                  aria-label={t('reports.viewReportAria', { name: report.name })}
                 >
                   <FaEye style={{ marginRight: 6 }} />
-                  View
+                  {t('common.view')}
                 </Button>
-                
+
                 {report.exportFormats.includes('csv') && (
                   <Button
                     variant="secondary"
                     onClick={() => handleDownloadCSV(report)}
-                    title={reportHasData(report.id) ? "Download CSV" : "No data available"}
-                    aria-label={`Download ${report.name} CSV`}
+                    title={reportHasData(report.id) ? t('reports.downloadCsv') : t('reports.noDataAvailable')}
+                    aria-label={t('reports.downloadReportAria', { name: report.name, format: 'CSV' })}
                     loading={exportingCSV && exportingReportId === report.id}
                     disabled={!reportHasData(report.id) || (exportingPDF && exportingReportId === report.id)}
                   >
@@ -809,8 +811,8 @@ const ReportDashboard = () => {
                   <Button
                     variant="secondary"
                     onClick={() => handleExportPDF(report)}
-                    title={reportHasData(report.id) ? "Download PDF" : "No data available"}
-                    aria-label={`Download ${report.name} PDF`}
+                    title={reportHasData(report.id) ? t('reports.downloadPdf') : t('reports.noDataAvailable')}
+                    aria-label={t('reports.downloadReportAria', { name: report.name, format: 'PDF' })}
                     loading={exportingPDF && exportingReportId === report.id}
                     disabled={!reportHasData(report.id) || (exportingCSV && exportingReportId === report.id)}
                   >

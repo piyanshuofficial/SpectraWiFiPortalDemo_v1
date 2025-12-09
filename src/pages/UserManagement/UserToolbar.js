@@ -1,6 +1,7 @@
 // src/pages/UserManagement/UserToolbar.js
 
 import React from "react";
+import { useTranslation } from 'react-i18next';
 import { FaPlus, FaDownload, FaQuestionCircle, FaPlusCircle, FaUpload } from "react-icons/fa";
 import Button from "../../components/Button";
 import SEGMENTDEVICEAVAILABILITY from "../../config/segmentDeviceConfig";
@@ -22,6 +23,7 @@ function UserToolbar({
   segment = "enterprise"
 }) {
 
+  const { t } = useTranslation();
   const allowUserDevices = SEGMENTDEVICEAVAILABILITY[segment]?.allowUserDevices ?? false;
   const allowDigitalDevices = SEGMENTDEVICEAVAILABILITY[segment]?.allowDigitalDevices ?? false;
   const showAddDevice = allowUserDevices || allowDigitalDevices;
@@ -87,69 +89,69 @@ function UserToolbar({
               onClick={onAdd}
               variant="primary"
               disabled={disableAdd}
-              title={disableAdd ? "Permission required to add users" : "Add New User"}
+              title={disableAdd ? t('users.editPermissionRequired') : t('users.addUser')}
               aria-disabled={disableAdd}
-              aria-label={disableAdd ? "Add New User button disabled due to lack of permission" : "Add New User"}
+              aria-label={disableAdd ? t('users.editPermissionRequired') : t('users.addUser')}
             >
               <FaPlus style={{ marginRight: 6 }} />
-              Add New User
+              {t('users.addUser')}
             </Button>
             {onBulkImport && (
               <Button
                 onClick={onBulkImport}
                 variant="success"
                 disabled={disableBulkImport}
-                title={disableBulkImport ? "Permission required to bulk import users" : "Bulk import users from CSV"}
-                aria-label="Bulk Import Users"
+                title={disableBulkImport ? t('devices.bulkImportDisabled') : t('common.bulkImport')}
+                aria-label={t('common.bulkImport')}
               >
                 <FaUpload style={{ marginRight: 6 }} />
-                Bulk Import
+                {t('common.bulkImport')}
               </Button>
             )}
             {showAddDevice && (
               <Button
                 onClick={onAddDevice}
                 variant="info"
-                title="Add Device"
-                aria-label="Add Device"
+                title={t('devices.addDevice')}
+                aria-label={t('devices.addDevice')}
               >
                 <FaPlusCircle style={{ marginRight: 6 }} />
-                Add Device
+                {t('devices.addDevice')}
               </Button>
             )}
             <Button
               onClick={onExport}
               variant="secondary"
-              aria-label="Export Users"
+              aria-label={t('common.export')}
               disabled={disableExport}
               loading={exportLoading}
-              title={disableExport ? "Permission required to export users" : "Export users to CSV"}
+              title={disableExport ? t('notifications.noPermission', { action: t('common.export').toLowerCase() }) : t('common.export')}
             >
               <FaDownload style={{ marginRight: 6 }} />
-              Export
+              {t('common.export')}
             </Button>
           </div>
           <div className="toolbar-right">
             <input
               type="search"
               className="toolbar-search"
-              placeholder="Search users..."
+              placeholder={t('users.searchUsers')}
               value={searchValue}
               onChange={onSearchChange}
-              aria-label="Search users"
+              aria-label={t('users.searchUsers')}
             />
             <select
               className="toolbar-select"
               value={statusFilter}
               onChange={onStatusChange}
-              aria-label="Filter by status"
+              aria-label={t('common.filterBy', { field: t('common.status') })}
             >
-              <option value="">All Status</option>
-              <option value="Active">Active</option>
-              <option value="Suspended">Suspended</option>
-              <option value="Blocked">Blocked</option>
+              <option value="">{t('users.allStatus', { defaultValue: 'All Status' })}</option>
+              <option value="Active">{t('status.active')}</option>
+              <option value="Suspended">{t('status.suspended')}</option>
+              <option value="Blocked">{t('status.blocked')}</option>
             </select>
-            <FaQuestionCircle className="help-icon" title="User management help" aria-hidden="true" />
+            <FaQuestionCircle className="help-icon" title={t('common.help')} aria-hidden="true" />
           </div>
         </div>
       </div>
