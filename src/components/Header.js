@@ -1,7 +1,7 @@
 // src/components/Header.js
 
 import React, { useState, useEffect, useRef } from 'react';
-import { FaBell, FaUserCircle, FaGlobe, FaChevronDown } from 'react-icons/fa';
+import { FaBell, FaUserCircle, FaGlobe, FaChevronDown, FaBuilding, FaMapMarkerAlt, FaArrowLeft } from 'react-icons/fa';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import '../styles/toastify-overrides.css'; // CRITICAL: Must be imported AFTER ReactToastify.css
@@ -13,12 +13,23 @@ import { useSiteConfig } from '@hooks/useSiteConfig';
 import { useSegmentActivities } from '@hooks/useSegmentActivities';
 import { useTranslation } from 'react-i18next';
 import { LANGUAGES } from '../i18n';
+import { useAuth } from '../context/AuthContext';
+import { useAccessLevelView } from '../context/AccessLevelViewContext';
+import { AccessLevels } from '../utils/accessLevels';
 
 const MAX_NOTIFICATIONS = 5;
 
 const Header = () => {
   const { siteName } = useSiteConfig();
   const { t, i18n } = useTranslation();
+  const { currentUser } = useAuth();
+  const {
+    isCompanyUser,
+    isCompanyView,
+    isSiteView,
+    currentSiteName,
+    returnToCompanyView
+  } = useAccessLevelView();
   const [notifOpen, setNotifOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
@@ -28,6 +39,24 @@ const Header = () => {
 
   // Get current language
   const currentLang = LANGUAGES.find(lang => lang.code === i18n.language) || LANGUAGES[0];
+
+  // Determine header display name based on access level and view
+  const getHeaderDisplayName = () => {
+    if (currentUser?.accessLevel === AccessLevels.COMPANY) {
+      if (isCompanyView) {
+        return currentUser?.companyName || 'Company View';
+      } else {
+        return currentSiteName || siteName;
+      }
+    }
+    return siteName;
+  };
+
+  // Get view level indicator
+  const getViewIndicator = () => {
+    if (!isCompanyUser) return null;
+    return isCompanyView ? 'Company' : 'Site';
+  };
 
   const changeLanguage = (langCode) => {
     i18n.changeLanguage(langCode);
@@ -78,7 +107,31 @@ const Header = () => {
             </span>
           </div>
           <div className="header-center">
-            <span className="header-site">{siteName}</span>
+            {/* Back to Company View button - shown when drilled down to site */}
+            {isCompanyUser && isSiteView && (
+              <button
+                className="header-back-to-company"
+                onClick={returnToCompanyView}
+                title="Back to Company View"
+                aria-label="Back to Company View"
+              >
+                <FaArrowLeft aria-hidden="true" />
+                <span>Company View</span>
+              </button>
+            )}
+            <div className="header-site-info">
+              {isCompanyUser && (
+                <span className="header-view-indicator">
+                  {isCompanyView ? (
+                    <FaBuilding aria-hidden="true" />
+                  ) : (
+                    <FaMapMarkerAlt aria-hidden="true" />
+                  )}
+                  <span className="view-level-badge">{getViewIndicator()}</span>
+                </span>
+              )}
+              <span className="header-site">{getHeaderDisplayName()}</span>
+            </div>
           </div>
           <div className="header-actions">
             {/* Language Selector */}

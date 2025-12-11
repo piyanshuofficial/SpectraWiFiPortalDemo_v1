@@ -11,6 +11,13 @@ import {
   FaClipboardList,
   FaBars,
   FaTimes,
+  FaBuilding,
+  FaMapMarkerAlt,
+  FaHistory,
+  FaCog,
+  FaChartLine,
+  FaTicketAlt,
+  FaTasks,
 } from "react-icons/fa";
 import { usePermissions } from "@hooks/usePermissions";
 import { preloadRoute } from "@config/routes";
@@ -18,43 +25,107 @@ import { useTranslation } from "react-i18next";
 import logoMark from "@assets/images/spectra-logo-white.png";
 import "@components/Sidebar.css";
 
-// Sidebar items with translation keys
-const sidebarItems = [
+// Customer portal sidebar items with translation keys
+const customerSidebarItems = [
   {
     to: "/dashboard",
     icon: FaTachometerAlt,
     labelKey: "nav.dashboard",
+    label: "Dashboard",
     permission: "canViewReports"
   },
   {
     to: "/users",
     icon: FaUsers,
     labelKey: "nav.userManagement",
+    label: "User Management",
     permission: "canEditUsers"
   },
   {
     to: "/devices",
     icon: FaWifi,
     labelKey: "nav.deviceManagement",
+    label: "Device Management",
     permission: "canManageDevices"
   },
   {
     to: "/reports",
     icon: FaFileAlt,
     labelKey: "nav.reporting",
+    label: "Reports",
     permission: "canViewReports"
   },
   {
     to: "/knowledge",
     icon: FaBook,
     labelKey: "nav.knowledgeCenter",
+    label: "Knowledge Center",
     permission: "canViewReports"
   },
   {
     to: "/logs",
     icon: FaClipboardList,
     labelKey: "nav.activityLogs",
+    label: "Activity Logs",
     permission: "canViewLogs"
+  },
+];
+
+// Internal portal sidebar items (no translation for internal portal)
+const internalSidebarItems = [
+  {
+    to: "/internal/dashboard",
+    icon: FaTachometerAlt,
+    label: "Dashboard",
+    permission: "canAccessInternalPortal"
+  },
+  {
+    to: "/internal/sites",
+    icon: FaMapMarkerAlt,
+    label: "Sites",
+    permission: "canAccessInternalPortal"
+  },
+  {
+    to: "/internal/customers",
+    icon: FaBuilding,
+    label: "Customers",
+    permission: "canAccessInternalPortal"
+  },
+  {
+    to: "/internal/reports",
+    icon: FaChartLine,
+    label: "Reports",
+    permission: "canAccessInternalPortal"
+  },
+  {
+    to: "/internal/support",
+    icon: FaTicketAlt,
+    label: "Support",
+    permission: "canAccessInternalPortal"
+  },
+  {
+    to: "/internal/bulk-operations",
+    icon: FaTasks,
+    label: "Bulk Operations",
+    permission: "canAccessBulkOperations"
+  },
+  {
+    to: "/internal/logs",
+    icon: FaHistory,
+    label: "Audit Logs",
+    permission: "canAccessInternalPortal"
+  },
+  {
+    to: "/internal/config",
+    icon: FaCog,
+    label: "Configuration",
+    permission: "canAccessInternalPortal"
+  },
+  {
+    to: "/internal/knowledge",
+    icon: FaBook,
+    label: "Knowledge Base",
+    permission: "canAccessInternalPortal"
   },
 ];
 
@@ -65,14 +136,17 @@ const Sidebar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
+  // Determine if we're on internal portal routes
+  const isInternalPortal = location.pathname.startsWith('/internal');
+
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth <= 900);
     };
-    
+
     checkMobile();
     window.addEventListener('resize', checkMobile);
-    
+
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
@@ -86,11 +160,14 @@ const Sidebar = () => {
     } else {
       document.body.style.overflow = '';
     }
-    
+
     return () => {
       document.body.style.overflow = '';
     };
   }, [mobileOpen, isMobile]);
+
+  // Select sidebar items based on portal type
+  const sidebarItems = isInternalPortal ? internalSidebarItems : customerSidebarItems;
 
   const accessibleItems = sidebarItems.filter(item => {
     if (!item.permission) return true;
@@ -181,8 +258,8 @@ const Sidebar = () => {
         />
       )}
       
-      <aside 
-        className={`sidebar ${mobileOpen ? 'mobile-open' : ''}`}
+      <aside
+        className={`sidebar ${mobileOpen ? 'mobile-open' : ''} ${isInternalPortal ? 'internal-portal' : ''}`}
         role="navigation"
         aria-label="Main navigation"
       >
@@ -196,7 +273,7 @@ const Sidebar = () => {
         </div>
         <nav aria-label="Main navigation">
           <ul className="sidebar-nav">
-            {accessibleItems.map(({ to, icon: Icon, labelKey }) => (
+            {accessibleItems.map(({ to, icon: Icon, labelKey, label }) => (
               <li key={to} className="sidebar-nav-li">
                 <NavLink
                   to={to}
@@ -204,7 +281,7 @@ const Sidebar = () => {
                     "sidebar-nav-item" + (isActive ? " active-link" : "")
                   }
                   aria-current={({ isActive }) => (isActive ? "page" : undefined)}
-                  aria-label={t(labelKey)}
+                  aria-label={labelKey ? t(labelKey) : label}
                   onMouseEnter={() => handleMouseEnter(to)}
                   onFocus={() => handleMouseEnter(to)}
                   onClick={closeMobileMenu}
@@ -212,7 +289,7 @@ const Sidebar = () => {
                   <span className="sidebar-nav-icon" aria-hidden="true">
                     <Icon />
                   </span>
-                  <span className="sidebar-nav-label">{t(labelKey)}</span>
+                  <span className="sidebar-nav-label">{labelKey ? t(labelKey) : label}</span>
                 </NavLink>
               </li>
             ))}

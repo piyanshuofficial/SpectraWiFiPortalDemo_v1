@@ -55,6 +55,67 @@
   align-items: center;
   justify-content: center;
   text-align: center;
+  gap: 1rem;
+}
+
+.header-back-to-company {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.875rem;
+  background: rgba(104, 213, 255, 0.15);
+  border: 1px solid rgba(104, 213, 255, 0.3);
+  border-radius: 1.25rem;
+  color: #68d5ff;
+  font-size: var(--font-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.header-back-to-company:hover {
+  background: rgba(104, 213, 255, 0.25);
+  border-color: rgba(104, 213, 255, 0.5);
+  transform: translateX(-2px);
+}
+
+.header-back-to-company:focus {
+  outline: 2px solid #68d5ff;
+  outline-offset: 2px;
+}
+
+.header-back-to-company svg {
+  font-size: 0.75rem;
+}
+
+.header-site-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.header-view-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.625rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+  color: #fff;
+  font-size: var(--font-sm);
+}
+
+.header-view-indicator svg {
+  font-size: 0.875rem;
+  color: #68d5ff;
+}
+
+.view-level-badge {
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: var(--font-xs);
 }
 
 .header-site {

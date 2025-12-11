@@ -848,3 +848,60 @@
     margin-bottom: 0.5rem;
   }
 }
+
+/* Company View Banner */
+.knowledge-company-banner {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  margin-bottom: 1.5rem;
+  background: linear-gradient(135deg, rgba(0, 74, 173, 0.08) 0%, rgba(0, 74, 173, 0.04) 100%);
+  border: 1px solid rgba(0, 74, 173, 0.2);
+  border-radius: var(--radius-lg);
+  border-left: 4px solid #004aad;
+}
+
+.knowledge-company-banner-icon {
+  font-size: var(--font-3xl);
+  color: #004aad;
+  flex-shrink: 0;
+}
+
+.knowledge-company-banner-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+}
+
+.knowledge-company-banner-title {
+  font-size: var(--font-lg);
+  font-weight: 600;
+  color: #004aad;
+}
+
+.knowledge-company-banner-text {
+  font-size: var(--font-sm);
+  color: #374157;
+  line-height: 1.5;
+}
+
+.knowledge-company-banner-info {
+  font-size: var(--font-xl);
+  color: #004aad;
+  opacity: 0.6;
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .knowledge-company-banner {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.75rem;
+  }
+
+  .knowledge-company-banner-info {
+    display: none;
+  }
+}

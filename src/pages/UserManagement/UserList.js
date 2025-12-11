@@ -13,7 +13,7 @@ import BulkImportModal from "../../components/BulkImportModal";
 import ConfirmationModal from "../../components/ConfirmationModal";
 import {
   FaInfoCircle, FaEdit, FaTrash, FaSortUp, FaSortDown,
-  FaTachometerAlt, FaDatabase, FaTabletAlt
+  FaTachometerAlt, FaDatabase, FaTabletAlt, FaBuilding, FaMapMarkerAlt
 } from "react-icons/fa";
 import "./UserManagement.css";
 import { usePermissions } from "../../hooks/usePermissions";
@@ -33,6 +33,8 @@ import { useLoading } from "../../context/LoadingContext";
 import LoadingOverlay from "../../components/Loading/LoadingOverlay";
 import SkeletonLoader from "../../components/Loading/SkeletonLoader";
 import { exportChartDataToCSV } from "../../utils/exportUtils";
+import { useAccessLevelView } from "../../context/AccessLevelViewContext";
+import { companySites } from "../../constants/companySampleData";
 
 const PolicyCell = React.memo(({ speed, dataVolume, deviceLimit }) => {
   if (!speed && !dataVolume && !deviceLimit) return <td className="policy-column">--</td>;
@@ -66,7 +68,9 @@ const UserTableRow = React.memo(({
   segmentFilter,
   hasEditPermission,
   onDetailsClick,
-  onEditClick
+  onEditClick,
+  isCompanyView,
+  siteName
 }) => {
   const isBlocked = user.status === "Blocked" || user.status === "Restricted";
 
@@ -74,6 +78,15 @@ const UserTableRow = React.memo(({
     <tr>
       {visibleColumns.includes("id") && <td>{user.id}</td>}
       {visibleColumns.includes("firstName") && <td>{user.firstName} {user.lastName}</td>}
+      {/* Site column for company view */}
+      {isCompanyView && (
+        <td className="site-column">
+          <span className="site-badge">
+            <FaMapMarkerAlt className="site-icon" />
+            {user.siteName || siteName || '-'}
+          </span>
+        </td>
+      )}
       {visibleColumns.includes("mobile") && <td>{user.mobile}</td>}
       {visibleColumns.includes("email") && <td>{user.email}</td>}
       {(visibleColumns.includes("userPolicy") || visibleColumns.includes("policy")) && (
@@ -111,8 +124,8 @@ const UserTableRow = React.memo(({
           ) : (
             <Button
               variant="primary"
-              title="Edit User - Permission Required"
-              aria-label="Edit Disabled, Permission Required"
+              title={isCompanyView ? "Switch to Site View to edit" : "Edit User - Permission Required"}
+              aria-label={isCompanyView ? "Edit Disabled - Company View is read-only" : "Edit Disabled, Permission Required"}
               disabled
             >
               <FaEdit />
@@ -145,7 +158,11 @@ const UserList = () => {
   const location = useLocation();
   const { startLoading, stopLoading, isLoading } = useLoading();
   const { t } = useTranslation();
-  
+  const { isCompanyView, isSiteView, canEditInCurrentView, drillDownToSite } = useAccessLevelView();
+
+  // Site filter for company view
+  const [siteFilter, setSiteFilter] = useState('all');
+
   const [users, setUsers] = useState([]);
   const [devices, setDevices] = useState([]);
   const [initialLoad, setInitialLoad] = useState(true);
@@ -190,6 +207,8 @@ const UserList = () => {
   const userFilterFunction = useCallback((user, { searchTerm = '', statusFilter = '', advancedFilters = {} }) => {
     if (segmentFilter !== "all" && user.segment !== segmentFilter) return false;
     if (statusFilter && user.status !== statusFilter) return false;
+    // Site filter for company view
+    if (isCompanyView && siteFilter !== 'all' && user.siteId !== siteFilter) return false;
     
     const searchLower = searchTerm.toLowerCase().trim();
     if (searchLower) {
@@ -225,7 +244,7 @@ const UserList = () => {
       }
     }
     return true;
-  }, [segmentFilter, columns]);
+  }, [segmentFilter, columns, isCompanyView, siteFilter]);
 
   const {
     filteredData: filteredUsers,
@@ -1273,11 +1292,38 @@ const UserList = () => {
     );
   }
 
+  // Determine if edit actions should be disabled (company view is read-only)
+  const isReadOnly = isCompanyView && !canEditInCurrentView;
+
   return (
     <div className="user-list-container">
       <LoadingOverlay active={isLoading('users') || exportingCSV} message={exportingCSV ? t('users.exportingUsers') : t('common.processing')} />
 
       <h1 className="user-management-title">{t('users.title')}</h1>
+
+      {/* Company View Info Banner */}
+      {isCompanyView && (
+        <div className="company-view-banner">
+          <FaBuilding className="banner-icon" />
+          <div className="banner-content">
+            <span className="banner-text">Company View: Viewing users across all sites</span>
+            <span className="banner-subtext">Select a site to filter or click on a row to drill down and make changes</span>
+          </div>
+          <div className="site-filter-dropdown">
+            <label htmlFor="site-filter">Filter by Site:</label>
+            <select
+              id="site-filter"
+              value={siteFilter}
+              onChange={(e) => setSiteFilter(e.target.value)}
+            >
+              <option value="all">All Sites</option>
+              {companySites.map(site => (
+                <option key={site.siteId} value={site.siteId}>{site.siteName}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+      )}
 
       <div className="user-toolbar-ring-row">
         <div className="user-toolbar">
@@ -1286,16 +1332,17 @@ const UserList = () => {
             onSearchChange={e => setSearchTerm(e.target.value)}
             statusFilter={statusFilter}
             onStatusChange={e => setFilter('statusFilter', e.target.value)}
-            onAdd={canEditUsers ? () => setShowFormModal(true) : undefined}
-            disableAdd={!canEditUsers}
-            onBulkImport={canBulkAddUsers && canEditUsers ? () => setShowBulkImportModal(true) : undefined}
-            disableBulkImport={!canBulkAddUsers || !canEditUsers}
+            onAdd={canEditUsers && !isReadOnly ? () => setShowFormModal(true) : undefined}
+            disableAdd={!canEditUsers || isReadOnly}
+            onBulkImport={canBulkAddUsers && canEditUsers && !isReadOnly ? () => setShowBulkImportModal(true) : undefined}
+            disableBulkImport={!canBulkAddUsers || !canEditUsers || isReadOnly}
             onExport={handleExportUsers}
             disableExport={!canViewReports || exportingCSV}
             exportLoading={exportingCSV}
-            onAddDevice={showAddDevice ? () => setShowDeviceModal(true) : undefined}
-            disableAddDevice={!showAddDevice}
+            onAddDevice={showAddDevice && !isReadOnly ? () => setShowDeviceModal(true) : undefined}
+            disableAddDevice={!showAddDevice || isReadOnly}
             segment={segmentFilter}
+            isReadOnly={isReadOnly}
           />
         </div>
         <div className="user-license-ring-header">
@@ -1444,27 +1491,44 @@ const UserList = () => {
             <tr>
               {columns
                 .filter((c) => visibleColumns.includes(c.key))
-                .map((col) => (
-                  <th
-                    key={col.key}
-                    onClick={() => onSortClick(col.key)}
-                    style={{ cursor: "pointer", userSelect: "none" }}
-                    role="columnheader"
-                    scope="col"
-                    tabIndex={0}
-                    aria-sort={sortColumn === col.key ? (sortDirection === "asc" ? "ascending" : "descending") : "none"}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        onSortClick(col.key);
-                        e.preventDefault();
-                      }
-                    }}
-                  >
-                    <span style={{ display: "inline-flex", alignItems: "center" }}>
-                      {col.label}
-                      {renderSortIndicator(col.key)}
-                    </span>
-                  </th>
+                .map((col, idx) => (
+                  <React.Fragment key={col.key}>
+                    <th
+                      onClick={() => onSortClick(col.key)}
+                      style={{ cursor: "pointer", userSelect: "none" }}
+                      role="columnheader"
+                      scope="col"
+                      tabIndex={0}
+                      aria-sort={sortColumn === col.key ? (sortDirection === "asc" ? "ascending" : "descending") : "none"}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          onSortClick(col.key);
+                          e.preventDefault();
+                        }
+                      }}
+                    >
+                      <span style={{ display: "inline-flex", alignItems: "center" }}>
+                        {col.label}
+                        {renderSortIndicator(col.key)}
+                      </span>
+                    </th>
+                    {/* Add Site column after Name in company view */}
+                    {isCompanyView && col.key === 'firstName' && (
+                      <th
+                        onClick={() => onSortClick('siteName')}
+                        style={{ cursor: "pointer", userSelect: "none" }}
+                        role="columnheader"
+                        scope="col"
+                        tabIndex={0}
+                        aria-sort={sortColumn === 'siteName' ? (sortDirection === "asc" ? "ascending" : "descending") : "none"}
+                      >
+                        <span style={{ display: "inline-flex", alignItems: "center" }}>
+                          Site
+                          {renderSortIndicator('siteName')}
+                        </span>
+                      </th>
+                    )}
+                  </React.Fragment>
                 ))}
               <th scope="col">Actions</th>
             </tr>
@@ -1484,9 +1548,11 @@ const UserList = () => {
                   visibleColumns={visibleColumns}
                   segmentSpecificFields={segmentSpecificCols}
                   segmentFilter={segmentFilter}
-                  hasEditPermission={canEditUsers}
+                  hasEditPermission={canEditUsers && !isReadOnly}
                   onDetailsClick={handleDetailsClick}
                   onEditClick={handleEditClick}
+                  isCompanyView={isCompanyView}
+                  siteName={user.siteName}
                 />
               ))
             )}
@@ -1540,6 +1606,7 @@ const UserList = () => {
           onSuspend={handleSuspendClick}
           onBlock={handleBlockClick}
           onActivate={handleActivateClick}
+          isReadOnly={isReadOnly}
         />
       )}
 

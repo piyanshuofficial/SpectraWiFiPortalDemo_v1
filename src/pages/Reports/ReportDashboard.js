@@ -4,24 +4,28 @@ import React, { useState, useMemo, useEffect, useRef, useCallback } from "react"
 import { useAuth } from "../../context/AuthContext";
 import { Permissions } from "../../utils/accessLevels";
 import { useLoading } from "../../context/LoadingContext";
+import { useAccessLevelView } from "../../context/AccessLevelViewContext";
 import { useTranslation } from "react-i18next";
 import LoadingOverlay from "../../components/Loading/LoadingOverlay";
 import SkeletonLoader from "../../components/Loading/SkeletonLoader";
 import Button from "../../components/Button";
-import { FaEye, FaFileCsv, FaFilePdf, FaStar, FaRegStar, FaTimes, FaClock, FaSearch } from "react-icons/fa";
+import { FaEye, FaFileCsv, FaFilePdf, FaStar, FaRegStar, FaTimes, FaClock, FaSearch, FaBuilding, FaInfoCircle } from "react-icons/fa";
 import notifications from "../../utils/notifications";
+import { companySites } from "../../constants/companySampleData";
 import "./ReportDashboard.css";
 
 import { 
   PINNED_REPORT_BRAND_COLORS
 } from "../../constants/colorConstants";
 
-import enhancedSampleReports, { 
-  getCategories, 
-  getSubcategories, 
-  getReportsByCategory, 
+import enhancedSampleReports, {
+  getCategories,
+  getSubcategories,
+  getReportsByCategory,
   searchReports,
-  getCommonReports 
+  getCommonReports,
+  getCompanyReports,
+  getSiteReports
 } from "../../constants/enhancedSampleReports";
 import userSampleData from "../../constants/userSampleData";
 import { getSiteReportData, isSiteReport } from "../../config/siteConfig";
@@ -62,9 +66,11 @@ const ReportDashboard = () => {
   const { currentUser } = useAuth();
   const { isLoading } = useLoading();
   const { t } = useTranslation();
+  const { isCompanyView, drillDownToSite } = useAccessLevelView();
   const rolePermissions = Permissions[currentUser.accessLevel]?.[currentUser.role] || {};
 
   const [activeCategory, setActiveCategory] = useState(null);
+  const [siteFilter, setSiteFilter] = useState('all');
   const [activeSubcategory, setActiveSubcategory] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [pinnedReports, setPinnedReports] = useState([]);
@@ -79,7 +85,12 @@ const ReportDashboard = () => {
   const [initialLoad, setInitialLoad] = useState(true);
 
   const searchInputRef = useRef(null);
-  const categories = useMemo(() => getCategories(), []);
+  // Categories filtered by access level (company or site)
+  const categories = useMemo(() => {
+    const accessLevelReports = isCompanyView ? getCompanyReports() : getSiteReports();
+    const cats = new Set(accessLevelReports.map(r => r.category));
+    return Array.from(cats).sort();
+  }, [isCompanyView]);
 
   useEffect(() => {
     const loadReports = () => {
@@ -147,35 +158,51 @@ const ReportDashboard = () => {
   }, [recentReports]);
 
   const filteredReports = useMemo(() => {
-    let reports = enhancedSampleReports;
+    // First, filter by access level (company view shows only company reports, site view shows only site reports)
+    let reports = isCompanyView ? getCompanyReports() : getSiteReports();
 
     if (searchTerm.trim()) {
-      reports = searchReports(searchTerm);
+      // Filter search results to only include reports of the appropriate access level
+      const searchResults = searchReports(searchTerm);
+      const accessLevel = isCompanyView ? 'company' : 'site';
+      reports = searchResults.filter(r => r.accessLevel === accessLevel);
     } else {
       if (activeCategory) {
-        reports = getReportsByCategory(activeCategory, activeSubcategory || null);
+        // Filter category results to only include reports of the appropriate access level
+        const categoryReports = getReportsByCategory(activeCategory, activeSubcategory || null);
+        const accessLevel = isCompanyView ? 'company' : 'site';
+        reports = categoryReports.filter(r => r.accessLevel === accessLevel);
       }
     }
 
     return reports;
-  }, [activeCategory, activeSubcategory, searchTerm]);
+  }, [activeCategory, activeSubcategory, searchTerm, isCompanyView]);
 
   const subcategories = useMemo(() => {
     if (!activeCategory) return [];
-    return getSubcategories(activeCategory);
-  }, [activeCategory]);
+    // Filter subcategories by access level
+    const accessLevelReports = isCompanyView ? getCompanyReports() : getSiteReports();
+    const subcats = new Set(
+      accessLevelReports
+        .filter(r => r.category === activeCategory)
+        .map(r => r.subcategory)
+    );
+    return Array.from(subcats).sort();
+  }, [activeCategory, isCompanyView]);
 
   const pinnedReportObjects = useMemo(() => {
+    const accessLevel = isCompanyView ? 'company' : 'site';
     return pinnedReports
       .map(id => enhancedSampleReports.find(r => r.id === id))
-      .filter(Boolean);
-  }, [pinnedReports]);
+      .filter(r => r && r.accessLevel === accessLevel);
+  }, [pinnedReports, isCompanyView]);
 
   const recentReportObjects = useMemo(() => {
+    const accessLevel = isCompanyView ? 'company' : 'site';
     return recentReports
       .map(id => enhancedSampleReports.find(r => r.id === id))
-      .filter(Boolean);
-  }, [recentReports]);
+      .filter(r => r && r.accessLevel === accessLevel);
+  }, [recentReports, isCompanyView]);
 
   const togglePin = useCallback((reportId) => {
     setPinnedReports(prev => {
@@ -591,6 +618,37 @@ const ReportDashboard = () => {
       />
 
       <h1 className="reports-title">{t('reports.title')}</h1>
+
+      {/* Company View Info Banner */}
+      {isCompanyView && (
+        <div className="reports-company-view-banner">
+          <div className="company-banner-content">
+            <FaInfoCircle className="company-banner-icon" />
+            <div className="company-banner-text">
+              <span className="company-banner-title">Company-Wide Reports</span>
+              <span className="company-banner-subtitle">
+                Viewing reports across all sites. Select a site to view site-specific reports.
+              </span>
+            </div>
+          </div>
+          <div className="company-banner-filter">
+            <label htmlFor="report-site-filter">Filter by Site:</label>
+            <select
+              id="report-site-filter"
+              value={siteFilter}
+              onChange={e => setSiteFilter(e.target.value)}
+              className="report-site-filter-select"
+            >
+              <option value="all">All Sites (Aggregated)</option>
+              {companySites.map(site => (
+                <option key={site.siteId} value={site.siteId}>
+                  {site.siteName}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      )}
 
       <ReportCriteriaModal
         open={criteriaModalOpen}

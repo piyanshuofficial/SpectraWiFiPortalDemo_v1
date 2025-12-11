@@ -1,0 +1,465 @@
+/* src/pages/Auth/Login.css */
+/* SpectraOne Login Page - Exact Match */
+
+/* Import Spectra Font */
+@font-face {
+  font-family: 'Spectra';
+  src: url('../../assets/fonts/Spectra-Regular.woff2') format('woff2'),
+       url('../../assets/fonts/Spectra-Regular.woff') format('woff'),
+       url('../../assets/fonts/Spectra-Regular.ttf') format('truetype');
+  font-display: swap;
+}
+
+/* CSS Variables matching SpectraOne */
+:root {
+  --login-text-color: #ffffff;
+  --login-spectra-primary: #47a8c5;
+  --login-tab-inactive: #6e6e77;
+  --login-label-color: #bdbdc2;
+  --login-placeholder-color: #f2f2f3;
+  --login-error-color: #f36f69;
+  --login-bg-color: #000000;
+  --login-form-bg: #161616;
+  --login-copyright-color: rgba(255, 255, 255, 0.6);
+}
+
+/* Page Container */
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--login-bg-color);
+  color: var(--login-text-color);
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Yellow/Gold Header Bar */
+.login-header-bar {
+  height: 8px;
+  background: linear-gradient(90deg, #c9a227 0%, #e8c547 50%, #c9a227 100%);
+  flex-shrink: 0;
+}
+
+/* Banner Image - Right Side */
+.login-banner {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  overflow: hidden;
+}
+
+.login-banner img {
+  height: 100%;
+  width: auto;
+  object-fit: contain;
+  object-position: right top;
+}
+
+/* Main Content Area */
+.login-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 2;
+  padding: 40px 25px;
+}
+
+/* Spectra Logo */
+.login-logo {
+  margin-bottom: 3rem;
+}
+
+.spectra-text {
+  font-family: 'Spectra', 'Helvetica Neue', sans-serif;
+  font-size: 2rem;
+  line-height: 37px;
+  font-weight: 400;
+  color: var(--login-text-color);
+}
+
+/* Centered Content Area */
+.login-center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  max-width: 500px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Greeting */
+.login-greeting {
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 100%;
+  color: var(--login-text-color);
+  margin: 0 0 10px 0;
+  text-align: center;
+}
+
+.login-subtitle {
+  font-size: 14px;
+  line-height: 150%;
+  color: #bababa;
+  margin: 0 0 30px 0;
+  text-align: center;
+}
+
+/* Form Container */
+.login-form-container {
+  width: 100%;
+  max-width: 500px;
+  background-color: var(--login-form-bg);
+  box-shadow: 0px 15px 150px rgba(0, 0, 0, 0.4),
+    0px 15px 75px rgba(0, 0, 0, 0.25);
+  padding: 25px 12px;
+}
+
+/* Tabs */
+.login-tabs {
+  display: flex;
+  gap: 0;
+  padding: 0 50px;
+}
+
+.login-tab {
+  flex: 1;
+  padding-bottom: 16px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--login-tab-inactive);
+  color: var(--login-tab-inactive);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 16px;
+  cursor: pointer;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.login-tab:hover {
+  color: #999;
+}
+
+.login-tab.active {
+  color: var(--login-spectra-primary);
+  border-bottom-color: var(--login-spectra-primary);
+}
+
+/* Form Content */
+.login-form-content {
+  padding: 10px 50px;
+}
+
+@media screen and (max-width: 500px) {
+  .login-form-content {
+    padding: 10px 25px;
+  }
+  .login-tabs {
+    padding: 0 25px;
+  }
+}
+
+/* Form Fields */
+.form-field {
+  margin-bottom: 28px;
+  text-align: start;
+  position: relative;
+}
+
+.form-field label {
+  display: block;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 100%;
+  color: var(--login-text-color);
+  padding-left: 0;
+  margin-bottom: 0;
+}
+
+.form-field input {
+  width: 100%;
+  padding: 18px 0;
+  background-color: transparent;
+  border: none;
+  border-bottom: 1px solid #ffffff;
+  color: var(--login-text-color);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 100%;
+  outline: none;
+  border-radius: 0;
+}
+
+.form-field input:focus {
+  outline: none;
+  background-color: transparent;
+  border-bottom-color: #ffffff;
+}
+
+.form-field input::placeholder {
+  font-weight: 300;
+  line-height: 24px;
+  color: var(--login-placeholder-color);
+}
+
+/* Autofill styles */
+.form-field input:-webkit-autofill,
+.form-field input:-webkit-autofill:hover,
+.form-field input:-webkit-autofill:focus,
+.form-field input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 45px #161616 inset !important;
+  -webkit-text-fill-color: var(--login-text-color) !important;
+}
+
+/* Password Wrapper */
+.password-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-wrapper input {
+  padding-right: 40px;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: var(--login-text-color);
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+
+.password-toggle:hover {
+  opacity: 1;
+}
+
+/* Remember Me Row */
+.remember-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 14px;
+}
+
+.remember-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--login-text-color);
+  font-size: 14px;
+  font-weight: 400;
+  cursor: pointer;
+  position: relative;
+}
+
+.remember-label input[type="checkbox"] {
+  width: 12px;
+  height: 12px;
+  accent-color: var(--login-spectra-primary);
+  cursor: pointer;
+}
+
+/* Error Message */
+.login-error {
+  font-size: 0.815rem;
+  line-height: 15px;
+  letter-spacing: 0.03em;
+  color: var(--login-error-color);
+  margin-bottom: 14px;
+}
+
+/* Login Button - SpectraOne Style */
+.login-btn {
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 16px;
+  color: var(--login-text-color);
+  width: 100%;
+  padding: 18px;
+  margin-top: 14px;
+  border: none;
+  background-color: var(--login-spectra-primary);
+  box-shadow: #000 4px 4px 0px 0px, var(--login-spectra-primary) 5px 5px 0px 1px;
+  cursor: pointer;
+  display: inline-block;
+  text-align: center;
+  transition: all 0.2s ease-in-out;
+}
+
+.login-btn:hover:not(:disabled) {
+  background-color: var(--login-text-color);
+  color: var(--login-spectra-primary);
+}
+
+.login-btn:disabled {
+  background: rgba(91, 138, 195, 0.25);
+  box-shadow: #000 4px 4px 0px 0px, rgba(91, 138, 195, 0.25) 5px 5px 0px 1px;
+  cursor: not-allowed;
+}
+
+/* Forgot Link */
+.forgot-link {
+  display: inline-block;
+  margin-top: 20px;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 14px;
+  color: var(--login-text-color);
+  text-decoration: underline;
+  transition: color 0.2s ease;
+}
+
+.forgot-link:hover {
+  color: var(--login-spectra-primary);
+}
+
+/* OTP Info */
+.otp-info {
+  font-size: 12px;
+  color: var(--login-text-color);
+  margin-bottom: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.change-number-btn {
+  background: transparent;
+  border: none;
+  color: var(--login-text-color);
+  cursor: pointer;
+  font-size: 12px;
+  text-decoration: underline;
+}
+
+.change-number-btn:hover {
+  color: var(--login-spectra-primary);
+}
+
+/* Footer */
+.login-footer {
+  padding: 2rem 20px;
+  text-align: center;
+  background-color: var(--login-bg-color);
+  position: relative;
+  z-index: 2;
+}
+
+.login-footer p {
+  margin: 0 0 5px 0;
+  font-size: 0.875rem;
+  font-weight: 300;
+  line-height: 100%;
+  color: var(--login-text-color);
+}
+
+.social-links {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 14px;
+  margin-top: 28px;
+}
+
+.social-links a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--login-text-color);
+  font-size: 18px;
+  transition: color 0.2s ease;
+}
+
+.social-links a:hover {
+  color: var(--login-spectra-primary);
+}
+
+/* ============================================
+   RESPONSIVE STYLES
+   ============================================ */
+
+@media (max-width: 1200px) {
+  .login-banner img {
+    height: 90%;
+  }
+}
+
+@media (max-width: 992px) {
+  .login-banner {
+    display: none;
+  }
+
+  .login-main {
+    padding: 25px;
+  }
+
+  .login-center {
+    max-width: 100%;
+  }
+
+  .login-form-container {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  html {
+    font-size: 14px;
+  }
+
+  .login-footer {
+    margin-top: 50px;
+  }
+}
+
+@media (max-width: 576px) {
+  .login-main {
+    padding: 20px 15px;
+  }
+
+  .login-logo {
+    margin-bottom: 2rem;
+  }
+
+  .spectra-text {
+    font-size: 1.5rem;
+  }
+
+  .login-greeting {
+    font-size: 20px;
+  }
+
+  .login-subtitle {
+    font-size: 12px;
+  }
+
+  .login-form-container {
+    padding: 20px 10px;
+  }
+
+  .login-tab {
+    font-size: 14px;
+  }
+}

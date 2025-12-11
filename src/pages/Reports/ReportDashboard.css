@@ -1,5 +1,128 @@
 /* src/pages/Reports/ReportDashboard.css */
 
+/* ============================================
+   COMPANY VIEW STYLES
+   ============================================ */
+
+.reports-company-view-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.875rem 1.25rem;
+  background: linear-gradient(135deg, rgba(0, 74, 173, 0.08) 0%, rgba(0, 74, 173, 0.03) 100%);
+  border: 1px solid rgba(0, 74, 173, 0.15);
+  border-radius: var(--radius-lg);
+  margin-bottom: 1.25rem;
+}
+
+.reports-company-view-banner .company-banner-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.reports-company-view-banner .company-banner-icon {
+  font-size: 1.25rem;
+  color: #004aad;
+  flex-shrink: 0;
+}
+
+.reports-company-view-banner .company-banner-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.reports-company-view-banner .company-banner-title {
+  font-size: var(--font-base);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.reports-company-view-banner .company-banner-subtitle {
+  font-size: var(--font-sm);
+  color: var(--color-text-secondary);
+}
+
+.reports-company-view-banner .company-banner-filter {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.reports-company-view-banner .company-banner-filter label {
+  font-size: var(--font-sm);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.report-site-filter-select {
+  min-width: 12rem;
+  padding: 0.5rem 0.75rem;
+  font-size: var(--font-sm);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(0, 74, 173, 0.2);
+  background: #fff;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.report-site-filter-select:hover {
+  border-color: #004aad;
+}
+
+.report-site-filter-select:focus {
+  outline: none;
+  border-color: #004aad;
+  box-shadow: 0 0 0 2px rgba(0, 74, 173, 0.1);
+}
+
+/* Dark theme support for company view */
+[data-theme="dark"] .reports-company-view-banner {
+  background: linear-gradient(135deg, rgba(104, 213, 255, 0.1) 0%, rgba(104, 213, 255, 0.03) 100%);
+  border-color: rgba(104, 213, 255, 0.2);
+}
+
+[data-theme="dark"] .reports-company-view-banner .company-banner-icon {
+  color: #68d5ff;
+}
+
+[data-theme="dark"] .report-site-filter-select {
+  background: var(--color-bg-secondary);
+  border-color: rgba(104, 213, 255, 0.3);
+  color: var(--color-text-primary);
+}
+
+[data-theme="dark"] .report-site-filter-select:hover,
+[data-theme="dark"] .report-site-filter-select:focus {
+  border-color: #68d5ff;
+}
+
+/* Responsive styles for company view banner */
+@media (max-width: 768px) {
+  .reports-company-view-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .reports-company-view-banner .company-banner-filter {
+    width: 100%;
+  }
+
+  .report-site-filter-select {
+    flex: 1;
+    min-width: unset;
+  }
+}
+
+/* ============================================
+   MAIN STYLES
+   ============================================ */
+
 .reports-title {
   font-size: var(--font-5xl);
   font-weight: 700;

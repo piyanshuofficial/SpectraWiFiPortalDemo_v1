@@ -16,12 +16,24 @@ import { lazy } from 'react';
 // LAZY-LOADED ROUTE COMPONENTS
 // ============================================
 
+// Customer Portal Routes
 const Dashboard = lazy(() => import(/* webpackChunkName: "dashboard" */ '../pages/Dashboard'));
 const UserList = lazy(() => import(/* webpackChunkName: "user-management" */ '../pages/UserManagement/UserList'));
 const DeviceList = lazy(() => import(/* webpackChunkName: "device-management" */ '../pages/DeviceManagement/DeviceList'));
 const ReportDashboard = lazy(() => import(/* webpackChunkName: "reports" */ '../pages/Reports/ReportDashboard'));
 const KnowledgeHome = lazy(() => import(/* webpackChunkName: "knowledge-center" */ '../pages/KnowledgeCenter/KnowledgeHome'));
 const ActivityLogs = lazy(() => import(/* webpackChunkName: "activity-logs" */ '../pages/ActivityLogs/ActivityLogs'));
+
+// Internal Portal Routes
+const InternalDashboard = lazy(() => import(/* webpackChunkName: "internal-dashboard" */ '../pages/Internal/InternalDashboard'));
+const SiteManagement = lazy(() => import(/* webpackChunkName: "site-management" */ '../pages/Internal/SiteManagement'));
+const CustomerManagement = lazy(() => import(/* webpackChunkName: "customer-management" */ '../pages/Internal/CustomerManagement'));
+const InternalAuditLogs = lazy(() => import(/* webpackChunkName: "internal-audit-logs" */ '../pages/Internal/AuditLogs'));
+const SystemConfiguration = lazy(() => import(/* webpackChunkName: "system-configuration" */ '../pages/Internal/SystemConfiguration'));
+const InternalKnowledgeCenter = lazy(() => import(/* webpackChunkName: "internal-knowledge" */ '../pages/Internal/InternalKnowledgeCenter'));
+const InternalReports = lazy(() => import(/* webpackChunkName: "internal-reports" */ '../pages/Internal/InternalReports'));
+const InternalSupport = lazy(() => import(/* webpackChunkName: "internal-support" */ '../pages/Internal/InternalSupport'));
+const BulkOperations = lazy(() => import(/* webpackChunkName: "bulk-operations" */ '../pages/Internal/BulkOperations/BulkOperations'));
 
 // ============================================
 // ROUTE DEFINITIONS
@@ -93,6 +105,97 @@ export const routes = [
     title: 'Activity Logs',
     exact: true,
     chunkName: 'activity-logs'
+  },
+  // Internal Portal Routes
+  {
+    path: '/internal/dashboard',
+    component: InternalDashboard,
+    requiredPermission: 'canAccessInternalPortal',
+    fallbackMessage: 'This page is only accessible to internal Spectra staff.',
+    title: 'Internal Dashboard',
+    exact: true,
+    chunkName: 'internal-dashboard',
+    isInternal: true
+  },
+  {
+    path: '/internal/sites',
+    component: SiteManagement,
+    requiredPermission: 'canAccessInternalPortal',
+    fallbackMessage: 'This page is only accessible to internal Spectra staff.',
+    title: 'Site Management',
+    exact: true,
+    chunkName: 'site-management',
+    isInternal: true
+  },
+  {
+    path: '/internal/customers',
+    component: CustomerManagement,
+    requiredPermission: 'canAccessInternalPortal',
+    fallbackMessage: 'This page is only accessible to internal Spectra staff.',
+    title: 'Customer Management',
+    exact: true,
+    chunkName: 'customer-management',
+    isInternal: true
+  },
+  {
+    path: '/internal/logs',
+    component: InternalAuditLogs,
+    requiredPermission: 'canAccessInternalPortal',
+    fallbackMessage: 'This page is only accessible to internal Spectra staff.',
+    title: 'Audit Logs',
+    exact: true,
+    chunkName: 'internal-audit-logs',
+    isInternal: true
+  },
+  {
+    path: '/internal/config',
+    component: SystemConfiguration,
+    requiredPermission: 'canAccessInternalPortal',
+    fallbackMessage: 'This page is only accessible to internal Spectra staff.',
+    title: 'System Configuration',
+    exact: true,
+    chunkName: 'system-configuration',
+    isInternal: true
+  },
+  {
+    path: '/internal/knowledge',
+    component: InternalKnowledgeCenter,
+    requiredPermission: 'canAccessInternalPortal',
+    fallbackMessage: 'This page is only accessible to internal Spectra staff.',
+    title: 'Internal Knowledge Base',
+    exact: true,
+    chunkName: 'internal-knowledge',
+    isInternal: true
+  },
+  {
+    path: '/internal/reports',
+    component: InternalReports,
+    requiredPermission: 'canAccessInternalPortal',
+    fallbackMessage: 'This page is only accessible to internal Spectra staff.',
+    title: 'Reports & Analytics',
+    exact: true,
+    chunkName: 'internal-reports',
+    isInternal: true
+  },
+  {
+    path: '/internal/support',
+    component: InternalSupport,
+    requiredPermission: 'canAccessInternalPortal',
+    fallbackMessage: 'This page is only accessible to internal Spectra staff.',
+    title: 'Support Queue',
+    exact: true,
+    chunkName: 'internal-support',
+    isInternal: true
+  },
+  {
+    path: '/internal/bulk-operations',
+    component: BulkOperations,
+    requiredPermission: 'canAccessBulkOperations',
+    fallbackMessage: 'You need Super Admin access to use Bulk Operations.',
+    title: 'Bulk Operations',
+    exact: true,
+    chunkName: 'bulk-operations',
+    isInternal: true
   }
 ];
 

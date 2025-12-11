@@ -2,7 +2,11 @@
   "permissions": {
     "allow": [
       "Bash(npm install:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(dir \"C:\\Users\\piyanshu.agrawal\\portal-frontend\" /b)",
+      "Bash(findstr:*)",
+      "Bash(dir /s /b \"C:\\Users\\piyanshu.agrawal\\portal-frontend\\prompt\")",
+      "WebFetch(domain:one.spectra.co)"
     ],
     "deny": [],
     "ask": []

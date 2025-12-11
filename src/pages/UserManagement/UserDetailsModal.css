@@ -455,3 +455,29 @@
     gap: 0.5rem;
   }
 }
+
+/* Company View Read-only Notice */
+.udm-readonly-notice {
+  width: 100%;
+  padding: 0.625rem 1rem;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: var(--radius-md);
+  margin-bottom: 0.75rem;
+  text-align: center;
+}
+
+.udm-readonly-notice span {
+  font-size: var(--font-sm);
+  font-weight: 500;
+  color: #b45309;
+}
+
+[data-theme="dark"] .udm-readonly-notice {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(251, 191, 36, 0.05) 100%);
+  border-color: rgba(251, 191, 36, 0.3);
+}
+
+[data-theme="dark"] .udm-readonly-notice span {
+  color: #fbbf24;
+}

@@ -5,10 +5,12 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 import { AuthProvider } from './context/AuthContext';
+import { AccessLevelViewProvider } from './context/AccessLevelViewContext';
 import { UserProvider } from './context/UserContext';
 import { LoadingProvider } from './context/LoadingContext';
 import { SegmentProvider } from './context/SegmentContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { ScheduledTasksProvider } from './context/ScheduledTasksContext';
 
 // Initialize i18n before App
 import './i18n';
@@ -21,13 +23,17 @@ root.render(
   <React.StrictMode>
     <ThemeProvider>
       <AuthProvider>
-        <SegmentProvider>
-          <UserProvider>
-            <LoadingProvider>
-              <App />
-            </LoadingProvider>
-          </UserProvider>
-        </SegmentProvider>
+        <ScheduledTasksProvider>
+          <AccessLevelViewProvider>
+            <SegmentProvider>
+              <UserProvider>
+                <LoadingProvider>
+                  <App />
+                </LoadingProvider>
+              </UserProvider>
+            </SegmentProvider>
+          </AccessLevelViewProvider>
+        </ScheduledTasksProvider>
       </AuthProvider>
     </ThemeProvider>
   </React.StrictMode>

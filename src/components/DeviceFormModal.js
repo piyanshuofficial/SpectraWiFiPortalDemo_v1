@@ -13,6 +13,7 @@ import {
   checkDigitalDeviceLicenseAvailability,
   getDigitalDeviceLicenseSummary
 } from '@utils/licenseUtils';
+import { usePermissions } from '@hooks/usePermissions';
 
 const USER_DEVICE_CATEGORIES = [
   'Mobile',
@@ -120,6 +121,9 @@ function DeviceFormModal({
   submitting = false,
   currentUser = null // The portal user who is registering the device
 }) {
+  // Get permissions for internal portal users
+  const { canEditDeviceMAC, canEditDeviceCategory } = usePermissions();
+
   const [mode, setMode] = useState('bindUser');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedUser, setSelectedUser] = useState(null);
@@ -765,8 +769,11 @@ function DeviceFormModal({
               <div className="device-form-row">
                 <label htmlFor="devcat">
                   Device Category<span className="required-asterisk">*</span>
-                  {device && (
+                  {device && !canEditDeviceCategory && (
                     <span style={{ fontSize: '0.79em', color: '#8aa' }}> (read-only)</span>
+                  )}
+                  {device && canEditDeviceCategory && (
+                    <span style={{ fontSize: '0.79em', color: '#16a34a' }}> (editable)</span>
                   )}
                 </label>
                 <select
@@ -777,7 +784,7 @@ function DeviceFormModal({
                   className={errors.deviceCategory ? 'error' : ''}
                   aria-invalid={!!errors.deviceCategory}
                   aria-describedby={errors.deviceCategory ? "devcat-error" : undefined}
-                  disabled={!!device}
+                  disabled={device && !canEditDeviceCategory}
                 >
                   <option value="">Choose category...</option>
                   {categoryOptions.map(cat => (
@@ -894,8 +901,11 @@ function DeviceFormModal({
               <div className="device-form-row">
                 <label htmlFor="mac">
                   MAC Address<span className="required-asterisk">*</span>
-                  {device && (
+                  {device && !canEditDeviceMAC && (
                     <span style={{ fontSize: '0.79em', color: '#8aa' }}> (read-only)</span>
+                  )}
+                  {device && canEditDeviceMAC && (
+                    <span style={{ fontSize: '0.79em', color: '#16a34a' }}> (editable)</span>
                   )}
                 </label>
                 <input
@@ -975,7 +985,7 @@ function DeviceFormModal({
                   required
                   aria-invalid={!!errors.macAddress}
                   aria-describedby={errors.macAddress ? "mac-error" : undefined}
-                  disabled={!!device}
+                  disabled={device && !canEditDeviceMAC}
                 />
                 {errors.macAddress && (
                   <div className="error-message" id="mac-error" role="alert">

@@ -1,14 +1,16 @@
 // src/pages/DeviceManagement/DeviceList.js
 
 import React, { useState, useMemo, useEffect, useCallback } from "react";
-import { FaDesktop, FaGlobeAmericas, FaBan, FaWifi, FaMobileAlt, FaLaptop, FaTablet } from "react-icons/fa";
+import { FaDesktop, FaGlobeAmericas, FaBan, FaWifi, FaMobileAlt, FaLaptop, FaTablet, FaTh, FaList, FaEdit, FaTrash, FaPowerOff, FaBuilding, FaInfoCircle } from "react-icons/fa";
 import { usePermissions } from "../../hooks/usePermissions";
 import { useFilter } from "../../hooks/useFilter";
 import { useTableState } from "../../hooks/useTableState";
 import { useBulkOperations } from "../../hooks/useBulkOperations";
 import { useLoading } from "../../context/LoadingContext";
 import { useSegment } from "../../context/SegmentContext";
+import { useAccessLevelView } from "../../context/AccessLevelViewContext";
 import { useTranslation } from "react-i18next";
+import { companySites } from "../../constants/companySampleData";
 import Button from "../../components/Button";
 import Pagination from "../../components/Pagination";
 import DeviceFormModal from "../../components/DeviceFormModal";
@@ -63,75 +65,90 @@ const DeviceCard = React.memo(({
   canEdit,
   canDelete,
   disconnectingDeviceId,
-  t
-}) => (
-  <div className="device-card">
-    <div className="device-icon-bg">
-      <device.Icon className="device-main-icon" />
-      <span
-        className={`device-status-indicator ${device.online ? "status-online" : "status-offline"}`}
-        title={device.online ? t('status.online') : t('status.offline')}
-        aria-label={device.online ? t('devices.deviceOnline') : t('devices.deviceOffline')}
-      >
-        {device.online ? "●" : "●"}
-      </span>
-    </div>
-    <div className="device-meta-col">
-      <div className="device-card-title">{device.name}</div>
-      <div className="device-detail">{t('devices.deviceType')}: {device.category}</div>
-      <div className="device-detail">{t('devices.macAddress')}: {device.mac}</div>
-      <div className="device-detail">{t('devices.owner')}: {device.owner}</div>
-      <div className="device-card-info-row">
-        <span>
-          {t('devices.ipAddress')}:{" "}
-          <span className="device-link">{device.ip}</span>
-        </span>
-        <span>
-          {t('devices.connected')}:{" "}
-          <span className="device-link">{device.lastUsageDate}</span>
-        </span>
-        <span>
-          {t('devices.dataUsageSession')}:{" "}
-          <span className="device-link">{device.dataUsage}</span>
+  t,
+  isCompanyView
+}) => {
+  // Always get site name for devices - show in both site view and company view
+  const siteName = device.siteId
+    ? companySites.find(s => s.siteId === device.siteId)?.siteName || device.siteName || 'Unknown Site'
+    : device.siteName || null;
+
+  return (
+    <div className="device-card">
+      <div className="device-icon-bg">
+        <device.Icon className="device-main-icon" />
+        <span
+          className={`device-status-indicator ${device.online ? "status-online" : "status-offline"}`}
+          title={device.online ? t('status.online') : t('status.offline')}
+          aria-label={device.online ? t('devices.deviceOnline') : t('devices.deviceOffline')}
+        >
+          {device.online ? "●" : "●"}
         </span>
       </div>
-    </div>
-    <div className="device-card-actions">
-      {canEdit && (
+      <div className="device-meta-col">
+        <div className="device-card-title">{device.name}</div>
+        {/* Always show site name - in both site view and company view */}
+        {siteName && (
+          <div className="device-detail device-card-site">
+            <FaBuilding className="device-card-site-icon" />
+            <span>{siteName}</span>
+          </div>
+        )}
+        <div className="device-detail">{t('devices.deviceType')}: {device.category}</div>
+        <div className="device-detail">{t('devices.macAddress')}: {device.mac}</div>
+        <div className="device-detail">{t('devices.owner')}: {device.owner}</div>
+        <div className="device-card-info-row">
+          <span>
+            {t('devices.ipAddress')}:{" "}
+            <span className="device-link">{device.ip}</span>
+          </span>
+          <span>
+            {t('devices.connected')}:{" "}
+            <span className="device-link">{device.lastUsageDate}</span>
+          </span>
+          <span>
+            {t('devices.dataUsageSession')}:{" "}
+            <span className="device-link">{device.dataUsage}</span>
+          </span>
+        </div>
+      </div>
+      <div className="device-card-actions">
+        {canEdit && (
+          <Button
+            variant="primary"
+            onClick={() => onEdit(device)}
+            aria-label={t('devices.editDeviceAria', { name: device.name })}
+            disabled={disconnectingDeviceId === device.id}
+            title={t('devices.editDeviceTitle')}
+          >
+            {t('common.edit')}
+          </Button>
+        )}
         <Button
-          variant="primary"
-          onClick={() => onEdit(device)}
-          aria-label={t('devices.editDeviceAria', { name: device.name })}
-          disabled={disconnectingDeviceId === device.id}
-          title={t('devices.editDeviceTitle')}
+          variant="warning"
+          onClick={() => onDisconnect(device)}
+          aria-label={t('devices.disconnectDeviceAria', { name: device.name })}
+          disabled={!device.online}
+          loading={disconnectingDeviceId === device.id}
+          title={!device.online ? t('devices.alreadyOffline') : t('devices.disconnectTitle')}
         >
-          {t('common.edit')}
+          {t('devices.disconnect')}
         </Button>
-      )}
-      <Button
-        variant="warning"
-        onClick={() => onDisconnect(device)}
-        aria-label={t('devices.disconnectDeviceAria', { name: device.name })}
-        disabled={!device.online}
-        loading={disconnectingDeviceId === device.id}
-        title={!device.online ? t('devices.alreadyOffline') : t('devices.disconnectTitle')}
-      >
-        {t('devices.disconnect')}
-      </Button>
-      {canDelete && (
-        <Button
-          variant="danger"
-          onClick={() => onDelete(device)}
-          aria-label={t('devices.deleteDeviceAria', { name: device.name })}
-          disabled={disconnectingDeviceId === device.id}
-          title={t('devices.deleteDeviceTitle')}
-        >
-          {t('common.delete')}
-        </Button>
-      )}
+        {canDelete && (
+          <Button
+            variant="danger"
+            onClick={() => onDelete(device)}
+            aria-label={t('devices.deleteDeviceAria', { name: device.name })}
+            disabled={disconnectingDeviceId === device.id}
+            title={t('devices.deleteDeviceTitle')}
+          >
+            {t('common.delete')}
+          </Button>
+        )}
+      </div>
     </div>
-  </div>
-), (prevProps, nextProps) => {
+  );
+}, (prevProps, nextProps) => {
   return (
     prevProps.device.id === nextProps.device.id &&
     prevProps.device.online === nextProps.device.online &&
@@ -140,7 +157,8 @@ const DeviceCard = React.memo(({
     prevProps.device.category === nextProps.device.category &&
     prevProps.canEdit === nextProps.canEdit &&
     prevProps.canDelete === nextProps.canDelete &&
-    prevProps.disconnectingDeviceId === nextProps.disconnectingDeviceId
+    prevProps.disconnectingDeviceId === nextProps.disconnectingDeviceId &&
+    prevProps.isCompanyView === nextProps.isCompanyView
   );
 });
 
@@ -152,6 +170,7 @@ const DeviceList = () => {
   const { currentSegment } = useSegment();
   const { canBulkAddUserDevices, canBulkAddSmartDigitalDevices } = useBulkOperations();
   const { t } = useTranslation();
+  const { isCompanyView, canEditInCurrentView, drillDownToSite } = useAccessLevelView();
 
   const [devices, setDevices] = useState([]);
   const [showDeviceModal, setShowDeviceModal] = useState(false);
@@ -166,6 +185,7 @@ const DeviceList = () => {
   const [deleting, setDeleting] = useState(false);
   const [showDisconnectConfirmation, setShowDisconnectConfirmation] = useState(false);
   const [deviceToDisconnect, setDeviceToDisconnect] = useState(null);
+  const [viewMode, setViewMode] = useState("grid"); // grid or list
 
   // Use segment from context instead of local state
   const segmentFilter = currentSegment;
@@ -190,6 +210,9 @@ const DeviceList = () => {
   const canEditDevice = hasDevicePermission && allowDeviceEdit;
   const canDeleteDevice = hasDevicePermission && allowDeviceDelete;
 
+  // Read-only mode in company view (unless drilled down with edit permissions)
+  const isReadOnly = isCompanyView && !canEditInCurrentView;
+
   const segmentUsers = useMemo(() => {
     return (userSampleData.users || []).filter(user => user.segment === segmentFilter);
   }, [segmentFilter]);
@@ -198,8 +221,13 @@ const DeviceList = () => {
     return new Set(segmentUsers.map(user => user.id));
   }, [segmentUsers]);
 
-  const deviceFilterFunction = useCallback((device, { searchTerm = '', primaryTypeFilter = 'all', subTypeFilter = 'all', statusFilter = 'all' }) => {
+  const deviceFilterFunction = useCallback((device, { searchTerm = '', primaryTypeFilter = 'all', subTypeFilter = 'all', statusFilter = 'all', siteFilter = 'all' }) => {
     if (!segmentUserIds.has(device.userId)) return false;
+
+    // Site filter for company view
+    if (siteFilter && siteFilter !== 'all') {
+      if (device.siteId !== siteFilter) return false;
+    }
 
     // Primary type filter (User Devices vs Smart/Digital Devices)
     if (primaryTypeFilter && primaryTypeFilter !== "all") {
@@ -252,6 +280,7 @@ const DeviceList = () => {
   const primaryTypeFilter = filters.primaryTypeFilter || "all";
   const subTypeFilter = filters.subTypeFilter || "all";
   const statusFilter = filters.statusFilter || "all";
+  const siteFilter = filters.siteFilter || "all";
 
   const segmentDeviceStats = useMemo(() => {
     const segmentDevices = devices.filter(device => segmentUserIds.has(device.userId));
@@ -593,7 +622,7 @@ const DeviceList = () => {
 
   useEffect(() => {
     resetToPage1();
-  }, [primaryTypeFilter, subTypeFilter, statusFilter, searchTerm, rowsPerPage, segmentFilter, resetToPage1]);
+  }, [primaryTypeFilter, subTypeFilter, statusFilter, siteFilter, searchTerm, rowsPerPage, segmentFilter, resetToPage1]);
 
   const handleDeviceSubmit = useCallback(async (deviceInfo) => {
     setSubmitting(true);
@@ -1098,6 +1127,37 @@ const DeviceList = () => {
 
       <h1 className="device-mgmt-title" style={{ marginBottom: '1.5rem' }}>{t('devices.title')}</h1>
 
+      {/* Company View Info Banner */}
+      {isCompanyView && (
+        <div className="device-company-view-banner">
+          <div className="company-banner-content">
+            <FaInfoCircle className="company-banner-icon" />
+            <div className="company-banner-text">
+              <span className="company-banner-title">Company View</span>
+              <span className="company-banner-subtitle">
+                Viewing devices across all sites. Select a site to manage devices.
+              </span>
+            </div>
+          </div>
+          <div className="company-banner-filter">
+            <label htmlFor="site-filter">Filter by Site:</label>
+            <select
+              id="site-filter"
+              value={siteFilter}
+              onChange={e => setFilter('siteFilter', e.target.value)}
+              className="device-site-filter-select"
+            >
+              <option value="all">All Sites</option>
+              {companySites.map(site => (
+                <option key={site.siteId} value={site.siteId}>
+                  {site.siteName}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      )}
+
       <div className="device-summary-cards">
         {segmentDeviceStats.map(stat => (
           <SummaryCard key={stat.label} stat={stat} />
@@ -1117,46 +1177,148 @@ const DeviceList = () => {
         statusFilter={statusFilter}
         onStatusChange={e => setFilter('statusFilter', e.target.value)}
         onRegisterDevice={handleRegisterDeviceClick}
-        disableRegisterDevice={!canRegisterDevice || isLoading('devices') || submitting}
+        disableRegisterDevice={!canRegisterDevice || isLoading('devices') || submitting || isReadOnly}
         onBulkImport={handleBulkImport}
-        disableBulkImport={!hasDevicePermission || isLoading('devices') || submitting}
-        showBulkImportUser={canBulkAddUserDevices}
-        showBulkImportSmartDigital={canBulkAddSmartDigitalDevices}
+        disableBulkImport={!hasDevicePermission || isLoading('devices') || submitting || isReadOnly}
+        showBulkImportUser={canBulkAddUserDevices && !isReadOnly}
+        showBulkImportSmartDigital={canBulkAddSmartDigitalDevices && !isReadOnly}
         onExportCSV={handleExportCSV}
         disableExportCSV={!filteredDevices || filteredDevices.length === 0}
         primaryDeviceTypes={primaryDeviceTypes}
         subDeviceTypes={subDeviceTypes}
         statusOptions={statusOptions}
         segment={segmentFilter}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+        isReadOnly={isReadOnly}
       />
 
-      <div className="device-card-list">
-        {pagedDevices.length === 0 ? (
-          <div style={{
-            textAlign: "center",
-            padding: "40px",
-            color: "#666",
-            gridColumn: "1 / -1",
-            fontSize: "1.1rem"
-          }}>
-            {t('devices.noDevicesFound')}
-          </div>
-        ) : (
-          pagedDevices.map(device => (
-            <DeviceCard
-              key={device.id}
-              device={device}
-              onEdit={handleEditDevice}
-              onDisconnect={handleDisconnectDevice}
-              onDelete={handleDeleteDevice}
-              canEdit={canEditDevice}
-              canDelete={canDeleteDevice}
-              disconnectingDeviceId={disconnectingDeviceId}
-              t={t}
-            />
-          ))
-        )}
-      </div>
+      {viewMode === "grid" ? (
+        <div className="device-card-list">
+          {pagedDevices.length === 0 ? (
+            <div style={{
+              textAlign: "center",
+              padding: "40px",
+              color: "#666",
+              gridColumn: "1 / -1",
+              fontSize: "1.1rem"
+            }}>
+              {t('devices.noDevicesFound')}
+            </div>
+          ) : (
+            pagedDevices.map(device => (
+              <DeviceCard
+                key={device.id}
+                device={device}
+                onEdit={handleEditDevice}
+                onDisconnect={handleDisconnectDevice}
+                onDelete={handleDeleteDevice}
+                canEdit={canEditDevice && !isReadOnly}
+                canDelete={canDeleteDevice && !isReadOnly}
+                disconnectingDeviceId={disconnectingDeviceId}
+                t={t}
+                isCompanyView={isCompanyView}
+              />
+            ))
+          )}
+        </div>
+      ) : (
+        <div className="device-list-table-container">
+          {pagedDevices.length === 0 ? (
+            <div style={{
+              textAlign: "center",
+              padding: "40px",
+              color: "#666",
+              fontSize: "1.1rem"
+            }}>
+              {t('devices.noDevicesFound')}
+            </div>
+          ) : (
+            <table className="device-list-table">
+              <thead>
+                <tr>
+                  <th>{t('devices.deviceName')}</th>
+                  <th>{t('devices.macAddress')}</th>
+                  <th>{t('devices.deviceType')}</th>
+                  <th>Site</th>
+                  <th>{t('devices.owner')}</th>
+                  <th>{t('devices.ipAddress')}</th>
+                  <th>{t('status.status')}</th>
+                  <th>{t('devices.dataUsageSession')}</th>
+                  <th>{t('common.actions')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pagedDevices.map(device => {
+                  // Always get site name - shown in both views
+                  const siteName = device.siteId
+                    ? companySites.find(s => s.siteId === device.siteId)?.siteName || device.siteName || 'Unknown Site'
+                    : device.siteName || 'Unknown Site';
+                  return (
+                    <tr key={device.id}>
+                      <td className="device-name-cell">
+                        <device.Icon className="device-table-icon" />
+                        <span>{device.name}</span>
+                      </td>
+                      <td className="device-mac-cell">{device.mac}</td>
+                      <td>{device.category}</td>
+                      <td className="device-site-cell">
+                        <span
+                          className={`device-site-badge ${isCompanyView ? 'clickable' : ''}`}
+                          onClick={() => isCompanyView && device.siteId && drillDownToSite(device.siteId, siteName)}
+                          title={isCompanyView && device.siteId ? `View ${siteName}` : siteName}
+                          style={{ cursor: isCompanyView && device.siteId ? 'pointer' : 'default' }}
+                        >
+                          <FaBuilding className="device-site-icon" />
+                          {siteName}
+                        </span>
+                      </td>
+                      <td>{device.owner}</td>
+                      <td>{device.ip}</td>
+                      <td>
+                        <span className={`status-badge ${device.online ? "online" : device.blocked ? "blocked" : "offline"}`}>
+                          {device.online ? t('status.online') : device.blocked ? t('status.blocked') : t('status.offline')}
+                        </span>
+                      </td>
+                      <td>{device.dataUsage}</td>
+                      <td className="device-actions-cell">
+                        {canEditDevice && !isReadOnly && (
+                          <button
+                            className="action-btn edit-btn"
+                            onClick={() => handleEditDevice(device)}
+                            title={t('devices.editDeviceTitle')}
+                            disabled={disconnectingDeviceId === device.id}
+                          >
+                            <FaEdit />
+                          </button>
+                        )}
+                        <button
+                          className="action-btn disconnect-btn"
+                          onClick={() => handleDisconnectDevice(device)}
+                          title={!device.online ? t('devices.alreadyOffline') : t('devices.disconnectTitle')}
+                          disabled={!device.online || disconnectingDeviceId === device.id || isReadOnly}
+                        >
+                          <FaPowerOff />
+                        </button>
+                        {canDeleteDevice && !isReadOnly && (
+                          <button
+                            className="action-btn delete-btn"
+                            onClick={() => handleDeleteDevice(device)}
+                            title={t('devices.deleteDeviceTitle')}
+                            disabled={disconnectingDeviceId === device.id}
+                          >
+                            <FaTrash />
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
+        </div>
+      )}
 
       {filteredDevices.length > 0 && (
         <Pagination

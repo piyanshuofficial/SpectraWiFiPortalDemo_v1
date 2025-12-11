@@ -4,6 +4,7 @@ import React from "react";
 import Modal from "../../components/Modal";
 import Button from "../../components/Button";
 import Badge from "../../components/Badge";
+import UserActionScheduleButton from "../../components/UserActionScheduleButton/UserActionScheduleButton";
 import "./UserDetailsModal.css";
 import { FaTachometerAlt, FaDatabase, FaTabletAlt } from "react-icons/fa";
 import notifications from "../../utils/notifications";
@@ -39,6 +40,7 @@ const UserDetailsModal = ({
   onSuspend,
   onBlock,
   onActivate,
+  isReadOnly = false,
 }) => {
   // ========================================
   // TODO: Backend Integration - Fetch Full User Details on Modal Open
@@ -155,6 +157,10 @@ const UserDetailsModal = ({
   // No longer nested in userPolicy object
 
   const handleEditClick = () => {
+    if (isReadOnly) {
+      notifications.showError("Switch to Site View to edit users");
+      return;
+    }
     if (isBlocked) {
       notifications.showError("Cannot edit user with Blocked status");
       return;
@@ -435,54 +441,66 @@ const UserDetailsModal = ({
         </div>
         
         <div className="udm-actions-row">
-          <Button 
-            variant="primary" 
+          {/* Read-only notice for company view */}
+          {isReadOnly && (
+            <div className="udm-readonly-notice">
+              <span>Company View is read-only. Navigate to a specific site to make changes.</span>
+            </div>
+          )}
+          <Button
+            variant="primary"
             onClick={handleEditClick}
-            disabled={isBlocked}
-            title={isBlocked ? "Cannot edit user with Blocked status" : "Edit user details"}
+            disabled={isBlocked || isReadOnly}
+            title={isReadOnly ? "Switch to Site View to edit" : isBlocked ? "Cannot edit user with Blocked status" : "Edit user details"}
           >
             Edit User
           </Button>
           {onSendMessage && !isBlocked && (
-            <Button
+            <UserActionScheduleButton
+              actionType="resendPassword"
+              user={user}
+              onExecute={handleSendMessage}
+              buttonText="Resend Password"
               variant="secondary"
-              className="resend-password-btn"
-              onClick={handleSendMessage}
-              title="Resend password credentials to user"
-            >
-              Resend Password
-            </Button>
+              disabled={isReadOnly}
+              title={isReadOnly ? "Switch to Site View to perform actions" : "Resend password credentials to user"}
+            />
           )}
           {isActive && (
-            <Button
+            <UserActionScheduleButton
+              actionType="suspend"
+              user={user}
+              onExecute={handleSuspend}
+              buttonText="Suspend User"
               variant="warning"
-              className="suspend-user-btn"
-              onClick={handleSuspend}
-              title="Temporarily suspend user account"
-            >
-              Suspend User
-            </Button>
+              disabled={isReadOnly}
+              title={isReadOnly ? "Switch to Site View to suspend users" : "Temporarily suspend user account"}
+            />
           )}
           {isSuspended && !isBlocked && (
-            <Button
+            <UserActionScheduleButton
+              actionType="activate"
+              user={user}
+              onExecute={handleActivate}
+              buttonText="Activate User"
               variant="success"
-              onClick={handleActivate}
-              title="Reactivate user account"
-            >
-              Activate User
-            </Button>
+              disabled={isReadOnly}
+              title={isReadOnly ? "Switch to Site View to activate users" : "Reactivate user account"}
+            />
           )}
           {(isActive || isSuspended) && (
-            <Button 
-              variant="danger" 
-              onClick={handleBlock}
-              title="Block user permanently"
-            >
-              Block User
-            </Button>
+            <UserActionScheduleButton
+              actionType="block"
+              user={user}
+              onExecute={handleBlock}
+              buttonText="Block User"
+              variant="danger"
+              disabled={isReadOnly}
+              title={isReadOnly ? "Switch to Site View to block users" : "Block user permanently"}
+            />
           )}
-          <Button 
-            variant="secondary" 
+          <Button
+            variant="secondary"
             onClick={onClose}
             title="Close modal"
           >

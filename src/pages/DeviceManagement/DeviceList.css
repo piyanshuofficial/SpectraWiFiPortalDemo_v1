@@ -1,5 +1,197 @@
 /* src/pages/DeviceManagement/DeviceList.css */
 
+/* ============================================
+   COMPANY VIEW STYLES
+   ============================================ */
+
+.device-company-view-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.875rem 1.25rem;
+  background: linear-gradient(135deg, rgba(0, 74, 173, 0.08) 0%, rgba(0, 74, 173, 0.03) 100%);
+  border: 1px solid rgba(0, 74, 173, 0.15);
+  border-radius: var(--radius-lg);
+  margin-bottom: 1.25rem;
+}
+
+.company-banner-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.company-banner-icon {
+  font-size: 1.25rem;
+  color: #004aad;
+  flex-shrink: 0;
+}
+
+.company-banner-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.company-banner-title {
+  font-size: var(--font-base);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.company-banner-subtitle {
+  font-size: var(--font-sm);
+  color: var(--color-text-secondary);
+}
+
+.company-banner-filter {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.company-banner-filter label {
+  font-size: var(--font-sm);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.device-site-filter-select {
+  min-width: 10rem;
+  padding: 0.5rem 0.75rem;
+  font-size: var(--font-sm);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(0, 74, 173, 0.2);
+  background: #fff;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.device-site-filter-select:hover {
+  border-color: #004aad;
+}
+
+.device-site-filter-select:focus {
+  outline: none;
+  border-color: #004aad;
+  box-shadow: 0 0 0 2px rgba(0, 74, 173, 0.1);
+}
+
+/* Site column and badge styles */
+.device-site-cell {
+  min-width: 8rem;
+}
+
+.device-site-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.625rem;
+  background: rgba(0, 74, 173, 0.1);
+  color: #004aad;
+  font-size: var(--font-xs);
+  font-weight: 600;
+  border-radius: 0.375rem;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.device-site-badge:hover {
+  background: rgba(0, 74, 173, 0.15);
+}
+
+.device-site-badge.clickable {
+  cursor: pointer;
+}
+
+.device-site-badge.clickable:hover {
+  background: rgba(0, 74, 173, 0.2);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 74, 173, 0.15);
+}
+
+.device-site-icon {
+  font-size: 0.75rem;
+}
+
+/* Card view site styles */
+.device-card-site {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  color: #004aad;
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+.device-card-site-icon {
+  font-size: 0.75rem;
+  color: #004aad;
+}
+
+/* Dark theme support for company view */
+[data-theme="dark"] .device-company-view-banner {
+  background: linear-gradient(135deg, rgba(104, 213, 255, 0.1) 0%, rgba(104, 213, 255, 0.03) 100%);
+  border-color: rgba(104, 213, 255, 0.2);
+}
+
+[data-theme="dark"] .company-banner-icon {
+  color: #68d5ff;
+}
+
+[data-theme="dark"] .device-site-filter-select {
+  background: var(--color-bg-secondary);
+  border-color: rgba(104, 213, 255, 0.3);
+  color: var(--color-text-primary);
+}
+
+[data-theme="dark"] .device-site-filter-select:hover,
+[data-theme="dark"] .device-site-filter-select:focus {
+  border-color: #68d5ff;
+}
+
+[data-theme="dark"] .device-site-badge {
+  background: rgba(104, 213, 255, 0.15);
+  color: #68d5ff;
+}
+
+[data-theme="dark"] .device-site-badge:hover {
+  background: rgba(104, 213, 255, 0.25);
+}
+
+[data-theme="dark"] .device-card-site {
+  color: #68d5ff;
+}
+
+[data-theme="dark"] .device-card-site-icon {
+  color: #68d5ff;
+}
+
+/* Responsive styles for company view banner */
+@media (max-width: 768px) {
+  .device-company-view-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .company-banner-filter {
+    width: 100%;
+  }
+
+  .device-site-filter-select {
+    flex: 1;
+    min-width: unset;
+  }
+}
+
+/* ============================================
+   MAIN STYLES
+   ============================================ */
+
 .device-mgmt-main {
   padding: 0 2rem 2rem 2rem;
   position: relative;
@@ -256,6 +448,176 @@
 /* Empty state */
 .device-card-list > div[style*="textAlign"] {
   grid-column: 1 / -1;
+}
+
+/* ============================================
+   LIST VIEW TABLE STYLES
+   ============================================ */
+
+.device-list-table-container {
+  background: #fff;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 0.125rem 0.625rem rgba(35, 50, 110, 0.08);
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+
+.device-list-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.device-list-table th,
+.device-list-table td {
+  padding: 0.875rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.device-list-table th {
+  background: #f8f9fa;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.device-list-table tbody tr {
+  transition: background-color 0.2s ease;
+}
+
+.device-list-table tbody tr:hover {
+  background: #f8f9fa;
+}
+
+.device-list-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.device-name-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  font-weight: 500;
+  color: #153874;
+}
+
+.device-table-icon {
+  font-size: 1.125rem;
+  color: #6c757d;
+}
+
+.device-mac-cell {
+  font-family: monospace;
+  font-size: 0.8125rem;
+  color: #495057;
+}
+
+.device-list-table .status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.625rem;
+  border-radius: 50px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.device-list-table .status-badge.online {
+  background: #d4edda;
+  color: #155724;
+}
+
+.device-list-table .status-badge.offline {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.device-list-table .status-badge.blocked {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.device-actions-cell {
+  display: flex;
+  gap: 0.375rem;
+}
+
+.action-btn {
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--radius-md);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.action-btn.edit-btn {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+.action-btn.edit-btn:hover:not(:disabled) {
+  background: #1976d2;
+  color: white;
+}
+
+.action-btn.disconnect-btn {
+  background: #fff3e0;
+  color: #f57c00;
+}
+
+.action-btn.disconnect-btn:hover:not(:disabled) {
+  background: #f57c00;
+  color: white;
+}
+
+.action-btn.delete-btn {
+  background: #ffebee;
+  color: #c62828;
+}
+
+.action-btn.delete-btn:hover:not(:disabled) {
+  background: #c62828;
+  color: white;
+}
+
+/* List view responsive */
+@media (max-width: 1200px) {
+  .device-list-table th:nth-child(5),
+  .device-list-table td:nth-child(5) {
+    display: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .device-list-table th:nth-child(4),
+  .device-list-table td:nth-child(4),
+  .device-list-table th:nth-child(7),
+  .device-list-table td:nth-child(7) {
+    display: none;
+  }
+}
+
+@media (max-width: 700px) {
+  .device-list-table th:nth-child(3),
+  .device-list-table td:nth-child(3) {
+    display: none;
+  }
+
+  .device-list-table th,
+  .device-list-table td {
+    padding: 0.625rem 0.5rem;
+    font-size: 0.8125rem;
+  }
 }
 
 /* Responsive Breakpoints */

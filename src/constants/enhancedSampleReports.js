@@ -944,6 +944,180 @@ const enhancedSampleReports = [
       }
     ]
   },
+
+  // ============================================
+  // COMPANY-LEVEL REPORTS
+  // ============================================
+  {
+    id: "company-overview-dashboard",
+    name: "Company Overview Dashboard",
+    category: "Company",
+    subcategory: "Overview",
+    description: "Executive summary across all sites with key metrics",
+    keywords: ["company", "overview", "executive", "summary", "multi-site"],
+    accessLevel: "company",
+    status: "Completed",
+    createdDate: "2024-10-01",
+    isCommon: true,
+    reportType: "Executive",
+    dataPoints: ["totalSites", "totalUsers", "totalDevices", "totalBandwidth"],
+    hasChart: true,
+    hasTable: true,
+    exportFormats: ["csv", "pdf", "excel"],
+    supportsCriteria: false,
+    criteriaFields: []
+  },
+  {
+    id: "cross-site-usage-comparison",
+    name: "Cross-Site Usage Comparison",
+    category: "Company",
+    subcategory: "Comparison",
+    description: "Compare bandwidth and data usage across all sites",
+    keywords: ["company", "comparison", "usage", "sites", "benchmark"],
+    accessLevel: "company",
+    status: "Completed",
+    createdDate: "2024-10-05",
+    isCommon: true,
+    reportType: "Analytics",
+    dataPoints: ["siteName", "totalUsers", "avgBandwidth", "dataUsage"],
+    hasChart: true,
+    hasTable: true,
+    exportFormats: ["csv", "pdf", "excel"],
+    supportsCriteria: true,
+    criteriaFields: [
+      {
+        type: "monthRange",
+        name: "monthRange",
+        label: "Month Range",
+        required: true,
+        defaultValue: {
+          start: "2024-01",
+          end: "2024-06"
+        },
+        validation: {
+          maxRange: 12
+        }
+      }
+    ]
+  },
+  {
+    id: "consolidated-billing-report",
+    name: "Consolidated Billing Report",
+    category: "Company",
+    subcategory: "Billing",
+    description: "Combined billing summary for all sites",
+    keywords: ["company", "billing", "consolidated", "finance", "invoice"],
+    accessLevel: "company",
+    status: "Completed",
+    createdDate: "2024-10-10",
+    isCommon: true,
+    reportType: "Billing",
+    dataPoints: ["siteName", "activeUsers", "billedAmount", "dueDate"],
+    hasChart: true,
+    hasTable: true,
+    exportFormats: ["csv", "pdf", "excel"],
+    supportsCriteria: true,
+    criteriaFields: [
+      {
+        type: "monthRange",
+        name: "monthRange",
+        label: "Billing Period",
+        required: true,
+        defaultValue: {
+          start: "2024-01",
+          end: "2024-06"
+        },
+        validation: {
+          maxRange: 12
+        }
+      }
+    ]
+  },
+  {
+    id: "company-license-utilization",
+    name: "License Utilization by Site",
+    category: "Company",
+    subcategory: "Licensing",
+    description: "License allocation and utilization across all sites",
+    keywords: ["company", "license", "utilization", "allocation", "sites"],
+    accessLevel: "company",
+    status: "Completed",
+    createdDate: "2024-10-15",
+    isCommon: true,
+    reportType: "Analytics",
+    dataPoints: ["siteName", "allocatedLicenses", "usedLicenses", "utilizationRate"],
+    hasChart: true,
+    hasTable: true,
+    exportFormats: ["csv", "pdf", "excel"],
+    supportsCriteria: false,
+    criteriaFields: []
+  },
+  {
+    id: "company-user-distribution",
+    name: "User Distribution by Site",
+    category: "Company",
+    subcategory: "Users",
+    description: "Distribution of users across all company sites",
+    keywords: ["company", "users", "distribution", "sites", "demographics"],
+    accessLevel: "company",
+    status: "Completed",
+    createdDate: "2024-10-20",
+    isCommon: false,
+    reportType: "Analytics",
+    dataPoints: ["siteName", "activeUsers", "suspendedUsers", "newUsers"],
+    hasChart: true,
+    hasTable: true,
+    exportFormats: ["csv", "pdf"],
+    supportsCriteria: true,
+    criteriaFields: [
+      {
+        type: "monthRange",
+        name: "monthRange",
+        label: "Month Range",
+        required: true,
+        defaultValue: {
+          start: "2024-01",
+          end: "2024-06"
+        },
+        validation: {
+          maxRange: 12
+        }
+      }
+    ]
+  },
+  {
+    id: "company-alerts-summary",
+    name: "Company-Wide Alerts Summary",
+    category: "Company",
+    subcategory: "Alerts",
+    description: "Aggregated alerts and incidents across all sites",
+    keywords: ["company", "alerts", "incidents", "summary", "monitoring"],
+    accessLevel: "company",
+    status: "Completed",
+    createdDate: "2024-10-25",
+    isCommon: false,
+    reportType: "Operations",
+    dataPoints: ["siteName", "criticalAlerts", "warningAlerts", "resolvedAlerts"],
+    hasChart: true,
+    hasTable: true,
+    exportFormats: ["csv", "pdf"],
+    supportsCriteria: true,
+    criteriaFields: [
+      {
+        type: "dateRange",
+        name: "dateRange",
+        label: "Date Range",
+        required: true,
+        defaultValue: {
+          start: "2024-07-01",
+          end: "2024-07-31"
+        },
+        validation: {
+          maxRange: 90
+        }
+      }
+    ]
+  },
 ];
 
 /**
@@ -988,6 +1162,32 @@ export const searchReports = (searchTerm) => {
 
 export const getCommonReports = () => {
   return enhancedSampleReports.filter(r => r.isCommon);
+};
+
+/**
+ * Filter reports by access level (company or site)
+ * @param {string} accessLevel - 'company' or 'site'
+ * @returns {Array} Filtered reports
+ */
+export const getReportsByAccessLevel = (accessLevel) => {
+  if (!accessLevel) return enhancedSampleReports;
+  return enhancedSampleReports.filter(r => r.accessLevel === accessLevel);
+};
+
+/**
+ * Get reports appropriate for company view (only company-level reports)
+ * @returns {Array} Company-level reports only
+ */
+export const getCompanyReports = () => {
+  return enhancedSampleReports.filter(r => r.accessLevel === 'company');
+};
+
+/**
+ * Get reports appropriate for site view (only site-level reports)
+ * @returns {Array} Site-level reports only
+ */
+export const getSiteReports = () => {
+  return enhancedSampleReports.filter(r => r.accessLevel === 'site');
 };
 
 export default enhancedSampleReports;

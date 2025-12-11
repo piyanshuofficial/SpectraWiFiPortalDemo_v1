@@ -196,6 +196,104 @@ export const CSV_TEMPLATES = {
         notes: 'Network printer'
       }
     ]
+  },
+
+  // Internal Portal - Bulk Status Change
+  bulkStatusChange: {
+    headers: ['userId', 'action', 'reason'],
+    requiredFields: ['userId', 'action'],
+    sampleData: [
+      {
+        userId: 'USER001',
+        action: 'activate',
+        reason: 'Account verified'
+      },
+      {
+        userId: 'USER002',
+        action: 'suspend',
+        reason: 'Pending verification'
+      }
+    ]
+  },
+
+  // Internal Portal - Bulk Policy Change
+  bulkPolicyChange: {
+    headers: ['userId', 'newPolicyId', 'reason'],
+    requiredFields: ['userId', 'newPolicyId'],
+    sampleData: [
+      {
+        userId: 'USER001',
+        newPolicyId: 'POLICY_PREMIUM',
+        reason: 'Upgrade requested'
+      },
+      {
+        userId: 'USER002',
+        newPolicyId: 'POLICY_BASIC',
+        reason: 'Downgrade'
+      }
+    ]
+  },
+
+  // Internal Portal - Bulk Device Rename
+  bulkDeviceRename: {
+    headers: ['deviceId', 'newName'],
+    requiredFields: ['deviceId', 'newName'],
+    sampleData: [
+      {
+        deviceId: 'DEV001',
+        newName: 'Floor1-TempSensor-A'
+      },
+      {
+        deviceId: 'DEV002',
+        newName: 'Office2-Printer-Main'
+      }
+    ]
+  },
+
+  // Internal Portal - Bulk User Registration
+  bulkUserRegistration: {
+    headers: ['userId', 'name', 'email', 'mobile', 'policyId', 'maxDevices'],
+    requiredFields: ['userId', 'name', 'email'],
+    sampleData: [
+      {
+        userId: 'USER001',
+        name: 'John Doe',
+        email: 'john@example.com',
+        mobile: '9876543210',
+        policyId: 'POLICY_BASIC',
+        maxDevices: '3'
+      },
+      {
+        userId: 'USER002',
+        name: 'Jane Smith',
+        email: 'jane@example.com',
+        mobile: '9876543211',
+        policyId: 'POLICY_PREMIUM',
+        maxDevices: '5'
+      }
+    ]
+  },
+
+  // Internal Portal - Bulk Device Registration
+  bulkDeviceRegistration: {
+    headers: ['userId', 'deviceName', 'macAddress', 'category', 'description'],
+    requiredFields: ['userId', 'deviceName', 'macAddress'],
+    sampleData: [
+      {
+        userId: 'USER001',
+        deviceName: 'Johns-Laptop',
+        macAddress: 'AA:BB:CC:DD:EE:01',
+        category: 'Human',
+        description: 'Work laptop'
+      },
+      {
+        userId: 'USER002',
+        deviceName: 'Smart-TV',
+        macAddress: 'AA:BB:CC:DD:EE:02',
+        category: 'Other',
+        description: 'Living room TV'
+      }
+    ]
   }
 };
 
@@ -251,6 +349,77 @@ export const VALIDATION_RULES = {
     status: {
       enum: ['active', 'inactive', 'maintenance'],
       errorMessage: 'Invalid status. Must be: active, inactive, or maintenance'
+    }
+  },
+
+  // Internal Portal - Bulk Status Change validation
+  bulkStatusChange: {
+    userId: {
+      minLength: 1,
+      errorMessage: 'User ID is required'
+    },
+    action: {
+      enum: ['activate', 'suspend', 'block'],
+      errorMessage: 'Invalid action. Must be: activate, suspend, or block'
+    }
+  },
+
+  // Internal Portal - Bulk Policy Change validation
+  bulkPolicyChange: {
+    userId: {
+      minLength: 1,
+      errorMessage: 'User ID is required'
+    },
+    newPolicyId: {
+      minLength: 1,
+      errorMessage: 'New policy ID is required'
+    }
+  },
+
+  // Internal Portal - Bulk Device Rename validation
+  bulkDeviceRename: {
+    deviceId: {
+      minLength: 1,
+      errorMessage: 'Device ID is required'
+    },
+    newName: {
+      minLength: 1,
+      maxLength: 100,
+      errorMessage: 'Device name must be 1-100 characters'
+    }
+  },
+
+  // Internal Portal - Bulk User Registration validation
+  bulkUserRegistration: {
+    userId: {
+      minLength: 1,
+      maxLength: 50,
+      errorMessage: 'User ID must be 1-50 characters'
+    },
+    name: {
+      minLength: 1,
+      maxLength: 100,
+      errorMessage: 'Name must be 1-100 characters'
+    },
+    email: {
+      pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+      errorMessage: 'Invalid email format'
+    },
+    mobile: {
+      pattern: /^\d{10}$/,
+      errorMessage: 'Invalid mobile number (10 digits required)'
+    }
+  },
+
+  // Internal Portal - Bulk Device Registration validation
+  bulkDeviceRegistration: {
+    macAddress: {
+      pattern: /^([0-9A-Fa-f]{2}:){5}([0-9A-Fa-f]{2})$/,
+      errorMessage: 'Invalid MAC address format (use format: AA:BB:CC:DD:EE:FF)'
+    },
+    category: {
+      enum: ['Human', 'Other'],
+      errorMessage: 'Invalid category. Must be: Human or Other'
     }
   }
 };

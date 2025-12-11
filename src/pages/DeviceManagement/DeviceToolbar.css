@@ -111,6 +111,42 @@
   background: #e3eaf1;
 }
 
+/* View Toggle Group */
+.view-toggle-group {
+  display: flex;
+  border: 0.075rem solid #dadbe7;
+  border-radius: var(--radius-base);
+  overflow: hidden;
+  background: #f8f9fa;
+}
+
+.view-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2rem;
+  border: none;
+  background: transparent;
+  color: #6c757d;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.view-toggle-btn:first-child {
+  border-right: 0.075rem solid #dadbe7;
+}
+
+.view-toggle-btn:hover:not(.active) {
+  background: #e9ecef;
+  color: #495057;
+}
+
+.view-toggle-btn.active {
+  background: #153874;
+  color: white;
+}
+
 @media (max-width: 900px) {
   .device-toolbar-content {
     flex-direction: column;

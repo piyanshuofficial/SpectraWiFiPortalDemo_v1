@@ -1,7 +1,7 @@
 // src/pages/KnowledgeCenter/KnowledgeHome.js
 
 import React, { useEffect, useRef, useState, useMemo } from 'react';
-import { FaBookOpen, FaVideo, FaQuestionCircle, FaArrowLeft, FaChevronDown, FaChevronUp, FaPlay } from 'react-icons/fa';
+import { FaBookOpen, FaVideo, FaQuestionCircle, FaArrowLeft, FaChevronDown, FaChevronUp, FaPlay, FaBuilding, FaInfoCircle } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 import SkeletonLoader from '../../components/Loading/SkeletonLoader';
 import KnowledgeArticleModal from '../../components/KnowledgeArticleModal';
@@ -9,6 +9,7 @@ import VideoPlayer from '../../components/VideoPlayer';
 import { getArticle } from '../../constants/knowledgeArticles';
 import { ANIMATION } from '../../constants/appConstants';
 import { useSegment, SEGMENTS } from '../../context/SegmentContext';
+import { useAccessLevelView } from '../../context/AccessLevelViewContext';
 import { useVideoDurations } from '../../hooks';
 import './KnowledgeHome.css';
 
@@ -22,6 +23,7 @@ const SECTION_VIEWS = {
 
 const KnowledgeHome = () => {
   const { currentSegment } = useSegment();
+  const { isCompanyView } = useAccessLevelView();
   const { t } = useTranslation();
   const [supportHighlight, setSupportHighlight] = useState(false);
   const [initialLoad, setInitialLoad] = useState(true);
@@ -647,11 +649,221 @@ const KnowledgeHome = () => {
   ]
 }), []);
 
-  // Get articles for current segment
-  const gettingStartedArticles = useMemo(() =>
-    segmentArticles[currentSegment] || segmentArticles[SEGMENTS.MISCELLANEOUS],
-    [currentSegment, segmentArticles]
-  );
+  // Company-level specific articles (shown when in company view)
+  const companyArticles = useMemo(() => [
+    // Multi-Site Management
+    {
+      id: 'dashboard-overview',
+      category: 'Multi-Site Management',
+      title: 'Company Dashboard Overview',
+      description: 'View aggregated metrics across all sites including total users, devices, license utilization, and network health at a glance'
+    },
+    {
+      id: 'generating-reports',
+      category: 'Multi-Site Management',
+      title: 'Cross-Site Analytics',
+      description: 'Compare performance metrics, user activity, and resource utilization across different sites in your organization'
+    },
+    {
+      id: 'user-policies-licenses',
+      category: 'Multi-Site Management',
+      title: 'Company-Wide License Management',
+      description: 'Monitor license allocation across sites, track company-wide utilization, and plan capacity for multi-site deployments'
+    },
+    {
+      id: 'bulk-user-operations',
+      category: 'Multi-Site Management',
+      title: 'Site Navigation & Drill-Down',
+      description: 'Navigate between company overview and individual sites, drill down to site-specific details for operational tasks'
+    },
+    // Company Reports
+    {
+      id: 'generating-reports',
+      category: 'Company Reports',
+      title: 'Consolidated Company Reports',
+      description: 'Generate company-wide reports covering all sites, including billing summaries, compliance reports, and executive dashboards'
+    },
+    {
+      id: 'generating-reports',
+      category: 'Company Reports',
+      title: 'Cross-Site Usage Comparison',
+      description: 'Compare bandwidth usage, user activity, and device counts across multiple sites with visual analytics'
+    },
+    {
+      id: 'dashboard-overview',
+      category: 'Company Reports',
+      title: 'Company Performance Dashboard',
+      description: 'Monitor key performance indicators across your organization with real-time aggregated metrics and trend analysis'
+    },
+    {
+      id: 'generating-reports',
+      category: 'Company Reports',
+      title: 'Export Company Data',
+      description: 'Export consolidated reports in CSV and PDF formats for executive review, compliance, and stakeholder presentations'
+    },
+    // Administrative Tasks
+    {
+      id: 'user-status-management',
+      category: 'Administrative Tasks',
+      title: 'View Users Across Sites',
+      description: 'Browse and search users across all company sites with filtering options. Navigate to specific sites for user management actions'
+    },
+    {
+      id: 'device-registration',
+      category: 'Administrative Tasks',
+      title: 'View Devices Across Sites',
+      description: 'Monitor device inventory across all sites, view device status, and navigate to sites for device management tasks'
+    },
+    {
+      id: 'policy-setup',
+      category: 'Administrative Tasks',
+      title: 'Company Policy Standards',
+      description: 'Review policy configurations across sites to ensure consistency and compliance with company standards'
+    },
+    {
+      id: 'segment-configuration',
+      category: 'Administrative Tasks',
+      title: 'Site Configuration Overview',
+      description: 'View and compare network configurations across sites, identify configuration differences, and ensure standardization'
+    },
+    // Best Practices
+    {
+      id: 'user-policies-licenses',
+      category: 'Best Practices',
+      title: 'Multi-Site License Optimization',
+      description: 'Best practices for allocating licenses across sites, balancing capacity, and planning for growth'
+    },
+    {
+      id: 'generating-reports',
+      category: 'Best Practices',
+      title: 'Effective Company Reporting',
+      description: 'Tips for generating meaningful company-wide reports, scheduling reviews, and tracking organizational KPIs'
+    },
+    {
+      id: 'dashboard-overview',
+      category: 'Best Practices',
+      title: 'Company Monitoring Strategy',
+      description: 'Establish effective monitoring practices for multi-site operations, set up alerts, and proactive management workflows'
+    },
+    {
+      id: 'troubleshooting-connection',
+      category: 'Best Practices',
+      title: 'Cross-Site Issue Resolution',
+      description: 'Identify and resolve issues affecting multiple sites, coordinate with site administrators, and implement company-wide fixes'
+    }
+  ], []);
+
+  // Company-level specific FAQs
+  const companyFAQs = useMemo(() => [
+    {
+      id: 'company-faq-1',
+      category: 'Company View',
+      question: 'What can I see in the Company View?',
+      answer: 'Company View provides an aggregated overview of all sites in your organization. You can see total users, devices, license utilization across sites, company-wide reports, and cross-site analytics. Use it for executive oversight and company-level reporting.'
+    },
+    {
+      id: 'company-faq-2',
+      category: 'Company View',
+      question: 'Why can\'t I add or edit users in Company View?',
+      answer: 'Company View is designed for monitoring and reporting across sites. To add, edit, or manage users, you need to navigate to a specific site. Click on any site card from the dashboard or use the site selector to drill down to site-level management.'
+    },
+    {
+      id: 'company-faq-3',
+      category: 'Navigation',
+      question: 'How do I switch from Company View to Site View?',
+      answer: 'Click on any site card on the Dashboard, or use the site selector in the header. When viewing lists (users/devices), click on the site badge to navigate to that specific site. Use the "Back to Company View" button to return.'
+    },
+    {
+      id: 'company-faq-4',
+      category: 'Reports',
+      question: 'What reports are available at the company level?',
+      answer: 'Company-level reports include: Company Overview Dashboard, Cross-Site Usage Comparison, Consolidated Billing Report, Company License Utilization, Company User Distribution, and Company Alerts Summary. These provide aggregated data across all your sites.'
+    },
+    {
+      id: 'company-faq-5',
+      category: 'Reports',
+      question: 'Can I export company-wide data?',
+      answer: 'Yes, all company-level reports can be exported in CSV and PDF formats. The exports include data from all sites with site identifiers, making it easy to analyze multi-site operations in external tools.'
+    },
+    {
+      id: 'company-faq-6',
+      category: 'License Management',
+      question: 'How do I view license usage across all sites?',
+      answer: 'The Dashboard shows aggregated license metrics. For detailed breakdown, go to Reports > Company License Utilization to see per-site license allocation, usage percentages, and capacity planning recommendations.'
+    },
+    {
+      id: 'company-faq-7',
+      category: 'Site Management',
+      question: 'Can I compare performance between sites?',
+      answer: 'Yes, use the Cross-Site Usage Comparison report to compare bandwidth usage, user counts, device counts, and activity levels between sites. The Dashboard also shows site cards with key metrics for quick comparison.'
+    },
+    {
+      id: 'company-faq-8',
+      category: 'Access Control',
+      question: 'What permissions do Company Admins have vs Site Admins?',
+      answer: 'Company Admins can view all sites, generate company-wide reports, and drill down to any site for management. Site Admins only see their assigned site. Company Admins have edit capabilities when drilled down to a site view.'
+    }
+  ], []);
+
+  // Company-level specific videos
+  const companyVideos = useMemo(() => [
+    {
+      id: 'company-video-1',
+      title: 'Company Dashboard Overview',
+      description: 'Learn how to use the company dashboard to monitor all sites, view aggregated metrics, and quickly identify issues across your organization.',
+      duration: '7:30',
+      category: 'Getting Started',
+      videoFile: 'company/dashboard-overview.mp4'
+    },
+    {
+      id: 'company-video-2',
+      title: 'Navigating Between Sites',
+      description: 'Master the site navigation system - learn to drill down from company view to individual sites and back for effective multi-site management.',
+      duration: '5:45',
+      category: 'Navigation',
+      videoFile: 'company/site-navigation.mp4'
+    },
+    {
+      id: 'company-video-3',
+      title: 'Company-Wide Reporting',
+      description: 'Generate and export consolidated reports covering all sites, understand report categories, and create executive summaries.',
+      duration: '12:00',
+      category: 'Reports',
+      videoFile: 'company/company-reports.mp4'
+    },
+    {
+      id: 'company-video-4',
+      title: 'Cross-Site Analytics',
+      description: 'Compare site performance, analyze usage patterns across locations, and identify optimization opportunities using cross-site analytics.',
+      duration: '10:15',
+      category: 'Analytics',
+      videoFile: 'company/cross-site-analytics.mp4'
+    },
+    {
+      id: 'company-video-5',
+      title: 'Multi-Site License Management',
+      description: 'Monitor license utilization across all sites, understand allocation strategies, and plan for capacity expansion.',
+      duration: '8:45',
+      category: 'License Management',
+      videoFile: 'company/license-management.mp4'
+    },
+    {
+      id: 'company-video-6',
+      title: 'Company Admin Best Practices',
+      description: 'Best practices for managing multiple sites, setting up monitoring workflows, and ensuring consistent operations across your organization.',
+      duration: '11:30',
+      category: 'Best Practices',
+      videoFile: 'company/admin-best-practices.mp4'
+    }
+  ], []);
+
+  // Get articles for current segment (or company-specific if in company view)
+  const gettingStartedArticles = useMemo(() => {
+    if (isCompanyView) {
+      return companyArticles;
+    }
+    return segmentArticles[currentSegment] || segmentArticles[SEGMENTS.MISCELLANEOUS];
+  }, [currentSegment, segmentArticles, isCompanyView, companyArticles]);
 
   // Segment-Specific FAQ Data
   const segmentFAQs = useMemo(() => ({
@@ -909,11 +1121,13 @@ const KnowledgeHome = () => {
   ]
 }), []);
 
-  // Get FAQs for current segment
-  const faqData = useMemo(() =>
-    segmentFAQs[currentSegment] || segmentFAQs[SEGMENTS.MISCELLANEOUS],
-    [currentSegment, segmentFAQs]
-  );
+  // Get FAQs for current segment (or company-specific if in company view)
+  const faqData = useMemo(() => {
+    if (isCompanyView) {
+      return companyFAQs;
+    }
+    return segmentFAQs[currentSegment] || segmentFAQs[SEGMENTS.MISCELLANEOUS];
+  }, [currentSegment, segmentFAQs, isCompanyView, companyFAQs]);
 
   // Segment-Specific Video Tutorial Data
   // Video files should be placed in public/assets/videos/{segment}/ folder
@@ -1220,11 +1434,13 @@ const KnowledgeHome = () => {
     ]
   }), []);
 
-  // Get videos for current segment
-  const videoData = useMemo(() =>
-    segmentVideos[currentSegment] || segmentVideos[SEGMENTS.MISCELLANEOUS],
-    [currentSegment, segmentVideos]
-  );
+  // Get videos for current segment (or company-specific if in company view)
+  const videoData = useMemo(() => {
+    if (isCompanyView) {
+      return companyVideos;
+    }
+    return segmentVideos[currentSegment] || segmentVideos[SEGMENTS.MISCELLANEOUS];
+  }, [currentSegment, segmentVideos, isCompanyView, companyVideos]);
 
   // Load actual video durations from video files
   const { durations, loading: durationsLoading } = useVideoDurations(videoData);
@@ -1320,6 +1536,20 @@ const KnowledgeHome = () => {
   return (
     <main className="knowledge-center-main">
       <h1 className="knowledge-center-title">{t('knowledge.title')}</h1>
+
+      {/* Company View Info Banner */}
+      {isCompanyView && (
+        <div className="knowledge-company-banner">
+          <FaBuilding className="knowledge-company-banner-icon" />
+          <div className="knowledge-company-banner-content">
+            <span className="knowledge-company-banner-title">Company View Help</span>
+            <span className="knowledge-company-banner-text">
+              Viewing help content for multi-site management. Topics cover company-wide reporting, cross-site analytics, and site navigation.
+            </span>
+          </div>
+          <FaInfoCircle className="knowledge-company-banner-info" />
+        </div>
+      )}
 
       <div className="knowledge-search-row">
         <input
@@ -1535,7 +1765,10 @@ const KnowledgeHome = () => {
 
           {/* Organize articles by category */}
           {filteredArticles.length > 0 ? (
-            ['User Management', 'Device Management', 'Reports & Analytics', 'Network Configuration', 'Troubleshooting', 'Best Practices'].map(category => {
+            (isCompanyView
+              ? ['Multi-Site Management', 'Company Reports', 'Administrative Tasks', 'Best Practices']
+              : ['User Management', 'Device Management', 'Reports & Analytics', 'Network Configuration', 'Troubleshooting', 'Best Practices']
+            ).map(category => {
               const categoryArticles = filteredArticles.filter(article => article.category === category);
               if (categoryArticles.length === 0) return null;
 

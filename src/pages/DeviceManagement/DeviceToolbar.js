@@ -1,7 +1,7 @@
 // src/pages/DeviceManagement/DeviceToolbar.js
 
 import React, { useState, useRef, useEffect } from "react";
-import { FaPlusCircle, FaQuestionCircle, FaUpload, FaFileCsv, FaChevronDown } from "react-icons/fa";
+import { FaPlusCircle, FaQuestionCircle, FaUpload, FaFileCsv, FaChevronDown, FaTh, FaList } from "react-icons/fa";
 import { useTranslation } from "react-i18next";
 import Button from "../../components/Button";
 import "./DeviceToolbar.css";
@@ -26,7 +26,9 @@ function DeviceToolbar({
   primaryDeviceTypes = [],
   subDeviceTypes = [],
   statusOptions = [],
-  segment = "enterprise"
+  segment = "enterprise",
+  viewMode = "grid",
+  onViewModeChange
 }) {
   const { t } = useTranslation();
   const [showBulkImportMenu, setShowBulkImportMenu] = useState(false);
@@ -166,6 +168,31 @@ function DeviceToolbar({
                 </option>
               ))}
             </select>
+
+            {/* View Mode Toggle */}
+            {onViewModeChange && (
+              <div className="view-toggle-group">
+                <button
+                  className={`view-toggle-btn ${viewMode === 'grid' ? 'active' : ''}`}
+                  onClick={() => onViewModeChange('grid')}
+                  title={t('common.gridView')}
+                  aria-label={t('common.gridView')}
+                  aria-pressed={viewMode === 'grid'}
+                >
+                  <FaTh />
+                </button>
+                <button
+                  className={`view-toggle-btn ${viewMode === 'list' ? 'active' : ''}`}
+                  onClick={() => onViewModeChange('list')}
+                  title={t('common.listView')}
+                  aria-label={t('common.listView')}
+                  aria-pressed={viewMode === 'list'}
+                >
+                  <FaList />
+                </button>
+              </div>
+            )}
+
             <FaQuestionCircle
               className="help-icon"
               title={t('devices.managementHelp')}

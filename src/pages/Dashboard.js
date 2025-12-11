@@ -3,8 +3,8 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Card from "../components/Card";
 import Button from "../components/Button";
-import { Line, Bar, Pie } from "react-chartjs-2";
-import { FaUsers, FaUserFriends, FaChartPie, FaCheckCircle, FaFileCsv, FaFilePdf, FaLifeRing, FaExclamationCircle, FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { Line, Bar, Pie, Doughnut } from "react-chartjs-2";
+import { FaUsers, FaUserFriends, FaChartPie, FaCheckCircle, FaFileCsv, FaFilePdf, FaLifeRing, FaExclamationCircle, FaChevronLeft, FaChevronRight, FaBuilding, FaLaptop, FaExclamationTriangle, FaNetworkWired } from "react-icons/fa";
 import { usePermissions } from "../hooks/usePermissions";
 import { useLoading } from "../context/LoadingContext";
 import { useSegment } from "../context/SegmentContext";
@@ -20,6 +20,9 @@ import { useTranslation } from "react-i18next";
 import LoadingOverlay from "../components/Loading/LoadingOverlay";
 import SkeletonLoader from "../components/Loading/SkeletonLoader";
 import notifications from "../utils/notifications";
+import { useAccessLevelView } from "../context/AccessLevelViewContext";
+import { sampleCompany, companySites, getCompanyStats, getSiteChartData, companyActivityLogs } from "../constants/companySampleData";
+import SitesOverview from "../components/SitesOverview";
 import "./Dashboard.css";
 
 
@@ -27,6 +30,7 @@ import "./Dashboard.css";
 const Dashboard = () => {
   const { t } = useTranslation();
   const { currentSegment } = useSegment();
+  const { isCompanyView, isSiteView, isCompanyUser } = useAccessLevelView();
 
   // Calculate segment-specific metrics with realistic variation
   const metrics = useMemo(() => {
@@ -632,6 +636,183 @@ useEffect(() => {
     return hasPermission(action.permission);
   });
 
+  // Company-level stats and chart data
+  const companyStats = useMemo(() => getCompanyStats(), []);
+  const companyChartData = useMemo(() => getSiteChartData(), []);
+
+  // Render Company Dashboard View
+  const renderCompanyDashboard = () => (
+    <main className="main-content" role="main" aria-label="Company Dashboard">
+      {(exportingCSV || exportingPDF) && (
+        <LoadingOverlay
+          active={true}
+          message={exportingCSV ? "Preparing CSV..." : "Generating PDF..."}
+          fullPage={false}
+        />
+      )}
+
+      <h1 className="dashboard-title">{sampleCompany.name}</h1>
+
+      {/* Company-level info banner */}
+      <div className="company-info-banner">
+        <FaBuilding className="banner-icon" />
+        <div className="banner-content">
+          <span className="banner-text">You are viewing company-level data across all sites</span>
+          <span className="banner-subtext">Select a site below to view details or make changes</span>
+        </div>
+      </div>
+
+      <h2 className="dashboard-section-title">Company Overview</h2>
+      <section className="dashboard-cards company-overview-cards" aria-label="Company summary cards">
+        <Card
+          title="Total Sites"
+          icon={<FaBuilding />}
+          trendData={[4, 5, 5, 6, 6, 6]}
+          trendIncrease={true}
+        >
+          {companyStats.totalSites} Sites
+        </Card>
+        <Card
+          title="Total Users"
+          icon={<FaUsers />}
+          trendData={[2500, 2600, 2700, 2750, 2800, companyStats.totalUsers]}
+          trendIncrease={true}
+        >
+          {companyStats.totalUsers.toLocaleString()} Users
+        </Card>
+        <Card
+          title="Total Devices"
+          icon={<FaLaptop />}
+          trendData={[3800, 3900, 4000, 4100, 4150, companyStats.totalDevices]}
+          trendIncrease={true}
+        >
+          {companyStats.totalDevices.toLocaleString()} Devices
+        </Card>
+        <Card
+          title="Active Alerts"
+          icon={<FaExclamationTriangle />}
+          trendData={[5, 4, 6, 5, 7, companyStats.totalAlerts]}
+          trendIncrease={false}
+        >
+          {companyStats.totalAlerts} ({companyStats.criticalAlerts} Critical)
+        </Card>
+      </section>
+
+      <h2 className="dashboard-section-title">Your Sites</h2>
+      <SitesOverview />
+
+      <h2 className="dashboard-section-title">Company Analytics</h2>
+      <section className="dashboard-charts company-charts" aria-label="Company analytics charts">
+        <Card title="Users by Site">
+          <div className="chart-container">
+            <Bar
+              data={{
+                labels: companyChartData.usersBysite.map(s => s.name),
+                datasets: [
+                  {
+                    label: "Total Users",
+                    data: companyChartData.usersBysite.map(s => s.value),
+                    backgroundColor: "#004aad",
+                  },
+                  {
+                    label: "Active Users",
+                    data: companyChartData.usersBysite.map(s => s.active),
+                    backgroundColor: "#4caf50",
+                  }
+                ],
+              }}
+              options={{
+                ...chartOptions,
+                plugins: {
+                  ...chartOptions.plugins,
+                  legend: { position: 'top' }
+                }
+              }}
+            />
+          </div>
+        </Card>
+
+        <Card title="Devices by Site">
+          <div className="chart-container">
+            <Bar
+              data={{
+                labels: companyChartData.devicesBySite.map(s => s.name),
+                datasets: [
+                  {
+                    label: "Total Devices",
+                    data: companyChartData.devicesBySite.map(s => s.value),
+                    backgroundColor: "#3f51b5",
+                  },
+                  {
+                    label: "Active Devices",
+                    data: companyChartData.devicesBySite.map(s => s.active),
+                    backgroundColor: "#8bc34a",
+                  }
+                ],
+              }}
+              options={{
+                ...chartOptions,
+                plugins: {
+                  ...chartOptions.plugins,
+                  legend: { position: 'top' }
+                }
+              }}
+            />
+          </div>
+        </Card>
+
+        <Card title="Bandwidth Utilization by Site">
+          <div className="chart-container">
+            <Bar
+              data={{
+                labels: companyChartData.bandwidthBySite.map(s => s.name),
+                datasets: [
+                  {
+                    label: "Bandwidth Usage (%)",
+                    data: companyChartData.bandwidthBySite.map(s => s.usage),
+                    backgroundColor: companyChartData.bandwidthBySite.map(s =>
+                      s.usage >= 80 ? '#f44336' : s.usage >= 60 ? '#ff9800' : '#4caf50'
+                    ),
+                    borderRadius: 4,
+                  }
+                ],
+              }}
+              options={{
+                ...chartOptions,
+                plugins: {
+                  ...chartOptions.plugins,
+                  legend: { display: false }
+                },
+                scales: {
+                  y: {
+                    beginAtZero: true,
+                    max: 100,
+                    ticks: {
+                      callback: (value) => `${value}%`
+                    }
+                  }
+                }
+              }}
+            />
+          </div>
+        </Card>
+      </section>
+
+      <h2 className="dashboard-section-title">Recent Company Activity</h2>
+      <Card title="" className="recent-activities-card company-activities" aria-label="Recent company activities">
+        <ul className="activity-list company-activity-list">
+          {companyActivityLogs.slice(0, 5).map((log) => (
+            <li key={log.id} className={`activity-item severity-${log.severity}`}>
+              <span className="activity-site-badge">{log.site}</span>
+              <span className="activity-text">{log.action}: {log.details}</span>
+              <span className="activity-time">{new Date(log.timestamp).toLocaleString()}</span>
+            </li>
+          ))}
+        </ul>
+      </Card>
+    </main>
+  );
+
   if (initialLoad) {
     return (
       <main className="main-content" role="main" aria-label="Dashboard">
@@ -665,6 +846,12 @@ useEffect(() => {
     );
   }
 
+  // Render company dashboard if in company view
+  if (isCompanyView) {
+    return renderCompanyDashboard();
+  }
+
+  // Render site-level dashboard (existing view)
   return (
     <main
       className="main-content"
