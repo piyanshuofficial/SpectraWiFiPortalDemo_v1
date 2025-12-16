@@ -20,6 +20,7 @@ import { lazy } from 'react';
 const Dashboard = lazy(() => import(/* webpackChunkName: "dashboard" */ '../pages/Dashboard'));
 const UserList = lazy(() => import(/* webpackChunkName: "user-management" */ '../pages/UserManagement/UserList'));
 const DeviceList = lazy(() => import(/* webpackChunkName: "device-management" */ '../pages/DeviceManagement/DeviceList'));
+const GuestManagement = lazy(() => import(/* webpackChunkName: "guest-management" */ '../pages/GuestManagement/GuestManagement'));
 const ReportDashboard = lazy(() => import(/* webpackChunkName: "reports" */ '../pages/Reports/ReportDashboard'));
 const KnowledgeHome = lazy(() => import(/* webpackChunkName: "knowledge-center" */ '../pages/KnowledgeCenter/KnowledgeHome'));
 const ActivityLogs = lazy(() => import(/* webpackChunkName: "activity-logs" */ '../pages/ActivityLogs/ActivityLogs'));
@@ -28,11 +29,13 @@ const ActivityLogs = lazy(() => import(/* webpackChunkName: "activity-logs" */ '
 const InternalDashboard = lazy(() => import(/* webpackChunkName: "internal-dashboard" */ '../pages/Internal/InternalDashboard'));
 const SiteManagement = lazy(() => import(/* webpackChunkName: "site-management" */ '../pages/Internal/SiteManagement'));
 const CustomerManagement = lazy(() => import(/* webpackChunkName: "customer-management" */ '../pages/Internal/CustomerManagement'));
+const InternalGuestManagement = lazy(() => import(/* webpackChunkName: "internal-guest-management" */ '../pages/Internal/InternalGuestManagement'));
 const InternalAuditLogs = lazy(() => import(/* webpackChunkName: "internal-audit-logs" */ '../pages/Internal/AuditLogs'));
 const SystemConfiguration = lazy(() => import(/* webpackChunkName: "system-configuration" */ '../pages/Internal/SystemConfiguration'));
 const InternalKnowledgeCenter = lazy(() => import(/* webpackChunkName: "internal-knowledge" */ '../pages/Internal/InternalKnowledgeCenter'));
 const InternalReports = lazy(() => import(/* webpackChunkName: "internal-reports" */ '../pages/Internal/InternalReports'));
 const InternalSupport = lazy(() => import(/* webpackChunkName: "internal-support" */ '../pages/Internal/InternalSupport'));
+const InternalAlerts = lazy(() => import(/* webpackChunkName: "internal-alerts" */ '../pages/Internal/InternalAlerts'));
 const BulkOperations = lazy(() => import(/* webpackChunkName: "bulk-operations" */ '../pages/Internal/BulkOperations/BulkOperations'));
 
 // ============================================
@@ -78,6 +81,15 @@ export const routes = [
     title: 'Device Management',
     exact: true,
     chunkName: 'device-management'
+  },
+  {
+    path: '/guests',
+    component: GuestManagement,
+    requiredPermission: 'canEditUsers',
+    fallbackMessage: 'You need user management permissions to access guest management.',
+    title: 'Guest Management',
+    exact: true,
+    chunkName: 'guest-management'
   },
   {
     path: '/reports',
@@ -138,6 +150,16 @@ export const routes = [
     isInternal: true
   },
   {
+    path: '/internal/guests',
+    component: InternalGuestManagement,
+    requiredPermission: 'canAccessInternalPortal',
+    fallbackMessage: 'This page is only accessible to internal Spectra staff.',
+    title: 'Guest Access Management',
+    exact: true,
+    chunkName: 'internal-guest-management',
+    isInternal: true
+  },
+  {
     path: '/internal/logs',
     component: InternalAuditLogs,
     requiredPermission: 'canAccessInternalPortal',
@@ -185,6 +207,16 @@ export const routes = [
     title: 'Support Queue',
     exact: true,
     chunkName: 'internal-support',
+    isInternal: true
+  },
+  {
+    path: '/internal/alerts',
+    component: InternalAlerts,
+    requiredPermission: 'canAccessInternalPortal',
+    fallbackMessage: 'This page is only accessible to internal Spectra staff.',
+    title: 'Alerts & Notifications',
+    exact: true,
+    chunkName: 'internal-alerts',
     isInternal: true
   },
   {

@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { FaMapMarkerAlt, FaUsers, FaLaptop, FaExclamationTriangle, FaSearch, FaSort, FaSortUp, FaSortDown, FaChevronRight } from 'react-icons/fa';
-import { companySites } from '../../constants/companySampleData';
+import { useSegmentSites } from '../../hooks/useSegmentCompanyData';
 import { useAccessLevelView } from '../../context/AccessLevelViewContext';
 import Pagination from '../Pagination';
 import './SitesOverview.css';
@@ -12,15 +12,16 @@ const CARD_VIEW_THRESHOLD = 10;
 
 const SitesOverview = () => {
   const { drillDownToSite } = useAccessLevelView();
+  const { sites: segmentSites } = useSegmentSites();
   const [searchTerm, setSearchTerm] = useState('');
   const [sortField, setSortField] = useState('siteName');
   const [sortDirection, setSortDirection] = useState('asc');
   const [statusFilter, setStatusFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Filter and sort sites
+  // Filter and sort sites - Now using segment-specific sites
   const filteredSites = useMemo(() => {
-    let sites = [...companySites];
+    let sites = [...segmentSites];
 
     // Apply search filter
     if (searchTerm) {
@@ -55,7 +56,7 @@ const SitesOverview = () => {
     });
 
     return sites;
-  }, [searchTerm, sortField, sortDirection, statusFilter]);
+  }, [segmentSites, searchTerm, sortField, sortDirection, statusFilter]);
 
   // Pagination
   const totalPages = Math.ceil(filteredSites.length / SITES_PER_PAGE);
@@ -83,7 +84,7 @@ const SitesOverview = () => {
   };
 
   // Determine if we should show cards or list view
-  const showCardsView = companySites.length <= CARD_VIEW_THRESHOLD;
+  const showCardsView = segmentSites.length <= CARD_VIEW_THRESHOLD;
 
   // Card View Component
   const SiteCard = ({ site }) => (
@@ -277,12 +278,12 @@ const SitesOverview = () => {
     <div className="sites-overview">
       <div className="sites-overview-header">
         <h2>Your Sites</h2>
-        <p className="sites-count">{companySites.length} sites in your organization</p>
+        <p className="sites-count">{segmentSites.length} sites in your organization</p>
       </div>
 
       {showCardsView ? (
         <div className="sites-cards-grid">
-          {companySites.map((site) => (
+          {segmentSites.map((site) => (
             <SiteCard key={site.siteId} site={site} />
           ))}
         </div>

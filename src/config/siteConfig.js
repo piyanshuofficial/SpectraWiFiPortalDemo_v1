@@ -81,8 +81,8 @@ const siteConfig = {
       ]
     },
     hotel: {
-      siteName: "Grand Hotel - Goa",
-      siteId: "SITE-GOA-HTL-004",
+      siteName: "Grand Resort Goa",
+      siteId: "SITE-GOA-HTL-001",
       location: "Goa",
       address: "Calangute Beach Road, Goa - 403516",
       bandwidthType: "userLevel",
@@ -313,38 +313,7 @@ export const siteReportData = {
     { speedTier: "Above 100 Mbps", userCount: 100 },
   ],
 
-  // ALERTS - Summary counts only (not time-series)
-  "alerts-summary-report": [
-    { alertType: "Critical", count: 12 },
-    { alertType: "Warning", count: 47 },
-    { alertType: "Info", count: 156 },
-  ],
-
-  // CLUSTER/CITY/COMPANY REPORTS - Static data (no filtering needed)
-  "cluster-average-active-users": [
-    { cluster: "West Region", totalActiveUsers: 1250, monthlyGrowth: 8.5 },
-    { cluster: "East Region", totalActiveUsers: 1420, monthlyGrowth: 12.3 },
-    { cluster: "North Region", totalActiveUsers: 980, monthlyGrowth: 6.7 }
-  ],
-
-  "cluster-monthly-data-usage": [
-    { month: "2024-01", cluster: "West Region", totalUsageGB: 5200, peakUsageGB: 650 },
-    { month: "2024-01", cluster: "East Region", totalUsageGB: 6100, peakUsageGB: 780 },
-    { month: "2024-01", cluster: "North Region", totalUsageGB: 4300, peakUsageGB: 520 }
-  ],
-
-  "city-average-active-users": [
-    { city: "Mumbai", totalActiveUsers: 2850, monthlyGrowth: 9.2 },
-    { city: "Bangalore", totalActiveUsers: 3200, monthlyGrowth: 11.5 },
-    { city: "Delhi", totalActiveUsers: 2650, monthlyGrowth: 7.8 }
-  ],
-
-  "city-monthly-data-usage": [
-    { month: "2024-01", city: "Mumbai", totalUsageGB: 12500, avgUsageGB: 4.2 },
-    { month: "2024-01", city: "Bangalore", totalUsageGB: 14200, avgUsageGB: 4.5 },
-    { month: "2024-01", city: "Delhi", totalUsageGB: 11800, avgUsageGB: 4.0 }
-  ],
-
+  // COMPANY REPORTS - Static data (no filtering needed)
   "company-average-active-users": [
     { company: "Sample Technologies", totalActiveUsers: 8700, yearOverYear: 15.2 }
   ],
@@ -380,6 +349,10 @@ export const siteReportData = {
   // UPSELL REPORTS - 12 months of data
   "addon-usage-report": reportGen.generateAddonUsage('2024-01', 12),
   "topup-history": reportGen.generateTopupHistory('2024-01-01', 90),
+  "topup-history-speed": reportGen.generateTopupHistory('2024-01-01', 90, 'speed'),
+  "topup-history-data": reportGen.generateTopupHistory('2024-01-01', 90, 'data'),
+  "topup-history-device": reportGen.generateTopupHistory('2024-01-01', 90, 'device'),
+  "topup-history-plan": reportGen.generateTopupHistory('2024-01-01', 90, 'plan'),
 };
 
 // ============================================

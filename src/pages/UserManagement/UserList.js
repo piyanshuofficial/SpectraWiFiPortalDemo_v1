@@ -162,6 +162,8 @@ const UserList = () => {
 
   // Site filter for company view
   const [siteFilter, setSiteFilter] = useState('all');
+  // User type filter (regular/guest)
+  const [userTypeFilter, setUserTypeFilter] = useState('');
 
   const [users, setUsers] = useState([]);
   const [devices, setDevices] = useState([]);
@@ -209,6 +211,9 @@ const UserList = () => {
     if (statusFilter && user.status !== statusFilter) return false;
     // Site filter for company view
     if (isCompanyView && siteFilter !== 'all' && user.siteId !== siteFilter) return false;
+    // User type filter (regular vs guest)
+    if (userTypeFilter === 'guest' && !user.isGuest) return false;
+    if (userTypeFilter === 'regular' && user.isGuest) return false;
     
     const searchLower = searchTerm.toLowerCase().trim();
     if (searchLower) {
@@ -244,7 +249,7 @@ const UserList = () => {
       }
     }
     return true;
-  }, [segmentFilter, columns, isCompanyView, siteFilter]);
+  }, [segmentFilter, columns, isCompanyView, siteFilter, userTypeFilter]);
 
   const {
     filteredData: filteredUsers,
@@ -1304,15 +1309,18 @@ const UserList = () => {
       {/* Company View Info Banner */}
       {isCompanyView && (
         <div className="company-view-banner">
-          <FaBuilding className="banner-icon" />
           <div className="banner-content">
-            <span className="banner-text">Company View: Viewing users across all sites</span>
-            <span className="banner-subtext">Select a site to filter or click on a row to drill down and make changes</span>
+            <FaInfoCircle className="banner-icon" />
+            <div className="banner-text">
+              <span className="banner-title">Company View</span>
+              <span className="banner-subtitle">Viewing users across all sites. Select a site to manage users.</span>
+            </div>
           </div>
-          <div className="site-filter-dropdown">
+          <div className="banner-filter">
             <label htmlFor="site-filter">Filter by Site:</label>
             <select
               id="site-filter"
+              className="site-filter-select"
               value={siteFilter}
               onChange={(e) => setSiteFilter(e.target.value)}
             >
@@ -1332,6 +1340,8 @@ const UserList = () => {
             onSearchChange={e => setSearchTerm(e.target.value)}
             statusFilter={statusFilter}
             onStatusChange={e => setFilter('statusFilter', e.target.value)}
+            userTypeFilter={userTypeFilter}
+            onUserTypeChange={e => setUserTypeFilter(e.target.value)}
             onAdd={canEditUsers && !isReadOnly ? () => setShowFormModal(true) : undefined}
             disableAdd={!canEditUsers || isReadOnly}
             onBulkImport={canBulkAddUsers && canEditUsers && !isReadOnly ? () => setShowBulkImportModal(true) : undefined}

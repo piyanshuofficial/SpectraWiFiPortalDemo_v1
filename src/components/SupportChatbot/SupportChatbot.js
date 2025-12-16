@@ -88,6 +88,16 @@ const faqResponses = {
     category: "User",
     keywords: ["delete", "remove user", "deactivate", "disable account"],
   },
+  "block user": {
+    response: "To block or suspend a user from WiFi access:\n\n1. Go to 'User Management' from the sidebar\n2. Find the user using search or filters\n3. Click on the user to open their profile\n4. Click the 'Actions' menu (or three-dot icon)\n5. Select 'Block User' or 'Suspend User'\n6. Confirm the action\n\nWhat happens when a user is blocked:\n- All their registered devices are immediately disconnected\n- They cannot log in to the portal\n- Their devices cannot connect to WiFi\n- The user account remains for records and can be unblocked later\n\nTo unblock a user:\n1. Go to User Management\n2. Filter by 'Blocked' status or search for the user\n3. Click on the user and select 'Unblock User'\n\nNote: You need Admin or Manager privileges to block users.",
+    category: "User",
+    keywords: ["block user", "suspend user", "ban user", "disable user", "restrict user", "block", "suspend", "ban"],
+  },
+  "suspend user": {
+    response: "To suspend a user's WiFi access:\n\n1. Go to 'User Management' from the sidebar\n2. Find and click on the user\n3. Click 'Actions' > 'Suspend User'\n4. Select suspension reason and duration (optional)\n5. Confirm the suspension\n\nSuspended users:\n- Cannot connect any devices to WiFi\n- Cannot log in to the portal\n- Devices are immediately disconnected\n- Can be reactivated anytime by an admin\n\nOptions for suspension:\n- Temporary (set duration: 1 day, 7 days, 30 days)\n- Indefinite (until manually reactivated)\n\nTo reactivate: User Management > Find User > Actions > Reactivate User\n\nNote: For permanent removal, use 'Delete User' instead.",
+    category: "User",
+    keywords: ["suspend", "temporary block", "deactivate", "disable", "pause access"],
+  },
 
   // Reports & Analytics
   "generate report": {
@@ -157,10 +167,10 @@ const CHATBOT_NAME = "Spectra Genie";
 // Quick suggestion buttons
 const quickSuggestions = [
   { text: "Add a new device", query: "add device" },
+  { text: "Block a user", query: "block user" },
   { text: "Reset my password", query: "password reset" },
   { text: "WiFi is slow", query: "wifi slow" },
   { text: "Find MAC address", query: "mac address" },
-  { text: "View reports", query: "generate report" },
   { text: "Contact support", query: "contact support" },
 ];
 

@@ -12,6 +12,8 @@ function UserToolbar({
   onSearchChange,
   statusFilter,
   onStatusChange,
+  userTypeFilter = "",
+  onUserTypeChange,
   onAdd,
   disableAdd,
   onBulkImport,
@@ -140,6 +142,18 @@ function UserToolbar({
               onChange={onSearchChange}
               aria-label={t('users.searchUsers')}
             />
+            {onUserTypeChange && (
+              <select
+                className="toolbar-select"
+                value={userTypeFilter}
+                onChange={onUserTypeChange}
+                aria-label={t('common.filterBy', { field: t('users.userType', { defaultValue: 'User Type' }) })}
+              >
+                <option value="">{t('users.allUserTypes', { defaultValue: 'All User Types' })}</option>
+                <option value="regular">{t('users.regularUsers', { defaultValue: 'Regular Users' })}</option>
+                <option value="guest">{t('users.guestUsers', { defaultValue: 'Guest Users' })}</option>
+              </select>
+            )}
             <select
               className="toolbar-select"
               value={statusFilter}

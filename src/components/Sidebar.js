@@ -5,6 +5,7 @@ import { NavLink, useLocation } from "react-router-dom";
 import {
   FaTachometerAlt,
   FaUsers,
+  FaUserFriends,
   FaWifi,
   FaFileAlt,
   FaBook,
@@ -18,6 +19,7 @@ import {
   FaChartLine,
   FaTicketAlt,
   FaTasks,
+  FaBell,
 } from "react-icons/fa";
 import { usePermissions } from "@hooks/usePermissions";
 import { preloadRoute } from "@config/routes";
@@ -47,6 +49,13 @@ const customerSidebarItems = [
     labelKey: "nav.deviceManagement",
     label: "Device Management",
     permission: "canManageDevices"
+  },
+  {
+    to: "/guests",
+    icon: FaUserFriends,
+    labelKey: "nav.guestManagement",
+    label: "Guest Management",
+    permission: "canEditUsers"
   },
   {
     to: "/reports",
@@ -92,6 +101,12 @@ const internalSidebarItems = [
     permission: "canAccessInternalPortal"
   },
   {
+    to: "/internal/guests",
+    icon: FaUserFriends,
+    label: "Guest Access",
+    permission: "canAccessInternalPortal"
+  },
+  {
     to: "/internal/reports",
     icon: FaChartLine,
     label: "Reports",
@@ -101,6 +116,12 @@ const internalSidebarItems = [
     to: "/internal/support",
     icon: FaTicketAlt,
     label: "Support",
+    permission: "canAccessInternalPortal"
+  },
+  {
+    to: "/internal/alerts",
+    icon: FaBell,
+    label: "Alerts",
     permission: "canAccessInternalPortal"
   },
   {

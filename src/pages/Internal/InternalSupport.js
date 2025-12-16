@@ -22,6 +22,7 @@ import {
   FaChevronRight,
   FaPaperPlane,
   FaHistory,
+  FaSyncAlt,
 } from "react-icons/fa";
 import { supportTickets, customers, sites } from "@constants/internalPortalData";
 import notifications from "@utils/notifications";
@@ -70,6 +71,16 @@ const InternalSupport = () => {
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [replyText, setReplyText] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [newTicket, setNewTicket] = useState({
+    customerId: "",
+    siteId: "",
+    subject: "",
+    description: "",
+    priority: "medium",
+    category: "other",
+  });
 
   // Filter tickets
   const filteredTickets = useMemo(() => {
@@ -162,6 +173,57 @@ const InternalSupport = () => {
     }
   };
 
+  // Refresh tickets
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      notifications.showSuccess("Tickets refreshed successfully");
+    } catch (error) {
+      notifications.showError("Failed to refresh tickets");
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  // Create ticket handlers
+  const handleCreateTicket = async () => {
+    if (!newTicket.customerId || !newTicket.subject.trim() || !newTicket.description.trim()) {
+      notifications.showWarning("Please fill in all required fields");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      notifications.showSuccess("Ticket created successfully");
+      setShowCreateModal(false);
+      setNewTicket({
+        customerId: "",
+        siteId: "",
+        subject: "",
+        description: "",
+        priority: "medium",
+        category: "other",
+      });
+    } catch (error) {
+      notifications.showError("Failed to create ticket");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleNewTicketChange = (e) => {
+    const { name, value } = e.target;
+    setNewTicket((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // Get sites for selected customer
+  const customerSites = useMemo(() => {
+    if (!newTicket.customerId) return [];
+    return sites.filter((s) => s.customerId === newTicket.customerId);
+  }, [newTicket.customerId]);
+
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString("en-IN", {
       day: "numeric",
@@ -205,7 +267,14 @@ const InternalSupport = () => {
             </p>
           </div>
           <div className="page-header-actions">
-            <button className="btn btn-primary">
+            <button
+              className={`btn btn-outline ${isRefreshing ? 'refreshing' : ''}`}
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+            >
+              <FaSyncAlt className={isRefreshing ? 'spin' : ''} /> {isRefreshing ? 'Refreshing...' : 'Refresh'}
+            </button>
+            <button className="btn btn-primary" onClick={() => setShowCreateModal(true)}>
               <FaPlus /> Create Ticket
             </button>
           </div>
@@ -573,6 +642,134 @@ const InternalSupport = () => {
                   )}
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Create Ticket Modal */}
+      {showCreateModal && (
+        <div className="ticket-modal-overlay" onClick={() => setShowCreateModal(false)}>
+          <div className="ticket-modal create-ticket-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="ticket-modal-header">
+              <h2>
+                <FaPlus /> Create New Ticket
+              </h2>
+              <button className="modal-close" onClick={() => setShowCreateModal(false)}>
+                <FaTimes />
+              </button>
+            </div>
+
+            <div className="ticket-modal-body">
+              <div className="create-ticket-form">
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Customer <span className="required">*</span></label>
+                    <select
+                      name="customerId"
+                      value={newTicket.customerId}
+                      onChange={handleNewTicketChange}
+                    >
+                      <option value="">Select Customer</option>
+                      {customers.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>Site</label>
+                    <select
+                      name="siteId"
+                      value={newTicket.siteId}
+                      onChange={handleNewTicketChange}
+                      disabled={!newTicket.customerId}
+                    >
+                      <option value="">All Sites</option>
+                      {customerSites.map((s) => (
+                        <option key={s.id} value={s.id}>
+                          {s.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Priority</label>
+                    <select
+                      name="priority"
+                      value={newTicket.priority}
+                      onChange={handleNewTicketChange}
+                    >
+                      <option value="low">Low</option>
+                      <option value="medium">Medium</option>
+                      <option value="high">High</option>
+                      <option value="critical">Critical</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>Category</label>
+                    <select
+                      name="category"
+                      value={newTicket.category}
+                      onChange={handleNewTicketChange}
+                    >
+                      <option value="connectivity">Connectivity</option>
+                      <option value="outage">Outage</option>
+                      <option value="upgrade">Upgrade</option>
+                      <option value="maintenance">Maintenance</option>
+                      <option value="compliance">Compliance</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="form-group full-width">
+                  <label>Subject <span className="required">*</span></label>
+                  <input
+                    type="text"
+                    name="subject"
+                    value={newTicket.subject}
+                    onChange={handleNewTicketChange}
+                    placeholder="Brief summary of the issue"
+                  />
+                </div>
+
+                <div className="form-group full-width">
+                  <label>Description <span className="required">*</span></label>
+                  <textarea
+                    name="description"
+                    value={newTicket.description}
+                    onChange={handleNewTicketChange}
+                    placeholder="Detailed description of the issue..."
+                    rows="5"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="ticket-modal-footer">
+              <button className="btn btn-outline" onClick={() => setShowCreateModal(false)}>
+                Cancel
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={handleCreateTicket}
+                disabled={submitting}
+              >
+                {submitting ? (
+                  <>
+                    <FaSpinner className="spin" /> Creating...
+                  </>
+                ) : (
+                  <>
+                    <FaPlus /> Create Ticket
+                  </>
+                )}
+              </button>
             </div>
           </div>
         </div>

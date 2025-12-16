@@ -1,6 +1,6 @@
 // src/pages/Internal/SiteManagement.js
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@context/AuthContext";
 import {
@@ -31,6 +31,8 @@ import {
 import { sites, customers, configTemplates } from "@constants/internalPortalData";
 import notifications from "@utils/notifications";
 import Pagination from "@components/Pagination";
+import SiteProvisioningModal from "@components/SiteProvisioningModal/SiteProvisioningModal";
+import PageLoadingSkeleton from "@components/Loading/PageLoadingSkeleton";
 import "./SiteManagement.css";
 
 // Get unique values for filters
@@ -46,6 +48,17 @@ const SiteManagement = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { hasPermission } = useAuth();
+
+  // Loading state
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Simulate initial data loading
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 700);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Get initial filter from URL params
   const initialStatus = searchParams.get("status") || "All";
@@ -66,6 +79,7 @@ const SiteManagement = () => {
 
   // Provision Modal State
   const [showProvisionModal, setShowProvisionModal] = useState(false);
+  const [showEnhancedProvisionModal, setShowEnhancedProvisionModal] = useState(false); // New enhanced modal
   const [provisionStep, setProvisionStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
@@ -76,8 +90,7 @@ const SiteManagement = () => {
   const [siteModalMode, setSiteModalMode] = useState(null); // 'view', 'edit', 'configure'
   const [editFormData, setEditFormData] = useState(null);
   const [configFormData, setConfigFormData] = useState(null);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [siteToDelete, setSiteToDelete] = useState(null);
+  // Delete functionality removed - sites should be blocked/suspended via provisioning queue
 
   // Initial form state
   const initialFormState = {
@@ -150,6 +163,16 @@ const SiteManagement = () => {
     setCurrentPage(1);
   }, [searchQuery, selectedCustomer, selectedStatus, selectedRegion, selectedType]);
 
+  // Handle action query param to auto-open provision modal
+  React.useEffect(() => {
+    const action = searchParams.get("action");
+    if (action === "provision") {
+      setShowEnhancedProvisionModal(true);
+      // Clear the query param to prevent re-opening on refresh
+      navigate("/internal/sites", { replace: true });
+    }
+  }, [searchParams, navigate]);
+
   // Get status icon
   const getStatusIcon = (status) => {
     switch (status) {
@@ -194,13 +217,43 @@ const SiteManagement = () => {
 
     if (mode === 'configure') {
       setConfigFormData({
-        bandwidthLimit: site.bandwidthLimit || 500,
-        storageLimit: site.storageLimit || 50,
-        captivePortal: true,
-        guestNetwork: false,
-        vlanSegmentation: false,
-        qosEnabled: true,
-        firewallRules: 'moderate',
+        // Bandwidth Configuration
+        bandwidthType: site.bandwidthType || 'fixed',
+        fixedBandwidth: site.fixedBandwidth || site.bandwidthLimit || 100,
+        overallLicenseCount: site.overallLicenseCount || site.totalUsers || 100,
+        registeredDeviceLimit: site.registeredDeviceLimit || 10,
+        displayDeviceCount: site.displayDeviceCount !== false,
+        // Network Infrastructure
+        wirelessControllerId: site.wirelessControllerId || '',
+        wirelessControllerVersion: site.wirelessControllerVersion || '',
+        aaaController: site.aaaController || '',
+        accessControllerId: site.accessControllerId || '',
+        serviceId: site.serviceId || '',
+        nasIpPrimary: site.nasIpPrimary || '',
+        nasIpSecondary: site.nasIpSecondary || '',
+        trafficFlowType: site.trafficFlowType || '',
+        trafficFlowIp: site.trafficFlowIp || '',
+        // Infrastructure Equipment
+        apVendor: site.infrastructure?.apVendor || '',
+        apModel: site.infrastructure?.apModel || '',
+        deployedApCount: site.infrastructure?.deployedApCount || site.deployedApCount || 0,
+        liveApCount: site.infrastructure?.liveApCount || site.liveApCount || 0,
+        indoorApCount: site.infrastructure?.indoorApCount || 0,
+        outdoorApCount: site.infrastructure?.outdoorApCount || 0,
+        poeSwitchVendor: site.infrastructure?.poeSwitchVendor || '',
+        poeSwitchCount: site.infrastructure?.poeSwitchCount || 0,
+        livePoeSwitchCount: site.infrastructure?.livePoeSwitchCount || 0,
+        totalPoePorts: site.infrastructure?.totalPoePorts || 0,
+        nasCount: site.infrastructure?.nasCount || 0,
+        firewallCount: site.infrastructure?.firewallCount || 0,
+        upsCount: site.infrastructure?.upsCount || 0,
+        // Feature Toggles
+        interSiteRoaming: site.interSiteRoaming || false,
+        bulkUserRegistration: site.bulkUserRegistration !== false,
+        bulkDeviceRegistration: site.bulkDeviceRegistration !== false,
+        reportingEnabled: site.reportingEnabled !== false,
+        // Email Notifications
+        emailAlertEnabled: site.emailAlertEnabled !== false,
       });
     }
   };
@@ -262,25 +315,13 @@ const SiteManagement = () => {
       case "configure":
         openSiteModal(site, 'configure');
         break;
-      case "delete":
-        setSiteToDelete(site);
-        setShowDeleteConfirm(true);
-        break;
+      // Delete case removed - use suspend/block from provisioning queue
       default:
         break;
     }
   };
 
-  // Handle delete confirmation
-  const handleDeleteConfirm = async () => {
-    if (!siteToDelete) return;
-    setIsSubmitting(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    notifications.showSuccess(`Site "${siteToDelete.name}" deleted successfully`);
-    setIsSubmitting(false);
-    setShowDeleteConfirm(false);
-    setSiteToDelete(null);
-  };
+  // Delete functionality removed - sites should be blocked/suspended via provisioning queue
 
   // Calculate summary stats
   const summaryStats = useMemo(() => {
@@ -290,8 +331,13 @@ const SiteManagement = () => {
     const offline = filteredSites.filter(s => s.status === "offline").length;
     const totalUsers = filteredSites.reduce((sum, s) => sum + s.totalUsers, 0);
     const totalDevices = filteredSites.reduce((sum, s) => sum + s.totalDevices, 0);
+    // Infrastructure stats
+    const deployedAps = filteredSites.reduce((sum, s) => sum + (s.infrastructure?.deployedApCount || s.deployedApCount || 0), 0);
+    const liveAps = filteredSites.reduce((sum, s) => sum + (s.infrastructure?.liveApCount || s.liveApCount || 0), 0);
+    const totalSwitches = filteredSites.reduce((sum, s) => sum + (s.infrastructure?.poeSwitchCount || 0), 0);
+    const liveSwitches = filteredSites.reduce((sum, s) => sum + (s.infrastructure?.livePoeSwitchCount || 0), 0);
 
-    return { total, online, degraded, offline, totalUsers, totalDevices };
+    return { total, online, degraded, offline, totalUsers, totalDevices, deployedAps, liveAps, totalSwitches, liveSwitches };
   }, [filteredSites]);
 
   // Clear filters
@@ -458,6 +504,11 @@ const SiteManagement = () => {
   const siteTypeOptions = ["Hotel", "Co-Working", "Co-Living", "PG", "Enterprise"];
   const licenseTierOptions = ["Basic", "Standard", "Premium", "Enterprise"];
 
+  // Show loading skeleton during initial load
+  if (isLoading) {
+    return <PageLoadingSkeleton pageType="grid" rows={6} />;
+  }
+
   return (
     <div className="site-management">
       {/* Page Header */}
@@ -475,7 +526,11 @@ const SiteManagement = () => {
           <button className="btn btn-outline" onClick={() => console.log("Export")}>
             <FaDownload /> Export
           </button>
-          <button className="btn btn-primary" onClick={openProvisionModal}>
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={() => setShowEnhancedProvisionModal(true)}
+          >
             <FaPlus /> Provision New Site
           </button>
         </div>
@@ -499,13 +554,25 @@ const SiteManagement = () => {
           <span className="stat-number">{summaryStats.offline}</span>
           <span className="stat-label">Offline</span>
         </div>
+        <div className="summary-stat infra">
+          <span className="stat-number infra-stat-value">
+            <span className="live">{summaryStats.liveAps}</span>
+            <span className="sep">/</span>
+            <span className="total">{summaryStats.deployedAps}</span>
+          </span>
+          <span className="stat-label">Live / Total APs</span>
+        </div>
+        <div className="summary-stat infra">
+          <span className="stat-number infra-stat-value">
+            <span className="live">{summaryStats.liveSwitches}</span>
+            <span className="sep">/</span>
+            <span className="total">{summaryStats.totalSwitches}</span>
+          </span>
+          <span className="stat-label">Live / Total Switches</span>
+        </div>
         <div className="summary-stat">
           <span className="stat-number">{summaryStats.totalUsers.toLocaleString()}</span>
           <span className="stat-label">Total Users</span>
-        </div>
-        <div className="summary-stat">
-          <span className="stat-number">{summaryStats.totalDevices.toLocaleString()}</span>
-          <span className="stat-label">Total Devices</span>
         </div>
       </div>
 
@@ -655,11 +722,7 @@ const SiteManagement = () => {
                             </button>
                           </>
                         )}
-                        {hasPermission && hasPermission("canManageAllSites") && (
-                          <button onClick={() => handleSiteAction("delete", site.id)} className="danger">
-                            <FaTrash /> Delete
-                          </button>
-                        )}
+                        {/* Delete option removed - sites should be blocked/suspended instead */}
                       </div>
                     )}
                   </div>
@@ -693,6 +756,26 @@ const SiteManagement = () => {
                 </div>
               </div>
 
+              {/* Infrastructure Quick Stats */}
+              <div className="site-infra-stats">
+                <div className="infra-stat">
+                  <span className="infra-label">APs</span>
+                  <span className="infra-value">
+                    <span className="live">{site.infrastructure?.liveApCount || site.liveApCount || 0}</span>
+                    <span className="sep">/</span>
+                    <span className="total">{site.infrastructure?.deployedApCount || site.deployedApCount || 0}</span>
+                  </span>
+                </div>
+                <div className="infra-stat">
+                  <span className="infra-label">Switches</span>
+                  <span className="infra-value">
+                    <span className="live">{site.infrastructure?.livePoeSwitchCount || 0}</span>
+                    <span className="sep">/</span>
+                    <span className="total">{site.infrastructure?.poeSwitchCount || 0}</span>
+                  </span>
+                </div>
+              </div>
+
               <div className="site-uptime">
                 <div className="uptime-header">
                   <span>Uptime</span>
@@ -707,7 +790,11 @@ const SiteManagement = () => {
               </div>
 
               {site.alerts > 0 && (
-                <div className="site-alerts">
+                <div
+                  className="site-alerts clickable"
+                  onClick={() => navigate(`/internal/alerts?site=${site.id}`)}
+                  title="Click to view alerts for this site"
+                >
                   <span className={site.criticalAlerts > 0 ? "critical" : "warning"}>
                     {site.alerts} alert{site.alerts > 1 ? "s" : ""}
                     {site.criticalAlerts > 0 && ` (${site.criticalAlerts} critical)`}
@@ -737,10 +824,10 @@ const SiteManagement = () => {
                 <th>Location</th>
                 <th>Type</th>
                 <th>Users</th>
-                <th>Devices</th>
+                <th>APs (Live/Total)</th>
+                <th>Switches</th>
                 <th>Bandwidth</th>
                 <th>Uptime</th>
-                <th>Alerts</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -760,21 +847,25 @@ const SiteManagement = () => {
                   <td>{site.city}, {site.region}</td>
                   <td><span className="type-badge">{site.type}</span></td>
                   <td>{site.activeUsers} / {site.totalUsers}</td>
-                  <td>{site.onlineDevices} / {site.totalDevices}</td>
+                  <td>
+                    <span className="infra-cell">
+                      <span className="live">{site.infrastructure?.liveApCount || site.liveApCount || 0}</span>
+                      <span className="sep">/</span>
+                      <span className="total">{site.infrastructure?.deployedApCount || site.deployedApCount || 0}</span>
+                    </span>
+                  </td>
+                  <td>
+                    <span className="infra-cell">
+                      <span className="live">{site.infrastructure?.livePoeSwitchCount || 0}</span>
+                      <span className="sep">/</span>
+                      <span className="total">{site.infrastructure?.poeSwitchCount || 0}</span>
+                    </span>
+                  </td>
                   <td>{site.bandwidthUsage} Mbps</td>
                   <td>
                     <span className={`uptime-badge ${getUptimeClass(site.uptime)}`}>
                       {site.uptime}%
                     </span>
-                  </td>
-                  <td>
-                    {site.alerts > 0 ? (
-                      <span className={`alerts-badge ${site.criticalAlerts > 0 ? "critical" : "warning"}`}>
-                        {site.alerts}
-                      </span>
-                    ) : (
-                      <span className="alerts-badge ok">0</span>
-                    )}
                   </td>
                   <td>
                     <div className="row-actions">
@@ -1299,6 +1390,61 @@ const SiteManagement = () => {
                   </div>
 
                   <div className="detail-section">
+                    <h3>Infrastructure Status</h3>
+                    <div className="metrics-row infrastructure-metrics">
+                      <div className="metric-box highlight">
+                        <FaWifi className="metric-icon ap-icon" />
+                        <div className="metric-data">
+                          <span className="metric-value">
+                            <span className="live-count">{selectedSite.infrastructure?.liveApCount || selectedSite.liveApCount || 0}</span>
+                            <span className="separator">/</span>
+                            <span className="total-count">{selectedSite.infrastructure?.deployedApCount || selectedSite.deployedApCount || 0}</span>
+                          </span>
+                          <span className="metric-label">Live / Deployed APs</span>
+                        </div>
+                      </div>
+                      <div className="metric-box">
+                        <FaNetworkWired className="metric-icon switch-icon" />
+                        <div className="metric-data">
+                          <span className="metric-value">
+                            <span className="live-count">{selectedSite.infrastructure?.livePoeSwitchCount || 0}</span>
+                            <span className="separator">/</span>
+                            <span className="total-count">{selectedSite.infrastructure?.poeSwitchCount || 0}</span>
+                          </span>
+                          <span className="metric-label">Live / Total PoE Switches</span>
+                        </div>
+                      </div>
+                      <div className="metric-box">
+                        <span className="metric-icon text-icon">PoE</span>
+                        <div className="metric-data">
+                          <span className="metric-value">{selectedSite.infrastructure?.totalPoePorts || 0}</span>
+                          <span className="metric-label">Total PoE Ports</span>
+                        </div>
+                      </div>
+                    </div>
+                    {selectedSite.infrastructure?.apVendor && (
+                      <div className="detail-grid infrastructure-detail-grid">
+                        <div className="detail-item">
+                          <span className="detail-label">AP Vendor</span>
+                          <span className="detail-value">{selectedSite.infrastructure.apVendor}</span>
+                        </div>
+                        <div className="detail-item">
+                          <span className="detail-label">AP Model</span>
+                          <span className="detail-value">{selectedSite.infrastructure.apModel || 'N/A'}</span>
+                        </div>
+                        <div className="detail-item">
+                          <span className="detail-label">Indoor APs</span>
+                          <span className="detail-value">{selectedSite.infrastructure.indoorApCount || 0}</span>
+                        </div>
+                        <div className="detail-item">
+                          <span className="detail-label">Outdoor APs</span>
+                          <span className="detail-value">{selectedSite.infrastructure.outdoorApCount || 0}</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="detail-section">
                     <h3>Usage Metrics</h3>
                     <div className="metrics-row">
                       <div className="metric-box">
@@ -1336,9 +1482,20 @@ const SiteManagement = () => {
                       </div>
                       <div className="detail-item">
                         <span className="detail-label">Active Alerts</span>
-                        <span className={`detail-value ${selectedSite.criticalAlerts > 0 ? 'critical' : ''}`}>
-                          {selectedSite.alerts} {selectedSite.criticalAlerts > 0 && `(${selectedSite.criticalAlerts} critical)`}
-                        </span>
+                        {selectedSite.alerts > 0 ? (
+                          <span
+                            className={`detail-value clickable-alert ${selectedSite.criticalAlerts > 0 ? 'critical' : 'warning'}`}
+                            onClick={() => {
+                              closeSiteModal();
+                              navigate(`/internal/alerts?site=${selectedSite.id}`);
+                            }}
+                            title="Click to view alerts"
+                          >
+                            {selectedSite.alerts} {selectedSite.criticalAlerts > 0 && `(${selectedSite.criticalAlerts} critical)`}
+                          </span>
+                        ) : (
+                          <span className="detail-value">0</span>
+                        )}
                       </div>
                       <div className="detail-item">
                         <span className="detail-label">Daily Data Transfer</span>
@@ -1463,81 +1620,379 @@ const SiteManagement = () => {
               {/* Configure Mode */}
               {siteModalMode === 'configure' && configFormData && (
                 <div className="site-config-form">
-                  <div className="form-grid">
-                    <div className="form-group">
-                      <label>Bandwidth Limit (Mbps)</label>
-                      <input
-                        type="number"
-                        name="bandwidthLimit"
-                        value={configFormData.bandwidthLimit}
-                        onChange={handleConfigFormChange}
-                        min="100"
-                        step="100"
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label>Storage Limit (GB)</label>
-                      <input
-                        type="number"
-                        name="storageLimit"
-                        value={configFormData.storageLimit}
-                        onChange={handleConfigFormChange}
-                        min="10"
-                        step="10"
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label>Firewall Rules</label>
-                      <select
-                        name="firewallRules"
-                        value={configFormData.firewallRules}
-                        onChange={handleConfigFormChange}
-                      >
-                        <option value="basic">Basic</option>
-                        <option value="moderate">Moderate</option>
-                        <option value="strict">Strict</option>
-                      </select>
-                    </div>
-                    <div className="form-group full-width">
-                      <label>Network Features</label>
-                      <div className="checkbox-group">
-                        <label className="checkbox-label">
-                          <input
-                            type="checkbox"
-                            name="captivePortal"
-                            checked={configFormData.captivePortal}
-                            onChange={handleConfigFormChange}
-                          />
-                          <span>Captive Portal</span>
-                        </label>
-                        <label className="checkbox-label">
-                          <input
-                            type="checkbox"
-                            name="guestNetwork"
-                            checked={configFormData.guestNetwork}
-                            onChange={handleConfigFormChange}
-                          />
-                          <span>Guest Network</span>
-                        </label>
-                        <label className="checkbox-label">
-                          <input
-                            type="checkbox"
-                            name="vlanSegmentation"
-                            checked={configFormData.vlanSegmentation}
-                            onChange={handleConfigFormChange}
-                          />
-                          <span>VLAN Segmentation</span>
-                        </label>
-                        <label className="checkbox-label">
-                          <input
-                            type="checkbox"
-                            name="qosEnabled"
-                            checked={configFormData.qosEnabled}
-                            onChange={handleConfigFormChange}
-                          />
-                          <span>QoS Enabled</span>
-                        </label>
+                  {/* Bandwidth & License Configuration */}
+                  <div className="config-section">
+                    <h4>Bandwidth & License Configuration</h4>
+                    <div className="form-grid">
+                      <div className="form-group">
+                        <label>Bandwidth Type</label>
+                        <select
+                          name="bandwidthType"
+                          value={configFormData.bandwidthType}
+                          onChange={handleConfigFormChange}
+                        >
+                          <option value="fixed">Fixed Bandwidth</option>
+                          <option value="userLevel">User Level Policies</option>
+                        </select>
                       </div>
+                      {configFormData.bandwidthType === 'fixed' && (
+                        <div className="form-group">
+                          <label>Fixed Bandwidth (Mbps)</label>
+                          <input
+                            type="number"
+                            name="fixedBandwidth"
+                            value={configFormData.fixedBandwidth}
+                            onChange={handleConfigFormChange}
+                            min="1"
+                          />
+                        </div>
+                      )}
+                      <div className="form-group">
+                        <label>Overall License Count</label>
+                        <input
+                          type="number"
+                          name="overallLicenseCount"
+                          value={configFormData.overallLicenseCount}
+                          onChange={handleConfigFormChange}
+                          min="1"
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label>Registered Device Limit</label>
+                        <input
+                          type="number"
+                          name="registeredDeviceLimit"
+                          value={configFormData.registeredDeviceLimit}
+                          onChange={handleConfigFormChange}
+                          min="1"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Network Infrastructure */}
+                  <div className="config-section">
+                    <h4>Network Infrastructure</h4>
+                    <div className="form-grid">
+                      <div className="form-group">
+                        <label>Wireless Controller ID</label>
+                        <input
+                          type="text"
+                          name="wirelessControllerId"
+                          value={configFormData.wirelessControllerId}
+                          onChange={handleConfigFormChange}
+                          placeholder="Enter controller ID"
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label>Wireless Controller Version</label>
+                        <select
+                          name="wirelessControllerVersion"
+                          value={configFormData.wirelessControllerVersion}
+                          onChange={handleConfigFormChange}
+                        >
+                          <option value="">Select version</option>
+                          <option value="v1">Version 1</option>
+                          <option value="v2">Version 2</option>
+                          <option value="v3">Version 3</option>
+                        </select>
+                      </div>
+                      <div className="form-group">
+                        <label>AAA Controller</label>
+                        <select
+                          name="aaaController"
+                          value={configFormData.aaaController}
+                          onChange={handleConfigFormChange}
+                        >
+                          <option value="">Select AAA controller</option>
+                          <option value="freeradius">FreeRADIUS</option>
+                          <option value="cisco_ise">Cisco ISE</option>
+                          <option value="aruba_clearpass">Aruba ClearPass</option>
+                        </select>
+                      </div>
+                      <div className="form-group">
+                        <label>Access Controller ID</label>
+                        <input
+                          type="text"
+                          name="accessControllerId"
+                          value={configFormData.accessControllerId}
+                          onChange={handleConfigFormChange}
+                          placeholder="Enter access controller ID"
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label>Service ID</label>
+                        <input
+                          type="text"
+                          name="serviceId"
+                          value={configFormData.serviceId}
+                          onChange={handleConfigFormChange}
+                          placeholder="Enter service ID"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* NAS IP Configuration */}
+                  <div className="config-section">
+                    <h4>NAS IP Configuration</h4>
+                    <div className="form-grid">
+                      <div className="form-group">
+                        <label>NAS IP: Primary</label>
+                        <input
+                          type="text"
+                          name="nasIpPrimary"
+                          value={configFormData.nasIpPrimary}
+                          onChange={handleConfigFormChange}
+                          placeholder="e.g., 192.168.1.1"
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label>NAS IP: Secondary</label>
+                        <input
+                          type="text"
+                          name="nasIpSecondary"
+                          value={configFormData.nasIpSecondary}
+                          onChange={handleConfigFormChange}
+                          placeholder="Optional"
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label>Traffic Flow Type</label>
+                        <select
+                          name="trafficFlowType"
+                          value={configFormData.trafficFlowType}
+                          onChange={handleConfigFormChange}
+                        >
+                          <option value="">Select type</option>
+                          <option value="direct">Direct</option>
+                          <option value="tunneled">Tunneled</option>
+                          <option value="hybrid">Hybrid</option>
+                        </select>
+                      </div>
+                      <div className="form-group">
+                        <label>Traffic Flow IP</label>
+                        <input
+                          type="text"
+                          name="trafficFlowIp"
+                          value={configFormData.trafficFlowIp}
+                          onChange={handleConfigFormChange}
+                          placeholder="IP address"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Infrastructure Equipment */}
+                  <div className="config-section">
+                    <h4>Infrastructure Equipment</h4>
+                    <div className="form-grid">
+                      <div className="form-group">
+                        <label>AP Vendor</label>
+                        <select
+                          name="apVendor"
+                          value={configFormData.apVendor}
+                          onChange={handleConfigFormChange}
+                        >
+                          <option value="">Select vendor</option>
+                          <option value="ruckus">Ruckus (CommScope)</option>
+                          <option value="edgecore">Edgecore</option>
+                          <option value="tplink">TP-Link</option>
+                          <option value="cisco">Cisco</option>
+                          <option value="aruba">Aruba (HPE)</option>
+                          <option value="ubiquiti">Ubiquiti</option>
+                          <option value="meraki">Cisco Meraki</option>
+                          <option value="cambium">Cambium Networks</option>
+                          <option value="dlink">D-Link</option>
+                          <option value="netgear">Netgear</option>
+                          <option value="zyxel">Zyxel</option>
+                          <option value="other">Other</option>
+                        </select>
+                      </div>
+                      <div className="form-group">
+                        <label>AP Model</label>
+                        <input
+                          type="text"
+                          name="apModel"
+                          value={configFormData.apModel}
+                          onChange={handleConfigFormChange}
+                          placeholder="Enter AP model"
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label>Deployed AP Count</label>
+                        <input
+                          type="number"
+                          name="deployedApCount"
+                          value={configFormData.deployedApCount}
+                          onChange={handleConfigFormChange}
+                          min="0"
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label>Live AP Count</label>
+                        <input
+                          type="number"
+                          name="liveApCount"
+                          value={configFormData.liveApCount}
+                          onChange={handleConfigFormChange}
+                          min="0"
+                        />
+                        <span className="field-hint">Currently online APs</span>
+                      </div>
+                      <div className="form-group">
+                        <label>Indoor APs</label>
+                        <input
+                          type="number"
+                          name="indoorApCount"
+                          value={configFormData.indoorApCount}
+                          onChange={handleConfigFormChange}
+                          min="0"
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label>Outdoor APs</label>
+                        <input
+                          type="number"
+                          name="outdoorApCount"
+                          value={configFormData.outdoorApCount}
+                          onChange={handleConfigFormChange}
+                          min="0"
+                        />
+                      </div>
+                    </div>
+                    <div className="form-grid" style={{ marginTop: '16px' }}>
+                      <div className="form-group">
+                        <label>PoE Switch Vendor</label>
+                        <select
+                          name="poeSwitchVendor"
+                          value={configFormData.poeSwitchVendor}
+                          onChange={handleConfigFormChange}
+                        >
+                          <option value="">Select vendor</option>
+                          <option value="edgecore">Edgecore</option>
+                          <option value="tplink">TP-Link</option>
+                          <option value="cisco">Cisco</option>
+                          <option value="aruba">Aruba (HPE)</option>
+                          <option value="netgear">Netgear</option>
+                          <option value="ubiquiti">Ubiquiti</option>
+                          <option value="dlink">D-Link</option>
+                          <option value="zyxel">Zyxel</option>
+                          <option value="other">Other</option>
+                        </select>
+                      </div>
+                      <div className="form-group">
+                        <label>PoE Switch Count</label>
+                        <input
+                          type="number"
+                          name="poeSwitchCount"
+                          value={configFormData.poeSwitchCount}
+                          onChange={handleConfigFormChange}
+                          min="0"
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label>Live PoE Switches</label>
+                        <input
+                          type="number"
+                          name="livePoeSwitchCount"
+                          value={configFormData.livePoeSwitchCount}
+                          onChange={handleConfigFormChange}
+                          min="0"
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label>Total PoE Ports</label>
+                        <input
+                          type="number"
+                          name="totalPoePorts"
+                          value={configFormData.totalPoePorts}
+                          onChange={handleConfigFormChange}
+                          min="0"
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label>NAS Count</label>
+                        <input
+                          type="number"
+                          name="nasCount"
+                          value={configFormData.nasCount}
+                          onChange={handleConfigFormChange}
+                          min="0"
+                        />
+                        <span className="field-hint">Network Attached Storage</span>
+                      </div>
+                      <div className="form-group">
+                        <label>UPS Count</label>
+                        <input
+                          type="number"
+                          name="upsCount"
+                          value={configFormData.upsCount}
+                          onChange={handleConfigFormChange}
+                          min="0"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Feature Toggles */}
+                  <div className="config-section">
+                    <h4>Feature Toggles</h4>
+                    <div className="checkbox-group feature-toggles">
+                      <label className="checkbox-label">
+                        <input
+                          type="checkbox"
+                          name="interSiteRoaming"
+                          checked={configFormData.interSiteRoaming}
+                          onChange={handleConfigFormChange}
+                        />
+                        <span>Inter-site Roaming</span>
+                      </label>
+                      <label className="checkbox-label">
+                        <input
+                          type="checkbox"
+                          name="bulkUserRegistration"
+                          checked={configFormData.bulkUserRegistration}
+                          onChange={handleConfigFormChange}
+                        />
+                        <span>Bulk User Registration</span>
+                      </label>
+                      <label className="checkbox-label">
+                        <input
+                          type="checkbox"
+                          name="bulkDeviceRegistration"
+                          checked={configFormData.bulkDeviceRegistration}
+                          onChange={handleConfigFormChange}
+                        />
+                        <span>Bulk Device Registration</span>
+                      </label>
+                      <label className="checkbox-label">
+                        <input
+                          type="checkbox"
+                          name="displayDeviceCount"
+                          checked={configFormData.displayDeviceCount}
+                          onChange={handleConfigFormChange}
+                        />
+                        <span>Display Device Count</span>
+                      </label>
+                      <label className="checkbox-label">
+                        <input
+                          type="checkbox"
+                          name="reportingEnabled"
+                          checked={configFormData.reportingEnabled}
+                          onChange={handleConfigFormChange}
+                        />
+                        <span>Reporting Enabled</span>
+                      </label>
+                      <label className="checkbox-label">
+                        <input
+                          type="checkbox"
+                          name="emailAlertEnabled"
+                          checked={configFormData.emailAlertEnabled}
+                          onChange={handleConfigFormChange}
+                        />
+                        <span>Email Alerts Enabled</span>
+                      </label>
                     </div>
                   </div>
                 </div>
@@ -1573,27 +2028,19 @@ const SiteManagement = () => {
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
-      {showDeleteConfirm && siteToDelete && (
-        <div className="delete-confirm-overlay" onClick={() => setShowDeleteConfirm(false)}>
-          <div className="delete-confirm-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="delete-confirm-icon">
-              <FaTrash />
-            </div>
-            <h3>Delete Site</h3>
-            <p>Are you sure you want to delete <strong>{siteToDelete.name}</strong>?</p>
-            <p className="warning-text">This action cannot be undone.</p>
-            <div className="delete-confirm-actions">
-              <button className="btn btn-outline" onClick={() => setShowDeleteConfirm(false)}>
-                Cancel
-              </button>
-              <button className="btn btn-danger" onClick={handleDeleteConfirm} disabled={isSubmitting}>
-                {isSubmitting ? <><FaSpinner className="spin" /> Deleting...</> : 'Delete Site'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Delete Confirmation Modal removed - use suspend/block from provisioning queue */}
+
+      {/* Enhanced Site Provisioning Modal */}
+      <SiteProvisioningModal
+        isOpen={showEnhancedProvisionModal}
+        onClose={() => setShowEnhancedProvisionModal(false)}
+        onSubmit={(siteData) => {
+          console.log('New site provisioned:', siteData);
+          notifications.showSuccess(`Site "${siteData.siteName}" provisioned successfully`);
+          setShowEnhancedProvisionModal(false);
+        }}
+        customers={customers}
+      />
     </div>
   );
 };

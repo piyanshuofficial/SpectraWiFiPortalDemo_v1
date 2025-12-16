@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useCallback, useMemo } from "react";
 import { useAuth } from "./AuthContext";
-import { AccessLevels } from "../utils/accessLevels";
+import { AccessLevels, UserTypes } from "../utils/accessLevels";
 
 const AccessLevelViewContext = createContext();
 
@@ -50,38 +50,56 @@ export const AccessLevelViewProvider = ({ children }) => {
   }, []);
 
   /**
+   * Check if user is an internal Spectra staff member
+   * Internal users should not be affected by company/site access level logic
+   */
+  const isInternalUser = useMemo(() => {
+    return currentUser?.userType === UserTypes.INTERNAL;
+  }, [currentUser]);
+
+  /**
    * Check if user is at company access level
+   * Only applicable for customer users, not internal users
    */
   const isCompanyUser = useMemo(() => {
+    if (isInternalUser) return false;
     return currentUser?.accessLevel === AccessLevels.COMPANY;
-  }, [currentUser]);
+  }, [currentUser, isInternalUser]);
 
   /**
    * Check if user is at site access level
+   * Only applicable for customer users, not internal users
    */
   const isSiteUser = useMemo(() => {
+    if (isInternalUser) return false;
     return currentUser?.accessLevel === AccessLevels.SITE;
-  }, [currentUser]);
+  }, [currentUser, isInternalUser]);
 
   /**
    * Check if currently viewing company-level (aggregated) data
+   * Internal users never see company view - they have their own internal dashboard
    */
   const isCompanyView = useMemo(() => {
+    // Internal users don't have company/site view distinction
+    if (isInternalUser) return false;
     // Site users always see site view
     if (isSiteUser) return false;
     // Company users can switch between company and site view
     return viewState.viewLevel === "company";
-  }, [isSiteUser, viewState.viewLevel]);
+  }, [isInternalUser, isSiteUser, viewState.viewLevel]);
 
   /**
    * Check if currently viewing site-level data
+   * Internal users never see site view - they have their own internal dashboard
    */
   const isSiteView = useMemo(() => {
+    // Internal users don't have company/site view distinction
+    if (isInternalUser) return false;
     // Site users always see site view
     if (isSiteUser) return true;
     // Company users can switch between company and site view
     return viewState.viewLevel === "site" && viewState.selectedSiteId !== null;
-  }, [isSiteUser, viewState.viewLevel, viewState.selectedSiteId]);
+  }, [isInternalUser, isSiteUser, viewState.viewLevel, viewState.selectedSiteId]);
 
   /**
    * Get current site ID
@@ -107,10 +125,14 @@ export const AccessLevelViewProvider = ({ children }) => {
 
   /**
    * Drill down to a specific site
-   * Only available for company-level users
+   * Only available for company-level customer users (not internal users)
    */
   const drillDownToSite = useCallback(
     (siteId, siteName) => {
+      if (isInternalUser) {
+        console.warn("Drill down not available for internal users");
+        return;
+      }
       if (!isCompanyUser) {
         console.warn("Drill down only available for company-level users");
         return;
@@ -124,14 +146,18 @@ export const AccessLevelViewProvider = ({ children }) => {
       setViewState(newState);
       persistViewState(newState);
     },
-    [isCompanyUser, persistViewState]
+    [isInternalUser, isCompanyUser, persistViewState]
   );
 
   /**
    * Return to company view
-   * Only available for company-level users who have drilled down
+   * Only available for company-level customer users who have drilled down
    */
   const returnToCompanyView = useCallback(() => {
+    if (isInternalUser) {
+      console.warn("Return to company view not available for internal users");
+      return;
+    }
     if (!isCompanyUser) {
       console.warn("Return to company view only available for company-level users");
       return;
@@ -144,7 +170,7 @@ export const AccessLevelViewProvider = ({ children }) => {
     };
     setViewState(newState);
     persistViewState(newState);
-  }, [isCompanyUser, persistViewState]);
+  }, [isInternalUser, isCompanyUser, persistViewState]);
 
   /**
    * Reset view state (used on logout or user change)
@@ -175,6 +201,7 @@ export const AccessLevelViewProvider = ({ children }) => {
     () => ({
       // View state
       viewState,
+      isInternalUser,
       isCompanyUser,
       isSiteUser,
       isCompanyView,
@@ -190,6 +217,7 @@ export const AccessLevelViewProvider = ({ children }) => {
     }),
     [
       viewState,
+      isInternalUser,
       isCompanyUser,
       isSiteUser,
       isCompanyView,

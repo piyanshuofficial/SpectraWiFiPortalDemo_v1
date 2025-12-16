@@ -150,7 +150,7 @@ p {
 
 .permission-denied-help {
   font-size: var(--font-md);
-  color: #888;
+  color: var(--color-text-muted);
   font-style: italic;
   margin-top: var(--space-xl);
 }

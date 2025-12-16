@@ -185,7 +185,7 @@
 .credentials-group h4 {
   font-size: var(--font-xs);
   font-weight: 600;
-  color: #888;
+  color: var(--color-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   padding: 0.5rem 0.75rem;
@@ -226,7 +226,7 @@
 
 .credential-btn .cred-email {
   font-size: var(--font-xs);
-  color: #888;
+  color: var(--color-text-muted);
 }
 
 .copy-btn {

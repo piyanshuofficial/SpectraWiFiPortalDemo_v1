@@ -2,7 +2,10 @@
 /**
  * Internationalization (i18n) Configuration
  *
- * Supported Languages:
+ * MULTI-LANGUAGE SUPPORT DISABLED
+ * Currently only English is enabled. Other languages are commented out for future use.
+ *
+ * Supported Languages (when re-enabled):
  * - English (en) - Default
  * - Hindi (hi) - हिन्दी
  * - Telugu (te) - తెలుగు
@@ -17,28 +20,35 @@
 
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import LanguageDetector from 'i18next-browser-languagedetector';
+// MULTI-LANGUAGE DISABLED: Language detector not needed when only English is used
+// import LanguageDetector from 'i18next-browser-languagedetector';
 
 // Import translation files
 import enTranslation from '../locales/en/translation.json';
-import hiTranslation from '../locales/hi/translation.json';
-import knTranslation from '../locales/kn/translation.json';
-import teTranslation from '../locales/te/translation.json';
+// MULTI-LANGUAGE DISABLED: Other language imports commented out for future use
+// import hiTranslation from '../locales/hi/translation.json';
+// import knTranslation from '../locales/kn/translation.json';
+// import teTranslation from '../locales/te/translation.json';
 
 const resources = {
   en: { translation: enTranslation },
-  hi: { translation: hiTranslation },
-  kn: { translation: knTranslation },
-  te: { translation: teTranslation }
+  // MULTI-LANGUAGE DISABLED: Other languages commented out for future use
+  // hi: { translation: hiTranslation },
+  // kn: { translation: knTranslation },
+  // te: { translation: teTranslation }
 };
 
 // Language display names (in native script)
+// MULTI-LANGUAGE DISABLED: Only English enabled, others commented out for future use
 export const LANGUAGES = [
   { code: 'en', name: 'English', nativeName: 'English', dir: 'ltr' },
-  { code: 'hi', name: 'Hindi', nativeName: 'हिन्दी', dir: 'ltr' },
-  { code: 'te', name: 'Telugu', nativeName: 'తెలుగు', dir: 'ltr' },
-  { code: 'kn', name: 'Kannada', nativeName: 'ಕನ್ನಡ', dir: 'ltr' }
+  // { code: 'hi', name: 'Hindi', nativeName: 'हिन्दी', dir: 'ltr' },
+  // { code: 'te', name: 'Telugu', nativeName: 'తెలుగు', dir: 'ltr' },
+  // { code: 'kn', name: 'Kannada', nativeName: 'ಕನ್ನಡ', dir: 'ltr' }
 ];
+
+// MULTI-LANGUAGE DISABLED: Flag to indicate if multi-language is enabled
+export const MULTI_LANGUAGE_ENABLED = false;
 
 // localStorage key for language preference
 const LANGUAGE_STORAGE_KEY = 'portal-language-preference';
@@ -88,18 +98,21 @@ export const getCurrentLanguage = () => {
 };
 
 i18n
-  .use(LanguageDetector)
+  // MULTI-LANGUAGE DISABLED: Language detector removed - using English only
+  // .use(LanguageDetector)
   .use(initReactI18next)
   .init({
     resources,
+    lng: 'en', // MULTI-LANGUAGE DISABLED: Force English language
     fallbackLng: 'en',
     debug: process.env.NODE_ENV === 'development' && false, // Set to true for debugging
 
-    detection: {
-      order: ['localStorage', 'navigator', 'htmlTag'],
-      lookupLocalStorage: LANGUAGE_STORAGE_KEY,
-      caches: ['localStorage']
-    },
+    // MULTI-LANGUAGE DISABLED: Language detection disabled
+    // detection: {
+    //   order: ['localStorage', 'navigator', 'htmlTag'],
+    //   lookupLocalStorage: LANGUAGE_STORAGE_KEY,
+    //   caches: ['localStorage']
+    // },
 
     interpolation: {
       escapeValue: false, // React already escapes values

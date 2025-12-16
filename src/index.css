@@ -70,6 +70,7 @@
   --table-row-height: 2.75rem;   /* 44px */
   --sidebar-width: 6.25rem;      /* 100px */
   --header-height: 3.75rem;      /* 60px */
+  --footer-height: 3.3125rem;    /* 53px */
   
   /* ===== LINE HEIGHTS ===== */
   --line-height-tight: 1.2;
@@ -92,7 +93,7 @@
   --color-bg-hover: #e9ecef;
   --color-text-primary: #333333;
   --color-text-secondary: #666666;
-  --color-text-muted: #888888;
+  --color-text-muted: #5a5a5a;
   --color-border: #dee2e6;
   --color-border-light: #e9ecef;
   --color-accent: #0066cc;

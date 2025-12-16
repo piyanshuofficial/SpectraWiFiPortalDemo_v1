@@ -1,6 +1,6 @@
 // src/pages/Internal/BulkOperations/BulkOperations.js
 
-import React, { useState } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import {
   FaTasks,
   FaUsers,
@@ -14,6 +14,12 @@ import {
   FaKey,
   FaEdit,
   FaFileUpload,
+  FaBuilding,
+  FaMapMarkerAlt,
+  FaInfoCircle,
+  FaSearch,
+  FaTimes,
+  FaChevronDown,
 } from 'react-icons/fa';
 import BulkOperationCard from '@components/BulkOperationCard/BulkOperationCard';
 import ScheduledTasksPanel from './ScheduledTasksPanel';
@@ -25,7 +31,137 @@ import BulkPolicyChange from './BulkPolicyChange';
 import BulkDeviceRename from './BulkDeviceRename';
 import BulkResendPassword from './BulkResendPassword';
 import { usePermissions } from '@hooks/usePermissions';
+import { customers, sites } from '@constants/internalPortalData';
 import './BulkOperations.css';
+
+/**
+ * SearchableSelect Component
+ * A searchable dropdown with filtering capability for large datasets
+ */
+const SearchableSelect = ({
+  options,
+  value,
+  onChange,
+  placeholder,
+  searchPlaceholder,
+  icon: Icon,
+  label,
+  disabled = false,
+  renderOption,
+  getOptionLabel,
+  getOptionValue,
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const containerRef = useRef(null);
+  const inputRef = useRef(null);
+
+  // Filter options based on search query
+  const filteredOptions = useMemo(() => {
+    if (!searchQuery.trim()) return options;
+    const query = searchQuery.toLowerCase();
+    return options.filter(option => {
+      const label = getOptionLabel(option).toLowerCase();
+      return label.includes(query);
+    });
+  }, [options, searchQuery, getOptionLabel]);
+
+  // Get selected option
+  const selectedOption = options.find(opt => getOptionValue(opt) === value);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (containerRef.current && !containerRef.current.contains(event.target)) {
+        setIsOpen(false);
+        setSearchQuery('');
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Focus input when dropdown opens
+  useEffect(() => {
+    if (isOpen && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isOpen]);
+
+  const handleSelect = (option) => {
+    onChange(getOptionValue(option));
+    setIsOpen(false);
+    setSearchQuery('');
+  };
+
+  const handleClear = (e) => {
+    e.stopPropagation();
+    onChange('');
+    setSearchQuery('');
+  };
+
+  return (
+    <div className="searchable-select" ref={containerRef}>
+      <label className="searchable-select-label">
+        {Icon && <Icon />} {label}
+      </label>
+      <div
+        className={`searchable-select-trigger ${isOpen ? 'open' : ''} ${disabled ? 'disabled' : ''}`}
+        onClick={() => !disabled && setIsOpen(!isOpen)}
+      >
+        <span className={`searchable-select-value ${!selectedOption ? 'placeholder' : ''}`}>
+          {selectedOption ? getOptionLabel(selectedOption) : placeholder}
+        </span>
+        <div className="searchable-select-icons">
+          {selectedOption && !disabled && (
+            <button
+              className="searchable-select-clear"
+              onClick={handleClear}
+              type="button"
+              aria-label="Clear selection"
+            >
+              <FaTimes />
+            </button>
+          )}
+          <FaChevronDown className={`searchable-select-arrow ${isOpen ? 'open' : ''}`} />
+        </div>
+      </div>
+
+      {isOpen && !disabled && (
+        <div className="searchable-select-dropdown">
+          <div className="searchable-select-search">
+            <FaSearch className="search-icon" />
+            <input
+              ref={inputRef}
+              type="text"
+              placeholder={searchPlaceholder}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
+          <div className="searchable-select-options">
+            {filteredOptions.length === 0 ? (
+              <div className="searchable-select-no-results">
+                No results found
+              </div>
+            ) : (
+              filteredOptions.map((option) => (
+                <div
+                  key={getOptionValue(option)}
+                  className={`searchable-select-option ${getOptionValue(option) === value ? 'selected' : ''}`}
+                  onClick={() => handleSelect(option)}
+                >
+                  {renderOption ? renderOption(option) : getOptionLabel(option)}
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 /**
  * Bulk Operations Page
@@ -34,6 +170,29 @@ import './BulkOperations.css';
 const BulkOperations = () => {
   const [activeTab, setActiveTab] = useState('users');
   const permissions = usePermissions();
+
+  // Company and Site selection state
+  const [selectedCompanyId, setSelectedCompanyId] = useState('');
+  const [selectedSiteId, setSelectedSiteId] = useState('');
+
+  // Get filtered sites based on selected company
+  const filteredSites = useMemo(() => {
+    if (!selectedCompanyId) return [];
+    return sites.filter(site => site.customerId === selectedCompanyId);
+  }, [selectedCompanyId]);
+
+  // Get selected company and site names for display
+  const selectedCompany = customers.find(c => c.id === selectedCompanyId);
+  const selectedSite = sites.find(s => s.id === selectedSiteId);
+
+  // Check if selection is valid for operations - BOTH company AND site required
+  const hasValidSelection = selectedCompanyId !== '' && selectedSiteId !== '';
+
+  // Handle company change
+  const handleCompanyChange = (companyId) => {
+    setSelectedCompanyId(companyId);
+    setSelectedSiteId(''); // Reset site when company changes
+  };
 
   // Modal states
   const [bulkUserRegModalOpen, setBulkUserRegModalOpen] = useState(false);
@@ -182,6 +341,14 @@ const BulkOperations = () => {
   const renderOperationCards = (operations) => {
     return operations.map((op) => {
       const hasPermission = permissions[op.permission] === true;
+      const isDisabled = !hasPermission || !hasValidSelection;
+      const disabledReason = !hasPermission
+        ? 'Super Admin Only'
+        : !selectedCompanyId
+        ? 'Select a company first'
+        : !selectedSiteId
+        ? 'Select a site first'
+        : null;
       return (
         <BulkOperationCard
           key={op.id}
@@ -193,8 +360,8 @@ const BulkOperations = () => {
           onClick={op.onClick}
           supportsSchedule={op.supportsSchedule}
           onScheduleClick={op.onScheduleClick}
-          disabled={!hasPermission}
-          roleRequired={!hasPermission ? 'Super Admin Only' : null}
+          disabled={isDisabled}
+          roleRequired={disabledReason}
         />
       );
     });
@@ -215,6 +382,80 @@ const BulkOperations = () => {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Company/Site Selection */}
+      <div className="bulk-ops-selection-bar">
+        <div className="bulk-ops-selection-info">
+          <FaInfoCircle className="selection-info-icon" />
+          <span>Select a company and site to perform bulk operations on its users and devices</span>
+        </div>
+        <div className="bulk-ops-selection-controls">
+          <SearchableSelect
+            options={customers}
+            value={selectedCompanyId}
+            onChange={handleCompanyChange}
+            placeholder="Select a company..."
+            searchPlaceholder="Search companies..."
+            icon={FaBuilding}
+            label="Company"
+            getOptionLabel={(c) => `${c.name} (${c.type})`}
+            getOptionValue={(c) => c.id}
+            renderOption={(c) => (
+              <div className="company-option">
+                <span className="company-option-name">{c.name}</span>
+                <span className="company-option-meta">
+                  <span className="company-type-badge">{c.type}</span>
+                  <span className="company-stats">{c.totalSites} sites • {c.totalUsers?.toLocaleString()} users</span>
+                </span>
+              </div>
+            )}
+          />
+          <SearchableSelect
+            options={filteredSites}
+            value={selectedSiteId}
+            onChange={setSelectedSiteId}
+            placeholder={selectedCompanyId ? "Select a site..." : "Select company first"}
+            searchPlaceholder="Search sites..."
+            icon={FaMapMarkerAlt}
+            label="Site (Required)"
+            disabled={!selectedCompanyId}
+            getOptionLabel={(s) => `${s.name} (${s.location})`}
+            getOptionValue={(s) => s.id}
+            renderOption={(s) => (
+              <div className="site-option">
+                <span className="site-option-name">{s.name}</span>
+                <span className="site-option-meta">
+                  <span className="site-location">{s.location}</span>
+                  <span className="site-stats">{s.totalUsers?.toLocaleString() || 0} users • {s.totalDevices?.toLocaleString() || 0} devices</span>
+                </span>
+              </div>
+            )}
+          />
+        </div>
+        {hasValidSelection && (
+          <div className="bulk-ops-selection-summary">
+            <span className="selection-badge company">
+              <FaBuilding /> {selectedCompany?.name}
+            </span>
+            <span className="selection-badge site">
+              <FaMapMarkerAlt /> {selectedSite?.name}
+            </span>
+            <span className="selection-stats">
+              {`${selectedSite?.totalUsers?.toLocaleString() || 0} users, ${selectedSite?.totalDevices?.toLocaleString() || 0} devices at this site`}
+            </span>
+          </div>
+        )}
+        {!hasValidSelection && (
+          <div className="bulk-ops-selection-warning">
+            <FaInfoCircle />
+            <span>
+              {!selectedCompanyId
+                ? 'Please select a company to continue'
+                : 'Please select a site to enable bulk operations'}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Tab Navigation */}

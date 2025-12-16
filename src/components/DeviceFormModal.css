@@ -127,11 +127,11 @@ form {
 .mapping-type-options label.disabled-option {
   opacity: 0.5;
   cursor: not-allowed;
-  color: #888;
+  color: var(--color-text-muted);
 }
 
 .mapping-type-options label.disabled-option:hover {
-  color: #888;
+  color: var(--color-text-muted);
 }
 
 .mapping-type-options label.disabled-option input[type='radio'] {
@@ -227,7 +227,7 @@ form {
 
 .device-form-row input:disabled {
   background: #f5f5f5;
-  color: #888;
+  color: var(--color-text-muted);
 }
 
 .error-message {

@@ -1,5 +1,9 @@
 /* src/components/Loading/LoadingOverlay.css */
 
+/* =====================================================
+   Loading Overlay Base Styles
+   ===================================================== */
+
 .loading-overlay {
   position: fixed;
   top: 0;
@@ -11,7 +15,9 @@
   align-items: center;
   justify-content: center;
   z-index: 9999;
-  backdrop-filter: blur(0.125rem);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  animation: fadeIn 200ms ease-out;
 }
 
 .loading-overlay-fullpage {
@@ -19,23 +25,27 @@
   z-index: 9999;
 }
 
+/* =====================================================
+   Loading Content Card
+   ===================================================== */
+
 .loading-overlay-content {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-lg);
-  padding: var(--space-2xl);
+  gap: var(--space-lg, 16px);
+  padding: var(--space-2xl, 32px);
   background: #fff;
-  border-radius: var(--radius-xl);
-  box-shadow: 0 0.25rem 1.25rem rgba(0, 0, 0, 0.15);
+  border-radius: var(--radius-xl, 12px);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
   /* CRITICAL: Ensure container never rotates */
   transform: none !important;
-  animation: none !important;
+  animation: slideUp 300ms ease-out !important;
 }
 
 .loading-overlay-message {
   margin: 0;
-  font-size: var(--font-md);
+  font-size: var(--font-md, 14px);
   font-weight: 600;
   color: #333;
   text-align: center;
@@ -44,14 +54,315 @@
   animation: none !important;
 }
 
+/* =====================================================
+   Progress Indicator Variant
+   ===================================================== */
+
+.loading-overlay-progress {
+  width: 200px;
+}
+
+.loading-overlay-progress-bar {
+  height: 4px;
+  background: #e0e0e0;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.loading-overlay-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #004aad, #0066cc);
+  border-radius: 2px;
+  transition: width 300ms ease-out;
+}
+
+.loading-overlay-progress-indeterminate {
+  animation: progressIndeterminate 1.5s ease-in-out infinite;
+  width: 30%;
+}
+
+/* =====================================================
+   Dark Mode Support
+   ===================================================== */
+
 .loading-overlay.loading-overlay-dark {
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.85);
 }
 
 .loading-overlay-dark .loading-overlay-content {
-  background: #2c2c2c;
+  background: #1e293b;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
 }
 
 .loading-overlay-dark .loading-overlay-message {
-  color: #fff;
+  color: #f1f5f9;
+}
+
+.loading-overlay-dark .loading-overlay-progress-bar {
+  background: #334155;
+}
+
+/* =====================================================
+   Transparent Overlay Variant
+   ===================================================== */
+
+.loading-overlay.loading-overlay-transparent {
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.loading-overlay-transparent .loading-overlay-content {
+  background: transparent;
+  box-shadow: none;
+}
+
+/* =====================================================
+   Inline Overlay Variant
+   ===================================================== */
+
+.loading-overlay.loading-overlay-inline {
+  position: absolute;
+  border-radius: inherit;
+}
+
+/* =====================================================
+   Animations
+   ===================================================== */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px) !important;
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) !important;
+  }
+}
+
+@keyframes progressIndeterminate {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(400%);
+  }
+}
+
+/* =====================================================
+   Branded Loading Animation
+   ===================================================== */
+
+.loading-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.loading-brand-text {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #004aad;
+  letter-spacing: -0.02em;
+}
+
+.loading-brand-text .brand-highlight {
+  color: #0066cc;
+}
+
+/* =====================================================
+   Dots Loading Animation
+   ===================================================== */
+
+.loading-dots {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.loading-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #004aad;
+  animation: dotPulse 1.4s ease-in-out infinite;
+}
+
+.loading-dot:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.loading-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.loading-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes dotPulse {
+  0%, 80%, 100% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+  40% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+}
+
+/* =====================================================
+   Pulse Ring Animation
+   ===================================================== */
+
+.loading-pulse-ring {
+  position: relative;
+  width: 60px;
+  height: 60px;
+}
+
+.loading-pulse-ring::before,
+.loading-pulse-ring::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 3px solid #004aad;
+  transform: translate(-50%, -50%);
+  animation: pulseRing 1.5s ease-out infinite;
+}
+
+.loading-pulse-ring::after {
+  animation-delay: 0.5s;
+}
+
+@keyframes pulseRing {
+  0% {
+    transform: translate(-50%, -50%) scale(0.5);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.5);
+    opacity: 0;
+  }
+}
+
+/* =====================================================
+   Steps Loading Animation
+   ===================================================== */
+
+.loading-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.loading-step {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.loading-step.active {
+  color: #004aad;
+  font-weight: 500;
+}
+
+.loading-step.completed {
+  color: #059669;
+}
+
+.loading-step-indicator {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+}
+
+.loading-step.active .loading-step-indicator {
+  border-color: #004aad;
+  background: #e6eef8;
+}
+
+.loading-step.completed .loading-step-indicator {
+  border-color: #059669;
+  background: #059669;
+  color: white;
+}
+
+/* =====================================================
+   Responsive Adjustments
+   ===================================================== */
+
+@media (max-width: 480px) {
+  .loading-overlay-content {
+    margin: 16px;
+    padding: 24px;
+    max-width: calc(100vw - 32px);
+  }
+
+  .loading-overlay-message {
+    font-size: 13px;
+  }
+
+  .loading-overlay-progress {
+    width: 160px;
+  }
+}
+
+/* =====================================================
+   Reduced Motion Support
+   ===================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .loading-overlay {
+    animation: none;
+  }
+
+  .loading-overlay-content {
+    animation: none !important;
+  }
+
+  .loading-dot {
+    animation: none;
+  }
+
+  .loading-pulse-ring::before,
+  .loading-pulse-ring::after {
+    animation: none;
+    opacity: 0.5;
+  }
+
+  .loading-overlay-progress-indeterminate {
+    animation: none;
+    width: 50%;
+  }
 }

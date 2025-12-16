@@ -60,8 +60,8 @@ export const NEUTRAL_COLORS = {
   GRAY_300: "#dde6f3",
   GRAY_400: "#c9d1e8",
   GRAY_500: "#a8b5d0",
-  GRAY_600: "#888",
-  GRAY_700: "#666",
+  GRAY_600: "#5a5a5a",
+  GRAY_700: "#555",
   GRAY_800: "#444",
   GRAY_900: "#222",
   
@@ -72,8 +72,8 @@ export const NEUTRAL_COLORS = {
   
   TEXT_PRIMARY: "#222",
   TEXT_SECONDARY: "#555",
-  TEXT_MUTED: "#888",
-  TEXT_DISABLED: "#ccc",
+  TEXT_MUTED: "#5a5a5a",
+  TEXT_DISABLED: "#999",
 };
 
 export const BACKGROUND_COLORS = {

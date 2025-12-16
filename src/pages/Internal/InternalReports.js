@@ -226,9 +226,53 @@ const internalReports = [
   },
 ];
 
-// Generate sample report data
+// Generate sample report data for all reports
 const generateReportData = (reportId) => {
   switch (reportId) {
+    // Platform Analytics
+    case "platform_overview":
+      return [
+        { Metric: "Total Customers", Value: platformMetrics.overview.totalCustomers, "Change (%)": "+5.2", Period: "vs Last Month" },
+        { Metric: "Total Sites", Value: platformMetrics.overview.totalSites, "Change (%)": "+8.1", Period: "vs Last Month" },
+        { Metric: "Active Users", Value: platformMetrics.overview.activeUsers, "Change (%)": "+12.3", Period: "vs Last Month" },
+        { Metric: "Total Devices", Value: platformMetrics.overview.totalDevices, "Change (%)": "+15.6", Period: "vs Last Month" },
+        { Metric: "Total Licenses", Value: platformMetrics.overview.totalLicenses, "Change (%)": "+6.8", Period: "vs Last Month" },
+        { Metric: "Used Bandwidth (Mbps)", Value: platformMetrics.overview.usedBandwidth, "Change (%)": "+22.4", Period: "vs Last Month" },
+        { Metric: "Platform Uptime (%)", Value: "99.97", "Change (%)": "+0.02", Period: "vs Last Month" },
+        { Metric: "Avg Response Time (ms)", Value: "45", "Change (%)": "-8.2", Period: "vs Last Month" },
+      ];
+
+    case "customer_growth":
+      return [
+        { Month: "Jan 2024", "New Customers": 3, "Churned": 0, "Net Growth": 3, "Total Customers": 12, "MRR (₹)": "24,50,000" },
+        { Month: "Dec 2023", "New Customers": 2, "Churned": 1, "Net Growth": 1, "Total Customers": 9, "MRR (₹)": "21,80,000" },
+        { Month: "Nov 2023", "New Customers": 4, "Churned": 0, "Net Growth": 4, "Total Customers": 8, "MRR (₹)": "19,20,000" },
+        { Month: "Oct 2023", "New Customers": 1, "Churned": 1, "Net Growth": 0, "Total Customers": 4, "MRR (₹)": "12,50,000" },
+        { Month: "Sep 2023", "New Customers": 2, "Churned": 0, "Net Growth": 2, "Total Customers": 4, "MRR (₹)": "11,00,000" },
+        { Month: "Aug 2023", "New Customers": 2, "Churned": 0, "Net Growth": 2, "Total Customers": 2, "MRR (₹)": "6,50,000" },
+      ];
+
+    case "site_deployment":
+      return [
+        { Site: "The Oberoi, Udaipur", Customer: "Oberoi Hotels", Status: "In Progress", "Start Date": "10 Jan 2024", "Target Date": "25 Jan 2024", "Phase": "Network Setup", "Progress (%)": 65 },
+        { Site: "WeWork Whitefield", Customer: "WeWork India", Status: "Pending Approval", "Start Date": "15 Jan 2024", "Target Date": "05 Feb 2024", "Phase": "Site Survey", "Progress (%)": 20 },
+        { Site: "Zolo Sunrise, Pune", Customer: "Zolo Stays", Status: "Completed", "Start Date": "01 Dec 2023", "Target Date": "20 Dec 2023", "Phase": "Live", "Progress (%)": 100 },
+        { Site: "Stanza Living Rome", Customer: "Stanza Living", Status: "In Progress", "Start Date": "05 Jan 2024", "Target Date": "30 Jan 2024", "Phase": "AP Installation", "Progress (%)": 75 },
+        { Site: "The Oberoi, Goa", Customer: "Oberoi Hotels", Status: "Scheduled", "Start Date": "01 Feb 2024", "Target Date": "28 Feb 2024", "Phase": "Planning", "Progress (%)": 10 },
+      ];
+
+    case "license_utilization":
+      return customers.map(c => ({
+        Customer: c.name,
+        "License Tier": c.licenseTier || "Standard",
+        "Total Licenses": Math.round(c.totalUsers * 1.2),
+        "Used Licenses": c.totalUsers,
+        "Available": Math.round(c.totalUsers * 0.2),
+        "Utilization (%)": Math.round((c.totalUsers / (c.totalUsers * 1.2)) * 100),
+        "Expiry Date": c.contractEnd || "2024-12-31",
+      }));
+
+    // Customer Reports
     case "customer_summary":
       return customers.map(c => ({
         Customer: c.name,
@@ -240,6 +284,39 @@ const generateReportData = (reportId) => {
         Devices: c.totalDevices,
         "Account Manager": c.accountManager,
       }));
+
+    case "customer_revenue":
+      return customers.map(c => ({
+        Customer: c.name,
+        Segment: c.type,
+        "Monthly Revenue (₹)": `${(c.totalUsers * 150 + c.totalSites * 5000).toLocaleString()}`,
+        "Annual Value (₹)": `${((c.totalUsers * 150 + c.totalSites * 5000) * 12).toLocaleString()}`,
+        "Payment Status": "Current",
+        "Last Payment": "05 Jan 2024",
+        "Outstanding (₹)": "0",
+      }));
+
+    case "customer_health":
+      return customers.map(c => ({
+        Customer: c.name,
+        "Health Score": Math.floor(Math.random() * 20) + 80,
+        "Uptime (%)": (98 + Math.random() * 2).toFixed(2),
+        "Ticket Volume": Math.floor(Math.random() * 10),
+        "Response Time (hrs)": (Math.random() * 4 + 1).toFixed(1),
+        "User Satisfaction": (4 + Math.random()).toFixed(1),
+        "Risk Level": Math.random() > 0.8 ? "Medium" : "Low",
+      }));
+
+    case "contract_expiry":
+      return [
+        { Customer: "Zolo Stays", "Contract End": "2024-07-19", "Days Remaining": 186, "Contract Value (₹)": "18,50,000", "Renewal Status": "Pending Discussion", "Account Manager": "Sneha Reddy" },
+        { Customer: "WeWork India", "Contract End": "2024-05-31", "Days Remaining": 137, "Contract Value (₹)": "85,00,000", "Renewal Status": "Renewal Sent", "Account Manager": "Vikram Singh" },
+        { Customer: "Nestaway Technologies", "Contract End": "2024-09-30", "Days Remaining": 259, "Contract Value (₹)": "32,00,000", "Renewal Status": "On Track", "Account Manager": "Priya Sharma" },
+        { Customer: "Oberoi Hotels", "Contract End": "2025-01-14", "Days Remaining": 365, "Contract Value (₹)": "1,25,00,000", "Renewal Status": "On Track", "Account Manager": "Anita Desai" },
+        { Customer: "Stanza Living", "Contract End": "2025-03-31", "Days Remaining": 441, "Contract Value (₹)": "55,00,000", "Renewal Status": "On Track", "Account Manager": "Rahul Mehta" },
+      ];
+
+    // Site Performance
     case "site_status":
       return sites.map(s => ({
         Site: s.name,
@@ -252,13 +329,134 @@ const generateReportData = (reportId) => {
         "Uptime %": s.uptime,
         Alerts: s.alerts,
       }));
+
+    case "site_uptime":
+      return sites.map(s => ({
+        Site: s.name,
+        Customer: s.customerName,
+        "Current Uptime (%)": s.uptime,
+        "30-Day Avg (%)": (s.uptime - Math.random() * 2 + 1).toFixed(2),
+        "90-Day Avg (%)": (s.uptime - Math.random() * 3 + 1.5).toFixed(2),
+        "Downtime (mins)": Math.floor((100 - s.uptime) * 4.32),
+        "SLA Target (%)": 99.5,
+        "SLA Met": s.uptime >= 99.5 ? "Yes" : "No",
+      }));
+
+    case "site_capacity":
+      return sites.map(s => ({
+        Site: s.name,
+        Customer: s.customerName,
+        "Max Users": s.totalUsers,
+        "Current Users": s.activeUsers,
+        "User Utilization (%)": Math.round((s.activeUsers / s.totalUsers) * 100),
+        "Max Devices": s.totalDevices,
+        "Online Devices": s.onlineDevices,
+        "Device Utilization (%)": Math.round((s.onlineDevices / s.totalDevices) * 100),
+      }));
+
     case "regional_performance":
       return platformMetrics.regional.map(r => ({
         Region: r.region,
         Sites: r.sites,
         Users: r.users,
         Devices: r.devices,
+        "Avg Uptime (%)": (98.5 + Math.random() * 1.5).toFixed(2),
+        "Total Bandwidth (Mbps)": r.users * 2,
+        "Alerts": Math.floor(Math.random() * 5),
       }));
+
+    // Network & Bandwidth
+    case "bandwidth_utilization":
+      return sites.map(s => ({
+        Site: s.name,
+        Customer: s.customerName,
+        "Provisioned (Mbps)": s.bandwidthLimit,
+        "Current Usage (Mbps)": s.bandwidthUsage,
+        "Peak Usage (Mbps)": Math.round(s.bandwidthUsage * 1.3),
+        "Utilization (%)": Math.round((s.bandwidthUsage / s.bandwidthLimit) * 100),
+        "Avg Daily (GB)": (s.dailyDataTransfer * 1000).toFixed(0),
+        "Status": s.bandwidthUsage / s.bandwidthLimit > 0.9 ? "High" : "Normal",
+      }));
+
+    case "device_inventory":
+      return sites.map(s => ({
+        Site: s.name,
+        Customer: s.customerName,
+        "Total APs": s.infrastructure?.deployedApCount || 0,
+        "Live APs": s.infrastructure?.liveApCount || 0,
+        "AP Vendor": s.infrastructure?.apVendor || "N/A",
+        "PoE Switches": s.infrastructure?.poeSwitchCount || 0,
+        "Total PoE Ports": s.infrastructure?.totalPoePorts || 0,
+        "Last Updated": "15 Jan 2024",
+      }));
+
+    case "traffic_analysis":
+      return [
+        { "Time Period": "06:00 - 09:00", "Avg Users": 1250, "Peak Users": 1890, "Bandwidth (Mbps)": 4500, "Top Protocol": "HTTPS", "% of Total": "35%" },
+        { "Time Period": "09:00 - 12:00", "Avg Users": 3200, "Peak Users": 4100, "Bandwidth (Mbps)": 8200, "Top Protocol": "HTTPS", "% of Total": "28%" },
+        { "Time Period": "12:00 - 15:00", "Avg Users": 2800, "Peak Users": 3500, "Bandwidth (Mbps)": 7100, "Top Protocol": "Video Streaming", "% of Total": "32%" },
+        { "Time Period": "15:00 - 18:00", "Avg Users": 3100, "Peak Users": 3900, "Bandwidth (Mbps)": 7800, "Top Protocol": "HTTPS", "% of Total": "30%" },
+        { "Time Period": "18:00 - 21:00", "Avg Users": 2400, "Peak Users": 3200, "Bandwidth (Mbps)": 9500, "Top Protocol": "Video Streaming", "% of Total": "45%" },
+        { "Time Period": "21:00 - 00:00", "Avg Users": 1800, "Peak Users": 2400, "Bandwidth (Mbps)": 6800, "Top Protocol": "Video Streaming", "% of Total": "52%" },
+        { "Time Period": "00:00 - 06:00", "Avg Users": 450, "Peak Users": 800, "Bandwidth (Mbps)": 1200, "Top Protocol": "System Updates", "% of Total": "40%" },
+      ];
+
+    // Security & Compliance
+    case "security_audit":
+      return [
+        { Category: "Access Control", "Total Checks": 45, "Passed": 43, "Failed": 2, "Compliance (%)": 95.6, "Last Audit": "12 Jan 2024", "Next Audit": "12 Apr 2024" },
+        { Category: "Data Encryption", "Total Checks": 28, "Passed": 28, "Failed": 0, "Compliance (%)": 100, "Last Audit": "12 Jan 2024", "Next Audit": "12 Apr 2024" },
+        { Category: "Network Security", "Total Checks": 52, "Passed": 50, "Failed": 2, "Compliance (%)": 96.2, "Last Audit": "12 Jan 2024", "Next Audit": "12 Apr 2024" },
+        { Category: "User Authentication", "Total Checks": 35, "Passed": 34, "Failed": 1, "Compliance (%)": 97.1, "Last Audit": "12 Jan 2024", "Next Audit": "12 Apr 2024" },
+        { Category: "Logging & Monitoring", "Total Checks": 22, "Passed": 22, "Failed": 0, "Compliance (%)": 100, "Last Audit": "12 Jan 2024", "Next Audit": "12 Apr 2024" },
+        { Category: "Backup & Recovery", "Total Checks": 18, "Passed": 17, "Failed": 1, "Compliance (%)": 94.4, "Last Audit": "12 Jan 2024", "Next Audit": "12 Apr 2024" },
+      ];
+
+    case "access_logs":
+      return [
+        { Date: "15 Jan 2024", "Total Logins": 2845, "Successful": 2798, "Failed": 47, "Unique Users": 1250, "Peak Hour": "09:00-10:00", "Suspicious Activity": 3 },
+        { Date: "14 Jan 2024", "Total Logins": 2650, "Successful": 2612, "Failed": 38, "Unique Users": 1180, "Peak Hour": "10:00-11:00", "Suspicious Activity": 1 },
+        { Date: "13 Jan 2024", "Total Logins": 1890, "Successful": 1865, "Failed": 25, "Unique Users": 890, "Peak Hour": "11:00-12:00", "Suspicious Activity": 0 },
+        { Date: "12 Jan 2024", "Total Logins": 2720, "Successful": 2685, "Failed": 35, "Unique Users": 1220, "Peak Hour": "09:00-10:00", "Suspicious Activity": 2 },
+        { Date: "11 Jan 2024", "Total Logins": 2580, "Successful": 2545, "Failed": 35, "Unique Users": 1150, "Peak Hour": "09:00-10:00", "Suspicious Activity": 0 },
+      ];
+
+    case "incident_report":
+      return [
+        { "Incident ID": "SEC-2024-015", Date: "14 Jan 2024", Type: "Brute Force Attempt", Severity: "Medium", Site: "WeWork BKC", Status: "Resolved", "Response Time": "15 mins", "Action Taken": "IP Blocked" },
+        { "Incident ID": "SEC-2024-014", Date: "12 Jan 2024", Type: "Unusual Login Pattern", Severity: "Low", Site: "Oberoi Mumbai", Status: "Investigated", "Response Time": "30 mins", "Action Taken": "User Verified" },
+        { "Incident ID": "SEC-2024-013", Date: "10 Jan 2024", Type: "Certificate Warning", Severity: "High", Site: "Stanza Bangalore", Status: "Resolved", "Response Time": "2 hrs", "Action Taken": "Cert Renewed" },
+        { "Incident ID": "SEC-2024-012", Date: "08 Jan 2024", Type: "DDoS Attempt", Severity: "Critical", Site: "WeWork Galaxy", Status: "Mitigated", "Response Time": "5 mins", "Action Taken": "Traffic Filtered" },
+        { "Incident ID": "SEC-2024-011", Date: "05 Jan 2024", Type: "Unauthorized Access", Severity: "High", Site: "Zolo Crown", Status: "Resolved", "Response Time": "20 mins", "Action Taken": "Account Disabled" },
+      ];
+
+    // Support & Tickets
+    case "ticket_summary":
+      return [
+        { Priority: "Critical", "Open": 2, "In Progress": 1, "Resolved": 15, "Total": 18, "Avg Resolution (hrs)": 2.5, "SLA Breach": 0 },
+        { Priority: "High", "Open": 5, "In Progress": 8, "Resolved": 45, "Total": 58, "Avg Resolution (hrs)": 8.2, "SLA Breach": 2 },
+        { Priority: "Medium", "Open": 12, "In Progress": 15, "Resolved": 120, "Total": 147, "Avg Resolution (hrs)": 24.5, "SLA Breach": 5 },
+        { Priority: "Low", "Open": 8, "In Progress": 10, "Resolved": 85, "Total": 103, "Avg Resolution (hrs)": 48.0, "SLA Breach": 0 },
+      ];
+
+    case "sla_performance":
+      return [
+        { Customer: "Oberoi Hotels", "SLA Tier": "Premium", "Target Uptime (%)": 99.9, "Actual Uptime (%)": 99.97, "Response SLA (hrs)": 1, "Avg Response (hrs)": 0.5, "Breaches": 0, "Status": "Compliant" },
+        { Customer: "WeWork India", "SLA Tier": "Enterprise", "Target Uptime (%)": 99.95, "Actual Uptime (%)": 99.98, "Response SLA (hrs)": 2, "Avg Response (hrs)": 1.2, "Breaches": 0, "Status": "Compliant" },
+        { Customer: "Zolo Stays", "SLA Tier": "Standard", "Target Uptime (%)": 99.5, "Actual Uptime (%)": 99.85, "Response SLA (hrs)": 4, "Avg Response (hrs)": 2.8, "Breaches": 1, "Status": "Compliant" },
+        { Customer: "Stanza Living", "SLA Tier": "Premium", "Target Uptime (%)": 99.9, "Actual Uptime (%)": 99.88, "Response SLA (hrs)": 1, "Avg Response (hrs)": 0.8, "Breaches": 1, "Status": "At Risk" },
+        { Customer: "Nestaway", "SLA Tier": "Standard", "Target Uptime (%)": 99.5, "Actual Uptime (%)": 98.20, "Response SLA (hrs)": 4, "Avg Response (hrs)": 3.5, "Breaches": 3, "Status": "Breach" },
+      ];
+
+    case "customer_satisfaction":
+      return [
+        { Customer: "Oberoi Hotels", "CSAT Score": 4.8, "NPS": 72, "Survey Responses": 45, "Positive (%)": 92, "Neutral (%)": 6, "Negative (%)": 2, "Trend": "Improving" },
+        { Customer: "WeWork India", "CSAT Score": 4.6, "NPS": 65, "Survey Responses": 120, "Positive (%)": 88, "Neutral (%)": 8, "Negative (%)": 4, "Trend": "Stable" },
+        { Customer: "Zolo Stays", "CSAT Score": 4.2, "NPS": 45, "Survey Responses": 38, "Positive (%)": 78, "Neutral (%)": 15, "Negative (%)": 7, "Trend": "Improving" },
+        { Customer: "Stanza Living", "CSAT Score": 4.5, "NPS": 58, "Survey Responses": 65, "Positive (%)": 85, "Neutral (%)": 10, "Negative (%)": 5, "Trend": "Stable" },
+        { Customer: "Nestaway", "CSAT Score": 3.8, "NPS": 32, "Survey Responses": 28, "Positive (%)": 68, "Neutral (%)": 18, "Negative (%)": 14, "Trend": "Declining" },
+      ];
+
     default:
       return [];
   }
@@ -320,6 +518,12 @@ const InternalReports = () => {
     (reportId) => pinnedReports.includes(reportId),
     [pinnedReports]
   );
+
+  // Check if a report has data
+  const reportHasData = useCallback((reportId) => {
+    const data = generateReportData(reportId);
+    return data && Array.isArray(data) && data.length > 0;
+  }, []);
 
   const handleViewReport = (report) => {
     setSelectedReport(report);
@@ -601,7 +805,8 @@ const InternalReports = () => {
                   <button
                     className="btn btn-secondary btn-sm"
                     onClick={() => handleExportCSV(report)}
-                    disabled={exporting && exportingReportId === report.id}
+                    disabled={!reportHasData(report.id) || (exporting && exportingReportId === report.id)}
+                    title={reportHasData(report.id) ? "Export as CSV" : "No data available"}
                   >
                     {exporting && exportingReportId === report.id ? (
                       <FaSpinner className="spin" />
@@ -615,7 +820,8 @@ const InternalReports = () => {
                   <button
                     className="btn btn-secondary btn-sm"
                     onClick={() => handleExportPDF(report)}
-                    disabled={exporting && exportingReportId === report.id}
+                    disabled={!reportHasData(report.id) || (exporting && exportingReportId === report.id)}
+                    title={reportHasData(report.id) ? "Export as PDF" : "No data available"}
                   >
                     {exporting && exportingReportId === report.id ? (
                       <FaSpinner className="spin" />
@@ -686,7 +892,8 @@ const InternalReports = () => {
                 <button
                   className="btn btn-secondary"
                   onClick={() => handleExportCSV(selectedReport)}
-                  disabled={exporting}
+                  disabled={!reportHasData(selectedReport.id) || exporting}
+                  title={reportHasData(selectedReport.id) ? "Export as CSV" : "No data available"}
                 >
                   {exporting && exportingReportId === selectedReport.id ? (
                     <FaSpinner className="spin" />
@@ -698,7 +905,8 @@ const InternalReports = () => {
                 <button
                   className="btn btn-primary"
                   onClick={() => handleExportPDF(selectedReport)}
-                  disabled={exporting}
+                  disabled={!reportHasData(selectedReport.id) || exporting}
+                  title={reportHasData(selectedReport.id) ? "Export as PDF" : "No data available"}
                 >
                   {exporting && exportingReportId === selectedReport.id ? (
                     <FaSpinner className="spin" />

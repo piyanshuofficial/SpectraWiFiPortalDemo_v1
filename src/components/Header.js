@@ -1,7 +1,8 @@
 // src/components/Header.js
 
 import React, { useState, useEffect, useRef } from 'react';
-import { FaBell, FaUserCircle, FaGlobe, FaChevronDown, FaBuilding, FaMapMarkerAlt, FaArrowLeft } from 'react-icons/fa';
+import { useLocation } from 'react-router-dom';
+import { FaBell, FaUserCircle, FaGlobe, FaChevronDown, FaBuilding, FaMapMarkerAlt, FaArrowLeft, FaShieldAlt } from 'react-icons/fa';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import '../styles/toastify-overrides.css'; // CRITICAL: Must be imported AFTER ReactToastify.css
@@ -11,8 +12,9 @@ import { showInfo } from '@utils/notifications';
 import RoleAccessSelector from '@components/RoleAccessSelector';
 import { useSiteConfig } from '@hooks/useSiteConfig';
 import { useSegmentActivities } from '@hooks/useSegmentActivities';
+import { useSegmentCompanyData } from '@hooks/useSegmentCompanyData';
 import { useTranslation } from 'react-i18next';
-import { LANGUAGES } from '../i18n';
+import { LANGUAGES, MULTI_LANGUAGE_ENABLED } from '../i18n';
 import { useAuth } from '../context/AuthContext';
 import { useAccessLevelView } from '../context/AccessLevelViewContext';
 import { AccessLevels } from '../utils/accessLevels';
@@ -20,6 +22,7 @@ import { AccessLevels } from '../utils/accessLevels';
 const MAX_NOTIFICATIONS = 5;
 
 const Header = () => {
+  const location = useLocation();
   const { siteName } = useSiteConfig();
   const { t, i18n } = useTranslation();
   const { currentUser } = useAuth();
@@ -30,6 +33,12 @@ const Header = () => {
     currentSiteName,
     returnToCompanyView
   } = useAccessLevelView();
+
+  // Get segment-specific company data for the header
+  const { company: segmentCompany } = useSegmentCompanyData();
+
+  // Check if we're in internal portal
+  const isInternalPortal = location.pathname.startsWith('/internal');
   const [notifOpen, setNotifOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
@@ -42,14 +51,35 @@ const Header = () => {
 
   // Determine header display name based on access level and view
   const getHeaderDisplayName = () => {
+    // For internal portal, show "Spectra NOC" instead of site name
+    if (isInternalPortal) {
+      return "Spectra NOC";
+    }
+
     if (currentUser?.accessLevel === AccessLevels.COMPANY) {
       if (isCompanyView) {
-        return currentUser?.companyName || 'Company View';
+        // Use segment-specific company name for company view
+        return segmentCompany?.name || currentUser?.companyName || 'Company View';
       } else {
         return currentSiteName || siteName;
       }
     }
-    return siteName;
+    // For site-level users, show segment company name or site name
+    return segmentCompany?.name || siteName;
+  };
+
+  // Get internal portal role display
+  const getInternalRoleDisplay = () => {
+    if (!isInternalPortal || !currentUser) return null;
+    const roleLabels = {
+      admin: "Administrator",
+      noc_manager: "NOC Manager",
+      noc_operator: "NOC Operator",
+      support: "Support Agent",
+      field_engineer: "Field Engineer",
+      viewer: "Viewer"
+    };
+    return roleLabels[currentUser.role] || currentUser.role;
   };
 
   // Get view level indicator
@@ -94,21 +124,24 @@ const Header = () => {
       <header className="header-bar" style={{ marginTop: 0 }}>
         <div className="header-main-row">
           <div className="header-left">
-            <span
-              className="header-back-to-spectra"
-              tabIndex={0}
-              role="button"
-              onClick={handleBackToSpectraOne}
-              onKeyPress={e => e.key === "Enter" && handleBackToSpectraOne()}
-              style={{ cursor: "pointer" }}
-              aria-label={t('header.backToSite')}
-            >
-              {t('header.backToSite')}
-            </span>
+            {/* Hide "Back to Site Dashboard" for internal portal */}
+            {!isInternalPortal && (
+              <span
+                className="header-back-to-spectra"
+                tabIndex={0}
+                role="button"
+                onClick={handleBackToSpectraOne}
+                onKeyPress={e => e.key === "Enter" && handleBackToSpectraOne()}
+                style={{ cursor: "pointer" }}
+                aria-label={t('header.backToSite')}
+              >
+                {t('header.backToSite')}
+              </span>
+            )}
           </div>
           <div className="header-center">
-            {/* Back to Company View button - shown when drilled down to site */}
-            {isCompanyUser && isSiteView && (
+            {/* Back to Company View button - shown when drilled down to site (customer portal only) */}
+            {!isInternalPortal && isCompanyUser && isSiteView && (
               <button
                 className="header-back-to-company"
                 onClick={returnToCompanyView}
@@ -120,54 +153,72 @@ const Header = () => {
               </button>
             )}
             <div className="header-site-info">
-              {isCompanyUser && (
-                <span className="header-view-indicator">
-                  {isCompanyView ? (
-                    <FaBuilding aria-hidden="true" />
-                  ) : (
-                    <FaMapMarkerAlt aria-hidden="true" />
+              {/* Internal Portal branding */}
+              {isInternalPortal ? (
+                <>
+                  <span className="header-view-indicator internal">
+                    <FaShieldAlt aria-hidden="true" />
+                    <span className="view-level-badge">Internal</span>
+                  </span>
+                  <span className="header-site">{getHeaderDisplayName()}</span>
+                  {getInternalRoleDisplay() && (
+                    <span className="header-role-badge">{getInternalRoleDisplay()}</span>
                   )}
-                  <span className="view-level-badge">{getViewIndicator()}</span>
-                </span>
+                </>
+              ) : (
+                <>
+                  {isCompanyUser && (
+                    <span className="header-view-indicator">
+                      {isCompanyView ? (
+                        <FaBuilding aria-hidden="true" />
+                      ) : (
+                        <FaMapMarkerAlt aria-hidden="true" />
+                      )}
+                      <span className="view-level-badge">{getViewIndicator()}</span>
+                    </span>
+                  )}
+                  <span className="header-site">{getHeaderDisplayName()}</span>
+                </>
               )}
-              <span className="header-site">{getHeaderDisplayName()}</span>
             </div>
           </div>
           <div className="header-actions">
-            {/* Language Selector */}
-            <div
-              className="language-selector"
-              ref={langRef}
-              tabIndex={0}
-              role="button"
-              aria-haspopup="true"
-              aria-expanded={langOpen}
-              title={t('header.language')}
-              aria-label={t('header.language')}
-              onClick={() => setLangOpen(!langOpen)}
-              onKeyPress={e => e.key === 'Enter' && setLangOpen(!langOpen)}
-            >
-              <FaGlobe aria-hidden="true" />
-              <span className="lang-current">{currentLang.nativeName}</span>
-              <FaChevronDown className={`lang-chevron ${langOpen ? 'open' : ''}`} aria-hidden="true" />
-              {langOpen && (
-                <div className="language-dropdown">
-                  {LANGUAGES.map(lang => (
-                    <div
-                      key={lang.code}
-                      className={`language-option ${lang.code === currentLang.code ? 'active' : ''}`}
-                      role="menuitem"
-                      tabIndex={0}
-                      onClick={(e) => { e.stopPropagation(); changeLanguage(lang.code); }}
-                      onKeyPress={(e) => { if (e.key === 'Enter') { e.stopPropagation(); changeLanguage(lang.code); } }}
-                    >
-                      <span className="lang-native">{lang.nativeName}</span>
-                      <span className="lang-english">{lang.name}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            {/* Language Selector - MULTI-LANGUAGE DISABLED: Hidden when only English is enabled */}
+            {MULTI_LANGUAGE_ENABLED && (
+              <div
+                className="language-selector"
+                ref={langRef}
+                tabIndex={0}
+                role="button"
+                aria-haspopup="true"
+                aria-expanded={langOpen}
+                title={t('header.language')}
+                aria-label={t('header.language')}
+                onClick={() => setLangOpen(!langOpen)}
+                onKeyPress={e => e.key === 'Enter' && setLangOpen(!langOpen)}
+              >
+                <FaGlobe aria-hidden="true" />
+                <span className="lang-current">{currentLang.nativeName}</span>
+                <FaChevronDown className={`lang-chevron ${langOpen ? 'open' : ''}`} aria-hidden="true" />
+                {langOpen && (
+                  <div className="language-dropdown">
+                    {LANGUAGES.map(lang => (
+                      <div
+                        key={lang.code}
+                        className={`language-option ${lang.code === currentLang.code ? 'active' : ''}`}
+                        role="menuitem"
+                        tabIndex={0}
+                        onClick={(e) => { e.stopPropagation(); changeLanguage(lang.code); }}
+                        onKeyPress={(e) => { if (e.key === 'Enter') { e.stopPropagation(); changeLanguage(lang.code); } }}
+                      >
+                        <span className="lang-native">{lang.nativeName}</span>
+                        <span className="lang-english">{lang.name}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
 
             <div
               className="notification-icon"
@@ -199,7 +250,7 @@ const Header = () => {
                         {notifications.map((note, idx) => (
                           <li key={idx} role="menuitem">
                             <span>{note.text}</span>{' '}
-                            <span style={{ fontStyle: "italic", color: "#888", marginLeft: 8 }}>{note.time}</span>
+                            <span style={{ fontStyle: "italic", color: "#5a5a5a", marginLeft: 8 }}>{note.time}</span>
                           </li>
                         ))}
                       </ul>

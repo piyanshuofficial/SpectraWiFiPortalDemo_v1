@@ -233,6 +233,83 @@ export const USER_CATEGORIES = {
   RESIDENT: "resident",
   GUEST: "guest",
   USER: "user",
+  VISITOR: "visitor",
+};
+
+// Guest/Visitor Access Types per Segment
+export const GUEST_ACCESS_TYPES = {
+  enterprise: [
+    { id: "visitor", label: "Visitor", description: "Office visitor with temporary access" },
+    { id: "contractor", label: "Contractor", description: "External contractor/vendor" },
+    { id: "meeting_guest", label: "Meeting Guest", description: "Guest for meetings/conferences" },
+    { id: "interview", label: "Interview Candidate", description: "Job interview candidate" },
+  ],
+  office: [
+    { id: "visitor", label: "Visitor", description: "Office visitor with temporary access" },
+    { id: "contractor", label: "Contractor", description: "External contractor/vendor" },
+    { id: "meeting_guest", label: "Meeting Guest", description: "Guest for meetings/conferences" },
+    { id: "interview", label: "Interview Candidate", description: "Job interview candidate" },
+  ],
+  hotel: [
+    { id: "room_guest", label: "Room Guest", description: "Hotel room guest" },
+    { id: "conference", label: "Conference Attendee", description: "Conference/event attendee" },
+    { id: "restaurant", label: "Restaurant Guest", description: "Restaurant/amenity visitor" },
+    { id: "day_use", label: "Day Use", description: "Day use room guest" },
+  ],
+  coLiving: [
+    { id: "visitor", label: "Visitor", description: "Resident's guest/visitor" },
+    { id: "prospective", label: "Prospective Resident", description: "Property tour visitor" },
+    { id: "service", label: "Service Provider", description: "Maintenance/service personnel" },
+  ],
+  pg: [
+    { id: "visitor", label: "Visitor", description: "Resident's guest/visitor" },
+    { id: "prospective", label: "Prospective Resident", description: "Property tour visitor" },
+    { id: "guardian", label: "Guardian/Parent", description: "Guardian or parent visit" },
+  ],
+  coWorking: [
+    { id: "day_pass", label: "Day Pass", description: "Single day access pass" },
+    { id: "meeting_room", label: "Meeting Room Guest", description: "External meeting participant" },
+    { id: "event", label: "Event Attendee", description: "Event/workshop attendee" },
+    { id: "trial", label: "Trial User", description: "Free trial user" },
+  ],
+  miscellaneous: [
+    { id: "visitor", label: "Visitor", description: "General visitor" },
+    { id: "temporary", label: "Temporary Access", description: "Temporary access user" },
+  ],
+};
+
+// Guest Access Duration Presets (in hours)
+export const GUEST_DURATION_PRESETS = {
+  "1h": { label: "1 Hour", hours: 1 },
+  "2h": { label: "2 Hours", hours: 2 },
+  "4h": { label: "4 Hours", hours: 4 },
+  "8h": { label: "8 Hours (Full Day)", hours: 8 },
+  "12h": { label: "12 Hours", hours: 12 },
+  "24h": { label: "24 Hours", hours: 24 },
+  "48h": { label: "2 Days", hours: 48 },
+  "72h": { label: "3 Days", hours: 72 },
+  "168h": { label: "1 Week", hours: 168 },
+  "custom": { label: "Custom Duration", hours: null },
+};
+
+// Guest Voucher Configuration
+export const GUEST_VOUCHER = {
+  CODE_LENGTH: 8,
+  CODE_PREFIX: "GV",
+  BATCH_SIZES: [5, 10, 25, 50, 100],
+  DEFAULT_BATCH_SIZE: 10,
+  VALIDITY_OPTIONS: ["1h", "2h", "4h", "8h", "24h", "48h", "72h", "168h"],
+  DEFAULT_VALIDITY: "24h",
+};
+
+// Guest Access Status
+export const GUEST_STATUS = {
+  ACTIVE: "active",
+  EXPIRED: "expired",
+  CHECKED_IN: "checked_in",
+  CHECKED_OUT: "checked_out",
+  PENDING: "pending",
+  REVOKED: "revoked",
 };
 
 export const EXPORT = {

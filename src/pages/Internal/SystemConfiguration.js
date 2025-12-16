@@ -9,25 +9,26 @@ import {
   FaPlus,
   FaEdit,
   FaTrash,
-  FaEye,
   FaCopy,
   FaShieldAlt,
   FaUserShield,
   FaUsers,
-  FaGlobe,
-  FaNetworkWired,
   FaCheckCircle,
   FaTimesCircle,
   FaPauseCircle,
-  FaKey,
-  FaLock,
-  FaUnlock,
   FaChevronDown,
   FaChevronRight,
   FaSave,
   FaDownload,
   FaUpload,
-  FaSyncAlt,
+  FaBell,
+  FaEnvelope,
+  FaMobileAlt,
+  FaSlack,
+  FaLink,
+  FaToggleOn,
+  FaToggleOff,
+  FaExclamationTriangle,
 } from "react-icons/fa";
 import "./SystemConfiguration.css";
 
@@ -143,100 +144,31 @@ const policiesData = [
   },
 ];
 
-// Sample Domains/Sites Configuration Data
-const domainsData = [
-  {
-    id: "dom_001",
-    name: "spectra-enterprise",
-    displayName: "Enterprise Portal",
-    type: "customer",
-    url: "enterprise.spectra.co",
-    status: "active",
-    sslEnabled: true,
-    customBranding: true,
-    features: ["Multi-site", "Analytics", "Reports", "API Access"],
-    customers: 5,
-    createdAt: "2023-01-10",
+
+// Notification Settings Data
+const notificationSettings = {
+  alertThresholds: [
+    { id: "thr_001", name: "High Bandwidth Usage", metric: "bandwidth_usage", operator: ">", value: 90, unit: "%", severity: "warning", enabled: true },
+    { id: "thr_002", name: "Critical Bandwidth", metric: "bandwidth_usage", operator: ">", value: 95, unit: "%", severity: "critical", enabled: true },
+    { id: "thr_003", name: "Site Offline", metric: "site_status", operator: "=", value: "offline", unit: "", severity: "critical", enabled: true },
+    { id: "thr_004", name: "High User Count", metric: "concurrent_users", operator: ">", value: 500, unit: "users", severity: "warning", enabled: true },
+    { id: "thr_005", name: "AP Offline", metric: "ap_status", operator: "=", value: "offline", unit: "", severity: "warning", enabled: true },
+    { id: "thr_006", name: "Low Uptime", metric: "uptime", operator: "<", value: 99.5, unit: "%", severity: "warning", enabled: false },
+  ],
+  emailTemplates: [
+    { id: "tpl_001", name: "Welcome Email", type: "user_onboarding", subject: "Welcome to Spectra WiFi", status: "active", lastModified: "2024-01-10" },
+    { id: "tpl_002", name: "Password Reset", type: "security", subject: "Reset Your Password", status: "active", lastModified: "2024-01-08" },
+    { id: "tpl_003", name: "Alert Notification", type: "alert", subject: "Alert: {{alert_name}}", status: "active", lastModified: "2024-01-05" },
+    { id: "tpl_004", name: "Usage Report", type: "report", subject: "Your Weekly Usage Report", status: "active", lastModified: "2023-12-20" },
+    { id: "tpl_005", name: "Account Suspended", type: "security", subject: "Account Suspended", status: "inactive", lastModified: "2023-11-15" },
+  ],
+  channels: {
+    email: { enabled: true, smtpServer: "smtp.spectra.co", from: "noreply@spectra.co" },
+    sms: { enabled: true, provider: "Twilio", senderId: "SPECTRA" },
+    webhook: { enabled: true, endpoints: 3 },
+    slack: { enabled: false, workspace: null },
   },
-  {
-    id: "dom_002",
-    name: "spectra-hotel",
-    displayName: "Hotel Management",
-    type: "customer",
-    url: "hotels.spectra.co",
-    status: "active",
-    sslEnabled: true,
-    customBranding: true,
-    features: ["Guest Portal", "Captive Portal", "Analytics"],
-    customers: 4,
-    createdAt: "2023-02-15",
-  },
-  {
-    id: "dom_003",
-    name: "spectra-coliving",
-    displayName: "Co-Living Portal",
-    type: "customer",
-    url: "coliving.spectra.co",
-    status: "active",
-    sslEnabled: true,
-    customBranding: false,
-    features: ["Resident Portal", "Usage Tracking", "Billing"],
-    customers: 2,
-    createdAt: "2023-03-20",
-  },
-  {
-    id: "dom_004",
-    name: "spectra-pg",
-    displayName: "PG Management",
-    type: "customer",
-    url: "pg.spectra.co",
-    status: "active",
-    sslEnabled: true,
-    customBranding: false,
-    features: ["Basic Portal", "Usage Tracking"],
-    customers: 1,
-    createdAt: "2023-04-05",
-  },
-  {
-    id: "dom_005",
-    name: "spectra-internal",
-    displayName: "Internal Portal",
-    type: "internal",
-    url: "internal.spectra.co",
-    status: "active",
-    sslEnabled: true,
-    customBranding: false,
-    features: ["Full Access", "Admin Tools", "Config Management"],
-    customers: null,
-    createdAt: "2023-01-01",
-  },
-  {
-    id: "dom_006",
-    name: "spectra-coworking",
-    displayName: "Co-Working Portal",
-    type: "customer",
-    url: "coworking.spectra.co",
-    status: "active",
-    sslEnabled: true,
-    customBranding: true,
-    features: ["Member Portal", "Booking", "Analytics"],
-    customers: 3,
-    createdAt: "2023-05-10",
-  },
-  {
-    id: "dom_007",
-    name: "spectra-sandbox",
-    displayName: "Sandbox Environment",
-    type: "internal",
-    url: "sandbox.spectra.co",
-    status: "maintenance",
-    sslEnabled: true,
-    customBranding: false,
-    features: ["Testing", "Development"],
-    customers: null,
-    createdAt: "2023-06-01",
-  },
-];
+};
 
 // Sample Roles Data
 const rolesData = {
@@ -421,6 +353,90 @@ const SystemConfiguration = () => {
   const [selectedStatus, setSelectedStatus] = useState("All");
   const [expandedRole, setExpandedRole] = useState(null);
 
+  // Policy modal state
+  const [showPolicyModal, setShowPolicyModal] = useState(false);
+  const [editingPolicy, setEditingPolicy] = useState(null);
+  const [policyFormData, setPolicyFormData] = useState({
+    name: "",
+    type: "bandwidth",
+    segment: "Enterprise",
+    description: "",
+    status: "active",
+    settings: {
+      downloadSpeed: 50,
+      uploadSpeed: 25,
+      fairUsageLimit: "Unlimited",
+      timeRestrictions: "None",
+      deviceLimit: 3,
+    },
+  });
+
+  // Policy action handlers
+  const handleEditPolicy = (policy) => {
+    setEditingPolicy(policy);
+    setPolicyFormData({
+      name: policy.name,
+      type: policy.type,
+      segment: policy.segment,
+      description: policy.description,
+      status: policy.status,
+      settings: { ...policy.settings },
+    });
+    setShowPolicyModal(true);
+  };
+
+  const handleDuplicatePolicy = (policy) => {
+    setEditingPolicy(null);
+    setPolicyFormData({
+      name: `${policy.name} (Copy)`,
+      type: policy.type,
+      segment: policy.segment,
+      description: policy.description,
+      status: "draft",
+      settings: { ...policy.settings },
+    });
+    setShowPolicyModal(true);
+  };
+
+  const handleDeletePolicy = (policy) => {
+    if (window.confirm(`Are you sure you want to delete "${policy.name}"? This action cannot be undone.`)) {
+      // In production, this would call an API
+      console.log("Deleting policy:", policy.id);
+      alert(`Policy "${policy.name}" has been deleted.`);
+    }
+  };
+
+  const handleSavePolicy = () => {
+    if (!policyFormData.name.trim()) {
+      alert("Please enter a policy name");
+      return;
+    }
+    // In production, this would call an API
+    console.log(editingPolicy ? "Updating policy:" : "Creating policy:", policyFormData);
+    alert(`Policy "${policyFormData.name}" has been ${editingPolicy ? "updated" : "created"}.`);
+    setShowPolicyModal(false);
+    setEditingPolicy(null);
+  };
+
+  const handleCreateNewPolicy = () => {
+    setEditingPolicy(null);
+    setPolicyFormData({
+      name: "",
+      type: "bandwidth",
+      segment: "Enterprise",
+      description: "",
+      status: "draft",
+      settings: {
+        downloadSpeed: 50,
+        uploadSpeed: 25,
+        fairUsageLimit: "Unlimited",
+        timeRestrictions: "None",
+        deviceLimit: 3,
+      },
+    });
+    setShowPolicyModal(true);
+  };
+
   // Policies state
   const filteredPolicies = useMemo(() => {
     return policiesData.filter((policy) => {
@@ -433,17 +449,13 @@ const SystemConfiguration = () => {
     });
   }, [searchQuery, selectedStatus]);
 
-  // Domains state
-  const filteredDomains = useMemo(() => {
-    return domainsData.filter((domain) => {
-      const matchesSearch =
-        domain.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        domain.displayName.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesStatus =
-        selectedStatus === "All" || domain.status === selectedStatus;
-      return matchesSearch && matchesStatus;
+  // Filtered alert thresholds
+  const filteredThresholds = useMemo(() => {
+    return notificationSettings.alertThresholds.filter((threshold) => {
+      const matchesSearch = threshold.name.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesSearch;
     });
-  }, [searchQuery, selectedStatus]);
+  }, [searchQuery]);
 
   // Get status icon
   const getStatusIcon = (status) => {
@@ -472,7 +484,7 @@ const SystemConfiguration = () => {
           <button className="btn btn-outline">
             <FaDownload /> Export
           </button>
-          <button className="btn btn-primary">
+          <button className="btn btn-primary" onClick={handleCreateNewPolicy}>
             <FaPlus /> New Policy
           </button>
         </div>
@@ -489,13 +501,13 @@ const SystemConfiguration = () => {
                 </span>
               </div>
               <div className="policy-actions">
-                <button className="btn-icon" title="Edit">
+                <button className="btn-icon" title="Edit" onClick={() => handleEditPolicy(policy)}>
                   <FaEdit />
                 </button>
-                <button className="btn-icon" title="Duplicate">
+                <button className="btn-icon" title="Duplicate" onClick={() => handleDuplicatePolicy(policy)}>
                   <FaCopy />
                 </button>
-                <button className="btn-icon danger" title="Delete">
+                <button className="btn-icon danger" title="Delete" onClick={() => handleDeletePolicy(policy)}>
                   <FaTrash />
                 </button>
               </div>
@@ -541,91 +553,141 @@ const SystemConfiguration = () => {
     </div>
   );
 
-  // Render Domains Section
-  const renderDomainsSection = () => (
-    <div className="config-section domains-section">
+  // Render Notifications Section
+  const renderNotificationsSection = () => (
+    <div className="config-section notifications-section">
       <div className="section-header">
         <div className="section-title">
-          <FaGlobe />
-          <h2>Domains / Sites</h2>
-          <span className="count">{filteredDomains.length} domains</span>
+          <FaBell />
+          <h2>Notification Settings</h2>
         </div>
         <div className="section-actions">
-          <button className="btn btn-outline">
-            <FaSyncAlt /> Sync DNS
-          </button>
           <button className="btn btn-primary">
-            <FaPlus /> New Domain
+            <FaPlus /> New Threshold
           </button>
         </div>
       </div>
 
-      <div className="domains-table">
-        <table>
-          <thead>
-            <tr>
-              <th>Status</th>
-              <th>Domain Name</th>
-              <th>Display Name</th>
-              <th>Type</th>
-              <th>URL</th>
-              <th>SSL</th>
-              <th>Features</th>
-              <th>Customers</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredDomains.map((domain) => (
-              <tr key={domain.id}>
-                <td>{getStatusIcon(domain.status)}</td>
-                <td className="domain-name">{domain.name}</td>
-                <td>{domain.displayName}</td>
-                <td>
-                  <span className={`type-badge ${domain.type}`}>
-                    {domain.type}
-                  </span>
-                </td>
-                <td>
-                  <a href={`https://${domain.url}`} target="_blank" rel="noopener noreferrer" className="url-link">
-                    {domain.url}
-                  </a>
-                </td>
-                <td>
-                  {domain.sslEnabled ? (
-                    <FaLock className="ssl-icon enabled" title="SSL Enabled" />
-                  ) : (
-                    <FaUnlock className="ssl-icon disabled" title="SSL Disabled" />
-                  )}
-                </td>
-                <td>
-                  <div className="features-list">
-                    {domain.features.slice(0, 2).map((feature, idx) => (
-                      <span key={idx} className="feature-tag">{feature}</span>
-                    ))}
-                    {domain.features.length > 2 && (
-                      <span className="feature-more">+{domain.features.length - 2}</span>
-                    )}
-                  </div>
-                </td>
-                <td>{domain.customers !== null ? domain.customers : "-"}</td>
-                <td>
-                  <div className="row-actions">
-                    <button className="btn-icon" title="View">
-                      <FaEye />
-                    </button>
-                    <button className="btn-icon" title="Edit">
-                      <FaEdit />
-                    </button>
-                    <button className="btn-icon" title="Configure">
-                      <FaCog />
-                    </button>
-                  </div>
-                </td>
+      {/* Notification Channels */}
+      <div className="channels-overview">
+        <h3>Notification Channels</h3>
+        <div className="channels-grid">
+          <div className={`channel-card ${notificationSettings.channels.email.enabled ? 'enabled' : 'disabled'}`}>
+            <div className="channel-icon"><FaEnvelope /></div>
+            <div className="channel-info">
+              <h4>Email</h4>
+              <p>{notificationSettings.channels.email.smtpServer}</p>
+            </div>
+            <div className="channel-status">
+              {notificationSettings.channels.email.enabled ? <FaCheckCircle /> : <FaTimesCircle />}
+            </div>
+          </div>
+          <div className={`channel-card ${notificationSettings.channels.sms.enabled ? 'enabled' : 'disabled'}`}>
+            <div className="channel-icon"><FaMobileAlt /></div>
+            <div className="channel-info">
+              <h4>SMS</h4>
+              <p>{notificationSettings.channels.sms.provider}</p>
+            </div>
+            <div className="channel-status">
+              {notificationSettings.channels.sms.enabled ? <FaCheckCircle /> : <FaTimesCircle />}
+            </div>
+          </div>
+          <div className={`channel-card ${notificationSettings.channels.webhook.enabled ? 'enabled' : 'disabled'}`}>
+            <div className="channel-icon"><FaLink /></div>
+            <div className="channel-info">
+              <h4>Webhooks</h4>
+              <p>{notificationSettings.channels.webhook.endpoints} endpoints</p>
+            </div>
+            <div className="channel-status">
+              {notificationSettings.channels.webhook.enabled ? <FaCheckCircle /> : <FaTimesCircle />}
+            </div>
+          </div>
+          <div className={`channel-card ${notificationSettings.channels.slack.enabled ? 'enabled' : 'disabled'}`}>
+            <div className="channel-icon"><FaSlack /></div>
+            <div className="channel-info">
+              <h4>Slack</h4>
+              <p>{notificationSettings.channels.slack.workspace || 'Not configured'}</p>
+            </div>
+            <div className="channel-status">
+              {notificationSettings.channels.slack.enabled ? <FaCheckCircle /> : <FaTimesCircle />}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Alert Thresholds */}
+      <div className="thresholds-section">
+        <h3><FaExclamationTriangle /> Alert Thresholds</h3>
+        <div className="thresholds-table">
+          <table>
+            <thead>
+              <tr>
+                <th>Status</th>
+                <th>Alert Name</th>
+                <th>Condition</th>
+                <th>Severity</th>
+                <th>Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {filteredThresholds.map((threshold) => (
+                <tr key={threshold.id}>
+                  <td>
+                    <button className={`toggle-btn-sm ${threshold.enabled ? 'active' : ''}`}>
+                      {threshold.enabled ? <FaToggleOn /> : <FaToggleOff />}
+                    </button>
+                  </td>
+                  <td className="threshold-name">{threshold.name}</td>
+                  <td className="threshold-condition">
+                    <code>{threshold.metric} {threshold.operator} {threshold.value}{threshold.unit}</code>
+                  </td>
+                  <td>
+                    <span className={`severity-badge ${threshold.severity}`}>
+                      {threshold.severity}
+                    </span>
+                  </td>
+                  <td>
+                    <div className="row-actions">
+                      <button className="btn-icon" title="Edit"><FaEdit /></button>
+                      <button className="btn-icon danger" title="Delete"><FaTrash /></button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Email Templates */}
+      <div className="templates-section">
+        <div className="templates-header">
+          <h3><FaEnvelope /> Email Templates</h3>
+          <button className="btn btn-outline btn-sm">
+            <FaPlus /> New Template
+          </button>
+        </div>
+        <div className="templates-grid">
+          {notificationSettings.emailTemplates.map((template) => (
+            <div key={template.id} className="template-card">
+              <div className="template-header">
+                <h4>{template.name}</h4>
+                <span className={`status-badge ${template.status}`}>
+                  {template.status}
+                </span>
+              </div>
+              <p className="template-type">{template.type}</p>
+              <p className="template-subject">Subject: {template.subject}</p>
+              <div className="template-footer">
+                <span className="template-date">Modified: {template.lastModified}</span>
+                <div className="template-actions">
+                  <button className="btn-icon" title="Edit"><FaEdit /></button>
+                  <button className="btn-icon" title="Duplicate"><FaCopy /></button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -784,7 +846,7 @@ const SystemConfiguration = () => {
           <h1>
             <FaCog /> System Configuration
           </h1>
-          <p>Manage policies, domains, and access controls</p>
+          <p>Manage policies, notifications, and access controls</p>
         </div>
         <div className="header-actions">
           <button className="btn btn-outline">
@@ -805,10 +867,10 @@ const SystemConfiguration = () => {
           <FaShieldAlt /> User Policies
         </button>
         <button
-          className={`tab-btn ${activeSection === "domains" ? "active" : ""}`}
-          onClick={() => { setActiveSection("domains"); setSearchQuery(""); setSelectedStatus("All"); }}
+          className={`tab-btn ${activeSection === "notifications" ? "active" : ""}`}
+          onClick={() => { setActiveSection("notifications"); setSearchQuery(""); setSelectedStatus("All"); }}
         >
-          <FaGlobe /> Domains / Sites
+          <FaBell /> Notifications
         </button>
         <button
           className={`tab-btn ${activeSection === "roles" ? "active" : ""}`}
@@ -848,8 +910,147 @@ const SystemConfiguration = () => {
 
       {/* Section Content */}
       {activeSection === "policies" && renderPoliciesSection()}
-      {activeSection === "domains" && renderDomainsSection()}
+      {activeSection === "notifications" && renderNotificationsSection()}
       {activeSection === "roles" && renderRolesSection()}
+
+      {/* Policy Modal */}
+      {showPolicyModal && (
+        <div className="policy-modal-overlay" onClick={() => setShowPolicyModal(false)}>
+          <div className="policy-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="policy-modal-header">
+              <h2>{editingPolicy ? "Edit Policy" : "Create New Policy"}</h2>
+              <button className="close-btn" onClick={() => setShowPolicyModal(false)}>
+                <FaTimesCircle />
+              </button>
+            </div>
+
+            <div className="policy-modal-body">
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Policy Name *</label>
+                  <input
+                    type="text"
+                    value={policyFormData.name}
+                    onChange={(e) => setPolicyFormData({ ...policyFormData, name: e.target.value })}
+                    placeholder="Enter policy name"
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Segment</label>
+                  <select
+                    value={policyFormData.segment}
+                    onChange={(e) => setPolicyFormData({ ...policyFormData, segment: e.target.value })}
+                  >
+                    <option value="Enterprise">Enterprise</option>
+                    <option value="Hotel">Hotel</option>
+                    <option value="Co-Living">Co-Living</option>
+                    <option value="Co-Working">Co-Working</option>
+                    <option value="PG">PG</option>
+                    <option value="Office">Office</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="form-group full-width">
+                <label>Description</label>
+                <textarea
+                  value={policyFormData.description}
+                  onChange={(e) => setPolicyFormData({ ...policyFormData, description: e.target.value })}
+                  placeholder="Enter policy description"
+                  rows="3"
+                />
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Status</label>
+                  <select
+                    value={policyFormData.status}
+                    onChange={(e) => setPolicyFormData({ ...policyFormData, status: e.target.value })}
+                  >
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                    <option value="draft">Draft</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>Policy Type</label>
+                  <select
+                    value={policyFormData.type}
+                    onChange={(e) => setPolicyFormData({ ...policyFormData, type: e.target.value })}
+                  >
+                    <option value="bandwidth">Bandwidth</option>
+                    <option value="access">Access Control</option>
+                    <option value="security">Security</option>
+                  </select>
+                </div>
+              </div>
+
+              <h3 className="settings-title">Policy Settings</h3>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Download Speed (Mbps)</label>
+                  <input
+                    type="number"
+                    value={policyFormData.settings.downloadSpeed}
+                    onChange={(e) => setPolicyFormData({
+                      ...policyFormData,
+                      settings: { ...policyFormData.settings, downloadSpeed: parseInt(e.target.value) || 0 }
+                    })}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Upload Speed (Mbps)</label>
+                  <input
+                    type="number"
+                    value={policyFormData.settings.uploadSpeed}
+                    onChange={(e) => setPolicyFormData({
+                      ...policyFormData,
+                      settings: { ...policyFormData.settings, uploadSpeed: parseInt(e.target.value) || 0 }
+                    })}
+                  />
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Fair Usage Limit</label>
+                  <input
+                    type="text"
+                    value={policyFormData.settings.fairUsageLimit}
+                    onChange={(e) => setPolicyFormData({
+                      ...policyFormData,
+                      settings: { ...policyFormData.settings, fairUsageLimit: e.target.value }
+                    })}
+                    placeholder="e.g., Unlimited or 5 GB/day"
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Device Limit</label>
+                  <input
+                    type="number"
+                    value={policyFormData.settings.deviceLimit}
+                    onChange={(e) => setPolicyFormData({
+                      ...policyFormData,
+                      settings: { ...policyFormData.settings, deviceLimit: parseInt(e.target.value) || 1 }
+                    })}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="policy-modal-footer">
+              <button className="btn btn-outline" onClick={() => setShowPolicyModal(false)}>
+                Cancel
+              </button>
+              <button className="btn btn-primary" onClick={handleSavePolicy}>
+                <FaSave /> {editingPolicy ? "Update Policy" : "Create Policy"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -8,6 +8,8 @@ export const commonColumns = [
   { key: "userPolicy", label: "User Policy", optional: true },
   { key: "devicesCount", label: "Devices", optional: true },
   { key: "status", label: "Status", optional: false },
+  { key: "dataCycleType", label: "Bill Cycle", optional: true },
+  { key: "dataResetDate", label: "Data Reset Date", optional: true },
   { key: "registration", label: "Registration", optional: true },
   { key: "lastOnline", label: "Last Online", optional: true },
 ];

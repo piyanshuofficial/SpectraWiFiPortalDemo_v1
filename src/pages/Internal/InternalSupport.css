@@ -1081,3 +1081,117 @@
     font-size: var(--font-lg);
   }
 }
+
+/* ============================================
+   CREATE TICKET MODAL
+   ============================================ */
+
+.create-ticket-modal {
+  max-width: 700px;
+}
+
+.create-ticket-modal .ticket-modal-header {
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+}
+
+.create-ticket-modal .ticket-modal-header h2 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: var(--font-xl);
+  font-weight: 700;
+  margin: 0;
+}
+
+.create-ticket-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.create-ticket-form .form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-lg);
+}
+
+.create-ticket-form .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.create-ticket-form .form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.create-ticket-form label {
+  font-weight: 600;
+  color: var(--color-text-primary);
+  font-size: var(--font-sm);
+}
+
+.create-ticket-form label .required {
+  color: #dc3545;
+}
+
+.create-ticket-form input,
+.create-ticket-form select,
+.create-ticket-form textarea {
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  font-size: var(--font-base);
+  transition: all var(--transition-fast);
+}
+
+.create-ticket-form input:focus,
+.create-ticket-form select:focus,
+.create-ticket-form textarea:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.create-ticket-form textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+/* ============================================
+   REFRESH BUTTON STYLES
+   ============================================ */
+
+.page-header-actions {
+  display: flex;
+  gap: var(--space-sm);
+  align-items: center;
+}
+
+.page-header-actions .btn svg.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.page-header-actions .btn.refreshing {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* ============================================
+   RESPONSIVE - CREATE TICKET MODAL
+   ============================================ */
+
+@media (max-width: 576px) {
+  .create-ticket-form .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .create-ticket-modal {
+    max-width: 100%;
+  }
+}

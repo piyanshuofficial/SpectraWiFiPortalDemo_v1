@@ -1,0 +1,270 @@
+/* src/components/SSIDConfigSection/SSIDConfigSection.css */
+
+.ssid-config-section {
+  background: var(--card-bg, #fff);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.ssid-config-section.disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Header */
+.ssid-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.ssid-section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ssid-section-title h4 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary, #111827);
+}
+
+.ssid-icon {
+  color: var(--primary-color, #0066cc);
+  font-size: 18px;
+}
+
+.ssid-count {
+  font-size: 13px;
+  color: var(--text-secondary, #6b7280);
+  background: var(--bg-secondary, #f3f4f6);
+  padding: 4px 10px;
+  border-radius: 12px;
+}
+
+.ssid-section-description {
+  font-size: 13px;
+  color: var(--text-secondary, #6b7280);
+  margin: 0 0 20px 0;
+  line-height: 1.5;
+}
+
+/* SSID Entries */
+.ssid-entries {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ssid-entry {
+  background: var(--bg-secondary, #f9fafb);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 8px;
+  padding: 16px;
+  transition: border-color 0.2s;
+}
+
+.ssid-entry:hover {
+  border-color: var(--primary-color, #0066cc);
+}
+
+.ssid-entry-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.ssid-entry-number {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--primary-color, #0066cc);
+}
+
+.ssid-remove-btn {
+  background: none;
+  border: none;
+  padding: 6px 10px;
+  cursor: pointer;
+  color: var(--text-secondary, #6b7280);
+  border-radius: 4px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+}
+
+.ssid-remove-btn:hover:not(:disabled) {
+  background: var(--danger-light, #fef2f2);
+  color: var(--danger-color, #dc2626);
+}
+
+.ssid-remove-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Entry Fields */
+.ssid-entry-fields {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.ssid-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ssid-field label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary, #111827);
+}
+
+.ssid-field label .required {
+  color: var(--danger-color, #dc2626);
+}
+
+.ssid-field input,
+.ssid-field select {
+  padding: 10px 12px;
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 6px;
+  font-size: 14px;
+  background: var(--card-bg, #fff);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.ssid-field input:focus,
+.ssid-field select:focus {
+  outline: none;
+  border-color: var(--primary-color, #0066cc);
+  box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+}
+
+.ssid-field.has-error input,
+.ssid-field.has-error select {
+  border-color: var(--danger-color, #dc2626);
+}
+
+.ssid-field .error-text {
+  font-size: 12px;
+  color: var(--danger-color, #dc2626);
+}
+
+.field-hint {
+  font-size: 11px;
+  color: var(--text-secondary, #6b7280);
+}
+
+/* Password Field */
+.ssid-password-field {
+  position: relative;
+}
+
+.password-input-wrapper {
+  position: relative;
+}
+
+.password-input-wrapper input {
+  width: 100%;
+  padding-right: 40px;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  padding: 4px 8px;
+  cursor: pointer;
+  color: var(--text-secondary, #6b7280);
+  border-radius: 4px;
+  transition: color 0.2s;
+}
+
+.password-toggle-btn:hover:not(:disabled) {
+  color: var(--primary-color, #0066cc);
+}
+
+.password-toggle-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Add Button */
+.ssid-add-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 16px;
+  margin-top: 16px;
+  border: 2px dashed var(--border-color, #d1d5db);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-secondary, #6b7280);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.ssid-add-btn:hover:not(:disabled) {
+  border-color: var(--primary-color, #0066cc);
+  color: var(--primary-color, #0066cc);
+  background: var(--primary-light, #e8f2ff);
+}
+
+.ssid-add-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Global Error */
+.ssid-global-error {
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: var(--danger-light, #fef2f2);
+  border: 1px solid var(--danger-color, #fecaca);
+  border-radius: 6px;
+  color: var(--danger-color, #dc2626);
+  font-size: 13px;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .ssid-entry-fields {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .ssid-password-field {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 600px) {
+  .ssid-section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .ssid-entry-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .ssid-password-field {
+    grid-column: span 1;
+  }
+}

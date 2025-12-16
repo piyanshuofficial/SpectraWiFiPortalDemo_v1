@@ -21,6 +21,123 @@
   color: var(--color-text-primary);
 }
 
+/* ============================================
+   COMPANY VIEW BANNER
+   ============================================ */
+
+.logs-container .company-view-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.875rem 1.25rem;
+  background: linear-gradient(135deg, rgba(0, 74, 173, 0.08) 0%, rgba(0, 74, 173, 0.02) 100%);
+  border: 1px solid rgba(0, 74, 173, 0.15);
+  border-radius: var(--radius-lg);
+  margin-bottom: 1.25rem;
+}
+
+.logs-container .company-view-banner .banner-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.logs-container .company-view-banner .banner-icon {
+  font-size: 1.25rem;
+  color: #004aad;
+  flex-shrink: 0;
+}
+
+.logs-container .company-view-banner .banner-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.logs-container .company-view-banner .banner-title {
+  font-size: var(--font-base);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.logs-container .company-view-banner .banner-subtitle {
+  font-size: var(--font-sm);
+  color: var(--color-text-secondary);
+}
+
+.logs-container .company-view-banner .banner-filter {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.logs-container .company-view-banner .banner-filter label {
+  font-size: var(--font-sm);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.logs-container .company-view-banner .site-filter-select {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-primary);
+  font-size: var(--font-sm);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  min-width: 200px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.logs-container .company-view-banner .site-filter-select:hover {
+  border-color: #004aad;
+}
+
+.logs-container .company-view-banner .site-filter-select:focus {
+  outline: none;
+  border-color: #004aad;
+  box-shadow: 0 0 0 2px rgba(0, 74, 173, 0.15);
+}
+
+/* Dark theme support for company view banner */
+[data-theme="dark"] .logs-container .company-view-banner {
+  background: linear-gradient(135deg, rgba(104, 213, 255, 0.1) 0%, rgba(104, 213, 255, 0.03) 100%);
+  border-color: rgba(104, 213, 255, 0.2);
+}
+
+[data-theme="dark"] .logs-container .company-view-banner .banner-icon {
+  color: #68d5ff;
+}
+
+[data-theme="dark"] .logs-container .company-view-banner .site-filter-select {
+  background: var(--color-bg-secondary);
+  border-color: var(--color-border);
+}
+
+[data-theme="dark"] .logs-container .company-view-banner .site-filter-select:hover,
+[data-theme="dark"] .logs-container .company-view-banner .site-filter-select:focus {
+  border-color: #68d5ff;
+}
+
+/* Responsive styles for company view banner */
+@media (max-width: 768px) {
+  .logs-container .company-view-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .logs-container .company-view-banner .banner-filter {
+    width: 100%;
+  }
+
+  .logs-container .company-view-banner .site-filter-select {
+    flex: 1;
+  }
+}
+
 /* Toolbar - matches device-toolbar pattern exactly */
 .logs-toolbar-content {
   position: relative;
@@ -89,7 +206,7 @@
 }
 
 .toolbar-search::placeholder {
-  color: #888;
+  color: var(--color-text-muted);
 }
 
 [data-theme="dark"] .toolbar-search::placeholder {

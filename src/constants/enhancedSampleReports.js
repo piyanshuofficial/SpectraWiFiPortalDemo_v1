@@ -126,72 +126,6 @@ const enhancedSampleReports = [
     ]
   },
   {
-    id: "cluster-average-active-users",
-    name: "Average Active Users Summary (Cluster)",
-    category: "Billing",
-    subcategory: "Active Users",
-    description: "Cluster-level aggregation of active users for multi-site billing",
-    keywords: ["billing", "cluster", "active", "users", "summary", "aggregate"],
-    accessLevel: "cluster",
-    status: "Completed",
-    createdDate: "2024-07-05",
-    isCommon: false,
-    reportType: "Summary",
-    dataPoints: ["cluster", "totalActiveUsers", "monthlyGrowth"],
-    hasChart: true,
-    hasTable: true,
-    exportFormats: ["csv", "pdf", "excel"],
-    supportsCriteria: true,
-    criteriaFields: [
-      {
-        type: "monthRange",
-        name: "monthRange",
-        label: "Month Range",
-        required: true,
-        defaultValue: {
-          start: "2024-01",
-          end: "2024-01"
-        },
-        validation: {
-          maxRange: 1
-        }
-      }
-    ]
-  },
-  {
-    id: "city-average-active-users",
-    name: "Average Active Users Summary (City)",
-    category: "Billing",
-    subcategory: "Active Users",
-    description: "City-wide active user metrics for regional billing",
-    keywords: ["billing", "city", "active", "users", "regional", "summary"],
-    accessLevel: "city",
-    status: "Completed",
-    createdDate: "2024-07-05",
-    isCommon: false,
-    reportType: "Summary",
-    dataPoints: ["city", "totalActiveUsers", "monthlyGrowth"],
-    hasChart: true,
-    hasTable: true,
-    exportFormats: ["csv", "pdf", "excel"],
-    supportsCriteria: true,
-    criteriaFields: [
-      {
-        type: "monthRange",
-        name: "monthRange",
-        label: "Month Range",
-        required: true,
-        defaultValue: {
-          start: "2024-01",
-          end: "2024-01"
-        },
-        validation: {
-          maxRange: 1
-        }
-      }
-    ]
-  },
-  {
     id: "company-average-active-users",
     name: "Average Active Users Summary (Company)",
     category: "Billing",
@@ -257,72 +191,6 @@ const enhancedSampleReports = [
         },
         validation: {
           maxRange: 12
-        }
-      }
-    ]
-  },
-  {
-    id: "cluster-monthly-data-usage",
-    name: "Monthly Data Usage Summary (Cluster)",
-    category: "Usage",
-    subcategory: "Data Consumption",
-    description: "Aggregated data usage across cluster sites",
-    keywords: ["usage", "data", "monthly", "cluster", "aggregate", "bandwidth"],
-    accessLevel: "cluster",
-    status: "Completed",
-    createdDate: "2024-07-08",
-    isCommon: false,
-    reportType: "Summary",
-    dataPoints: ["month", "cluster", "totalUsageGB", "peakUsageGB"],
-    hasChart: true,
-    hasTable: true,
-    exportFormats: ["csv", "pdf", "excel"],
-    supportsCriteria: true,
-    criteriaFields: [
-      {
-        type: "monthRange",
-        name: "monthRange",
-        label: "Month Range",
-        required: true,
-        defaultValue: {
-          start: "2024-01",
-          end: "2024-01"
-        },
-        validation: {
-          maxRange: 1
-        }
-      }
-    ]
-  },
-  {
-    id: "city-monthly-data-usage",
-    name: "Monthly Data Usage Summary (City)",
-    category: "Usage",
-    subcategory: "Data Consumption",
-    description: "City-level monthly data consumption metrics",
-    keywords: ["usage", "data", "monthly", "city", "regional", "consumption"],
-    accessLevel: "city",
-    status: "Completed",
-    createdDate: "2024-07-08",
-    isCommon: false,
-    reportType: "Summary",
-    dataPoints: ["month", "city", "totalUsageGB", "avgUsageGB"],
-    hasChart: true,
-    hasTable: true,
-    exportFormats: ["csv", "pdf", "excel"],
-    supportsCriteria: true,
-    criteriaFields: [
-      {
-        type: "monthRange",
-        name: "monthRange",
-        label: "Month Range",
-        required: true,
-        defaultValue: {
-          start: "2024-01",
-          end: "2024-01"
-        },
-        validation: {
-          maxRange: 1
         }
       }
     ]
@@ -739,39 +607,6 @@ const enhancedSampleReports = [
   // SLA REPORTS
   // ============================================
   {
-    id: "alerts-summary-report",
-    name: "Alerts Summary",
-    category: "SLA",
-    subcategory: "Performance",
-    description: "Summary of system alerts by severity and type",
-    keywords: ["sla", "alerts", "performance", "monitoring", "critical"],
-    accessLevel: "site",
-    status: "Completed",
-    createdDate: "2025-10-01",
-    isCommon: true,
-    reportType: "Analytics",
-    dataPoints: ["alertType", "count"],
-    hasChart: true,
-    hasTable: true,
-    exportFormats: ["csv", "pdf"],
-    supportsCriteria: true,
-    criteriaFields: [
-      {
-        type: "dateRange",
-        name: "dateRange",
-        label: "Date Range",
-        required: true,
-        defaultValue: {
-          start: "2024-07-01",
-          end: "2024-07-07"
-        },
-        validation: {
-          maxRange: 30
-        }
-      }
-    ]
-  },
-  {
     id: "sla-compliance",
     name: "SLA Compliance Report",
     category: "SLA",
@@ -916,14 +751,160 @@ const enhancedSampleReports = [
     name: "Top-up Purchase History",
     category: "Upsell",
     subcategory: "Revenue",
-    description: "User top-up purchases and spending patterns",
-    keywords: ["upsell", "topup", "revenue", "purchases", "spending"],
+    description: "All user top-up purchases and spending patterns across all topup types",
+    keywords: ["upsell", "topup", "revenue", "purchases", "spending", "all"],
     accessLevel: "site",
     status: "Completed",
     createdDate: "2024-10-28",
     isCommon: false,
     reportType: "Revenue",
-    dataPoints: ["userId", "topupAmount", "purchaseDate", "remaining"],
+    dataPoints: ["userId", "topupType", "topupTypeLabel", "topupAmount", "purchaseDate", "remaining"],
+    hasChart: true,
+    hasTable: true,
+    exportFormats: ["csv", "pdf", "excel"],
+    supportsCriteria: true,
+    criteriaFields: [
+      {
+        type: "dateRange",
+        name: "dateRange",
+        label: "Date Range",
+        required: true,
+        defaultValue: {
+          start: "2024-07-01",
+          end: "2024-07-31"
+        },
+        validation: {
+          maxRange: 90
+        }
+      },
+      {
+        type: "select",
+        name: "topupType",
+        label: "Top-up Type",
+        required: false,
+        options: [
+          { value: "", label: "All Types" },
+          { value: "speed", label: "Speed Boost" },
+          { value: "data", label: "Data Pack" },
+          { value: "device", label: "Extra Device" },
+          { value: "plan", label: "Plan Upgrade" }
+        ],
+        defaultValue: ""
+      }
+    ]
+  },
+  {
+    id: "topup-history-speed",
+    name: "Speed Boost Top-up History",
+    category: "Upsell",
+    subcategory: "Revenue",
+    description: "Speed boost top-up purchases - users who upgraded their internet speed",
+    keywords: ["upsell", "topup", "speed", "boost", "revenue", "bandwidth"],
+    accessLevel: "site",
+    status: "Completed",
+    createdDate: "2024-10-28",
+    isCommon: false,
+    reportType: "Revenue",
+    dataPoints: ["userId", "topupType", "topupTypeLabel", "topupAmount", "purchaseDate", "remaining"],
+    hasChart: true,
+    hasTable: true,
+    exportFormats: ["csv", "pdf", "excel"],
+    supportsCriteria: true,
+    criteriaFields: [
+      {
+        type: "dateRange",
+        name: "dateRange",
+        label: "Date Range",
+        required: true,
+        defaultValue: {
+          start: "2024-07-01",
+          end: "2024-07-31"
+        },
+        validation: {
+          maxRange: 90
+        }
+      }
+    ]
+  },
+  {
+    id: "topup-history-data",
+    name: "Data Pack Top-up History",
+    category: "Upsell",
+    subcategory: "Revenue",
+    description: "Data pack top-up purchases - users who purchased additional data",
+    keywords: ["upsell", "topup", "data", "pack", "revenue", "gb"],
+    accessLevel: "site",
+    status: "Completed",
+    createdDate: "2024-10-28",
+    isCommon: false,
+    reportType: "Revenue",
+    dataPoints: ["userId", "topupType", "topupTypeLabel", "topupAmount", "purchaseDate", "remaining"],
+    hasChart: true,
+    hasTable: true,
+    exportFormats: ["csv", "pdf", "excel"],
+    supportsCriteria: true,
+    criteriaFields: [
+      {
+        type: "dateRange",
+        name: "dateRange",
+        label: "Date Range",
+        required: true,
+        defaultValue: {
+          start: "2024-07-01",
+          end: "2024-07-31"
+        },
+        validation: {
+          maxRange: 90
+        }
+      }
+    ]
+  },
+  {
+    id: "topup-history-device",
+    name: "Extra Device Top-up History",
+    category: "Upsell",
+    subcategory: "Revenue",
+    description: "Extra device top-up purchases - users who added more devices to their account",
+    keywords: ["upsell", "topup", "device", "extra", "revenue"],
+    accessLevel: "site",
+    status: "Completed",
+    createdDate: "2024-10-28",
+    isCommon: false,
+    reportType: "Revenue",
+    dataPoints: ["userId", "topupType", "topupTypeLabel", "topupAmount", "purchaseDate", "remaining"],
+    hasChart: true,
+    hasTable: true,
+    exportFormats: ["csv", "pdf", "excel"],
+    supportsCriteria: true,
+    criteriaFields: [
+      {
+        type: "dateRange",
+        name: "dateRange",
+        label: "Date Range",
+        required: true,
+        defaultValue: {
+          start: "2024-07-01",
+          end: "2024-07-31"
+        },
+        validation: {
+          maxRange: 90
+        }
+      }
+    ]
+  },
+  {
+    id: "topup-history-plan",
+    name: "Plan Upgrade Top-up History",
+    category: "Upsell",
+    subcategory: "Revenue",
+    description: "Plan upgrade top-up purchases - users who upgraded to a higher plan",
+    keywords: ["upsell", "topup", "plan", "upgrade", "revenue"],
+    accessLevel: "site",
+    status: "Completed",
+    createdDate: "2024-10-28",
+    isCommon: false,
+    reportType: "Revenue",
+    dataPoints: ["userId", "topupType", "topupTypeLabel", "topupAmount", "purchaseDate", "remaining"],
     hasChart: true,
     hasTable: true,
     exportFormats: ["csv", "pdf", "excel"],
@@ -1114,6 +1095,254 @@ const enhancedSampleReports = [
         },
         validation: {
           maxRange: 90
+        }
+      }
+    ]
+  },
+
+  // ============================================
+  // GUEST ACCESS REPORTS
+  // ============================================
+  {
+    id: "guest-access-summary",
+    name: "Guest Access Summary",
+    category: "Guest Access",
+    subcategory: "Overview",
+    description: "Overview of guest access statistics including active guests, check-ins, and usage",
+    keywords: ["guest", "visitor", "access", "summary", "overview", "check-in"],
+    accessLevel: "site",
+    status: "Completed",
+    createdDate: "2025-01-10",
+    isCommon: true,
+    reportType: "Analytics",
+    dataPoints: ["totalGuests", "activeGuests", "checkedIn", "checkedOut", "dataUsed"],
+    hasChart: true,
+    hasTable: true,
+    exportFormats: ["csv", "pdf", "excel"],
+    supportsCriteria: true,
+    criteriaFields: [
+      {
+        type: "dateRange",
+        name: "dateRange",
+        label: "Date Range",
+        required: true,
+        defaultValue: {
+          start: "2025-01-01",
+          end: "2025-01-31"
+        },
+        validation: {
+          maxRange: 90
+        }
+      }
+    ]
+  },
+  {
+    id: "guest-activity-log",
+    name: "Guest Activity Log",
+    category: "Guest Access",
+    subcategory: "Activity",
+    description: "Detailed log of guest check-ins, check-outs, and access events",
+    keywords: ["guest", "activity", "log", "check-in", "check-out", "events"],
+    accessLevel: "site",
+    status: "Completed",
+    createdDate: "2025-01-10",
+    isCommon: true,
+    reportType: "Audit",
+    dataPoints: ["timestamp", "guestName", "action", "performedBy", "details"],
+    hasChart: false,
+    hasTable: true,
+    exportFormats: ["csv", "excel"],
+    supportsCriteria: true,
+    criteriaFields: [
+      {
+        type: "dateRange",
+        name: "dateRange",
+        label: "Date Range",
+        required: true,
+        defaultValue: {
+          start: "2025-01-01",
+          end: "2025-01-07"
+        },
+        validation: {
+          maxRange: 30
+        }
+      }
+    ]
+  },
+  {
+    id: "guest-voucher-report",
+    name: "Voucher Usage Report",
+    category: "Guest Access",
+    subcategory: "Vouchers",
+    description: "Guest voucher generation and redemption statistics",
+    keywords: ["guest", "voucher", "code", "redemption", "usage", "generated"],
+    accessLevel: "site",
+    status: "Completed",
+    createdDate: "2025-01-10",
+    isCommon: false,
+    reportType: "Analytics",
+    dataPoints: ["voucherCode", "status", "guestType", "createdBy", "redeemedBy", "validityHours"],
+    hasChart: true,
+    hasTable: true,
+    exportFormats: ["csv", "pdf", "excel"],
+    supportsCriteria: true,
+    criteriaFields: [
+      {
+        type: "dateRange",
+        name: "dateRange",
+        label: "Date Range",
+        required: true,
+        defaultValue: {
+          start: "2025-01-01",
+          end: "2025-01-31"
+        },
+        validation: {
+          maxRange: 90
+        }
+      },
+      {
+        type: "select",
+        name: "voucherStatus",
+        label: "Voucher Status",
+        required: false,
+        options: [
+          { value: "", label: "All Status" },
+          { value: "active", label: "Active" },
+          { value: "redeemed", label: "Redeemed" },
+          { value: "expired", label: "Expired" }
+        ],
+        defaultValue: ""
+      }
+    ]
+  },
+  {
+    id: "guest-type-breakdown",
+    name: "Guest Type Breakdown",
+    category: "Guest Access",
+    subcategory: "Analytics",
+    description: "Distribution of guests by type (visitor, contractor, conference, etc.)",
+    keywords: ["guest", "type", "breakdown", "distribution", "category", "visitor"],
+    accessLevel: "site",
+    status: "Completed",
+    createdDate: "2025-01-10",
+    isCommon: false,
+    reportType: "Analytics",
+    dataPoints: ["guestType", "count", "percentage", "avgDuration", "dataUsed"],
+    hasChart: true,
+    hasTable: true,
+    exportFormats: ["csv", "pdf"],
+    supportsCriteria: true,
+    criteriaFields: [
+      {
+        type: "monthRange",
+        name: "monthRange",
+        label: "Month Range",
+        required: true,
+        defaultValue: {
+          start: "2025-01",
+          end: "2025-01"
+        },
+        validation: {
+          maxRange: 12
+        }
+      }
+    ]
+  },
+  {
+    id: "guest-data-usage",
+    name: "Guest Data Usage Report",
+    category: "Guest Access",
+    subcategory: "Usage",
+    description: "Data consumption by guest users with breakdown by type",
+    keywords: ["guest", "data", "usage", "bandwidth", "consumption"],
+    accessLevel: "site",
+    status: "Completed",
+    createdDate: "2025-01-10",
+    isCommon: false,
+    reportType: "Usage",
+    dataPoints: ["guestId", "guestName", "guestType", "dataUsed", "sessions", "avgSession"],
+    hasChart: true,
+    hasTable: true,
+    exportFormats: ["csv", "pdf", "excel"],
+    supportsCriteria: true,
+    criteriaFields: [
+      {
+        type: "dateRange",
+        name: "dateRange",
+        label: "Date Range",
+        required: true,
+        defaultValue: {
+          start: "2025-01-01",
+          end: "2025-01-31"
+        },
+        validation: {
+          maxRange: 90
+        }
+      }
+    ]
+  },
+  {
+    id: "company-guest-overview",
+    name: "Company-Wide Guest Overview",
+    category: "Company",
+    subcategory: "Guest Access",
+    description: "Aggregated guest access statistics across all sites",
+    keywords: ["company", "guest", "overview", "multi-site", "visitor", "aggregate"],
+    accessLevel: "company",
+    status: "Completed",
+    createdDate: "2025-01-10",
+    isCommon: true,
+    reportType: "Executive",
+    dataPoints: ["siteName", "totalGuests", "activeGuests", "checkedInToday", "dataUsed"],
+    hasChart: true,
+    hasTable: true,
+    exportFormats: ["csv", "pdf", "excel"],
+    supportsCriteria: true,
+    criteriaFields: [
+      {
+        type: "dateRange",
+        name: "dateRange",
+        label: "Date Range",
+        required: true,
+        defaultValue: {
+          start: "2025-01-01",
+          end: "2025-01-31"
+        },
+        validation: {
+          maxRange: 90
+        }
+      }
+    ]
+  },
+  {
+    id: "company-guest-comparison",
+    name: "Guest Traffic by Site Comparison",
+    category: "Company",
+    subcategory: "Guest Access",
+    description: "Compare guest traffic and usage patterns across all sites",
+    keywords: ["company", "guest", "comparison", "sites", "traffic", "benchmark"],
+    accessLevel: "company",
+    status: "Completed",
+    createdDate: "2025-01-10",
+    isCommon: false,
+    reportType: "Analytics",
+    dataPoints: ["siteName", "guestsThisMonth", "avgDuration", "peakDay", "topGuestType"],
+    hasChart: true,
+    hasTable: true,
+    exportFormats: ["csv", "pdf"],
+    supportsCriteria: true,
+    criteriaFields: [
+      {
+        type: "monthRange",
+        name: "monthRange",
+        label: "Month Range",
+        required: true,
+        defaultValue: {
+          start: "2025-01",
+          end: "2025-01"
+        },
+        validation: {
+          maxRange: 12
         }
       }
     ]

@@ -1210,22 +1210,22 @@ export const knowledgeArticles = {
         items: [
           {
             name: "Enterprise",
-            description: "✅ Available - Maximum 2000 devices per import",
+            description: "Available - Maximum 2000 devices per import",
             screenshot: "[Screenshot: Bulk Import User Devices button in Enterprise segment]"
           },
           {
             name: "Hotel",
-            description: "✅ Available - Maximum 3000 devices per import",
+            description: "Available - Maximum 3000 devices per import",
             screenshot: "[Screenshot: Bulk Import User Devices button in Hotel segment]"
           },
           {
             name: "Miscellaneous",
-            description: "✅ Available - Maximum 1000 devices per import",
+            description: "Available - Maximum 1000 devices per import",
             screenshot: "[Screenshot: Bulk Import User Devices button in Miscellaneous segment]"
           },
           {
             name: "Co-Living, Coworking, PG",
-            description: "❌ Not Available - User devices not supported in these segments"
+            description: "Not Available - User devices not supported in these segments"
           }
         ]
       },
@@ -1377,7 +1377,7 @@ export const knowledgeArticles = {
           },
           {
             name: "Miscellaneous",
-            description: "❌ Not Available - Other devices not supported"
+            description: "Not Available - Other devices not supported"
           }
         ]
       },

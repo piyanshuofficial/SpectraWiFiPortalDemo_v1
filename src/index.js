@@ -3,6 +3,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
+import './components/Button.css'; // Global button styles
 import App from './App';
 import { AuthProvider } from './context/AuthContext';
 import { AccessLevelViewProvider } from './context/AccessLevelViewContext';

@@ -11,6 +11,18 @@ import { Permissions, InternalPermissions, UserTypes } from '@utils/accessLevels
 import { routes } from '@config/routes';
 import '@components/Badge.css';
 
+// Pre-import critical CSS to prevent flash of unstyled content (FOUC)
+// These CSS files are loaded upfront to ensure styles are available before components render
+import '@pages/Dashboard.css';
+import '@pages/Internal/InternalDashboard.css';
+import '@pages/Internal/SiteManagement.css';
+import '@pages/Internal/CustomerManagement.css';
+import '@pages/UserManagement/UserManagement.css';
+import '@pages/DeviceManagement/DeviceList.css';
+import '@pages/Reports/ReportDashboard.css';
+import '@pages/KnowledgeCenter/KnowledgeHome.css';
+import '@pages/ActivityLogs/ActivityLogs.css';
+
 // Lazy load auth pages
 const Login = lazy(() => import('@pages/Auth/Login'));
 const ForgotDetails = lazy(() => import('@pages/Auth/ForgotDetails'));

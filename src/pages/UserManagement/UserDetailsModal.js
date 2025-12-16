@@ -423,6 +423,14 @@ const UserDetailsModal = ({
                 <span className="udm-label">Devices:</span>
                 <span className="udm-value">{user.devicesCount ?? "--"}</span>
               </div>
+              <div className="udm-item">
+                <span className="udm-label">Bill Cycle:</span>
+                <span className="udm-value">{user.dataCycleType || "--"}</span>
+              </div>
+              <div className="udm-item">
+                <span className="udm-label">Data Reset Date:</span>
+                <span className="udm-value">{user.dataResetDate || "--"}</span>
+              </div>
             </div>
           </div>
           <div className="udm-section-title udm-usage-title">
@@ -461,7 +469,7 @@ const UserDetailsModal = ({
               user={user}
               onExecute={handleSendMessage}
               buttonText="Resend Password"
-              variant="secondary"
+              variant="info"
               disabled={isReadOnly}
               title={isReadOnly ? "Switch to Site View to perform actions" : "Resend password credentials to user"}
             />

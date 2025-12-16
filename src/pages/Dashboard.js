@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Card from "../components/Card";
 import Button from "../components/Button";
 import { Line, Bar, Pie, Doughnut } from "react-chartjs-2";
-import { FaUsers, FaUserFriends, FaChartPie, FaCheckCircle, FaFileCsv, FaFilePdf, FaLifeRing, FaExclamationCircle, FaChevronLeft, FaChevronRight, FaBuilding, FaLaptop, FaExclamationTriangle, FaNetworkWired } from "react-icons/fa";
+import { FaUsers, FaUserFriends, FaChartPie, FaCheckCircle, FaFileCsv, FaFilePdf, FaLifeRing, FaExclamationCircle, FaChevronLeft, FaChevronRight, FaBuilding, FaLaptop, FaExclamationTriangle, FaNetworkWired, FaUserClock } from "react-icons/fa";
 import { usePermissions } from "../hooks/usePermissions";
 import { useLoading } from "../context/LoadingContext";
 import { useSegment } from "../context/SegmentContext";
@@ -22,6 +22,8 @@ import SkeletonLoader from "../components/Loading/SkeletonLoader";
 import notifications from "../utils/notifications";
 import { useAccessLevelView } from "../context/AccessLevelViewContext";
 import { sampleCompany, companySites, getCompanyStats, getSiteChartData, companyActivityLogs } from "../constants/companySampleData";
+import { guestStatistics, getGuestsBySegment, getActiveGuests } from "../constants/guestSampleData";
+import { useSegmentCompanyData } from "../hooks/useSegmentCompanyData";
 import SitesOverview from "../components/SitesOverview";
 import "./Dashboard.css";
 
@@ -40,37 +42,61 @@ const Dashboard = () => {
         baseUsers: 850,
         licensePercent: 68,
         dataUsageTB: 2.8,
-        uptimePercent: 99.92
+        uptimePercent: 99.92,
+        totalAlerts: 3,
+        criticalAlerts: 1,
+        activeGuests: 8,
+        checkedInToday: 6
       },
       coLiving: {
         baseUsers: 320,
         licensePercent: 45,
         dataUsageTB: 1.5,
-        uptimePercent: 99.85
+        uptimePercent: 99.85,
+        totalAlerts: 5,
+        criticalAlerts: 2,
+        activeGuests: 5,
+        checkedInToday: 4
       },
       hotel: {
         baseUsers: 450,
         licensePercent: 52,
         dataUsageTB: 1.8,
-        uptimePercent: 99.88
+        uptimePercent: 99.88,
+        totalAlerts: 2,
+        criticalAlerts: 0,
+        activeGuests: 245,
+        checkedInToday: 42
       },
       coWorking: {
         baseUsers: 280,
         licensePercent: 38,
         dataUsageTB: 1.2,
-        uptimePercent: 99.78
+        uptimePercent: 99.78,
+        totalAlerts: 4,
+        criticalAlerts: 1,
+        activeGuests: 14,
+        checkedInToday: 12
       },
       pg: {
         baseUsers: 180,
         licensePercent: 25,
         dataUsageTB: 0.6,
-        uptimePercent: 99.65
+        uptimePercent: 99.65,
+        totalAlerts: 7,
+        criticalAlerts: 3,
+        activeGuests: 4,
+        checkedInToday: 3
       },
       miscellaneous: {
         baseUsers: 95,
         licensePercent: 15,
         dataUsageTB: 0.3,
-        uptimePercent: 99.58
+        uptimePercent: 99.58,
+        totalAlerts: 2,
+        criticalAlerts: 0,
+        activeGuests: 2,
+        checkedInToday: 1
       }
     };
 
@@ -84,7 +110,12 @@ const Dashboard = () => {
       dataUsageTB: segmentConfig.dataUsageTB,
       dataUsageDelta: Math.round(segmentConfig.dataUsageTB * 0.04 * 100) / 100, // 4% delta
       networkUptime: segmentConfig.uptimePercent,
-      uptimeDelta: 0.05 // Small positive delta
+      uptimeDelta: 0.05, // Small positive delta
+      totalAlerts: segmentConfig.totalAlerts,
+      criticalAlerts: segmentConfig.criticalAlerts,
+      activeGuests: segmentConfig.activeGuests,
+      checkedInToday: segmentConfig.checkedInToday,
+      guestsDelta: Math.round(segmentConfig.checkedInToday * 0.15) // 15% delta for guests
     };
   }, [currentSegment]);
 
@@ -445,16 +476,19 @@ useEffect(() => {
         {t('dashboard.activeUsersValue', { count: safeNumber(metrics.activeUsers) })}
       </Card>
       <Card
-        title={t('dashboard.licenseUsageCard')}
-        icon={<FaChartPie />}
+        title={t('dashboard.guestAccessCard', { defaultValue: 'Active Guests' })}
+        icon={<FaUserClock />}
         trendData={[
-          72, 73, 75, 76,
-          safeNumber(metrics.licenseUsagePercent - 1),
-          safeNumber(metrics.licenseUsagePercent)
+          Math.max(0, metrics.activeGuests - 5),
+          Math.max(0, metrics.activeGuests - 4),
+          Math.max(0, metrics.activeGuests - 3),
+          Math.max(0, metrics.activeGuests - 2),
+          Math.max(0, metrics.activeGuests - 1),
+          safeNumber(metrics.activeGuests)
         ]}
-        trendIncrease={safeNumber(metrics.licenseUsageDelta, 0) >= 0}
+        trendIncrease={safeNumber(metrics.guestsDelta, 0) >= 0}
       >
-        {t('dashboard.licensesUsedValue', { percent: safeNumber(metrics.licenseUsagePercent) })}
+        {t('dashboard.guestAccessValue', { count: safeNumber(metrics.activeGuests), checkedIn: safeNumber(metrics.checkedInToday), defaultValue: `${safeNumber(metrics.activeGuests)} Active (${safeNumber(metrics.checkedInToday)} today)` })}
       </Card>
       <Card
         title={t('dashboard.dataUsageCard')}
@@ -606,9 +640,10 @@ useEffect(() => {
       permission: 'canEditUsers',
     },
     {
-      icon: FaUserFriends,
-      labelKey: "dashboard.viewUsers",
-      onClick: () => handleQuickAction('/users', 'canEditUsers'),
+      icon: FaUserClock,
+      labelKey: "dashboard.manageGuests",
+      label: "Manage Guests",
+      onClick: () => handleQuickAction('/guests', 'canEditUsers'),
       permission: 'canEditUsers',
     },
     {
@@ -636,9 +671,13 @@ useEffect(() => {
     return hasPermission(action.permission);
   });
 
-  // Company-level stats and chart data
-  const companyStats = useMemo(() => getCompanyStats(), []);
-  const companyChartData = useMemo(() => getSiteChartData(), []);
+  // Company-level stats and chart data - Now segment-specific
+  const segmentData = useSegmentCompanyData();
+  const companyStats = useMemo(() => segmentData.stats, [segmentData.stats]);
+  const companyChartData = useMemo(() => segmentData.chartData, [segmentData.chartData]);
+  const segmentCompany = useMemo(() => segmentData.company, [segmentData.company]);
+  const segmentSites = useMemo(() => segmentData.sites, [segmentData.sites]);
+  const segmentActivityLogs = useMemo(() => segmentData.activityLogs, [segmentData.activityLogs]);
 
   // Render Company Dashboard View
   const renderCompanyDashboard = () => (
@@ -651,7 +690,7 @@ useEffect(() => {
         />
       )}
 
-      <h1 className="dashboard-title">{sampleCompany.name}</h1>
+      <h1 className="dashboard-title">{segmentCompany.name}</h1>
 
       {/* Company-level info banner */}
       <div className="company-info-banner">
@@ -681,20 +720,20 @@ useEffect(() => {
           {companyStats.totalUsers.toLocaleString()} Users
         </Card>
         <Card
-          title="Total Devices"
-          icon={<FaLaptop />}
-          trendData={[3800, 3900, 4000, 4100, 4150, companyStats.totalDevices]}
+          title="Active Guests"
+          icon={<FaUserClock />}
+          trendData={[42, 48, 52, 58, 62, 68]}
           trendIncrease={true}
         >
-          {companyStats.totalDevices.toLocaleString()} Devices
+          68 Across All Sites
         </Card>
         <Card
-          title="Active Alerts"
-          icon={<FaExclamationTriangle />}
-          trendData={[5, 4, 6, 5, 7, companyStats.totalAlerts]}
-          trendIncrease={false}
+          title="Network Uptime"
+          icon={<FaCheckCircle />}
+          trendData={[99.65, 99.72, 99.78, 99.85, 99.88, 99.92]}
+          trendIncrease={true}
         >
-          {companyStats.totalAlerts} ({companyStats.criticalAlerts} Critical)
+          99.92% This Month
         </Card>
       </section>
 
@@ -707,16 +746,16 @@ useEffect(() => {
           <div className="chart-container">
             <Bar
               data={{
-                labels: companyChartData.usersBysite.map(s => s.name),
+                labels: companyChartData.usersBySite.map(s => s.name),
                 datasets: [
                   {
                     label: "Total Users",
-                    data: companyChartData.usersBysite.map(s => s.value),
+                    data: companyChartData.usersBySite.map(s => s.value),
                     backgroundColor: "#004aad",
                   },
                   {
                     label: "Active Users",
-                    data: companyChartData.usersBysite.map(s => s.active),
+                    data: companyChartData.usersBySite.map(s => s.active),
                     backgroundColor: "#4caf50",
                   }
                 ],
@@ -801,7 +840,7 @@ useEffect(() => {
       <h2 className="dashboard-section-title">Recent Company Activity</h2>
       <Card title="" className="recent-activities-card company-activities" aria-label="Recent company activities">
         <ul className="activity-list company-activity-list">
-          {companyActivityLogs.slice(0, 5).map((log) => (
+          {segmentActivityLogs.slice(0, 5).map((log) => (
             <li key={log.id} className={`activity-item severity-${log.severity}`}>
               <span className="activity-site-badge">{log.site}</span>
               <span className="activity-text">{log.action}: {log.details}</span>

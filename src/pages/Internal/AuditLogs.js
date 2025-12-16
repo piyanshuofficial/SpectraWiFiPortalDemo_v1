@@ -32,9 +32,22 @@ import { activityLogs, customers, sites } from "@constants/internalPortalData";
 import Pagination from "@components/Pagination";
 import "./AuditLogs.css";
 
+// Transform activityLogs to include all required fields for audit display
+const transformedActivityLogs = activityLogs.map(log => ({
+  ...log,
+  userType: log.userType || (log.user === "System" ? "internal" : log.userRole?.includes("Admin") || log.userRole?.includes("Engineer") ? "internal" : "customer"),
+  category: log.category || "General",
+  severity: log.severity || "info",
+  status: log.status || "success",
+  customerName: log.customerName || customers.find(c => c.id === log.customerId)?.name || null,
+  siteName: log.siteName || sites.find(s => s.id === log.siteId)?.name || null,
+  resource: log.resource || log.action?.replace(/_/g, " "),
+  resourceId: log.resourceId || log.siteId || log.customerId,
+}));
+
 // Extended audit log data for comprehensive view
 const extendedAuditLogs = [
-  ...activityLogs,
+  ...transformedActivityLogs,
   // Add more detailed audit entries
   {
     id: "audit_001",

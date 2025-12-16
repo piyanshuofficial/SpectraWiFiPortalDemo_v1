@@ -1,6 +1,6 @@
 // src/pages/ActivityLogs/ActivityLogs.js
 
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import {
   FaFileCsv,
   FaUser,
@@ -13,7 +13,8 @@ import {
   FaSortDown,
   FaClipboardList,
   FaQuestionCircle,
-  FaBuilding
+  FaBuilding,
+  FaInfoCircle
 } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 import Button from '../../components/Button';
@@ -27,6 +28,7 @@ import { companySites as sampleCompanySites } from '../../constants/companySampl
 import { exportChartDataToCSV } from '../../utils/exportUtils';
 import notifications from '../../utils/notifications';
 import { PAGINATION } from '../../constants/appConstants';
+import PageLoadingSkeleton from '../../components/Loading/PageLoadingSkeleton';
 import './ActivityLogs.css';
 
 // Sample activity log data - would come from backend in production
@@ -165,6 +167,17 @@ const ActivityLogs = () => {
   const { isCompanyView, companySites, navigateToSite } = useAccessLevelView();
   const { hasPermission } = usePermissions();
   const { t } = useTranslation();
+
+  // Loading state
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Simulate initial data loading
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 600);
+    return () => clearTimeout(timer);
+  }, []);
 
   // State for filters
   const [searchQuery, setSearchQuery] = useState('');
@@ -389,10 +402,42 @@ const ActivityLogs = () => {
     );
   }
 
+  // Show loading skeleton during initial load
+  if (isLoading) {
+    return <PageLoadingSkeleton pageType="list" rows={10} cols={5} />;
+  }
+
   return (
     <main className="main-content" role="main" aria-label={t('logs.pageAriaLabel')}>
       <div className="logs-container">
         <h1 className="logs-page-title">{t('logs.title')}</h1>
+
+        {/* Company View Info Banner */}
+        {isCompanyView && (
+          <div className="company-view-banner">
+            <div className="banner-content">
+              <FaInfoCircle className="banner-icon" />
+              <div className="banner-text">
+                <span className="banner-title">Company View</span>
+                <span className="banner-subtitle">Viewing activity logs across all sites. Select a site to filter.</span>
+              </div>
+            </div>
+            <div className="banner-filter">
+              <label htmlFor="logs-site-filter">Filter by Site:</label>
+              <select
+                id="logs-site-filter"
+                className="site-filter-select"
+                value={siteFilter}
+                onChange={(e) => handleFilterChange(setSiteFilter)(e.target.value)}
+              >
+                <option value="all">All Sites</option>
+                {companySites.map(site => (
+                  <option key={site.siteId} value={site.siteId}>{site.siteName}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        )}
 
         {/* Toolbar - matches DeviceToolbar pattern */}
         <div className="logs-toolbar-content">

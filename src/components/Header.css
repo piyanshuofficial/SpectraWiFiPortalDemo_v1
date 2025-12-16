@@ -127,13 +127,59 @@
   opacity: 1;
 }
 
+.header-site-clickable {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: color 0.2s, opacity 0.2s;
+}
+
+.header-site-clickable:hover {
+  color: #68d5ff;
+  opacity: 1;
+}
+
+.header-site-link-icon {
+  font-size: 0.75rem;
+  opacity: 0.6;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.header-site-clickable:hover .header-site-link-icon {
+  opacity: 1;
+  transform: translateX(2px);
+}
+
 .header-actions {
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: var(--space-xl);
+  gap: var(--space-2xl);
   min-width: 8.75rem;
+}
+
+/* Internal Portal Header Styling */
+.header-view-indicator.internal {
+  background: linear-gradient(135deg, rgba(40, 167, 69, 0.2) 0%, rgba(32, 201, 151, 0.2) 100%);
+  border: 1px solid rgba(40, 167, 69, 0.3);
+}
+
+.header-view-indicator.internal svg {
+  color: #28a745;
+}
+
+.header-role-badge {
+  padding: 0.25rem 0.75rem;
+  background: rgba(255, 193, 7, 0.15);
+  border: 1px solid rgba(255, 193, 7, 0.3);
+  border-radius: 1rem;
+  color: #ffc107;
+  font-size: var(--font-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .theme-toggle-btn {
@@ -368,7 +414,7 @@
 
 .notification-empty {
   font-size: var(--font-lg);
-  color: #888;
+  color: var(--color-text-muted);
   text-align: center;
   margin: 0 auto;
   font-weight: 400;
@@ -397,7 +443,7 @@
   display: inline;
   font-size: var(--font-sm);
   font-style: italic;
-  color: #888;
+  color: var(--color-text-muted);
   margin-left: 0.5rem;
 }
 
@@ -449,7 +495,7 @@
   }
 
   .header-actions {
-    gap: 0.875rem;
+    gap: 1.25rem;
   }
 
   .language-selector {

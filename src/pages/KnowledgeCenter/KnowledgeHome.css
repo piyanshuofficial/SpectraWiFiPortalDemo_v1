@@ -2,6 +2,7 @@
 
 .knowledge-center-main {
   padding: 0 2.5rem 2.25rem 2.5rem;
+  padding-bottom: calc(2.25rem + var(--footer-height, 3.5rem));
 }
 
 .knowledge-center-title {
@@ -136,6 +137,7 @@
   box-shadow: 0 0.125rem 0.75rem rgba(35, 50, 110, 0.07);
   padding: 1.5rem 1.375rem 1.125rem 1.375rem;
   margin-top: 1.375rem;
+  margin-bottom: 1.5rem;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -659,37 +661,85 @@
   border: 2px solid transparent;
   display: flex;
   flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+.preview-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #204094, #3a5fc8);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
+}
+
+.preview-card:hover::before {
+  transform: scaleX(1);
 }
 
 .preview-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 0.5rem 1.5rem rgba(35, 50, 110, 0.15);
+  transform: translateY(-8px);
+  box-shadow: 0 1rem 2rem rgba(35, 50, 110, 0.18);
   border-color: #204094;
 }
 
 .preview-card-category {
+  display: inline-flex;
+  align-items: center;
   font-size: var(--font-xs);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: #204094;
-  margin-bottom: 0.75rem;
+  color: #fff;
+  background: linear-gradient(135deg, #204094 0%, #3a5fc8 100%);
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radius-full);
+  margin-bottom: 1rem;
+  width: fit-content;
 }
 
 .preview-card-title {
   font-size: var(--font-lg);
-  font-weight: 600;
+  font-weight: 700;
   color: #153874;
-  margin: 0 0 0.625rem 0;
+  margin: 0 0 0.75rem 0;
   line-height: 1.4;
+  transition: color 0.2s ease;
+}
+
+.preview-card:hover .preview-card-title {
+  color: #204094;
 }
 
 .preview-card-description {
   font-size: var(--font-sm);
   color: #374157;
-  line-height: 1.6;
+  line-height: 1.7;
   margin: 0;
   flex: 1;
+}
+
+/* Quick Guide Icon for articles */
+.preview-card:not(.video-preview)::after {
+  content: '→';
+  position: absolute;
+  bottom: 1.25rem;
+  right: 1.25rem;
+  font-size: 1.25rem;
+  color: #204094;
+  opacity: 0;
+  transform: translateX(-10px);
+  transition: all 0.3s ease;
+}
+
+.preview-card:not(.video-preview):hover::after {
+  opacity: 1;
+  transform: translateX(0);
 }
 
 /* Video Preview Specific Styles */

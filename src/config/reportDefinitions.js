@@ -369,35 +369,6 @@ export const REPORT_DEFINITIONS = {
     }
   },
 
-  "alerts-summary-report": {
-    chart: {
-      type: "pie",
-      canvasSize: EXPORT_CANVAS_SIZES.pie,
-      getData: (data) => ({
-        labels: data.map((a) => a.alertType),
-        datasets: [{
-          label: "Alerts",
-          data: data.map((a) => a.count),
-          backgroundColor: ["#4caf50", "#ff9800", "#f44336"],
-        }],
-      }),
-      getOptions: (reportName) => getStandardChartOptions({
-        type: "pie",
-        title: reportName,
-        darkMode: false,
-        forExport: true
-      }),
-    },
-    csv: {
-      headers: ["Alert Type", "Count"],
-      getRows: (data) => data.map(r => [r.alertType, r.count])
-    },
-    table: {
-      columns: ["Alert Type", "Count"],
-      getRows: (data) => data.map(r => [r.alertType, r.count])
-    }
-  },
-
   // USER REPORTS
   "user-session-history": {
     table: {

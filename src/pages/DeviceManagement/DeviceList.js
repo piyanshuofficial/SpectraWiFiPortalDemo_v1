@@ -96,7 +96,7 @@ const DeviceCard = React.memo(({
         )}
         <div className="device-detail">{t('devices.deviceType')}: {device.category}</div>
         <div className="device-detail">{t('devices.macAddress')}: {device.mac}</div>
-        <div className="device-detail">{t('devices.owner')}: {device.owner}</div>
+        <div className="device-detail">{t('devices.user')}: {device.owner}</div>
         <div className="device-card-info-row">
           <span>
             {t('devices.ipAddress')}:{" "}
@@ -155,6 +155,8 @@ const DeviceCard = React.memo(({
     prevProps.device.name === nextProps.device.name &&
     prevProps.device.mac === nextProps.device.mac &&
     prevProps.device.category === nextProps.device.category &&
+    prevProps.device.siteId === nextProps.device.siteId &&
+    prevProps.device.siteName === nextProps.device.siteName &&
     prevProps.canEdit === nextProps.canEdit &&
     prevProps.canDelete === nextProps.canDelete &&
     prevProps.disconnectingDeviceId === nextProps.disconnectingDeviceId &&
@@ -472,7 +474,9 @@ const DeviceList = () => {
           ...device,
           Icon: getDeviceIcon(device.category),
           owner: owner ? `${owner.firstName} ${owner.lastName}` : 'Unknown',
-          ownerSegment: owner?.segment || 'unknown'
+          ownerSegment: owner?.segment || 'unknown',
+          siteId: owner?.siteId || null,
+          siteName: owner?.siteName || null
         };
       });
       
@@ -1062,7 +1066,7 @@ const DeviceList = () => {
       const headers = [
         'Device Name',
         'MAC Address',
-        'Owner',
+        'User',
         'Category',
         'IP Address',
         'Status',
@@ -1241,7 +1245,7 @@ const DeviceList = () => {
                   <th>{t('devices.macAddress')}</th>
                   <th>{t('devices.deviceType')}</th>
                   <th>Site</th>
-                  <th>{t('devices.owner')}</th>
+                  <th>{t('devices.user')}</th>
                   <th>{t('devices.ipAddress')}</th>
                   <th>{t('status.status')}</th>
                   <th>{t('devices.dataUsageSession')}</th>

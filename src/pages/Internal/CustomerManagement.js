@@ -1,6 +1,7 @@
 // src/pages/Internal/CustomerManagement.js
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@context/AuthContext";
 import {
@@ -27,9 +28,15 @@ import {
   FaPhone,
   FaEnvelope,
   FaChartLine,
+  FaTimes,
+  FaFileContract,
+  FaIdCard,
+  FaGlobe,
 } from "react-icons/fa";
 import { customers, getSitesByCustomer, licenses } from "@constants/internalPortalData";
+import notifications from "@utils/notifications";
 import Pagination from "@components/Pagination";
+import PageLoadingSkeleton from "@components/Loading/PageLoadingSkeleton";
 import "./CustomerManagement.css";
 
 /**
@@ -39,6 +46,9 @@ import "./CustomerManagement.css";
 const CustomerManagement = () => {
   const navigate = useNavigate();
   const { hasPermission } = useAuth();
+
+  // Loading state
+  const [isLoading, setIsLoading] = useState(true);
 
   // State
   const [searchQuery, setSearchQuery] = useState("");
@@ -51,6 +61,18 @@ const CustomerManagement = () => {
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  // Customer detail modal state
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [showCustomerModal, setShowCustomerModal] = useState(false);
+
+  // Simulate initial data loading
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 700);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Get filter options
   const statusOptions = ["All", "active", "inactive", "suspended"];
@@ -125,30 +147,42 @@ const CustomerManagement = () => {
   // Handle customer actions
   const handleCustomerAction = (action, customerId) => {
     setActiveDropdown(null);
+    const customer = enhancedCustomers.find(c => c.id === customerId);
     switch (action) {
       case "view":
-        navigate(`/internal/customers/${customerId}`);
+        // Show customer details in modal (internal admin view)
+        setSelectedCustomer(customer);
+        setShowCustomerModal(true);
         break;
       case "edit":
-        navigate(`/internal/customers/${customerId}/edit`);
+        // TODO: Implement edit functionality with modal
+        notifications.showInfo("Edit functionality coming soon");
         break;
       case "configure":
-        navigate(`/internal/customers/${customerId}/configure`);
+        // TODO: Implement configure functionality
+        notifications.showInfo("Configure functionality coming soon");
         break;
       case "sites":
+        // Navigate to sites filtered by customer
         navigate(`/internal/sites?customer=${customerId}`);
         break;
       case "analytics":
-        navigate(`/internal/analytics?customer=${customerId}`);
+        // Navigate to internal dashboard with customer filter
+        navigate(`/internal/dashboard?customer=${customerId}`);
         break;
       case "delete":
-        if (window.confirm("Are you sure you want to delete this customer?")) {
-          console.log("Delete customer:", customerId);
-        }
+        // Delete functionality removed - customers should be suspended instead
+        notifications.showWarning("Delete is not available. Use suspend/block from site management.");
         break;
       default:
         break;
     }
+  };
+
+  // Close customer modal
+  const closeCustomerModal = () => {
+    setShowCustomerModal(false);
+    setSelectedCustomer(null);
   };
 
   // Calculate summary stats
@@ -178,6 +212,11 @@ const CustomerManagement = () => {
       day: "numeric",
     });
   };
+
+  // Show loading skeleton during initial load
+  if (isLoading) {
+    return <PageLoadingSkeleton pageType="grid" rows={6} />;
+  }
 
   return (
     <div className="customer-management">
@@ -506,6 +545,205 @@ const CustomerManagement = () => {
             Clear Filters
           </button>
         </div>
+      )}
+
+      {/* Customer Detail Modal */}
+      {showCustomerModal && selectedCustomer && createPortal(
+        <div className="customer-modal-overlay" onClick={closeCustomerModal}>
+          <div className="customer-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2><FaBuilding /> Customer Details</h2>
+              <button className="modal-close" onClick={closeCustomerModal}>
+                <FaTimes />
+              </button>
+            </div>
+
+            <div className="modal-body">
+              {/* Customer Overview */}
+              <div className="detail-section">
+                <div className="customer-overview">
+                  <div className="overview-header">
+                    <h3>{selectedCustomer.name}</h3>
+                    <span className={`status-badge ${selectedCustomer.status}`}>
+                      {selectedCustomer.status}
+                    </span>
+                  </div>
+                  <p className="customer-industry-text">{selectedCustomer.industry}</p>
+                </div>
+              </div>
+
+              {/* Contact Information */}
+              <div className="detail-section">
+                <h4><FaIdCard /> Contact Information</h4>
+                <div className="detail-grid">
+                  <div className="detail-item">
+                    <label>Contact Name</label>
+                    <span>{selectedCustomer.contactName || '-'}</span>
+                  </div>
+                  <div className="detail-item">
+                    <label>Email</label>
+                    <span>{selectedCustomer.contactEmail}</span>
+                  </div>
+                  <div className="detail-item">
+                    <label>Phone</label>
+                    <span>{selectedCustomer.contactPhone}</span>
+                  </div>
+                  <div className="detail-item">
+                    <label>Address</label>
+                    <span>{selectedCustomer.address || '-'}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Account Details */}
+              <div className="detail-section">
+                <h4><FaFileContract /> Account Details</h4>
+                <div className="detail-grid">
+                  <div className="detail-item">
+                    <label>Customer ID</label>
+                    <span className="monospace">{selectedCustomer.id}</span>
+                  </div>
+                  <div className="detail-item">
+                    <label>Created Date</label>
+                    <span>{formatDate(selectedCustomer.createdAt)}</span>
+                  </div>
+                  <div className="detail-item">
+                    <label>Account Type</label>
+                    <span>{selectedCustomer.accountType || 'Standard'}</span>
+                  </div>
+                  <div className="detail-item">
+                    <label>Billing Cycle</label>
+                    <span>{selectedCustomer.billingCycle || 'Monthly'}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Site & Usage Metrics */}
+              <div className="detail-section">
+                <h4><FaGlobe /> Site & Usage Metrics</h4>
+                <div className="metrics-grid">
+                  <div className="metric-card">
+                    <div className="metric-icon"><FaMapMarkerAlt /></div>
+                    <div className="metric-info">
+                      <span className="metric-value">{selectedCustomer.siteCount}</span>
+                      <span className="metric-label">Total Sites</span>
+                    </div>
+                  </div>
+                  <div className="metric-card">
+                    <div className="metric-icon online"><FaCheckCircle /></div>
+                    <div className="metric-info">
+                      <span className="metric-value">{selectedCustomer.onlineSites}</span>
+                      <span className="metric-label">Online Sites</span>
+                    </div>
+                  </div>
+                  <div className="metric-card">
+                    <div className="metric-icon"><FaUsers /></div>
+                    <div className="metric-info">
+                      <span className="metric-value">{selectedCustomer.totalUsers.toLocaleString()}</span>
+                      <span className="metric-label">Total Users</span>
+                    </div>
+                  </div>
+                  <div className="metric-card">
+                    <div className="metric-icon"><FaWifi /></div>
+                    <div className="metric-info">
+                      <span className="metric-value">{selectedCustomer.totalDevices.toLocaleString()}</span>
+                      <span className="metric-label">Total Devices</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* License Information */}
+              {selectedCustomer.license && (
+                <div className="detail-section">
+                  <h4><FaChartLine /> License Information</h4>
+                  <div className="license-detail">
+                    <div className="license-progress">
+                      <div className="progress-header">
+                        <span>License Usage</span>
+                        <span>{Math.round((selectedCustomer.license.usedUsers / selectedCustomer.license.maxUsers) * 100)}%</span>
+                      </div>
+                      <div className="progress-bar-container">
+                        <div
+                          className="progress-bar-fill"
+                          style={{ width: `${(selectedCustomer.license.usedUsers / selectedCustomer.license.maxUsers) * 100}%` }}
+                        />
+                      </div>
+                      <div className="progress-details">
+                        <span>{selectedCustomer.license.usedUsers.toLocaleString()} used</span>
+                        <span>{selectedCustomer.license.maxUsers.toLocaleString()} total</span>
+                      </div>
+                    </div>
+                    <div className="detail-grid" style={{ marginTop: '16px' }}>
+                      <div className="detail-item">
+                        <label>License Type</label>
+                        <span>{selectedCustomer.license.type || 'Enterprise'}</span>
+                      </div>
+                      <div className="detail-item">
+                        <label>Valid Until</label>
+                        <span>{selectedCustomer.license.validUntil ? formatDate(selectedCustomer.license.validUntil) : '-'}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Sites List */}
+              {selectedCustomer.sites && selectedCustomer.sites.length > 0 && (
+                <div className="detail-section">
+                  <h4><FaMapMarkerAlt /> Sites ({selectedCustomer.sites.length})</h4>
+                  <div className="sites-mini-list">
+                    {selectedCustomer.sites.slice(0, 5).map(site => (
+                      <div key={site.id} className="site-mini-item">
+                        <div className="site-mini-info">
+                          <span className="site-mini-name">{site.name}</span>
+                          <span className="site-mini-location">{site.city}, {site.state}</span>
+                        </div>
+                        <span className={`site-mini-status ${site.status}`}>{site.status}</span>
+                      </div>
+                    ))}
+                    {selectedCustomer.sites.length > 5 && (
+                      <button
+                        className="view-all-sites-btn"
+                        onClick={() => {
+                          closeCustomerModal();
+                          navigate(`/internal/sites?customer=${selectedCustomer.id}`);
+                        }}
+                      >
+                        View all {selectedCustomer.sites.length} sites
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="modal-footer">
+              <button className="btn btn-outline" onClick={closeCustomerModal}>
+                Close
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={() => {
+                  closeCustomerModal();
+                  navigate(`/internal/sites?customer=${selectedCustomer.id}`);
+                }}
+              >
+                <FaMapMarkerAlt /> View Sites
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={() => {
+                  closeCustomerModal();
+                  navigate(`/internal/dashboard?customer=${selectedCustomer.id}`);
+                }}
+              >
+                <FaChartLine /> View Analytics
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
       )}
     </div>
   );

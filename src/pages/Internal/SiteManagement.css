@@ -99,6 +99,34 @@
   color: #dc3545;
 }
 
+.summary-stat.infra {
+  background: linear-gradient(135deg, rgba(23, 162, 184, 0.08) 0%, rgba(23, 162, 184, 0.02) 100%);
+  border-color: rgba(23, 162, 184, 0.2);
+}
+
+.summary-stat .infra-stat-value {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 2px;
+}
+
+.summary-stat .infra-stat-value .live {
+  color: #28a745;
+  font-weight: 700;
+}
+
+.summary-stat .infra-stat-value .sep {
+  color: var(--color-text-tertiary);
+  font-weight: 400;
+  font-size: var(--font-lg);
+}
+
+.summary-stat .infra-stat-value .total {
+  color: var(--color-text-secondary);
+  font-weight: 600;
+}
+
 /* ============================================
    FILTERS CARD
    ============================================ */
@@ -487,6 +515,16 @@
   font-size: var(--font-sm);
 }
 
+.site-alerts.clickable {
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.site-alerts.clickable:hover {
+  transform: scale(1.02);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
 .site-alerts span {
   color: #856404;
 }
@@ -498,6 +536,25 @@
 
 .site-alerts span.warning {
   color: #856404;
+}
+
+/* Clickable alert in detail view */
+.clickable-alert {
+  cursor: pointer;
+  text-decoration: underline;
+  transition: all var(--transition-fast);
+}
+
+.clickable-alert:hover {
+  opacity: 0.8;
+}
+
+.clickable-alert.critical {
+  color: #dc3545 !important;
+}
+
+.clickable-alert.warning {
+  color: #ffc107 !important;
 }
 
 /* Site Footer */
@@ -1448,7 +1505,9 @@
   justify-content: space-between;
   align-items: center;
   padding: var(--space-lg) var(--space-xl);
+  padding-right: 60px; /* Space for close button */
   border-bottom: 1px solid var(--color-border-light);
+  position: relative;
 }
 
 .site-modal .modal-header h2 {
@@ -1473,6 +1532,31 @@
 .site-status-header .status-text.degraded { color: #ffc107; }
 .site-status-header .status-text.offline { color: #dc3545; }
 .site-status-header .status-text.maintenance { color: #17a2b8; }
+
+/* Site Modal Close Button */
+.site-modal .modal-close-btn {
+  position: absolute;
+  top: 50%;
+  right: var(--space-md);
+  transform: translateY(-50%);
+  background: var(--color-bg-tertiary);
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-secondary);
+  transition: all var(--transition-fast);
+  z-index: 10;
+}
+
+.site-modal .modal-close-btn:hover {
+  background: var(--color-danger);
+  color: white;
+}
 
 .site-modal .modal-body {
   flex: 1;
@@ -1723,8 +1807,151 @@
   }
 }
 
+/* ============================================
+   INFRASTRUCTURE STATS - Site Card
+   ============================================ */
+
+.site-infra-stats {
+  display: flex;
+  gap: var(--space-md);
+  padding: var(--space-sm) 0;
+  border-top: 1px solid var(--color-border-light);
+  margin-top: var(--space-sm);
+}
+
+.infra-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
+
+.infra-stat .infra-label {
+  font-size: var(--font-xs);
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+
+.infra-stat .infra-value {
+  font-size: var(--font-sm);
+  font-weight: 600;
+}
+
+.infra-stat .infra-value .live {
+  color: #28a745;
+}
+
+.infra-stat .infra-value .sep {
+  color: var(--color-text-tertiary);
+  margin: 0 2px;
+}
+
+.infra-stat .infra-value .total {
+  color: var(--color-text-secondary);
+}
+
+/* ============================================
+   INFRASTRUCTURE STATUS - Site Detail Modal
+   ============================================ */
+
+.infrastructure-metrics {
+  gap: var(--space-md) !important;
+}
+
+.infrastructure-metrics .metric-box.highlight {
+  background: linear-gradient(135deg, rgba(40, 167, 69, 0.1) 0%, rgba(40, 167, 69, 0.05) 100%);
+  border: 1px solid rgba(40, 167, 69, 0.2);
+}
+
+.infrastructure-metrics .metric-box .metric-value {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.infrastructure-metrics .metric-box .metric-value .live-count {
+  color: #28a745;
+  font-weight: 700;
+  font-size: var(--font-xl);
+}
+
+.infrastructure-metrics .metric-box .metric-value .separator {
+  color: var(--color-text-tertiary);
+  font-weight: 400;
+  font-size: var(--font-md);
+}
+
+.infrastructure-metrics .metric-box .metric-value .total-count {
+  color: var(--color-text-secondary);
+  font-weight: 500;
+  font-size: var(--font-lg);
+}
+
+.infrastructure-metrics .metric-icon.ap-icon {
+  color: #28a745;
+}
+
+.infrastructure-metrics .metric-icon.switch-icon {
+  color: #17a2b8;
+}
+
+.infrastructure-metrics .metric-icon.text-icon {
+  font-size: var(--font-xs);
+  font-weight: 700;
+  color: #6f42c1;
+  background: rgba(111, 66, 193, 0.1);
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+}
+
+.infrastructure-detail-grid {
+  margin-top: var(--space-md);
+  background: var(--color-bg-secondary);
+  padding: var(--space-md);
+  border-radius: var(--radius-md);
+}
+
+/* Field hints in config modal */
+.config-section .form-group .field-hint {
+  display: block;
+  font-size: var(--font-xs);
+  color: var(--color-text-tertiary);
+  margin-top: 4px;
+}
+
+/* Infrastructure cells in list view */
+.sites-list-table .infra-cell {
+  display: inline-flex;
+  align-items: center;
+  font-weight: 500;
+}
+
+.sites-list-table .infra-cell .live {
+  color: #28a745;
+  font-weight: 600;
+}
+
+.sites-list-table .infra-cell .sep {
+  color: var(--color-text-tertiary);
+  margin: 0 2px;
+}
+
+.sites-list-table .infra-cell .total {
+  color: var(--color-text-secondary);
+}
+
 @media (max-width: 480px) {
   .detail-grid {
     grid-template-columns: 1fr;
+  }
+
+  .site-infra-stats {
+    flex-wrap: wrap;
+  }
+
+  .infra-stat {
+    min-width: 45%;
   }
 }

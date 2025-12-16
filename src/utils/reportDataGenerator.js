@@ -456,9 +456,22 @@ export const generateAddonUsage = (startMonth = '2024-01', months = 12) => {
 };
 
 /**
- * Generate top-up history
+ * Topup types with their typical amounts
  */
-export const generateTopupHistory = (startDate = '2024-01-01', days = 90) => {
+const TOPUP_TYPES = [
+  { type: 'speed', label: 'Speed Boost', amounts: [99, 149, 199, 299] },
+  { type: 'data', label: 'Data Pack', amounts: [49, 99, 149, 199, 299] },
+  { type: 'device', label: 'Extra Device', amounts: [79, 129, 179] },
+  { type: 'plan', label: 'Plan Upgrade', amounts: [199, 299, 399, 499, 599] }
+];
+
+/**
+ * Generate top-up history with topup type
+ * @param {string} startDate - Start date
+ * @param {number} days - Number of days
+ * @param {string|null} filterType - Optional filter by topup type (speed, data, device, plan)
+ */
+export const generateTopupHistory = (startDate = '2024-01-01', days = 90, filterType = null) => {
   const dates = generateDateRange(startDate, days);
   const userIds = Array.from({ length: 30 }, (_, i) => `USER${String(i + 1).padStart(3, '0')}`);
   const data = [];
@@ -467,11 +480,22 @@ export const generateTopupHistory = (startDate = '2024-01-01', days = 90) => {
     // Random chance of top-up on any given day
     if (Math.random() > 0.7) {
       const userId = userIds[Math.floor(Math.random() * userIds.length)];
-      const topupAmount = [25, 50, 75, 100, 150, 200][Math.floor(Math.random() * 6)];
+
+      // Select a random topup type or use filtered type
+      let topupTypeInfo;
+      if (filterType) {
+        topupTypeInfo = TOPUP_TYPES.find(t => t.type === filterType);
+      } else {
+        topupTypeInfo = TOPUP_TYPES[Math.floor(Math.random() * TOPUP_TYPES.length)];
+      }
+
+      const topupAmount = topupTypeInfo.amounts[Math.floor(Math.random() * topupTypeInfo.amounts.length)];
       const remaining = Math.round(topupAmount * randomFloat(0.3, 0.9, 2));
 
       data.push({
         userId,
+        topupType: topupTypeInfo.type,
+        topupTypeLabel: topupTypeInfo.label,
         topupAmount,
         purchaseDate: date,
         remaining

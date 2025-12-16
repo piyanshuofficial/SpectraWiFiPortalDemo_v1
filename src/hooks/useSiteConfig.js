@@ -15,6 +15,9 @@ export const useSiteConfig = () => {
   const segmentSiteData = useMemo(() => {
     // Get segment-specific site info
     const siteInfo = siteConfig.segmentSites[currentSegment] || siteConfig.segmentSites.enterprise;
+    // Create effectiveSiteName in format "Segment - SiteName"
+    const segmentLabel = currentSegment.charAt(0).toUpperCase() + currentSegment.slice(1);
+    const effectiveSiteName = `${segmentLabel} - ${siteInfo.siteName}`;
 
     return {
       ...siteConfig,
@@ -23,6 +26,7 @@ export const useSiteConfig = () => {
       location: siteInfo.location,
       address: siteInfo.address,
       segment: currentSegment,
+      effectiveSiteName,
     };
   }, [currentSegment]);
 

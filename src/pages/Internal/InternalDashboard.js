@@ -1,7 +1,7 @@
 // src/pages/Internal/InternalDashboard.js
 
-import React, { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useMemo, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@context/AuthContext";
 import {
   FaBuilding,
@@ -36,6 +36,7 @@ import {
   getSiteStatusCounts,
   getAlertCounts,
 } from "@constants/internalPortalData";
+import PageLoadingSkeleton from "@components/Loading/PageLoadingSkeleton";
 import "./InternalDashboard.css";
 
 /**
@@ -44,31 +45,133 @@ import "./InternalDashboard.css";
  */
 const InternalDashboard = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { currentUser, hasPermission } = useAuth();
 
-  // Calculate metrics
-  const siteStatusCounts = useMemo(() => getSiteStatusCounts(), []);
-  const alertCounts = useMemo(() => getAlertCounts(), []);
+  // Get customer filter from URL
+  const customerIdFilter = searchParams.get("customer");
+  const selectedCustomer = customerIdFilter ? customers.find(c => c.id === customerIdFilter) : null;
 
-  // Filter active alerts (unacknowledged)
+  // Filter sites based on customer
+  const filteredSites = useMemo(() => {
+    if (customerIdFilter) {
+      return sites.filter(s => s.customerId === customerIdFilter);
+    }
+    return sites;
+  }, [customerIdFilter]);
+
+  // Filter alerts based on customer
+  const filteredAlerts = useMemo(() => {
+    if (customerIdFilter) {
+      return systemAlerts.filter(a => a.customerId === customerIdFilter);
+    }
+    return systemAlerts;
+  }, [customerIdFilter]);
+
+  // Loading state
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Simulate initial data loading
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 800);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Calculate metrics - use filtered data when customer is selected
+  const siteStatusCounts = useMemo(() => {
+    if (customerIdFilter) {
+      return {
+        online: filteredSites.filter(s => s.status === "online").length,
+        degraded: filteredSites.filter(s => s.status === "degraded").length,
+        offline: filteredSites.filter(s => s.status === "offline").length,
+        maintenance: filteredSites.filter(s => s.status === "maintenance").length,
+        total: filteredSites.length,
+      };
+    }
+    return getSiteStatusCounts();
+  }, [customerIdFilter, filteredSites]);
+
+  const alertCounts = useMemo(() => {
+    if (customerIdFilter) {
+      return {
+        critical: filteredAlerts.filter(a => a.type === "critical").length,
+        warning: filteredAlerts.filter(a => a.type === "warning").length,
+        info: filteredAlerts.filter(a => a.type === "info").length,
+        total: filteredAlerts.length,
+      };
+    }
+    return getAlertCounts();
+  }, [customerIdFilter, filteredAlerts]);
+
+  // Calculate infrastructure stats - use filtered data when customer is selected
+  const infrastructureStats = useMemo(() => {
+    const sitesToUse = customerIdFilter ? filteredSites : sites;
+    const deployedAps = sitesToUse.reduce((sum, s) => sum + (s.infrastructure?.deployedApCount || s.deployedApCount || 0), 0);
+    const liveAps = sitesToUse.reduce((sum, s) => sum + (s.infrastructure?.liveApCount || s.liveApCount || 0), 0);
+    const totalSwitches = sitesToUse.reduce((sum, s) => sum + (s.infrastructure?.poeSwitchCount || 0), 0);
+    const liveSwitches = sitesToUse.reduce((sum, s) => sum + (s.infrastructure?.livePoeSwitchCount || 0), 0);
+    const totalPorts = sitesToUse.reduce((sum, s) => sum + (s.infrastructure?.totalPoePorts || 0), 0);
+    return { deployedAps, liveAps, totalSwitches, liveSwitches, totalPorts };
+  }, [customerIdFilter, filteredSites]);
+
+  // Calculate filtered metrics for customer view
+  const filteredMetrics = useMemo(() => {
+    if (!customerIdFilter || !selectedCustomer) return null;
+    return {
+      totalSites: filteredSites.length,
+      totalUsers: filteredSites.reduce((sum, s) => sum + s.totalUsers, 0),
+      activeUsers: filteredSites.reduce((sum, s) => sum + s.activeUsers, 0),
+      totalDevices: filteredSites.reduce((sum, s) => sum + s.totalDevices, 0),
+      onlineDevices: filteredSites.reduce((sum, s) => sum + s.onlineDevices, 0),
+      totalBandwidth: filteredSites.reduce((sum, s) => sum + s.bandwidthLimit, 0),
+      usedBandwidth: filteredSites.reduce((sum, s) => sum + s.bandwidthUsage, 0),
+    };
+  }, [customerIdFilter, selectedCustomer, filteredSites]);
+
+  // Clear customer filter
+  const clearCustomerFilter = () => {
+    navigate("/internal/dashboard");
+  };
+
+  // Filter active alerts (unacknowledged) - use filtered data when customer is selected
   const activeAlerts = useMemo(
-    () => systemAlerts.filter((a) => !a.acknowledged).slice(0, 5),
-    []
+    () => {
+      const alertsToUse = customerIdFilter ? filteredAlerts : systemAlerts;
+      return alertsToUse.filter((a) => !a.acknowledged).slice(0, 5);
+    },
+    [customerIdFilter, filteredAlerts]
   );
 
-  // Filter open tickets
+  // Filter open tickets - use filtered data when customer is selected
   const openTickets = useMemo(
-    () => supportTickets.filter((t) => t.status !== "completed").slice(0, 5),
-    []
+    () => {
+      let tickets = supportTickets.filter((t) => t.status !== "completed");
+      if (customerIdFilter) {
+        tickets = tickets.filter((t) => t.customerId === customerIdFilter);
+      }
+      return tickets.slice(0, 5);
+    },
+    [customerIdFilter]
   );
 
-  // Recent activity
-  const recentActivity = useMemo(() => activityLogs.slice(0, 8), []);
+  // Recent activity - filter by customer if selected
+  const recentActivity = useMemo(() => {
+    let logs = activityLogs;
+    if (customerIdFilter) {
+      logs = logs.filter((log) => log.customerId === customerIdFilter);
+    }
+    return logs.slice(0, 8);
+  }, [customerIdFilter]);
 
-  // Sites needing attention
+  // Sites needing attention - use filtered data when customer is selected
   const sitesNeedingAttention = useMemo(
-    () => sites.filter((s) => s.status === "offline" || s.status === "degraded" || s.criticalAlerts > 0),
-    []
+    () => {
+      const sitesToUse = customerIdFilter ? filteredSites : sites;
+      return sitesToUse.filter((s) => s.status === "offline" || s.status === "degraded" || s.criticalAlerts > 0);
+    },
+    [customerIdFilter, filteredSites]
   );
 
   const formatNumber = (num) => {
@@ -134,17 +237,36 @@ const InternalDashboard = () => {
     return `${diffDays}d ago`;
   };
 
+  // Show loading skeleton during initial load
+  if (isLoading) {
+    return <PageLoadingSkeleton pageType="internal-dashboard" />;
+  }
+
   return (
     <div className="internal-dashboard">
+      {/* Customer Filter Banner */}
+      {selectedCustomer && (
+        <div className="customer-filter-banner">
+          <div className="filter-info">
+            <FaBuilding className="filter-icon" />
+            <span>Viewing analytics for: <strong>{selectedCustomer.name}</strong></span>
+            <span className="customer-type-badge">{selectedCustomer.type}</span>
+          </div>
+          <button className="clear-filter-btn" onClick={clearCustomerFilter}>
+            <FaTimesCircle /> Clear Filter
+          </button>
+        </div>
+      )}
+
       {/* Welcome Header */}
       <div className="dashboard-welcome">
         <div className="welcome-text">
-          <h1>Welcome, {currentUser?.displayName || "Admin"}</h1>
-          <p>Spectra Network Operations Center</p>
+          <h1>{selectedCustomer ? `${selectedCustomer.name} Analytics` : `Welcome, ${currentUser?.displayName || "Admin"}`}</h1>
+          <p>{selectedCustomer ? `Customer Dashboard - ${filteredSites.length} site(s)` : "Spectra Network Operations Center"}</p>
         </div>
         <div className="welcome-actions">
           {hasPermission && hasPermission("canProvisionSites") && (
-            <button className="action-btn primary" onClick={() => navigate("/internal/sites/new")}>
+            <button className="action-btn primary" onClick={() => navigate("/internal/sites?action=provision")}>
               <FaPlus /> Provision New Site
             </button>
           )}
@@ -184,29 +306,40 @@ const InternalDashboard = () => {
 
       {/* Key Metrics */}
       <div className="metrics-grid">
-        <div className="metric-card customers">
-          <div className="metric-icon">
-            <FaBuilding />
+        {/* Show customer card only when not filtering by customer */}
+        {!customerIdFilter && (
+          <div className="metric-card customers">
+            <div className="metric-icon">
+              <FaBuilding />
+            </div>
+            <div className="metric-content">
+              <span className="metric-value">{platformMetrics.overview.totalCustomers}</span>
+              <span className="metric-label">Total Customers</span>
+              <span className="metric-sub">{platformMetrics.overview.activeCustomers} active</span>
+            </div>
           </div>
-          <div className="metric-content">
-            <span className="metric-value">{platformMetrics.overview.totalCustomers}</span>
-            <span className="metric-label">Total Customers</span>
-            <span className="metric-sub">{platformMetrics.overview.activeCustomers} active</span>
-          </div>
-        </div>
+        )}
 
         <div className="metric-card sites">
           <div className="metric-icon">
             <FaMapMarkerAlt />
           </div>
           <div className="metric-content">
-            <span className="metric-value">{platformMetrics.overview.totalSites}</span>
-            <span className="metric-label">Total Sites</span>
-            <span className="metric-sub">{platformMetrics.overview.activeSites} active</span>
+            <span className="metric-value">
+              {filteredMetrics ? filteredMetrics.totalSites : platformMetrics.overview.totalSites}
+            </span>
+            <span className="metric-label">{customerIdFilter ? "Customer Sites" : "Total Sites"}</span>
+            <span className="metric-sub">
+              {filteredMetrics
+                ? `${filteredSites.filter(s => s.status === "online").length} online`
+                : `${platformMetrics.overview.activeSites} active`}
+            </span>
           </div>
-          <div className="metric-trend positive">
-            <FaArrowUp /> {platformMetrics.trends.siteGrowth}%
-          </div>
+          {!customerIdFilter && (
+            <div className="metric-trend positive">
+              <FaArrowUp /> {platformMetrics.trends.siteGrowth}%
+            </div>
+          )}
         </div>
 
         <div className="metric-card users">
@@ -214,13 +347,19 @@ const InternalDashboard = () => {
             <FaUsers />
           </div>
           <div className="metric-content">
-            <span className="metric-value">{formatNumber(platformMetrics.overview.totalUsers)}</span>
-            <span className="metric-label">Total Users</span>
-            <span className="metric-sub">{formatNumber(platformMetrics.overview.activeUsers)} active</span>
+            <span className="metric-value">
+              {formatNumber(filteredMetrics ? filteredMetrics.totalUsers : platformMetrics.overview.totalUsers)}
+            </span>
+            <span className="metric-label">{customerIdFilter ? "Customer Users" : "Total Users"}</span>
+            <span className="metric-sub">
+              {formatNumber(filteredMetrics ? filteredMetrics.activeUsers : platformMetrics.overview.activeUsers)} active
+            </span>
           </div>
-          <div className="metric-trend positive">
-            <FaArrowUp /> {platformMetrics.trends.userGrowth}%
-          </div>
+          {!customerIdFilter && (
+            <div className="metric-trend positive">
+              <FaArrowUp /> {platformMetrics.trends.userGrowth}%
+            </div>
+          )}
         </div>
 
         <div className="metric-card devices">
@@ -228,31 +367,72 @@ const InternalDashboard = () => {
             <FaWifi />
           </div>
           <div className="metric-content">
-            <span className="metric-value">{formatNumber(platformMetrics.overview.totalDevices)}</span>
-            <span className="metric-label">Total Devices</span>
-            <span className="metric-sub">{formatNumber(platformMetrics.overview.onlineDevices)} online</span>
+            <span className="metric-value">
+              {formatNumber(filteredMetrics ? filteredMetrics.totalDevices : platformMetrics.overview.totalDevices)}
+            </span>
+            <span className="metric-label">{customerIdFilter ? "Customer Devices" : "Total Devices"}</span>
+            <span className="metric-sub">
+              {formatNumber(filteredMetrics ? filteredMetrics.onlineDevices : platformMetrics.overview.onlineDevices)} online
+            </span>
           </div>
         </div>
 
-        <div className="metric-card licenses">
-          <div className="metric-icon">
-            <FaPercentage />
+        {/* Show license utilization only when not filtering */}
+        {!customerIdFilter && (
+          <div className="metric-card licenses">
+            <div className="metric-icon">
+              <FaPercentage />
+            </div>
+            <div className="metric-content">
+              <span className="metric-value">{platformMetrics.health.licenseUtilization}%</span>
+              <span className="metric-label">License Utilization</span>
+              <span className="metric-sub">{formatNumber(platformMetrics.overview.totalLicenses)} total licenses</span>
+            </div>
           </div>
-          <div className="metric-content">
-            <span className="metric-value">{platformMetrics.health.licenseUtilization}%</span>
-            <span className="metric-label">License Utilization</span>
-            <span className="metric-sub">{formatNumber(platformMetrics.overview.totalLicenses)} total licenses</span>
-          </div>
-        </div>
+        )}
 
         <div className="metric-card bandwidth">
           <div className="metric-icon">
             <FaNetworkWired />
           </div>
           <div className="metric-content">
-            <span className="metric-value">{formatNumber(platformMetrics.overview.usedBandwidth)}</span>
+            <span className="metric-value">
+              {formatNumber(filteredMetrics ? filteredMetrics.usedBandwidth : platformMetrics.overview.usedBandwidth)}
+            </span>
             <span className="metric-label">Bandwidth (Mbps)</span>
-            <span className="metric-sub">of {formatNumber(platformMetrics.overview.totalBandwidth)} provisioned</span>
+            <span className="metric-sub">
+              of {formatNumber(filteredMetrics ? filteredMetrics.totalBandwidth : platformMetrics.overview.totalBandwidth)} provisioned
+            </span>
+          </div>
+        </div>
+
+        <div className="metric-card infrastructure-aps">
+          <div className="metric-icon">
+            <FaWifi />
+          </div>
+          <div className="metric-content">
+            <span className="metric-value infra-value">
+              <span className="live">{formatNumber(infrastructureStats.liveAps)}</span>
+              <span className="sep">/</span>
+              <span className="total">{formatNumber(infrastructureStats.deployedAps)}</span>
+            </span>
+            <span className="metric-label">Access Points</span>
+            <span className="metric-sub">Live / Deployed APs</span>
+          </div>
+        </div>
+
+        <div className="metric-card infrastructure-switches">
+          <div className="metric-icon">
+            <FaServer />
+          </div>
+          <div className="metric-content">
+            <span className="metric-value infra-value">
+              <span className="live">{formatNumber(infrastructureStats.liveSwitches)}</span>
+              <span className="sep">/</span>
+              <span className="total">{formatNumber(infrastructureStats.totalSwitches)}</span>
+            </span>
+            <span className="metric-label">PoE Switches</span>
+            <span className="metric-sub">{formatNumber(infrastructureStats.totalPorts)} total ports</span>
           </div>
         </div>
       </div>

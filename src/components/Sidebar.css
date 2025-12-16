@@ -259,7 +259,40 @@
   opacity: 0.7;
 }
 
-/* Internal Portal - smaller icons (80% of normal size) */
+/* Internal Portal - black background, no image */
+.sidebar.internal-portal {
+  background: #000000;
+  background-image: none;
+}
+
+.sidebar.internal-portal .sidebar-logo-area {
+  background: #000000;
+}
+
+/* Internal Portal - layout to fit nav items within ~90% of sidebar height */
+.sidebar.internal-portal .sidebar-nav {
+  padding: 0.5rem 0 1rem 0;
+}
+
+.sidebar.internal-portal .sidebar-nav-li {
+  margin-bottom: 0.25rem;
+}
+
+.sidebar.internal-portal .sidebar-nav-item {
+  padding: 0.5rem 0.5rem;
+}
+
 .sidebar.internal-portal .sidebar-nav-icon {
-  font-size: 1.68rem;
+  font-size: 1.5rem;
+  margin-bottom: 0.1875rem;
+}
+
+.sidebar.internal-portal .sidebar-nav-label {
+  font-size: 0.6875rem;
+  line-height: 1.25;
+}
+
+/* Ensure active indicator is proportional */
+.sidebar.internal-portal .sidebar-nav-item.active-link::before {
+  width: 0.1875rem;
 }

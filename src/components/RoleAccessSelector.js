@@ -383,11 +383,8 @@ const RoleAccessSelector = ({ showLabel = true }) => {
                   className="access-level-test-dropdown"
                   aria-label="Select access level for testing"
                 >
-                  <option value={AccessLevels.SITE}>Site (Lowest)</option>
-                  <option value={AccessLevels.CLUSTER}>Cluster</option>
-                  <option value={AccessLevels.CITY}>City</option>
+                  <option value={AccessLevels.SITE}>Site</option>
                   <option value={AccessLevels.COMPANY}>Company</option>
-                  <option value={AccessLevels.GROUP}>Group (Highest)</option>
                 </select>
               </div>
             </>

@@ -32,7 +32,7 @@ import './ScheduledTasksPanel.css';
  */
 const ScheduledTasksPanel = () => {
   const {
-    tasks,
+    scheduledTasks,
     cancelScheduledTask,
     deleteScheduledTask,
     clearCompletedTasks,
@@ -43,7 +43,7 @@ const ScheduledTasksPanel = () => {
   const [confirmDelete, setConfirmDelete] = useState(null);
 
   // Filter tasks
-  const filteredTasks = tasks.filter((task) => {
+  const filteredTasks = scheduledTasks.filter((task) => {
     const matchesSearch =
       getTaskTypeLabel(task.type).toLowerCase().includes(searchTerm.toLowerCase()) ||
       task.id.toLowerCase().includes(searchTerm.toLowerCase());

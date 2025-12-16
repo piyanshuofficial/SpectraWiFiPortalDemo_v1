@@ -88,6 +88,7 @@ export const sampleUsers = [
     dataVolume: "50 GB",
     deviceLimit: "3",
     dataCycleType: "Monthly",
+    dataResetDate: "2025-01-01", // Next data reset date
     devicesCount: 2,
     status: "Active",
     registration: "2024-01-15",
