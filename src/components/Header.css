@@ -353,6 +353,7 @@
   border-radius: 50%;
   transition: background 0.2s, color 0.2s;
   padding: 0.25rem;
+  margin-left: 1rem;
 }
 
 .header-avatar-icon:hover {

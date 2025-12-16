@@ -10,7 +10,10 @@
       "Bash(dir:*)",
       "Bash(python:*)",
       "Bash(node -e:*)",
-      "Bash(npm start)"
+      "Bash(npm start)",
+      "Bash(powershell -Command \"(Get-Content ''C:\\Users\\piyanshu.agrawal\\portal-frontend\\src\\pages\\GuestManagement\\GuestManagement.js'').Length\")",
+      "Bash(powershell -Command \"(Get-Content ''C:\\Users\\piyanshu.agrawal\\portal-frontend\\src\\pages\\Internal\\SystemConfiguration.js'').Length\")",
+      "Bash(powershell -Command \"(Get-Content ''C:\\Users\\piyanshu.agrawal\\portal-frontend\\src\\pages\\GuestManagement\\GuestManagement.css'').Length\")"
     ],
     "deny": [],
     "ask": []

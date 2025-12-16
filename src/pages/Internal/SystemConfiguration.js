@@ -3,6 +3,8 @@
 import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@context/AuthContext";
+import ConfirmationModal from "@components/ConfirmationModal";
+import notifications from "@utils/notifications";
 import {
   FaCog,
   FaSearch,
@@ -24,11 +26,14 @@ import {
   FaBell,
   FaEnvelope,
   FaMobileAlt,
-  FaSlack,
+  FaWhatsapp,
   FaLink,
   FaToggleOn,
   FaToggleOff,
   FaExclamationTriangle,
+  FaFileExport,
+  FaFileImport,
+  FaFile,
 } from "react-icons/fa";
 import "./SystemConfiguration.css";
 
@@ -156,17 +161,38 @@ const notificationSettings = {
     { id: "thr_006", name: "Low Uptime", metric: "uptime", operator: "<", value: 99.5, unit: "%", severity: "warning", enabled: false },
   ],
   emailTemplates: [
-    { id: "tpl_001", name: "Welcome Email", type: "user_onboarding", subject: "Welcome to Spectra WiFi", status: "active", lastModified: "2024-01-10" },
-    { id: "tpl_002", name: "Password Reset", type: "security", subject: "Reset Your Password", status: "active", lastModified: "2024-01-08" },
-    { id: "tpl_003", name: "Alert Notification", type: "alert", subject: "Alert: {{alert_name}}", status: "active", lastModified: "2024-01-05" },
-    { id: "tpl_004", name: "Usage Report", type: "report", subject: "Your Weekly Usage Report", status: "active", lastModified: "2023-12-20" },
-    { id: "tpl_005", name: "Account Suspended", type: "security", subject: "Account Suspended", status: "inactive", lastModified: "2023-11-15" },
+    { id: "tpl_001", name: "Welcome Email", type: "user_onboarding", subject: "Welcome to Spectra WiFi", status: "active", scope: "global", segment: "all", customer: null, site: null, priority: "high", lastModified: "2024-01-10", createdBy: "System" },
+    { id: "tpl_002", name: "Password Reset", type: "security", subject: "Reset Your Password", status: "active", scope: "global", segment: "all", customer: null, site: null, priority: "high", lastModified: "2024-01-08", createdBy: "System" },
+    { id: "tpl_003", name: "Alert Notification", type: "alert", subject: "Alert: {{alert_name}}", status: "active", scope: "global", segment: "all", customer: null, site: null, priority: "high", lastModified: "2024-01-05", createdBy: "System" },
+    { id: "tpl_004", name: "Usage Report", type: "report", subject: "Your Weekly Usage Report", status: "active", scope: "segment", segment: "enterprise", customer: null, site: null, priority: "medium", lastModified: "2023-12-20", createdBy: "Admin" },
+    { id: "tpl_005", name: "Account Suspended", type: "security", subject: "Account Suspended", status: "inactive", scope: "global", segment: "all", customer: null, site: null, priority: "high", lastModified: "2023-11-15", createdBy: "System" },
+    { id: "tpl_006", name: "Hotel Guest Welcome", type: "user_onboarding", subject: "Welcome to {{hotel_name}}", status: "active", scope: "segment", segment: "hotel", customer: null, site: null, priority: "medium", lastModified: "2024-01-02", createdBy: "Admin" },
+    { id: "tpl_007", name: "TechCorp Custom Alert", type: "alert", subject: "TechCorp Network Alert", status: "active", scope: "customer", segment: "enterprise", customer: "TechCorp Industries", site: null, priority: "high", lastModified: "2024-01-08", createdBy: "Support" },
+  ],
+  whatsappTemplates: [
+    { id: "wa_001", name: "Welcome Message", type: "user_onboarding", message: "Welcome to Spectra WiFi! Your account is now active.", status: "approved", language: "en", scope: "global", segment: "all", customer: null, site: null, category: "utility", lastModified: "2024-01-12", createdBy: "System" },
+    { id: "wa_002", name: "OTP Verification", type: "authentication", message: "Your OTP is {{otp}}. Valid for 10 minutes.", status: "approved", language: "en", scope: "global", segment: "all", customer: null, site: null, category: "authentication", lastModified: "2024-01-10", createdBy: "System" },
+    { id: "wa_003", name: "Service Alert", type: "alert", message: "Alert: {{alert_name}} - {{alert_message}}", status: "approved", language: "en", scope: "global", segment: "all", customer: null, site: null, category: "utility", lastModified: "2024-01-08", createdBy: "System" },
+    { id: "wa_004", name: "Payment Reminder", type: "billing", message: "Your payment of ₹{{amount}} is due on {{due_date}}.", status: "pending", language: "en", scope: "segment", segment: "enterprise", customer: null, site: null, category: "utility", lastModified: "2024-01-05", createdBy: "Admin" },
+    { id: "wa_005", name: "Service Restored", type: "notification", message: "Good news! Your service has been restored.", status: "approved", language: "en", scope: "global", segment: "all", customer: null, site: null, category: "utility", lastModified: "2024-01-03", createdBy: "System" },
+    { id: "wa_006", name: "Guest WiFi Credentials", type: "guest_access", message: "Your Guest WiFi credentials - SSID: {{ssid}}, Password: {{password}}", status: "approved", language: "en", scope: "segment", segment: "hotel", customer: null, site: null, category: "utility", lastModified: "2024-01-01", createdBy: "Admin" },
+    { id: "wa_007", name: "Hotel Check-in Welcome", type: "user_onboarding", message: "Welcome to {{hotel_name}}! Connect to WiFi: {{ssid}}. Enjoy your stay!", status: "approved", language: "en", scope: "customer", segment: "hotel", customer: "Grand Plaza Hotel", site: null, category: "marketing", lastModified: "2024-01-10", createdBy: "Support" },
+  ],
+  smsTemplates: [
+    { id: "sms_001", name: "OTP Code", type: "authentication", message: "{{otp}} is your Spectra verification code. Valid for 10 mins. Do not share.", status: "active", chars: 72, scope: "global", segment: "all", customer: null, site: null, senderId: "SPECTRA", lastModified: "2024-01-15", createdBy: "System" },
+    { id: "sms_002", name: "Welcome SMS", type: "user_onboarding", message: "Welcome to Spectra WiFi! Your account is active. Download app: {{app_link}}", status: "active", chars: 78, scope: "global", segment: "all", customer: null, site: null, senderId: "SPECTRA", lastModified: "2024-01-12", createdBy: "System" },
+    { id: "sms_003", name: "Payment Due", type: "billing", message: "Spectra: Your payment of Rs.{{amount}} is due on {{date}}. Pay now to avoid disconnection.", status: "active", chars: 89, scope: "segment", segment: "enterprise", customer: null, site: null, senderId: "SPECTRA", lastModified: "2024-01-10", createdBy: "Admin" },
+    { id: "sms_004", name: "Service Alert", type: "alert", message: "Spectra Alert: {{alert_message}}. Contact support if issue persists.", status: "active", chars: 65, scope: "global", segment: "all", customer: null, site: null, senderId: "SPECTRA", lastModified: "2024-01-08", createdBy: "System" },
+    { id: "sms_005", name: "Password Reset", type: "security", message: "Your Spectra password reset code is {{code}}. Expires in 15 mins.", status: "active", chars: 64, scope: "global", segment: "all", customer: null, site: null, senderId: "SPECTRA", lastModified: "2024-01-05", createdBy: "System" },
+    { id: "sms_006", name: "Guest Access", type: "guest_access", message: "Spectra Guest WiFi - Network: {{ssid}}, Password: {{password}}. Valid for {{duration}}.", status: "active", chars: 82, scope: "segment", segment: "hotel", customer: null, site: null, senderId: "SPECTRA", lastModified: "2024-01-03", createdBy: "Admin" },
+    { id: "sms_007", name: "Service Disconnected", type: "notification", message: "Spectra: Your service has been disconnected due to non-payment. Pay now to restore.", status: "inactive", chars: 85, scope: "global", segment: "all", customer: null, site: null, senderId: "SPECTRA", lastModified: "2023-12-20", createdBy: "System" },
+    { id: "sms_008", name: "CoWork Day Pass", type: "guest_access", message: "Your CoWork day pass is active. WiFi: {{ssid}}, Pass: {{password}}. Valid till {{expiry}}.", status: "active", chars: 88, scope: "segment", segment: "coWorking", customer: null, site: null, senderId: "COWORK", lastModified: "2024-01-05", createdBy: "Admin" },
   ],
   channels: {
     email: { enabled: true, smtpServer: "smtp.spectra.co", from: "noreply@spectra.co" },
     sms: { enabled: true, provider: "Twilio", senderId: "SPECTRA" },
     webhook: { enabled: true, endpoints: 3 },
-    slack: { enabled: false, workspace: null },
+    whatsapp: { enabled: true, businessAccount: "Spectra", phoneNumber: "+91 98765 43210" },
   },
 };
 
@@ -356,6 +382,31 @@ const SystemConfiguration = () => {
   // Policy modal state
   const [showPolicyModal, setShowPolicyModal] = useState(false);
   const [editingPolicy, setEditingPolicy] = useState(null);
+
+  // Delete confirmation modal state
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [policyToDelete, setPolicyToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // Template modal state
+  const [showTemplateModal, setShowTemplateModal] = useState(false);
+  const [templateType, setTemplateType] = useState('email'); // 'email', 'whatsapp', 'sms'
+  const [isSavingTemplate, setIsSavingTemplate] = useState(false);
+  const [templateFormData, setTemplateFormData] = useState({
+    name: '',
+    type: 'notification',
+    subject: '',
+    message: '',
+    scope: 'global',
+    segment: 'all',
+    customer: '',
+    site: '',
+    status: 'active',
+    language: 'en',
+    category: 'utility',
+    senderId: 'SPECTRA',
+    priority: 'medium',
+  });
   const [policyFormData, setPolicyFormData] = useState({
     name: "",
     type: "bandwidth",
@@ -370,6 +421,12 @@ const SystemConfiguration = () => {
       deviceLimit: 3,
     },
   });
+
+  // Import/Export modal state
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [importFile, setImportFile] = useState(null);
+  const [isImporting, setIsImporting] = useState(false);
+  const [importPreview, setImportPreview] = useState(null);
 
   // Policy action handlers
   const handleEditPolicy = (policy) => {
@@ -399,11 +456,32 @@ const SystemConfiguration = () => {
   };
 
   const handleDeletePolicy = (policy) => {
-    if (window.confirm(`Are you sure you want to delete "${policy.name}"? This action cannot be undone.`)) {
+    setPolicyToDelete(policy);
+    setShowDeleteConfirmation(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!policyToDelete) return;
+
+    setIsDeleting(true);
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 800));
       // In production, this would call an API
-      console.log("Deleting policy:", policy.id);
-      alert(`Policy "${policy.name}" has been deleted.`);
+      console.log("Deleting policy:", policyToDelete.id);
+      notifications.showSuccess(`Policy "${policyToDelete.name}" has been deleted.`);
+      setShowDeleteConfirmation(false);
+      setPolicyToDelete(null);
+    } catch (error) {
+      notifications.showError("Failed to delete policy. Please try again.");
+    } finally {
+      setIsDeleting(false);
     }
+  };
+
+  const handleCancelDelete = () => {
+    setShowDeleteConfirmation(false);
+    setPolicyToDelete(null);
   };
 
   const handleSavePolicy = () => {
@@ -435,6 +513,233 @@ const SystemConfiguration = () => {
       },
     });
     setShowPolicyModal(true);
+  };
+
+  // Template action handlers
+  const handleOpenTemplateModal = (type) => {
+    setTemplateType(type);
+    setTemplateFormData({
+      name: '',
+      type: 'notification',
+      subject: '',
+      message: '',
+      scope: 'global',
+      segment: 'all',
+      customer: '',
+      site: '',
+      status: type === 'whatsapp' ? 'pending' : 'active',
+      language: 'en',
+      category: 'utility',
+      senderId: 'SPECTRA',
+      priority: 'medium',
+    });
+    setShowTemplateModal(true);
+  };
+
+  const handleCloseTemplateModal = () => {
+    setShowTemplateModal(false);
+    setTemplateFormData({
+      name: '',
+      type: 'notification',
+      subject: '',
+      message: '',
+      scope: 'global',
+      segment: 'all',
+      customer: '',
+      site: '',
+      status: 'active',
+      language: 'en',
+      category: 'utility',
+      senderId: 'SPECTRA',
+      priority: 'medium',
+    });
+  };
+
+  const handleSaveTemplate = async () => {
+    if (!templateFormData.name.trim()) {
+      notifications.showError('Please enter a template name');
+      return;
+    }
+    if (templateType === 'email' && !templateFormData.subject.trim()) {
+      notifications.showError('Please enter an email subject');
+      return;
+    }
+    if ((templateType === 'whatsapp' || templateType === 'sms') && !templateFormData.message.trim()) {
+      notifications.showError('Please enter a message');
+      return;
+    }
+
+    setIsSavingTemplate(true);
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 800));
+
+      const templateId = `${templateType}_${Date.now()}`;
+      const newTemplate = {
+        id: templateId,
+        name: templateFormData.name,
+        type: templateFormData.type,
+        status: templateFormData.status,
+        scope: templateFormData.scope,
+        segment: templateFormData.segment,
+        customer: templateFormData.customer || null,
+        site: templateFormData.site || null,
+        lastModified: new Date().toISOString().split('T')[0],
+        createdBy: 'Admin',
+        ...(templateType === 'email' && {
+          subject: templateFormData.subject,
+          priority: templateFormData.priority,
+        }),
+        ...(templateType === 'whatsapp' && {
+          message: templateFormData.message,
+          language: templateFormData.language,
+          category: templateFormData.category,
+        }),
+        ...(templateType === 'sms' && {
+          message: templateFormData.message,
+          chars: templateFormData.message.length,
+          senderId: templateFormData.senderId,
+        }),
+      };
+
+      console.log('Creating template:', newTemplate);
+      notifications.showSuccess(`${templateType.charAt(0).toUpperCase() + templateType.slice(1)} template "${templateFormData.name}" has been created.`);
+      handleCloseTemplateModal();
+    } catch (error) {
+      notifications.showError('Failed to create template. Please try again.');
+    } finally {
+      setIsSavingTemplate(false);
+    }
+  };
+
+  // Sample data for dropdowns
+  const segmentOptions = ['all', 'enterprise', 'hotel', 'coLiving', 'coWorking', 'pg', 'office'];
+  const customerOptions = ['TechCorp Industries', 'Grand Plaza Hotel', 'Urban Living Spaces', 'WorkHub Co-Working', 'Sunrise PG'];
+  const siteOptions = ['Main Office', 'Branch Office', 'Hotel Lobby', 'Co-Working Floor 1', 'Residential Block A'];
+  const templateTypeOptions = [
+    { value: 'notification', label: 'Notification' },
+    { value: 'user_onboarding', label: 'User Onboarding' },
+    { value: 'authentication', label: 'Authentication' },
+    { value: 'security', label: 'Security' },
+    { value: 'billing', label: 'Billing' },
+    { value: 'alert', label: 'Alert' },
+    { value: 'report', label: 'Report' },
+    { value: 'guest_access', label: 'Guest Access' },
+  ];
+
+  // Export/Import handlers
+  const handleExportPolicies = () => {
+    const exportData = {
+      exportType: 'policies',
+      exportDate: new Date().toISOString(),
+      version: '1.0',
+      data: policiesData,
+    };
+    downloadJsonFile(exportData, `user-policies-${formatDateForFilename()}.json`);
+    notifications.showSuccess('User policies exported successfully!');
+  };
+
+  const handleExportAll = () => {
+    const exportData = {
+      exportType: 'full_config',
+      exportDate: new Date().toISOString(),
+      version: '1.0',
+      data: {
+        policies: policiesData,
+        notifications: notificationSettings,
+        roles: rolesData,
+      },
+    };
+    downloadJsonFile(exportData, `system-config-${formatDateForFilename()}.json`);
+    notifications.showSuccess('Full system configuration exported successfully!');
+  };
+
+  const downloadJsonFile = (data, filename) => {
+    const jsonString = JSON.stringify(data, null, 2);
+    const blob = new Blob([jsonString], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const formatDateForFilename = () => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  };
+
+  const handleOpenImportModal = () => {
+    setShowImportModal(true);
+    setImportFile(null);
+    setImportPreview(null);
+  };
+
+  const handleCloseImportModal = () => {
+    setShowImportModal(false);
+    setImportFile(null);
+    setImportPreview(null);
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (!file.name.endsWith('.json')) {
+        notifications.showError('Please select a valid JSON file.');
+        return;
+      }
+      setImportFile(file);
+
+      // Read and preview file content
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const data = JSON.parse(event.target.result);
+          setImportPreview(data);
+        } catch (error) {
+          notifications.showError('Invalid JSON file format.');
+          setImportFile(null);
+          setImportPreview(null);
+        }
+      };
+      reader.readAsText(file);
+    }
+  };
+
+  const handleImportConfig = async () => {
+    if (!importFile || !importPreview) {
+      notifications.showError('Please select a valid configuration file.');
+      return;
+    }
+
+    setIsImporting(true);
+    try {
+      // Simulate API call for import
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // In production, this would send to an API
+      console.log('Importing configuration:', importPreview);
+
+      const importType = importPreview.exportType || 'unknown';
+      let message = 'Configuration imported successfully!';
+
+      if (importType === 'policies') {
+        message = `${importPreview.data?.length || 0} policies imported successfully!`;
+      } else if (importType === 'full_config') {
+        const policiesCount = importPreview.data?.policies?.length || 0;
+        message = `Full configuration imported: ${policiesCount} policies and notification settings.`;
+      }
+
+      notifications.showSuccess(message);
+      handleCloseImportModal();
+    } catch (error) {
+      notifications.showError('Failed to import configuration. Please try again.');
+    } finally {
+      setIsImporting(false);
+    }
   };
 
   // Policies state
@@ -481,7 +786,7 @@ const SystemConfiguration = () => {
           <span className="count">{filteredPolicies.length} policies</span>
         </div>
         <div className="section-actions">
-          <button className="btn btn-outline">
+          <button className="btn btn-outline" onClick={handleExportPolicies}>
             <FaDownload /> Export
           </button>
           <button className="btn btn-primary" onClick={handleCreateNewPolicy}>
@@ -602,14 +907,14 @@ const SystemConfiguration = () => {
               {notificationSettings.channels.webhook.enabled ? <FaCheckCircle /> : <FaTimesCircle />}
             </div>
           </div>
-          <div className={`channel-card ${notificationSettings.channels.slack.enabled ? 'enabled' : 'disabled'}`}>
-            <div className="channel-icon"><FaSlack /></div>
+          <div className={`channel-card ${notificationSettings.channels.whatsapp.enabled ? 'enabled' : 'disabled'}`}>
+            <div className="channel-icon whatsapp"><FaWhatsapp /></div>
             <div className="channel-info">
-              <h4>Slack</h4>
-              <p>{notificationSettings.channels.slack.workspace || 'Not configured'}</p>
+              <h4>WhatsApp Business</h4>
+              <p>{notificationSettings.channels.whatsapp.businessAccount || 'Not configured'}</p>
             </div>
             <div className="channel-status">
-              {notificationSettings.channels.slack.enabled ? <FaCheckCircle /> : <FaTimesCircle />}
+              {notificationSettings.channels.whatsapp.enabled ? <FaCheckCircle /> : <FaTimesCircle />}
             </div>
           </div>
         </div>
@@ -663,7 +968,7 @@ const SystemConfiguration = () => {
       <div className="templates-section">
         <div className="templates-header">
           <h3><FaEnvelope /> Email Templates</h3>
-          <button className="btn btn-outline btn-sm">
+          <button className="btn btn-outline btn-sm" onClick={() => handleOpenTemplateModal('email')}>
             <FaPlus /> New Template
           </button>
         </div>
@@ -676,13 +981,120 @@ const SystemConfiguration = () => {
                   {template.status}
                 </span>
               </div>
-              <p className="template-type">{template.type}</p>
+              <div className="template-scope-badges">
+                <span className={`scope-badge ${template.scope}`}>{template.scope}</span>
+                {template.segment !== 'all' && (
+                  <span className="scope-badge segment">{template.segment}</span>
+                )}
+                {template.customer && (
+                  <span className="scope-badge customer">{template.customer}</span>
+                )}
+              </div>
+              <p className="template-type">{template.type.replace('_', ' ')}</p>
               <p className="template-subject">Subject: {template.subject}</p>
               <div className="template-footer">
                 <span className="template-date">Modified: {template.lastModified}</span>
                 <div className="template-actions">
                   <button className="btn-icon" title="Edit"><FaEdit /></button>
                   <button className="btn-icon" title="Duplicate"><FaCopy /></button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* WhatsApp Templates */}
+      <div className="templates-section whatsapp-templates">
+        <div className="templates-header">
+          <h3><FaWhatsapp className="whatsapp-icon" /> WhatsApp Templates</h3>
+          <button className="btn btn-outline btn-sm" onClick={() => handleOpenTemplateModal('whatsapp')}>
+            <FaPlus /> New Template
+          </button>
+        </div>
+        <p className="templates-description">
+          WhatsApp Business API message templates. Templates must be approved by Meta before use.
+        </p>
+        <div className="templates-grid">
+          {notificationSettings.whatsappTemplates.map((template) => (
+            <div key={template.id} className="template-card whatsapp-card">
+              <div className="template-header">
+                <h4>{template.name}</h4>
+                <span className={`status-badge ${template.status}`}>
+                  {template.status}
+                </span>
+              </div>
+              <div className="template-scope-badges">
+                <span className={`scope-badge ${template.scope}`}>{template.scope}</span>
+                {template.segment !== 'all' && (
+                  <span className="scope-badge segment">{template.segment}</span>
+                )}
+                {template.customer && (
+                  <span className="scope-badge customer">{template.customer}</span>
+                )}
+              </div>
+              <p className="template-type">{template.type.replace('_', ' ')}</p>
+              <p className="template-message">"{template.message}"</p>
+              <div className="template-meta">
+                <span className="template-language">Lang: {template.language.toUpperCase()}</span>
+                <span className="template-language">{template.category}</span>
+              </div>
+              <div className="template-footer">
+                <span className="template-date">Modified: {template.lastModified}</span>
+                <div className="template-actions">
+                  <button className="btn-icon" title="Edit"><FaEdit /></button>
+                  <button className="btn-icon" title="Duplicate"><FaCopy /></button>
+                  <button className="btn-icon danger" title="Delete"><FaTrash /></button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* SMS Templates */}
+      <div className="templates-section sms-templates">
+        <div className="templates-header">
+          <h3><FaMobileAlt className="sms-icon" /> SMS Templates</h3>
+          <button className="btn btn-outline btn-sm" onClick={() => handleOpenTemplateModal('sms')}>
+            <FaPlus /> New Template
+          </button>
+        </div>
+        <p className="templates-description sms-description">
+          SMS templates for transactional messages. Keep messages under 160 characters for single SMS.
+        </p>
+        <div className="templates-grid">
+          {notificationSettings.smsTemplates.map((template) => (
+            <div key={template.id} className="template-card sms-card">
+              <div className="template-header">
+                <h4>{template.name}</h4>
+                <span className={`status-badge ${template.status}`}>
+                  {template.status}
+                </span>
+              </div>
+              <div className="template-scope-badges">
+                <span className={`scope-badge ${template.scope}`}>{template.scope}</span>
+                {template.segment !== 'all' && (
+                  <span className="scope-badge segment">{template.segment}</span>
+                )}
+                {template.customer && (
+                  <span className="scope-badge customer">{template.customer}</span>
+                )}
+              </div>
+              <p className="template-type">{template.type.replace('_', ' ')}</p>
+              <p className="template-message sms-message">"{template.message}"</p>
+              <div className="template-meta">
+                <span className={`char-count ${template.chars > 160 ? 'warning' : ''}`}>
+                  {template.chars} / 160 chars
+                </span>
+                <span className="template-language">{template.senderId}</span>
+              </div>
+              <div className="template-footer">
+                <span className="template-date">Modified: {template.lastModified}</span>
+                <div className="template-actions">
+                  <button className="btn-icon" title="Edit"><FaEdit /></button>
+                  <button className="btn-icon" title="Duplicate"><FaCopy /></button>
+                  <button className="btn-icon danger" title="Delete"><FaTrash /></button>
                 </div>
               </div>
             </div>
@@ -850,10 +1262,10 @@ const SystemConfiguration = () => {
             <p className="page-subtitle">Manage policies, notifications, and access controls</p>
           </div>
           <div className="page-header-actions">
-            <button className="btn btn-outline">
+            <button className="btn btn-outline" onClick={handleOpenImportModal}>
               <FaUpload /> Import Config
             </button>
-            <button className="btn btn-outline">
+            <button className="btn btn-outline" onClick={handleExportAll}>
               <FaDownload /> Export All
             </button>
           </div>
@@ -1048,6 +1460,431 @@ const SystemConfiguration = () => {
               </button>
               <button className="btn btn-primary" onClick={handleSavePolicy}>
                 <FaSave /> {editingPolicy ? "Update Policy" : "Create Policy"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Policy Confirmation Modal */}
+      <ConfirmationModal
+        open={showDeleteConfirmation}
+        onClose={handleCancelDelete}
+        onConfirm={handleConfirmDelete}
+        title="Delete Policy"
+        message={
+          policyToDelete
+            ? `Are you sure you want to delete the policy "${policyToDelete.name}"?\n\nThis will:\n• Remove the policy configuration permanently\n• Affect all sites/users currently using this policy\n• This action cannot be undone`
+            : ''
+        }
+        confirmText="Delete Policy"
+        cancelText="Cancel"
+        variant="danger"
+        loading={isDeleting}
+      />
+
+      {/* Template Modal */}
+      {showTemplateModal && (
+        <div className="template-modal-overlay" onClick={handleCloseTemplateModal}>
+          <div className={`template-modal template-modal-${templateType}`} onClick={(e) => e.stopPropagation()}>
+            <div className="template-modal-header">
+              <h2>
+                {templateType === 'email' && <><FaEnvelope className="modal-icon email" /> New Email Template</>}
+                {templateType === 'whatsapp' && <><FaWhatsapp className="modal-icon whatsapp" /> New WhatsApp Template</>}
+                {templateType === 'sms' && <><FaMobileAlt className="modal-icon sms" /> New SMS Template</>}
+              </h2>
+              <button className="close-btn" onClick={handleCloseTemplateModal}>
+                <FaTimesCircle />
+              </button>
+            </div>
+
+            <div className="template-modal-body">
+              {/* Basic Information */}
+              <div className="form-section">
+                <h4>Basic Information</h4>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Template Name *</label>
+                    <input
+                      type="text"
+                      value={templateFormData.name}
+                      onChange={(e) => setTemplateFormData({ ...templateFormData, name: e.target.value })}
+                      placeholder="Enter template name"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Template Type</label>
+                    <select
+                      value={templateFormData.type}
+                      onChange={(e) => setTemplateFormData({ ...templateFormData, type: e.target.value })}
+                    >
+                      {templateTypeOptions.map(opt => (
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Email-specific: Subject */}
+                {templateType === 'email' && (
+                  <div className="form-group full-width">
+                    <label>Email Subject *</label>
+                    <input
+                      type="text"
+                      value={templateFormData.subject}
+                      onChange={(e) => setTemplateFormData({ ...templateFormData, subject: e.target.value })}
+                      placeholder="Enter email subject (supports {{variables}})"
+                    />
+                  </div>
+                )}
+
+                {/* WhatsApp/SMS: Message */}
+                {(templateType === 'whatsapp' || templateType === 'sms') && (
+                  <div className="form-group full-width">
+                    <label>Message Content *</label>
+                    <textarea
+                      value={templateFormData.message}
+                      onChange={(e) => setTemplateFormData({ ...templateFormData, message: e.target.value })}
+                      placeholder="Enter message content (supports {{variables}})"
+                      rows="4"
+                    />
+                    {templateType === 'sms' && (
+                      <span className={`char-counter ${templateFormData.message.length > 160 ? 'warning' : ''}`}>
+                        {templateFormData.message.length} / 160 characters
+                        {templateFormData.message.length > 160 && ' (Multiple SMS)'}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Scope & Targeting */}
+              <div className="form-section">
+                <h4>Scope & Targeting</h4>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Scope</label>
+                    <select
+                      value={templateFormData.scope}
+                      onChange={(e) => setTemplateFormData({ ...templateFormData, scope: e.target.value, customer: '', site: '' })}
+                    >
+                      <option value="global">Global (All)</option>
+                      <option value="segment">Segment Specific</option>
+                      <option value="customer">Customer Specific</option>
+                      <option value="site">Site Specific</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>Segment</label>
+                    <select
+                      value={templateFormData.segment}
+                      onChange={(e) => setTemplateFormData({ ...templateFormData, segment: e.target.value })}
+                      disabled={templateFormData.scope === 'global'}
+                    >
+                      {segmentOptions.map(seg => (
+                        <option key={seg} value={seg}>
+                          {seg === 'all' ? 'All Segments' : seg.charAt(0).toUpperCase() + seg.slice(1).replace(/([A-Z])/g, ' $1')}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {(templateFormData.scope === 'customer' || templateFormData.scope === 'site') && (
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Customer</label>
+                      <select
+                        value={templateFormData.customer}
+                        onChange={(e) => setTemplateFormData({ ...templateFormData, customer: e.target.value })}
+                      >
+                        <option value="">Select Customer</option>
+                        {customerOptions.map(cust => (
+                          <option key={cust} value={cust}>{cust}</option>
+                        ))}
+                      </select>
+                    </div>
+                    {templateFormData.scope === 'site' && (
+                      <div className="form-group">
+                        <label>Site</label>
+                        <select
+                          value={templateFormData.site}
+                          onChange={(e) => setTemplateFormData({ ...templateFormData, site: e.target.value })}
+                        >
+                          <option value="">Select Site</option>
+                          {siteOptions.map(site => (
+                            <option key={site} value={site}>{site}</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Additional Settings */}
+              <div className="form-section">
+                <h4>Additional Settings</h4>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Status</label>
+                    <select
+                      value={templateFormData.status}
+                      onChange={(e) => setTemplateFormData({ ...templateFormData, status: e.target.value })}
+                    >
+                      {templateType === 'whatsapp' ? (
+                        <>
+                          <option value="pending">Pending Approval</option>
+                          <option value="approved">Approved</option>
+                          <option value="rejected">Rejected</option>
+                        </>
+                      ) : (
+                        <>
+                          <option value="active">Active</option>
+                          <option value="inactive">Inactive</option>
+                          <option value="draft">Draft</option>
+                        </>
+                      )}
+                    </select>
+                  </div>
+
+                  {/* Email-specific: Priority */}
+                  {templateType === 'email' && (
+                    <div className="form-group">
+                      <label>Priority</label>
+                      <select
+                        value={templateFormData.priority}
+                        onChange={(e) => setTemplateFormData({ ...templateFormData, priority: e.target.value })}
+                      >
+                        <option value="high">High</option>
+                        <option value="medium">Medium</option>
+                        <option value="low">Low</option>
+                      </select>
+                    </div>
+                  )}
+
+                  {/* WhatsApp-specific: Language & Category */}
+                  {templateType === 'whatsapp' && (
+                    <>
+                      <div className="form-group">
+                        <label>Language</label>
+                        <select
+                          value={templateFormData.language}
+                          onChange={(e) => setTemplateFormData({ ...templateFormData, language: e.target.value })}
+                        >
+                          <option value="en">English</option>
+                          <option value="hi">Hindi</option>
+                          <option value="es">Spanish</option>
+                          <option value="fr">French</option>
+                        </select>
+                      </div>
+                      <div className="form-group">
+                        <label>Category</label>
+                        <select
+                          value={templateFormData.category}
+                          onChange={(e) => setTemplateFormData({ ...templateFormData, category: e.target.value })}
+                        >
+                          <option value="utility">Utility</option>
+                          <option value="authentication">Authentication</option>
+                          <option value="marketing">Marketing</option>
+                        </select>
+                      </div>
+                    </>
+                  )}
+
+                  {/* SMS-specific: Sender ID */}
+                  {templateType === 'sms' && (
+                    <div className="form-group">
+                      <label>Sender ID</label>
+                      <input
+                        type="text"
+                        value={templateFormData.senderId}
+                        onChange={(e) => setTemplateFormData({ ...templateFormData, senderId: e.target.value.toUpperCase() })}
+                        placeholder="e.g., SPECTRA"
+                        maxLength="11"
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Template Preview */}
+              <div className="form-section template-preview-section">
+                <h4>Preview</h4>
+                <div className={`template-preview ${templateType}-preview`}>
+                  {templateType === 'email' && (
+                    <>
+                      <div className="preview-header">
+                        <strong>Subject:</strong> {templateFormData.subject || 'No subject'}
+                      </div>
+                      <div className="preview-meta">
+                        <span className="preview-badge">{templateFormData.type}</span>
+                        <span className="preview-badge scope">{templateFormData.scope}</span>
+                        {templateFormData.segment !== 'all' && (
+                          <span className="preview-badge segment">{templateFormData.segment}</span>
+                        )}
+                      </div>
+                    </>
+                  )}
+                  {templateType === 'whatsapp' && (
+                    <>
+                      <div className="preview-message whatsapp-bubble">
+                        {templateFormData.message || 'Your message preview will appear here...'}
+                      </div>
+                      <div className="preview-meta">
+                        <span className="preview-badge">{templateFormData.category}</span>
+                        <span className="preview-badge">{templateFormData.language.toUpperCase()}</span>
+                        <span className="preview-badge scope">{templateFormData.scope}</span>
+                      </div>
+                    </>
+                  )}
+                  {templateType === 'sms' && (
+                    <>
+                      <div className="preview-message sms-bubble">
+                        {templateFormData.message || 'Your SMS preview will appear here...'}
+                      </div>
+                      <div className="preview-meta">
+                        <span className="preview-badge sender">{templateFormData.senderId}</span>
+                        <span className={`preview-badge chars ${templateFormData.message.length > 160 ? 'warning' : ''}`}>
+                          {templateFormData.message.length} chars
+                        </span>
+                        <span className="preview-badge scope">{templateFormData.scope}</span>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="template-modal-footer">
+              <button className="btn btn-outline" onClick={handleCloseTemplateModal} disabled={isSavingTemplate}>
+                Cancel
+              </button>
+              <button className="btn btn-primary" onClick={handleSaveTemplate} disabled={isSavingTemplate}>
+                {isSavingTemplate ? (
+                  <>Saving...</>
+                ) : (
+                  <><FaSave /> Create Template</>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Import Config Modal */}
+      {showImportModal && (
+        <div className="import-modal-overlay" onClick={handleCloseImportModal}>
+          <div className="import-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="import-modal-header">
+              <h2>
+                <FaFileImport className="modal-icon" /> Import Configuration
+              </h2>
+              <button className="close-btn" onClick={handleCloseImportModal}>
+                <FaTimesCircle />
+              </button>
+            </div>
+
+            <div className="import-modal-body">
+              <div className="import-instructions">
+                <p>Upload a JSON configuration file exported from this system. Supported formats:</p>
+                <ul>
+                  <li><strong>Full Configuration</strong> - Policies, notifications, and roles</li>
+                  <li><strong>Policies Only</strong> - User policies export</li>
+                </ul>
+              </div>
+
+              <div className="file-upload-section">
+                <label className="file-upload-label">
+                  <input
+                    type="file"
+                    accept=".json"
+                    onChange={handleFileChange}
+                    className="file-input"
+                  />
+                  <div className="file-upload-box">
+                    <FaFile className="upload-icon" />
+                    <span className="upload-text">
+                      {importFile ? importFile.name : 'Click to select or drag and drop a JSON file'}
+                    </span>
+                    {importFile && (
+                      <span className="file-size">
+                        {(importFile.size / 1024).toFixed(2)} KB
+                      </span>
+                    )}
+                  </div>
+                </label>
+              </div>
+
+              {importPreview && (
+                <div className="import-preview">
+                  <h4>Import Preview</h4>
+                  <div className="preview-details">
+                    <div className="preview-item">
+                      <span className="preview-label">Type:</span>
+                      <span className="preview-value">
+                        {importPreview.exportType === 'full_config' ? 'Full Configuration' :
+                         importPreview.exportType === 'policies' ? 'User Policies' : 'Unknown'}
+                      </span>
+                    </div>
+                    <div className="preview-item">
+                      <span className="preview-label">Export Date:</span>
+                      <span className="preview-value">
+                        {importPreview.exportDate ? new Date(importPreview.exportDate).toLocaleString() : 'N/A'}
+                      </span>
+                    </div>
+                    <div className="preview-item">
+                      <span className="preview-label">Version:</span>
+                      <span className="preview-value">{importPreview.version || 'N/A'}</span>
+                    </div>
+
+                    {importPreview.exportType === 'policies' && (
+                      <div className="preview-item">
+                        <span className="preview-label">Policies:</span>
+                        <span className="preview-value">{importPreview.data?.length || 0} items</span>
+                      </div>
+                    )}
+
+                    {importPreview.exportType === 'full_config' && (
+                      <>
+                        <div className="preview-item">
+                          <span className="preview-label">Policies:</span>
+                          <span className="preview-value">{importPreview.data?.policies?.length || 0} items</span>
+                        </div>
+                        <div className="preview-item">
+                          <span className="preview-label">Email Templates:</span>
+                          <span className="preview-value">{importPreview.data?.notifications?.emailTemplates?.length || 0} items</span>
+                        </div>
+                        <div className="preview-item">
+                          <span className="preview-label">Alert Thresholds:</span>
+                          <span className="preview-value">{importPreview.data?.notifications?.alertThresholds?.length || 0} items</span>
+                        </div>
+                      </>
+                    )}
+                  </div>
+
+                  <div className="import-warning">
+                    <FaExclamationTriangle />
+                    <span>Importing will merge with existing configuration. Duplicate entries may be overwritten.</span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="import-modal-footer">
+              <button className="btn btn-outline" onClick={handleCloseImportModal} disabled={isImporting}>
+                Cancel
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={handleImportConfig}
+                disabled={isImporting || !importFile || !importPreview}
+              >
+                {isImporting ? (
+                  <>Importing...</>
+                ) : (
+                  <><FaUpload /> Import Configuration</>
+                )}
               </button>
             </div>
           </div>

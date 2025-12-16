@@ -92,36 +92,88 @@
 
 .welcome-actions {
   display: flex;
-  gap: var(--space-sm);
+  gap: 1rem;
 }
 
 .action-btn {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.625rem 1.25rem;
-  border-radius: var(--radius-md);
-  font-size: 0.875rem;
-  font-weight: 500;
+  gap: 0.75rem;
+  padding: 0.875rem 1.75rem;
+  border-radius: 50px;
+  font-size: 0.9375rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  background: rgba(255, 255, 255, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: none;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 100%);
   color: white;
+  backdrop-filter: blur(8px);
+  box-shadow:
+    0 4px 15px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  position: relative;
+  overflow: hidden;
+  letter-spacing: 0.02em;
+}
+
+.action-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.action-btn:hover::before {
+  left: 100%;
+}
+
+.action-btn svg {
+  font-size: 1.125rem;
+  transition: transform 0.3s ease;
 }
 
 .action-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.15) 100%);
+  transform: translateY(-3px);
+  box-shadow:
+    0 8px 25px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.action-btn:hover svg {
+  transform: scale(1.15);
+}
+
+.action-btn:active {
+  transform: translateY(-1px);
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .action-btn.primary {
-  background: white;
-  color: #153874;
-  border-color: white;
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  color: white;
+  border: none;
+  box-shadow:
+    0 4px 20px rgba(40, 167, 69, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+.action-btn.primary svg {
+  color: white;
 }
 
 .action-btn.primary:hover {
-  background: #e8f0fa;
+  background: linear-gradient(135deg, #34ce57 0%, #2dd4a8 100%);
+  box-shadow:
+    0 8px 30px rgba(40, 167, 69, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 /* Quick Actions Bar - Prominent Navigation */
@@ -174,6 +226,32 @@
   color: var(--color-text-primary);
   font-weight: 500;
   white-space: nowrap;
+}
+
+/* Provision New Site - Primary Quick Action */
+.quick-action-card.provision {
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  border: 1px solid rgba(40, 167, 69, 0.3);
+  box-shadow: 0 4px 15px rgba(40, 167, 69, 0.25);
+}
+
+.quick-action-card.provision svg {
+  color: white;
+}
+
+.quick-action-card.provision span {
+  color: white;
+  font-weight: 600;
+}
+
+.quick-action-card.provision:hover {
+  background: linear-gradient(135deg, #34ce57 0%, #2dd4a8 100%);
+  border-color: rgba(40, 167, 69, 0.5);
+  box-shadow: 0 6px 20px rgba(40, 167, 69, 0.35);
+}
+
+.quick-action-card.provision:hover svg {
+  color: white;
 }
 
 /* Metrics Grid */
@@ -982,10 +1060,13 @@
   .welcome-actions {
     width: 100%;
     flex-direction: column;
+    gap: 0.75rem;
   }
 
   .action-btn {
     justify-content: center;
+    width: 100%;
+    padding: 0.875rem 1.5rem;
   }
 
   .quick-actions-bar {

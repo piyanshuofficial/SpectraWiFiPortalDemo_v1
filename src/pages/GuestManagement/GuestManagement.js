@@ -62,6 +62,7 @@ import { showSuccess, showError, showInfo } from '@utils/notifications';
 import { exportChartDataToCSV } from '@utils/exportUtils';
 import Button from '@components/Button';
 import Pagination from '@components/Pagination';
+import ConfirmationModal from '@components/ConfirmationModal';
 import userSampleData from '@constants/userSampleData';
 import { PAGINATION } from '@constants/appConstants';
 import './GuestManagement.css';
@@ -122,6 +123,17 @@ const GuestManagement = () => {
   // QR Print modal state
   const [showQRPrintModal, setShowQRPrintModal] = useState(false);
   const [qrPrintVouchers, setQrPrintVouchers] = useState([]);
+
+  // Revoke access confirmation modal state
+  const [showRevokeConfirmation, setShowRevokeConfirmation] = useState(false);
+  const [guestToRevoke, setGuestToRevoke] = useState(null);
+  const [isRevoking, setIsRevoking] = useState(false);
+
+  // Extend access modal state
+  const [showExtendAccessModal, setShowExtendAccessModal] = useState(false);
+  const [guestToExtend, setGuestToExtend] = useState(null);
+  const [extendDuration, setExtendDuration] = useState('24h');
+  const [isExtending, setIsExtending] = useState(false);
 
   // Voucher-specific search and filter state
   const [voucherSearchQuery, setVoucherSearchQuery] = useState('');
@@ -357,13 +369,61 @@ const GuestManagement = () => {
   };
 
   const handleExtendAccess = (guest) => {
-    showInfo(`Extend access for ${guest.firstName} ${guest.lastName} - Feature coming soon`);
+    setGuestToExtend(guest);
+    setExtendDuration('24h');
+    setShowExtendAccessModal(true);
+  };
+
+  const handleConfirmExtend = async () => {
+    if (!guestToExtend) return;
+
+    setIsExtending(true);
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 800));
+      const durationLabel = GUEST_DURATION_PRESETS[extendDuration]?.label || extendDuration;
+      showSuccess(`Access extended by ${durationLabel} for ${guestToExtend.firstName} ${guestToExtend.lastName}`);
+      setShowExtendAccessModal(false);
+      setShowGuestDetailsModal(false);
+      setGuestToExtend(null);
+    } catch (error) {
+      showError('Failed to extend access. Please try again.');
+    } finally {
+      setIsExtending(false);
+    }
+  };
+
+  const handleCancelExtend = () => {
+    setShowExtendAccessModal(false);
+    setGuestToExtend(null);
   };
 
   const handleRevokeAccess = (guest) => {
-    if (window.confirm(`Are you sure you want to revoke access for ${guest.firstName} ${guest.lastName}?`)) {
-      showSuccess(`Access revoked for ${guest.firstName} ${guest.lastName}`);
+    setGuestToRevoke(guest);
+    setShowRevokeConfirmation(true);
+  };
+
+  const handleConfirmRevoke = async () => {
+    if (!guestToRevoke) return;
+
+    setIsRevoking(true);
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 800));
+      showSuccess(`Access revoked for ${guestToRevoke.firstName} ${guestToRevoke.lastName}`);
+      setShowRevokeConfirmation(false);
+      setShowGuestDetailsModal(false);
+      setGuestToRevoke(null);
+    } catch (error) {
+      showError('Failed to revoke access. Please try again.');
+    } finally {
+      setIsRevoking(false);
     }
+  };
+
+  const handleCancelRevoke = () => {
+    setShowRevokeConfirmation(false);
+    setGuestToRevoke(null);
   };
 
   const handleCopyVoucher = (code) => {
@@ -2182,6 +2242,89 @@ const GuestManagement = () => {
               </Button>
               <Button variant="primary" onClick={handleExecutePrint}>
                 <FaPrint style={{ marginRight: 6 }} /> Print {qrPrintVouchers.length} QR Code{qrPrintVouchers.length !== 1 ? 's' : ''}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Revoke Access Confirmation Modal */}
+      <ConfirmationModal
+        open={showRevokeConfirmation}
+        onClose={handleCancelRevoke}
+        onConfirm={handleConfirmRevoke}
+        title="Revoke Guest Access"
+        message={
+          guestToRevoke
+            ? `Are you sure you want to revoke access for "${guestToRevoke.firstName} ${guestToRevoke.lastName}"?\n\nThis will:\n• Immediately disconnect the guest from the network\n• Invalidate any active sessions\n• The guest will not be able to reconnect`
+            : ''
+        }
+        confirmText="Revoke Access"
+        cancelText="Cancel"
+        variant="danger"
+        loading={isRevoking}
+      />
+
+      {/* Extend Access Modal */}
+      {showExtendAccessModal && guestToExtend && (
+        <div className="modal-overlay" onClick={handleCancelExtend}>
+          <div className="modal extend-access-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2><FaClock style={{ marginRight: 8 }} /> Extend Guest Access</h2>
+              <button
+                className="modal-close-btn"
+                onClick={handleCancelExtend}
+                disabled={isExtending}
+              >
+                <FaTimesCircle />
+              </button>
+            </div>
+            <div className="modal-body">
+              <div className="extend-guest-info">
+                <p><strong>Guest:</strong> {guestToExtend.firstName} {guestToExtend.lastName}</p>
+                <p><strong>Current Expiry:</strong> {new Date(guestToExtend.validUntil).toLocaleString()}</p>
+              </div>
+              <div className="form-group">
+                <label className="form-label">Extend Duration By</label>
+                <div className="duration-grid">
+                  {Object.entries(GUEST_DURATION_PRESETS)
+                    .filter(([key]) => key !== 'custom')
+                    .map(([key, value]) => (
+                      <button
+                        key={key}
+                        type="button"
+                        className={`duration-option ${extendDuration === key ? 'selected' : ''}`}
+                        onClick={() => setExtendDuration(key)}
+                        disabled={isExtending}
+                      >
+                        {value.label}
+                      </button>
+                    ))}
+                </div>
+              </div>
+              <div className="extend-preview">
+                <FaInfoCircle style={{ marginRight: 6, color: 'var(--color-accent)' }} />
+                <span>
+                  New expiry will be: {' '}
+                  <strong>
+                    {new Date(
+                      new Date(guestToExtend.validUntil).getTime() +
+                      (GUEST_DURATION_PRESETS[extendDuration]?.hours || 24) * 60 * 60 * 1000
+                    ).toLocaleString()}
+                  </strong>
+                </span>
+              </div>
+            </div>
+            <div className="modal-footer">
+              <Button variant="outline" onClick={handleCancelExtend} disabled={isExtending}>
+                Cancel
+              </Button>
+              <Button variant="primary" onClick={handleConfirmExtend} disabled={isExtending}>
+                {isExtending ? (
+                  <>Processing...</>
+                ) : (
+                  <><FaClock style={{ marginRight: 6 }} /> Extend Access</>
+                )}
               </Button>
             </div>
           </div>

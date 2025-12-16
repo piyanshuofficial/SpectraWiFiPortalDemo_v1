@@ -1446,6 +1446,21 @@ const SiteProvisioningModal = ({
                       <span className="toggle-desc">Enable bulk device import</span>
                     </div>
                   </div>
+
+                  <div className="toggle-item">
+                    <label className="toggle-switch">
+                      <input
+                        type="checkbox"
+                        checked={formData.guestAccessEnabled}
+                        onChange={(e) => updateField('guestAccessEnabled', e.target.checked)}
+                      />
+                      <span className="toggle-slider"></span>
+                    </label>
+                    <div className="toggle-info">
+                      <span className="toggle-title">Guest WiFi Access</span>
+                      <span className="toggle-desc">Enable guest access management for this site</span>
+                    </div>
+                  </div>
                 </div>
               </div>
 

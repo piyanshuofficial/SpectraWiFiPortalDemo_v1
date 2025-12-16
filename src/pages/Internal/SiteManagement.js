@@ -188,6 +188,17 @@ const SiteManagement = () => {
     }
   }, [searchParams, navigate]);
 
+  // Handle customer query param to filter sites by customer
+  React.useEffect(() => {
+    const customerId = searchParams.get("customer");
+    if (customerId) {
+      const customer = customers.find(c => c.id === customerId);
+      if (customer) {
+        setSelectedCustomer(customer.name);
+      }
+    }
+  }, [searchParams]);
+
   // Get status icon
   const getStatusIcon = (status) => {
     switch (status) {

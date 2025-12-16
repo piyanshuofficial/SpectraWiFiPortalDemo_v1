@@ -22,6 +22,7 @@ import {
   FaBell,
 } from "react-icons/fa";
 import { usePermissions } from "@hooks/usePermissions";
+import { useSiteConfig } from "@hooks/useSiteConfig";
 import { preloadRoute } from "@config/routes";
 import { useTranslation } from "react-i18next";
 import logoMark from "@assets/images/spectra-logo-white.png";
@@ -55,7 +56,8 @@ const customerSidebarItems = [
     icon: FaUserFriends,
     labelKey: "nav.guestManagement",
     label: "Guest Management",
-    permission: "canEditUsers"
+    permission: "canEditUsers",
+    requiresGuestAccess: true // Only show if site has guest access enabled
   },
   {
     to: "/reports",
@@ -152,6 +154,7 @@ const internalSidebarItems = [
 
 const Sidebar = () => {
   const { hasPermission } = usePermissions();
+  const { guestAccessEnabled } = useSiteConfig();
   const { t } = useTranslation();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -191,8 +194,15 @@ const Sidebar = () => {
   const sidebarItems = isInternalPortal ? internalSidebarItems : customerSidebarItems;
 
   const accessibleItems = sidebarItems.filter(item => {
-    if (!item.permission) return true;
-    return hasPermission(item.permission);
+    // Check permission first
+    if (item.permission && !hasPermission(item.permission)) {
+      return false;
+    }
+    // Check guest access requirement (only for customer portal items)
+    if (item.requiresGuestAccess && !guestAccessEnabled) {
+      return false;
+    }
+    return true;
   });
 
   const handleMouseEnter = (path) => {

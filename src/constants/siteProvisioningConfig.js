@@ -690,6 +690,7 @@ export const INITIAL_FORM_STATE = {
   interSiteRoaming: false,
   bulkUserRegistration: false,
   bulkDeviceRegistration: false,
+  guestAccessEnabled: false,  // Enable/disable guest WiFi access management for this site
   reportingEnabled: true,
   selectedReports: [],
 

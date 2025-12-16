@@ -65,18 +65,27 @@
   padding: 16px 24px;
   background: var(--bg-secondary, #f9fafb);
   border-bottom: 1px solid var(--border-color, #e5e7eb);
-  overflow: visible;
+  overflow-x: auto;
+  overflow-y: hidden;
   flex-shrink: 0;
 }
 
-/* Hide scrollbar - no scrolling needed */
+/* Custom scrollbar for horizontal scroll */
 .spm-steps::-webkit-scrollbar {
-  display: none;
+  height: 6px;
 }
 
-.spm-steps {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+.spm-steps::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.spm-steps::-webkit-scrollbar-thumb {
+  background: var(--border-color, #d1d5db);
+  border-radius: 3px;
+}
+
+.spm-steps::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary, #9ca3af);
 }
 
 .spm-step {

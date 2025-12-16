@@ -264,20 +264,16 @@ const InternalDashboard = () => {
           <h1>{selectedCustomer ? `${selectedCustomer.name} Analytics` : `Welcome, ${currentUser?.displayName || "Admin"}`}</h1>
           <p>{selectedCustomer ? `Customer Dashboard - ${filteredSites.length} site(s)` : "Spectra Network Operations Center"}</p>
         </div>
-        <div className="welcome-actions">
-          {hasPermission && hasPermission("canProvisionSites") && (
-            <button className="action-btn primary" onClick={() => navigate("/internal/sites?action=provision")}>
-              <FaPlus /> Provision New Site
-            </button>
-          )}
-          <button className="action-btn" onClick={() => navigate("/internal/support")}>
-            <FaTicketAlt /> Support Queue
-          </button>
-        </div>
       </div>
 
       {/* Quick Actions - Prominent Position */}
       <div className="quick-actions-bar">
+        {hasPermission && hasPermission("canProvisionSites") && (
+          <button className="quick-action-card provision" onClick={() => navigate("/internal/sites?action=provision")}>
+            <FaPlus />
+            <span>Provision New Site</span>
+          </button>
+        )}
         <button className="quick-action-card" onClick={() => navigate("/internal/sites")}>
           <FaMapMarkerAlt />
           <span>All Sites</span>

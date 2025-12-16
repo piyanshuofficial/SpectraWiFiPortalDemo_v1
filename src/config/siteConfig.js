@@ -24,6 +24,7 @@ const siteConfig = {
       maxBandwidth: 200, // Maximum allowed speed in Mbps
       dataCycleType: "Monthly",
       totalLicenseLimit: 500, // Overall site license limit
+      guestAccessEnabled: true, // Enable/disable guest WiFi access management for this site
       digitalDevicePolicies: [
         { policyId: "ENT_DEVICE_50Mbps_Unlimited_1Device_Monthly", name: "Enterprise Digital Device", speed: "50 Mbps", limit: "unlimited", licenseLimit: 100 },
         { policyId: "ENT_DEVICE_100Mbps_Unlimited_1Device_Monthly", name: "Enterprise Digital Device Premium", speed: "100 Mbps", limit: "unlimited", licenseLimit: 50 }
@@ -37,6 +38,7 @@ const siteConfig = {
       bandwidthType: "userLevel",
       dataCycleType: "Monthly",
       totalLicenseLimit: 200,
+      guestAccessEnabled: true, // Enable/disable guest WiFi access management for this site
       userPolicies: [
         { policyId: "OFF_WIFI_50Mbps_150GB_3Devices_Monthly", licenseLimit: 200 }
       ],
@@ -52,6 +54,7 @@ const siteConfig = {
       bandwidthType: "userLevel",
       dataCycleType: "Monthly",
       totalLicenseLimit: 300,
+      guestAccessEnabled: true, // Enable/disable guest WiFi access management for this site
       userPolicies: [
         { policyId: "COL_WIFI_10Mbps_50GB_1Devices_Monthly", licenseLimit: 100 },
         { policyId: "COL_WIFI_20Mbps_100GB_2Devices_Monthly", licenseLimit: 100 },
@@ -70,6 +73,7 @@ const siteConfig = {
       bandwidthType: "userLevel",
       dataCycleType: "Daily",
       totalLicenseLimit: 250,
+      guestAccessEnabled: true, // Enable/disable guest WiFi access management for this site
       userPolicies: [
         { policyId: "COW_WIFI_15Mbps_5GB_1Devices_Daily", licenseLimit: 80 },
         { policyId: "COW_WIFI_25Mbps_10GB_2Devices_Daily", licenseLimit: 80 },
@@ -88,6 +92,7 @@ const siteConfig = {
       bandwidthType: "userLevel",
       dataCycleType: "Daily",
       totalLicenseLimit: 400,
+      guestAccessEnabled: true, // Enable/disable guest WiFi access management for this site
       userPolicies: [
         { policyId: "HTL_WIFI_10Mbps_2GB_1Devices_Daily", licenseLimit: 200 },
         { policyId: "HTL_WIFI_20Mbps_5GB_2Devices_Daily", licenseLimit: 150 },
@@ -105,6 +110,7 @@ const siteConfig = {
       bandwidthType: "userLevel",
       dataCycleType: "Monthly",
       totalLicenseLimit: 150,
+      guestAccessEnabled: false, // Enable/disable guest WiFi access management for this site
       userPolicies: [
         { policyId: "PG_WIFI_25Mbps_100GB_2Devices_Monthly", licenseLimit: 150 }
       ],
@@ -120,7 +126,8 @@ const siteConfig = {
       bandwidthType: "fixed",
       maxBandwidth: 100, // Maximum allowed speed in Mbps
       dataCycleType: "Monthly",
-      totalLicenseLimit: 200
+      totalLicenseLimit: 200,
+      guestAccessEnabled: true // Enable/disable guest WiFi access management for this site
     }
   },
   

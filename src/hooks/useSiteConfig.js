@@ -27,6 +27,7 @@ export const useSiteConfig = () => {
       address: siteInfo.address,
       segment: currentSegment,
       effectiveSiteName,
+      guestAccessEnabled: siteInfo.guestAccessEnabled ?? true, // Default to true if not specified
     };
   }, [currentSegment]);
 

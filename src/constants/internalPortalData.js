@@ -262,6 +262,7 @@ export const sites = [
     primaryContact: "Amit Khanna",
     primaryEmail: "amit.khanna@oberoihotels.com",
     primaryPhone: "+91 98765 43210",
+    guestAccessEnabled: true,
     infrastructure: {
       apVendor: "ruckus",
       apModel: "R750",
@@ -309,6 +310,7 @@ export const sites = [
     primaryContact: "Neha Gupta",
     primaryEmail: "neha.gupta@oberoihotels.com",
     primaryPhone: "+91 98765 43211",
+    guestAccessEnabled: true,
     infrastructure: {
       apVendor: "ruckus",
       apModel: "R650",
@@ -356,6 +358,7 @@ export const sites = [
     primaryContact: "Rajesh Kumar",
     primaryEmail: "rajesh.kumar@oberoihotels.com",
     primaryPhone: "+91 98765 43212",
+    guestAccessEnabled: false,
     infrastructure: {
       apVendor: "edgecore",
       apModel: "EAP101",
@@ -404,6 +407,7 @@ export const sites = [
     primaryContact: "Sneha Reddy",
     primaryEmail: "sneha.reddy@wework.co.in",
     primaryPhone: "+91 98765 43220",
+    guestAccessEnabled: true,
     infrastructure: {
       apVendor: "tp_link",
       apModel: "EAP670",
@@ -451,6 +455,7 @@ export const sites = [
     primaryContact: "Arjun Patel",
     primaryEmail: "arjun.patel@wework.co.in",
     primaryPhone: "+91 98765 43221",
+    guestAccessEnabled: true,
     infrastructure: {
       apVendor: "ruckus",
       apModel: "R850",
@@ -499,6 +504,7 @@ export const sites = [
     primaryContact: "Kavitha Nair",
     primaryEmail: "kavitha@zolostays.com",
     primaryPhone: "+91 98765 43230",
+    guestAccessEnabled: false,
     infrastructure: {
       apVendor: "tp_link",
       apModel: "EAP660 HD",
@@ -546,6 +552,7 @@ export const sites = [
     primaryContact: "Suresh Kumar",
     primaryEmail: "suresh@zolostays.com",
     primaryPhone: "+91 98765 43231",
+    guestAccessEnabled: false,
     infrastructure: {
       apVendor: "edgecore",
       apModel: "EAP102",
@@ -594,6 +601,7 @@ export const sites = [
     primaryContact: "Deepak Joshi",
     primaryEmail: "deepak.joshi@stanzaliving.com",
     primaryPhone: "+91 98765 43240",
+    guestAccessEnabled: true,
     infrastructure: {
       apVendor: "ruckus",
       apModel: "R650",
@@ -641,6 +649,7 @@ export const sites = [
     primaryContact: "Meera Rao",
     primaryEmail: "meera.rao@stanzaliving.com",
     primaryPhone: "+91 98765 43241",
+    guestAccessEnabled: true,
     infrastructure: {
       apVendor: "ruckus",
       apModel: "R550",
@@ -688,6 +697,7 @@ export const sites = [
     primaryContact: "Karthik Subramanian",
     primaryEmail: "karthik.s@stanzaliving.com",
     primaryPhone: "+91 98765 43242",
+    guestAccessEnabled: false,
     infrastructure: {
       apVendor: "edgecore",
       apModel: "EAP101",
