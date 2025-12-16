@@ -34,8 +34,156 @@ import {
   FaFileExport,
   FaFileImport,
   FaFile,
+  FaKey,
 } from "react-icons/fa";
+import {
+  AUTH_METHODS,
+  SEGMENT_AUTH_CONFIG,
+  getAuthMethodLabel,
+  getAuthMethodDescription,
+} from "@constants/siteProvisioningConfig";
 import "./SystemConfiguration.css";
+
+// Sample Authentication Templates Data
+const authTemplatesData = [
+  {
+    id: "auth_tpl_001",
+    name: "Enterprise Standard",
+    segment: "enterprise",
+    description: "Default authentication template for enterprise customers with SSO and guest access",
+    status: "active",
+    isDefault: true,
+    authConfig: {
+      users: ["adfs_sso", "username_password", "otp_rmn"],
+      guests: ["otp_rmn", "social_login", "captive_portal"],
+      devices: ["mac_auth", "wpa2_psk", "dot1x"],
+    },
+    appliedTo: 45,
+    createdAt: "2023-06-15",
+    updatedAt: "2024-01-10",
+    createdBy: "System",
+  },
+  {
+    id: "auth_tpl_002",
+    name: "Hotel Guest Experience",
+    segment: "hotel",
+    description: "Optimized for hotel environments with room guest and conference room access",
+    status: "active",
+    isDefault: true,
+    authConfig: {
+      roomGuests: ["room_number_validation", "otp_rmn", "pms_integration"],
+      conferenceRooms: ["voucher_code", "otp_rmn"],
+      staff: ["username_password", "otp_rmn"],
+      devices: ["mac_auth", "wpa2_psk"],
+    },
+    appliedTo: 128,
+    createdAt: "2023-07-20",
+    updatedAt: "2024-01-08",
+    createdBy: "Admin",
+  },
+  {
+    id: "auth_tpl_003",
+    name: "Co-Living Resident",
+    segment: "coliving",
+    description: "Template for co-living spaces with resident and guest authentication",
+    status: "active",
+    isDefault: true,
+    authConfig: {
+      residents: ["username_password", "otp_rmn"],
+      guests: ["otp_rmn", "social_login"],
+      devices: ["mac_auth", "wpa2_psk"],
+    },
+    appliedTo: 85,
+    createdAt: "2023-08-10",
+    updatedAt: "2024-01-05",
+    createdBy: "Admin",
+  },
+  {
+    id: "auth_tpl_004",
+    name: "PG Basic",
+    segment: "pg",
+    description: "Simple authentication template for PG accommodations",
+    status: "active",
+    isDefault: true,
+    authConfig: {
+      residents: ["otp_rmn", "username_password"],
+      guests: ["otp_rmn"],
+      devices: ["mac_auth"],
+    },
+    appliedTo: 210,
+    createdAt: "2023-09-05",
+    updatedAt: "2024-01-02",
+    createdBy: "System",
+  },
+  {
+    id: "auth_tpl_005",
+    name: "Co-Working Professional",
+    segment: "coworking",
+    description: "Authentication for co-working spaces with member and visitor access",
+    status: "active",
+    isDefault: true,
+    authConfig: {
+      members: ["username_password", "otp_rmn", "social_login"],
+      guests: ["otp_rmn", "captive_portal"],
+      devices: ["mac_auth", "wpa2_psk"],
+    },
+    appliedTo: 156,
+    createdAt: "2023-10-01",
+    updatedAt: "2024-01-03",
+    createdBy: "Admin",
+  },
+  {
+    id: "auth_tpl_006",
+    name: "Office Standard",
+    segment: "office",
+    description: "Standard office authentication with SSO and device MAC auth",
+    status: "active",
+    isDefault: true,
+    authConfig: {
+      users: ["adfs_sso", "username_password"],
+      guests: ["otp_rmn", "captive_portal"],
+      devices: ["dot1x", "mac_auth", "wpa2_psk"],
+    },
+    appliedTo: 67,
+    createdAt: "2023-11-15",
+    updatedAt: "2024-01-06",
+    createdBy: "System",
+  },
+  {
+    id: "auth_tpl_007",
+    name: "Enterprise High Security",
+    segment: "enterprise",
+    description: "Enhanced security template with multi-factor authentication",
+    status: "active",
+    isDefault: false,
+    authConfig: {
+      users: ["adfs_sso", "otp_rmn"],
+      guests: ["voucher_code", "otp_rmn"],
+      devices: ["dot1x", "certificate_auth"],
+    },
+    appliedTo: 12,
+    createdAt: "2023-12-01",
+    updatedAt: "2024-01-09",
+    createdBy: "Admin",
+  },
+  {
+    id: "auth_tpl_008",
+    name: "Miscellaneous Default",
+    segment: "miscellaneous",
+    description: "Flexible template for miscellaneous segment sites",
+    status: "active",
+    isDefault: true,
+    authConfig: {
+      users: ["username_password", "otp_rmn"],
+      guests: ["otp_rmn", "captive_portal"],
+      devices: ["mac_auth", "wpa2_psk"],
+    },
+    appliedTo: 34,
+    createdAt: "2023-12-10",
+    updatedAt: "2024-01-04",
+    createdBy: "System",
+  },
+];
 
 // Sample Policies Data
 const policiesData = [
@@ -428,6 +576,25 @@ const SystemConfiguration = () => {
   const [isImporting, setIsImporting] = useState(false);
   const [importPreview, setImportPreview] = useState(null);
 
+  // Auth Template modal state
+  const [showAuthTemplateModal, setShowAuthTemplateModal] = useState(false);
+  const [editingAuthTemplate, setEditingAuthTemplate] = useState(null);
+  const [isSavingAuthTemplate, setIsSavingAuthTemplate] = useState(false);
+  const [selectedAuthSegment, setSelectedAuthSegment] = useState("all");
+  const [authTemplateFormData, setAuthTemplateFormData] = useState({
+    name: "",
+    segment: "enterprise",
+    description: "",
+    status: "active",
+    isDefault: false,
+    authConfig: {},
+  });
+
+  // Auth template delete confirmation
+  const [showAuthTemplateDeleteConfirmation, setShowAuthTemplateDeleteConfirmation] = useState(false);
+  const [authTemplateToDelete, setAuthTemplateToDelete] = useState(null);
+  const [isDeletingAuthTemplate, setIsDeletingAuthTemplate] = useState(false);
+
   // Policy action handlers
   const handleEditPolicy = (policy) => {
     setEditingPolicy(policy);
@@ -741,6 +908,180 @@ const SystemConfiguration = () => {
       setIsImporting(false);
     }
   };
+
+  // Auth Template action handlers
+  const handleCreateNewAuthTemplate = () => {
+    setEditingAuthTemplate(null);
+    const defaultSegment = selectedAuthSegment !== "all" ? selectedAuthSegment : "enterprise";
+    const segmentConfig = SEGMENT_AUTH_CONFIG[defaultSegment] || SEGMENT_AUTH_CONFIG.enterprise;
+    const defaultConfig = {};
+    segmentConfig.categories.forEach(cat => {
+      defaultConfig[cat] = [];
+    });
+    setAuthTemplateFormData({
+      name: "",
+      segment: defaultSegment,
+      description: "",
+      status: "active",
+      isDefault: false,
+      authConfig: defaultConfig,
+    });
+    setShowAuthTemplateModal(true);
+  };
+
+  const handleEditAuthTemplate = (template) => {
+    setEditingAuthTemplate(template);
+    setAuthTemplateFormData({
+      name: template.name,
+      segment: template.segment,
+      description: template.description,
+      status: template.status,
+      isDefault: template.isDefault,
+      authConfig: { ...template.authConfig },
+    });
+    setShowAuthTemplateModal(true);
+  };
+
+  const handleDuplicateAuthTemplate = (template) => {
+    setEditingAuthTemplate(null);
+    setAuthTemplateFormData({
+      name: `${template.name} (Copy)`,
+      segment: template.segment,
+      description: template.description,
+      status: "inactive",
+      isDefault: false,
+      authConfig: { ...template.authConfig },
+    });
+    setShowAuthTemplateModal(true);
+  };
+
+  const handleDeleteAuthTemplate = (template) => {
+    setAuthTemplateToDelete(template);
+    setShowAuthTemplateDeleteConfirmation(true);
+  };
+
+  const handleConfirmDeleteAuthTemplate = async () => {
+    if (!authTemplateToDelete) return;
+    setIsDeletingAuthTemplate(true);
+    try {
+      await new Promise(resolve => setTimeout(resolve, 800));
+      console.log("Deleting auth template:", authTemplateToDelete.id);
+      notifications.showSuccess(`Auth template "${authTemplateToDelete.name}" has been deleted.`);
+      setShowAuthTemplateDeleteConfirmation(false);
+      setAuthTemplateToDelete(null);
+    } catch (error) {
+      notifications.showError("Failed to delete auth template. Please try again.");
+    } finally {
+      setIsDeletingAuthTemplate(false);
+    }
+  };
+
+  const handleCancelDeleteAuthTemplate = () => {
+    setShowAuthTemplateDeleteConfirmation(false);
+    setAuthTemplateToDelete(null);
+  };
+
+  const handleSaveAuthTemplate = async () => {
+    if (!authTemplateFormData.name.trim()) {
+      notifications.showError("Please enter a template name");
+      return;
+    }
+
+    // Validate at least one auth method is selected
+    const hasAuthMethods = Object.values(authTemplateFormData.authConfig).some(
+      methods => methods && methods.length > 0
+    );
+    if (!hasAuthMethods) {
+      notifications.showError("Please select at least one authentication method");
+      return;
+    }
+
+    setIsSavingAuthTemplate(true);
+    try {
+      await new Promise(resolve => setTimeout(resolve, 800));
+      console.log(editingAuthTemplate ? "Updating auth template:" : "Creating auth template:", authTemplateFormData);
+      notifications.showSuccess(
+        `Auth template "${authTemplateFormData.name}" has been ${editingAuthTemplate ? "updated" : "created"}.`
+      );
+      setShowAuthTemplateModal(false);
+      setEditingAuthTemplate(null);
+    } catch (error) {
+      notifications.showError("Failed to save auth template. Please try again.");
+    } finally {
+      setIsSavingAuthTemplate(false);
+    }
+  };
+
+  const handleCloseAuthTemplateModal = () => {
+    setShowAuthTemplateModal(false);
+    setEditingAuthTemplate(null);
+  };
+
+  const handleAuthMethodToggle = (category, methodId) => {
+    setAuthTemplateFormData(prev => {
+      const currentMethods = prev.authConfig[category] || [];
+      const newMethods = currentMethods.includes(methodId)
+        ? currentMethods.filter(m => m !== methodId)
+        : [...currentMethods, methodId];
+      return {
+        ...prev,
+        authConfig: {
+          ...prev.authConfig,
+          [category]: newMethods,
+        },
+      };
+    });
+  };
+
+  const handleAuthTemplateSegmentChange = (newSegment) => {
+    const segmentConfig = SEGMENT_AUTH_CONFIG[newSegment] || SEGMENT_AUTH_CONFIG.enterprise;
+    const defaultConfig = {};
+    segmentConfig.categories.forEach(cat => {
+      defaultConfig[cat] = authTemplateFormData.authConfig[cat] || [];
+    });
+    setAuthTemplateFormData(prev => ({
+      ...prev,
+      segment: newSegment,
+      authConfig: defaultConfig,
+    }));
+  };
+
+  // Segment labels mapping
+  const segmentLabels = {
+    enterprise: "Enterprise",
+    hotel: "Hotel",
+    coliving: "Co-Living",
+    pg: "PG",
+    coworking: "Co-Working",
+    office: "Office",
+    miscellaneous: "Miscellaneous",
+  };
+
+  // Category labels mapping
+  const categoryLabels = {
+    users: "Users",
+    guests: "Guests",
+    devices: "Devices",
+    residents: "Residents",
+    members: "Members",
+    staff: "Staff",
+    roomGuests: "Room Guests",
+    conferenceRooms: "Conference Rooms",
+  };
+
+  // Filtered auth templates
+  const filteredAuthTemplates = useMemo(() => {
+    return authTemplatesData.filter((template) => {
+      const matchesSearch =
+        template.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        template.description.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesSegment =
+        selectedAuthSegment === "all" || template.segment === selectedAuthSegment;
+      const matchesStatus =
+        selectedStatus === "All" || template.status === selectedStatus;
+      return matchesSearch && matchesSegment && matchesStatus;
+    });
+  }, [searchQuery, selectedAuthSegment, selectedStatus]);
 
   // Policies state
   const filteredPolicies = useMemo(() => {
@@ -1104,6 +1445,122 @@ const SystemConfiguration = () => {
     </div>
   );
 
+  // Render Auth Templates Section
+  const renderAuthTemplatesSection = () => (
+    <div className="config-section auth-templates-section">
+      <div className="section-header">
+        <div className="section-title">
+          <FaKey />
+          <h2>Authentication Templates</h2>
+          <span className="count">{filteredAuthTemplates.length} templates</span>
+        </div>
+        <div className="section-actions">
+          <button className="btn btn-outline">
+            <FaDownload /> Export
+          </button>
+          <button className="btn btn-primary" onClick={handleCreateNewAuthTemplate}>
+            <FaPlus /> New Template
+          </button>
+        </div>
+      </div>
+
+      {/* Segment Filter Tabs */}
+      <div className="auth-segment-tabs">
+        <button
+          className={`segment-tab ${selectedAuthSegment === "all" ? "active" : ""}`}
+          onClick={() => setSelectedAuthSegment("all")}
+        >
+          All Segments
+        </button>
+        {Object.keys(segmentLabels).map(seg => (
+          <button
+            key={seg}
+            className={`segment-tab ${selectedAuthSegment === seg ? "active" : ""}`}
+            onClick={() => setSelectedAuthSegment(seg)}
+          >
+            {segmentLabels[seg]}
+          </button>
+        ))}
+      </div>
+
+      <div className="auth-templates-grid">
+        {filteredAuthTemplates.map((template) => (
+          <div key={template.id} className={`auth-template-card ${template.isDefault ? 'default-template' : ''}`}>
+            <div className="auth-template-header">
+              <div className="auth-template-info">
+                <h3>
+                  {template.name}
+                  {template.isDefault && <span className="default-badge">Default</span>}
+                </h3>
+                <span className={`status-badge ${template.status}`}>
+                  {getStatusIcon(template.status)} {template.status}
+                </span>
+              </div>
+              <div className="auth-template-actions">
+                <button className="btn-icon" title="Edit" onClick={() => handleEditAuthTemplate(template)}>
+                  <FaEdit />
+                </button>
+                <button className="btn-icon" title="Duplicate" onClick={() => handleDuplicateAuthTemplate(template)}>
+                  <FaCopy />
+                </button>
+                {!template.isDefault && (
+                  <button className="btn-icon danger" title="Delete" onClick={() => handleDeleteAuthTemplate(template)}>
+                    <FaTrash />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <p className="auth-template-description">{template.description}</p>
+
+            <div className="auth-template-tags">
+              <span className="tag segment">{segmentLabels[template.segment] || template.segment}</span>
+              <span className="tag created-by">By {template.createdBy}</span>
+            </div>
+
+            <div className="auth-template-config">
+              <h4>Authentication Methods</h4>
+              <div className="auth-categories-preview">
+                {Object.entries(template.authConfig).map(([category, methods]) => (
+                  <div key={category} className="auth-category-preview">
+                    <span className="category-label">{categoryLabels[category] || category}:</span>
+                    <div className="method-tags">
+                      {methods.map(methodId => (
+                        <span key={methodId} className="method-tag">
+                          {getAuthMethodLabel(methodId)}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="auth-template-footer">
+              <span className="applied-count">
+                <FaUsers /> Applied to {template.appliedTo} sites
+              </span>
+              <span className="updated-date">
+                Updated: {new Date(template.updatedAt).toLocaleDateString()}
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {filteredAuthTemplates.length === 0 && (
+        <div className="no-results">
+          <FaKey />
+          <h3>No templates found</h3>
+          <p>No authentication templates match your search criteria.</p>
+          <button className="btn btn-primary" onClick={handleCreateNewAuthTemplate}>
+            <FaPlus /> Create New Template
+          </button>
+        </div>
+      )}
+    </div>
+  );
+
   // Render Roles Section
   const renderRolesSection = () => (
     <div className="config-section roles-section">
@@ -1292,6 +1749,12 @@ const SystemConfiguration = () => {
         >
           <FaUserShield /> Roles & Permissions
         </button>
+        <button
+          className={`tab-btn ${activeSection === "authTemplates" ? "active" : ""}`}
+          onClick={() => { setActiveSection("authTemplates"); setSearchQuery(""); setSelectedStatus("All"); setSelectedAuthSegment("all"); }}
+        >
+          <FaKey /> Auth Templates
+        </button>
       </div>
 
       {/* Search and Filters */}
@@ -1326,6 +1789,7 @@ const SystemConfiguration = () => {
       {activeSection === "policies" && renderPoliciesSection()}
       {activeSection === "notifications" && renderNotificationsSection()}
       {activeSection === "roles" && renderRolesSection()}
+      {activeSection === "authTemplates" && renderAuthTemplatesSection()}
 
       {/* Policy Modal */}
       {showPolicyModal && (
@@ -1890,6 +2354,179 @@ const SystemConfiguration = () => {
           </div>
         </div>
       )}
+
+      {/* Auth Template Modal */}
+      {showAuthTemplateModal && (
+        <div className="auth-template-modal-overlay" onClick={handleCloseAuthTemplateModal}>
+          <div className="auth-template-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="auth-template-modal-header">
+              <h2>
+                <FaKey className="modal-icon" />
+                {editingAuthTemplate ? "Edit Authentication Template" : "Create Authentication Template"}
+              </h2>
+              <button className="close-btn" onClick={handleCloseAuthTemplateModal}>
+                <FaTimesCircle />
+              </button>
+            </div>
+
+            <div className="auth-template-modal-body">
+              {/* Basic Information */}
+              <div className="form-section">
+                <h4>Basic Information</h4>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Template Name *</label>
+                    <input
+                      type="text"
+                      value={authTemplateFormData.name}
+                      onChange={(e) => setAuthTemplateFormData({ ...authTemplateFormData, name: e.target.value })}
+                      placeholder="Enter template name"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Segment *</label>
+                    <select
+                      value={authTemplateFormData.segment}
+                      onChange={(e) => handleAuthTemplateSegmentChange(e.target.value)}
+                    >
+                      {Object.entries(segmentLabels).map(([key, label]) => (
+                        <option key={key} value={key}>{label}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="form-group full-width">
+                  <label>Description</label>
+                  <textarea
+                    value={authTemplateFormData.description}
+                    onChange={(e) => setAuthTemplateFormData({ ...authTemplateFormData, description: e.target.value })}
+                    placeholder="Describe this authentication template"
+                    rows="2"
+                  />
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Status</label>
+                    <select
+                      value={authTemplateFormData.status}
+                      onChange={(e) => setAuthTemplateFormData({ ...authTemplateFormData, status: e.target.value })}
+                    >
+                      <option value="active">Active</option>
+                      <option value="inactive">Inactive</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label className="checkbox-label">
+                      <input
+                        type="checkbox"
+                        checked={authTemplateFormData.isDefault}
+                        onChange={(e) => setAuthTemplateFormData({ ...authTemplateFormData, isDefault: e.target.checked })}
+                      />
+                      <span>Set as default template for this segment</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              {/* Authentication Methods Selection */}
+              <div className="form-section auth-methods-section">
+                <h4>Authentication Methods by Category</h4>
+                <p className="section-description">
+                  Select the authentication methods available for each user category in the {segmentLabels[authTemplateFormData.segment]} segment.
+                </p>
+
+                <div className="auth-categories-edit">
+                  {(SEGMENT_AUTH_CONFIG[authTemplateFormData.segment]?.categories || []).map(category => (
+                    <div key={category} className="auth-category-edit-card">
+                      <h5 className="category-title">{categoryLabels[category] || category}</h5>
+                      <div className="auth-methods-list">
+                        {AUTH_METHODS.map(method => (
+                          <label
+                            key={method.id}
+                            className={`auth-method-checkbox ${(authTemplateFormData.authConfig[category] || []).includes(method.id) ? 'selected' : ''}`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={(authTemplateFormData.authConfig[category] || []).includes(method.id)}
+                              onChange={() => handleAuthMethodToggle(category, method.id)}
+                            />
+                            <div className="method-info">
+                              <span className="method-label">{method.label}</span>
+                              <span className="method-description">{getAuthMethodDescription(method.id)}</span>
+                            </div>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Preview Section */}
+              <div className="form-section auth-template-preview-section">
+                <h4>Template Preview</h4>
+                <div className="auth-template-preview">
+                  <div className="preview-header">
+                    <strong>{authTemplateFormData.name || 'Untitled Template'}</strong>
+                    <span className={`status-badge ${authTemplateFormData.status}`}>{authTemplateFormData.status}</span>
+                    {authTemplateFormData.isDefault && <span className="default-badge">Default</span>}
+                  </div>
+                  <div className="preview-segment">
+                    <span className="segment-badge">{segmentLabels[authTemplateFormData.segment]}</span>
+                  </div>
+                  <div className="preview-config">
+                    {Object.entries(authTemplateFormData.authConfig).map(([category, methods]) => (
+                      methods && methods.length > 0 && (
+                        <div key={category} className="preview-category">
+                          <span className="category-name">{categoryLabels[category] || category}:</span>
+                          <span className="methods-list">
+                            {methods.map(m => getAuthMethodLabel(m)).join(', ')}
+                          </span>
+                        </div>
+                      )
+                    ))}
+                    {Object.values(authTemplateFormData.authConfig).every(m => !m || m.length === 0) && (
+                      <p className="no-methods">No authentication methods selected</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="auth-template-modal-footer">
+              <button className="btn btn-outline" onClick={handleCloseAuthTemplateModal} disabled={isSavingAuthTemplate}>
+                Cancel
+              </button>
+              <button className="btn btn-primary" onClick={handleSaveAuthTemplate} disabled={isSavingAuthTemplate}>
+                {isSavingAuthTemplate ? (
+                  <>Saving...</>
+                ) : (
+                  <><FaSave /> {editingAuthTemplate ? "Update Template" : "Create Template"}</>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Auth Template Delete Confirmation Modal */}
+      <ConfirmationModal
+        open={showAuthTemplateDeleteConfirmation}
+        onClose={handleCancelDeleteAuthTemplate}
+        onConfirm={handleConfirmDeleteAuthTemplate}
+        title="Delete Authentication Template"
+        message={
+          authTemplateToDelete
+            ? `Are you sure you want to delete the auth template "${authTemplateToDelete.name}"?\n\nThis will:\n• Remove the template configuration permanently\n• Sites using this template will need to be reconfigured\n• This action cannot be undone`
+            : ''
+        }
+        confirmText="Delete Template"
+        cancelText="Cancel"
+        variant="danger"
+        loading={isDeletingAuthTemplate}
+      />
     </div>
   );
 };

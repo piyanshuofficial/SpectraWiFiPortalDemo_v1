@@ -27,7 +27,9 @@ import {
   FaPause,
   FaHistory,
   FaEnvelope,
-  FaWifi
+  FaWifi,
+  FaKey,
+  FaShieldAlt
 } from "react-icons/fa";
 import {
   SITE_STATUS,
@@ -40,7 +42,9 @@ import {
   canTransitionStatus,
   getNextStatuses,
   getWelcomeEmailTemplate,
-  getSSIDCredentialsEmailTemplate
+  getSSIDCredentialsEmailTemplate,
+  formatAuthConfigForDisplay,
+  getAuthConfigSummary
 } from "@constants/siteProvisioningConfig";
 import notifications from "@utils/notifications";
 import PageLoadingSkeleton from "@components/Loading/PageLoadingSkeleton";
@@ -89,7 +93,13 @@ const sampleQueueData = [
     assignedTo: null,
     testingChecklist: {},
     activationDate: null,
-    notes: []
+    notes: [],
+    // Authentication configuration for the site
+    authenticationConfig: {
+      users: ["adfs_sso", "username_password"],
+      guests: ["otp_rmn", "social_login"],
+      devices: ["mac_auth", "wpa2_psk"]
+    }
   },
   {
     id: "QUEUE-002",
@@ -125,7 +135,12 @@ const sampleQueueData = [
     assignedTo: "engineer@spectra.co",
     testingChecklist: {},
     activationDate: null,
-    notes: []
+    notes: [],
+    authenticationConfig: {
+      residents: ["otp_rmn", "username_password"],
+      guests: ["otp_rmn"],
+      devices: ["mac_auth"]
+    }
   },
   {
     id: "QUEUE-003",
@@ -170,7 +185,13 @@ const sampleQueueData = [
       security_test: { completed: false }
     },
     activationDate: null,
-    notes: ["Large property - 500+ rooms", "Priority customer"]
+    notes: ["Large property - 500+ rooms", "Priority customer"],
+    authenticationConfig: {
+      roomGuests: ["otp_rmn", "room_number_auth"],
+      conferenceRooms: ["event_code", "otp_rmn"],
+      staff: ["adfs_sso", "username_password"],
+      devices: ["mac_auth", "wpa2_psk"]
+    }
   },
   {
     id: "QUEUE-004",
@@ -215,7 +236,12 @@ const sampleQueueData = [
       security_test: { completed: true, completedAt: "2024-12-10T16:00:00Z", completedBy: "engineer@spectra.co" }
     },
     activationDate: null,
-    notes: []
+    notes: [],
+    authenticationConfig: {
+      members: ["otp_rmn", "username_password", "social_login"],
+      guests: ["otp_rmn", "sponsor_approval"],
+      devices: ["mac_auth"]
+    }
   },
   {
     id: "QUEUE-005",
@@ -251,7 +277,12 @@ const sampleQueueData = [
     assignedTo: null,
     testingChecklist: {},
     activationDate: null,
-    notes: []
+    notes: [],
+    authenticationConfig: {
+      residents: ["otp_rmn", "username_password"],
+      guests: ["otp_rmn"],
+      devices: ["mac_auth"]
+    }
   }
 ];
 
@@ -907,6 +938,51 @@ const SiteProvisioningQueue = () => {
                     <span>{selectedItem.contact.phone}</span>
                   </div>
                 </div>
+              </div>
+
+              {/* Authentication Configuration Section */}
+              <div className="detail-section auth-config-section">
+                <h3>
+                  <FaKey /> Authentication Configuration
+                  {selectedItem.authenticationConfig && (
+                    <span className="auth-summary-badge">
+                      <FaShieldAlt />
+                      {getAuthConfigSummary(selectedItem.authenticationConfig, selectedItem.segment).summary}
+                    </span>
+                  )}
+                </h3>
+                {selectedItem.authenticationConfig ? (
+                  <div className="auth-categories-grid">
+                    {formatAuthConfigForDisplay(selectedItem.authenticationConfig, selectedItem.segment).map(category => (
+                      <div key={category.categoryId} className="auth-category-card">
+                        <div className="category-header">
+                          <div className="category-icon"><FaShieldAlt /></div>
+                          <span className="category-name">{category.categoryLabel}</span>
+                        </div>
+                        {category.categoryDescription && (
+                          <p className="category-description">{category.categoryDescription}</p>
+                        )}
+                        {category.methods.length > 0 ? (
+                          <div className="auth-methods-list">
+                            {category.methods.map(method => (
+                              <div key={method.id} className="auth-method-item">
+                                <FaCheck />
+                                <span className="method-label">{method.label}</span>
+                                <span className="method-id">{method.id}</span>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="auth-methods-empty">No methods configured</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="auth-config-not-set">
+                    Authentication configuration not set for this site
+                  </div>
+                )}
               </div>
 
               {selectedItem.activationDate && (

@@ -495,6 +495,485 @@ export const TOPUP_POLICIES = {
 export const GST_RATE = 0.18; // 18%
 
 // ============================================
+// AUTHENTICATION METHODS - MASTER LIST
+// ============================================
+export const AUTH_METHODS = {
+  username_password: {
+    id: 'username_password',
+    label: 'Username-Password',
+    description: 'Standard credentials login'
+  },
+  employee_id_password: {
+    id: 'employee_id_password',
+    label: 'Employee ID-Password',
+    description: 'Employee ID with password authentication'
+  },
+  member_id_password: {
+    id: 'member_id_password',
+    label: 'Member ID-Password',
+    description: 'Member ID with password authentication'
+  },
+  lastname_roomnumber: {
+    id: 'lastname_roomnumber',
+    label: 'Last Name-Room Number',
+    description: 'Hotel-specific authentication (last name + room number)'
+  },
+  otp_rmn: {
+    id: 'otp_rmn',
+    label: 'OTP on Registered Mobile',
+    description: 'OTP sent to pre-registered mobile number'
+  },
+  otp_mn: {
+    id: 'otp_mn',
+    label: 'OTP on Mobile Number',
+    description: 'OTP sent to any provided mobile number'
+  },
+  adfs_sso: {
+    id: 'adfs_sso',
+    label: 'ADFS SSO',
+    description: 'Active Directory Federation Services single sign-on'
+  },
+  digital_certificate: {
+    id: 'digital_certificate',
+    label: 'Digital Certificate',
+    description: 'Certificate-based authentication'
+  },
+  wpa2_psk: {
+    id: 'wpa2_psk',
+    label: 'WPA2-PSK',
+    description: 'Pre-shared key (can be combined with other methods)'
+  },
+  mac_auth: {
+    id: 'mac_auth',
+    label: 'MAC Authorization',
+    description: 'Device MAC address whitelist authentication'
+  },
+  event_code: {
+    id: 'event_code',
+    label: 'Event Code',
+    description: 'Shared code for events/conferences'
+  },
+  coupon_voucher: {
+    id: 'coupon_voucher',
+    label: 'Coupon/Voucher',
+    description: 'Pre-generated access vouchers'
+  },
+  passkey_login: {
+    id: 'passkey_login',
+    label: 'Passkey through Login Page',
+    description: 'Passkey entry via captive portal'
+  },
+  otp_auth_key: {
+    id: 'otp_auth_key',
+    label: 'OTP + Auth Key',
+    description: 'Combination of OTP and authorization key'
+  },
+  sponsored_employee: {
+    id: 'sponsored_employee',
+    label: 'Sponsored Access (Employee)',
+    description: 'Employee sponsors a visitor for access'
+  },
+  sponsored_authority: {
+    id: 'sponsored_authority',
+    label: 'Sponsored Access (Fixed Authority)',
+    description: 'Designated approver sponsors visitors for access'
+  },
+  voucher_auto_account: {
+    id: 'voucher_auto_account',
+    label: 'Voucher-based Auto Account',
+    description: 'Voucher automatically creates user account'
+  }
+};
+
+// ============================================
+// SEGMENT-WISE AUTHENTICATION CONFIGURATION
+// Defines user categories and available auth methods per segment
+// ============================================
+export const SEGMENT_AUTH_CONFIG = {
+  enterprise: {
+    label: 'Enterprise',
+    categories: {
+      users: {
+        id: 'users',
+        label: 'Users (Employees)',
+        description: 'Regular employees and staff members',
+        availableMethods: ['username_password', 'employee_id_password', 'adfs_sso', 'digital_certificate', 'wpa2_psk', 'otp_rmn', 'mac_auth'],
+        defaultMethods: ['username_password', 'wpa2_psk']
+      },
+      conferenceRooms: {
+        id: 'conferenceRooms',
+        label: 'Training/Conference Rooms',
+        description: 'Meeting and training room WiFi access',
+        availableMethods: ['event_code', 'otp_mn', 'passkey_login', 'coupon_voucher', 'wpa2_psk', 'otp_auth_key'],
+        defaultMethods: ['event_code', 'wpa2_psk']
+      },
+      guests: {
+        id: 'guests',
+        label: 'Guests/Visitors',
+        description: 'External visitors and guests',
+        availableMethods: ['username_password', 'otp_mn', 'otp_rmn', 'wpa2_psk', 'otp_auth_key', 'sponsored_employee', 'sponsored_authority', 'coupon_voucher', 'event_code', 'passkey_login'],
+        defaultMethods: ['otp_mn', 'sponsored_employee']
+      }
+    }
+  },
+  office: {
+    label: 'Office',
+    categories: {
+      users: {
+        id: 'users',
+        label: 'Users',
+        description: 'Office staff and employees',
+        availableMethods: ['username_password', 'otp_rmn', 'wpa2_psk'],
+        defaultMethods: ['username_password']
+      },
+      conferenceRooms: {
+        id: 'conferenceRooms',
+        label: 'Training/Conference Rooms',
+        description: 'Meeting and training room WiFi access',
+        availableMethods: ['event_code', 'otp_mn', 'passkey_login', 'coupon_voucher', 'wpa2_psk', 'otp_auth_key'],
+        defaultMethods: ['event_code', 'wpa2_psk']
+      },
+      guests: {
+        id: 'guests',
+        label: 'Guests/Visitors',
+        description: 'External visitors',
+        availableMethods: ['otp_mn', 'wpa2_psk'],
+        defaultMethods: ['otp_mn']
+      }
+    }
+  },
+  hotel: {
+    label: 'Hotel',
+    categories: {
+      roomGuests: {
+        id: 'roomGuests',
+        label: 'Room Guests',
+        description: 'Staying guests with room bookings',
+        availableMethods: ['lastname_roomnumber', 'username_password', 'coupon_voucher', 'wpa2_psk'],
+        defaultMethods: ['lastname_roomnumber', 'wpa2_psk']
+      },
+      staff: {
+        id: 'staff',
+        label: 'Staff/Back-office',
+        description: 'Hotel staff and back-office users',
+        availableMethods: ['username_password', 'wpa2_psk', 'otp_rmn', 'adfs_sso', 'digital_certificate'],
+        defaultMethods: ['username_password', 'wpa2_psk']
+      },
+      devices: {
+        id: 'devices',
+        label: 'Devices (TV/Media & IoT)',
+        description: 'Smart TVs, media devices, and IoT devices',
+        availableMethods: ['mac_auth', 'wpa2_psk'],
+        defaultMethods: ['mac_auth', 'wpa2_psk']
+      },
+      guests: {
+        id: 'guests',
+        label: 'Guests/Visitors',
+        description: 'Non-staying visitors, restaurant, event, and conference users',
+        availableMethods: ['username_password', 'otp_mn', 'event_code', 'coupon_voucher', 'otp_auth_key', 'wpa2_psk'],
+        defaultMethods: ['otp_mn', 'event_code']
+      }
+    }
+  },
+  coLiving: {
+    label: 'Co-Living',
+    categories: {
+      residents: {
+        id: 'residents',
+        label: 'Residents',
+        description: 'Co-living residents',
+        availableMethods: ['username_password', 'member_id_password', 'voucher_auto_account', 'wpa2_psk'],
+        defaultMethods: ['username_password', 'wpa2_psk']
+      },
+      staff: {
+        id: 'staff',
+        label: 'Staff',
+        description: 'Property staff',
+        availableMethods: ['username_password', 'wpa2_psk'],
+        defaultMethods: ['username_password']
+      },
+      devices: {
+        id: 'devices',
+        label: 'Devices (TV/Media & Smart)',
+        description: 'Smart TVs, media devices, and smart devices',
+        availableMethods: ['mac_auth', 'wpa2_psk'],
+        defaultMethods: ['mac_auth', 'wpa2_psk']
+      },
+      guests: {
+        id: 'guests',
+        label: 'Guests/Visitors',
+        description: 'Visitor guests',
+        availableMethods: ['otp_mn', 'wpa2_psk'],
+        defaultMethods: ['otp_mn']
+      }
+    }
+  },
+  pg: {
+    label: 'PG (Paying Guest)',
+    categories: {
+      residents: {
+        id: 'residents',
+        label: 'Residents',
+        description: 'PG residents',
+        availableMethods: ['username_password', 'otp_rmn', 'wpa2_psk'],
+        defaultMethods: ['username_password', 'otp_rmn']
+      },
+      staff: {
+        id: 'staff',
+        label: 'Staff',
+        description: 'PG staff',
+        availableMethods: ['username_password', 'otp_rmn', 'wpa2_psk'],
+        defaultMethods: ['username_password']
+      },
+      devices: {
+        id: 'devices',
+        label: 'Devices',
+        description: 'Digital and smart devices',
+        availableMethods: ['mac_auth', 'wpa2_psk'],
+        defaultMethods: ['mac_auth']
+      },
+      guests: {
+        id: 'guests',
+        label: 'Guests/Visitors (Short-term)',
+        description: 'Short-term visitors',
+        availableMethods: ['otp_mn', 'otp_auth_key', 'wpa2_psk'],
+        defaultMethods: ['otp_mn']
+      }
+    }
+  },
+  coWorking: {
+    label: 'Co-Working',
+    categories: {
+      members: {
+        id: 'members',
+        label: 'Members/Co-workers',
+        description: 'Co-working members',
+        availableMethods: ['username_password', 'otp_rmn', 'wpa2_psk'],
+        defaultMethods: ['username_password', 'otp_rmn']
+      },
+      staff: {
+        id: 'staff',
+        label: 'Staff',
+        description: 'Co-working space staff',
+        availableMethods: ['username_password', 'otp_rmn', 'wpa2_psk'],
+        defaultMethods: ['username_password']
+      },
+      devices: {
+        id: 'devices',
+        label: 'Smart Devices',
+        description: 'Smart devices and IoT',
+        availableMethods: ['mac_auth', 'wpa2_psk'],
+        defaultMethods: ['mac_auth']
+      },
+      conferenceRooms: {
+        id: 'conferenceRooms',
+        label: 'Conference Rooms',
+        description: 'Meeting room WiFi access',
+        availableMethods: ['event_code', 'otp_mn', 'otp_auth_key', 'coupon_voucher', 'wpa2_psk'],
+        defaultMethods: ['event_code', 'wpa2_psk']
+      },
+      guests: {
+        id: 'guests',
+        label: 'Guests/Visitors',
+        description: 'External visitors',
+        availableMethods: ['username_password', 'otp_mn', 'wpa2_psk', 'sponsored_employee', 'sponsored_authority', 'coupon_voucher'],
+        defaultMethods: ['otp_mn', 'sponsored_employee']
+      }
+    }
+  },
+  miscellaneous: {
+    label: 'Miscellaneous',
+    categories: {
+      users: {
+        id: 'users',
+        label: 'Users',
+        description: 'General users (Education, Hostels, Hospital, Retail, Events, Others)',
+        availableMethods: ['username_password', 'adfs_sso', 'wpa2_psk', 'otp_mn', 'otp_rmn', 'digital_certificate'],
+        defaultMethods: ['username_password', 'wpa2_psk']
+      },
+      devices: {
+        id: 'devices',
+        label: 'Devices',
+        description: 'Digital and smart devices',
+        availableMethods: ['mac_auth', 'wpa2_psk'],
+        defaultMethods: ['mac_auth']
+      },
+      guests: {
+        id: 'guests',
+        label: 'Guests/Visitors',
+        description: 'External visitors and guests',
+        availableMethods: ['username_password', 'otp_mn', 'wpa2_psk', 'sponsored_employee', 'sponsored_authority', 'coupon_voucher', 'otp_auth_key', 'event_code'],
+        defaultMethods: ['otp_mn', 'wpa2_psk']
+      }
+    }
+  }
+};
+
+/**
+ * Get authentication categories for a segment
+ * @param {string} segment - Segment type
+ * @returns {Object} - Categories with their auth method configurations
+ */
+export const getAuthCategoriesForSegment = (segment) => {
+  return SEGMENT_AUTH_CONFIG[segment]?.categories || SEGMENT_AUTH_CONFIG.miscellaneous.categories;
+};
+
+/**
+ * Get default authentication configuration for a segment
+ * Returns an object with category IDs as keys and arrays of default method IDs as values
+ * @param {string} segment - Segment type
+ * @returns {Object} - Default auth config { categoryId: [methodId, ...] }
+ */
+export const getDefaultAuthConfig = (segment) => {
+  const categories = getAuthCategoriesForSegment(segment);
+  const config = {};
+
+  Object.keys(categories).forEach(categoryId => {
+    config[categoryId] = [...categories[categoryId].defaultMethods];
+  });
+
+  return config;
+};
+
+/**
+ * Validate authentication configuration
+ * Ensures at least one method is selected per category
+ * @param {Object} authConfig - Authentication configuration object
+ * @param {string} segment - Segment type
+ * @returns {{ isValid: boolean, errors: Array }} - Validation result
+ */
+export const validateAuthConfig = (authConfig, segment) => {
+  const categories = getAuthCategoriesForSegment(segment);
+  const errors = [];
+
+  Object.keys(categories).forEach(categoryId => {
+    const selectedMethods = authConfig[categoryId] || [];
+    if (selectedMethods.length === 0) {
+      errors.push({
+        categoryId,
+        categoryLabel: categories[categoryId].label,
+        message: `At least one authentication method is required for ${categories[categoryId].label}`
+      });
+    }
+  });
+
+  return {
+    isValid: errors.length === 0,
+    errors
+  };
+};
+
+/**
+ * Get authentication method label by ID
+ * @param {string} methodId - Method ID
+ * @returns {string} - Method label or ID if not found
+ */
+export const getAuthMethodLabel = (methodId) => {
+  return AUTH_METHODS[methodId]?.label || methodId;
+};
+
+/**
+ * Get authentication method description by ID
+ * @param {string} methodId - Method ID
+ * @returns {string} - Method description or empty string if not found
+ */
+export const getAuthMethodDescription = (methodId) => {
+  return AUTH_METHODS[methodId]?.description || '';
+};
+
+/**
+ * Format authentication configuration for display
+ * Converts method IDs to readable labels
+ * @param {Object} authConfig - Authentication configuration { categoryId: [methodId, ...] }
+ * @param {string} segment - Segment type
+ * @returns {Array} - Formatted array of { category, categoryLabel, methods: [{ id, label, description }] }
+ */
+export const formatAuthConfigForDisplay = (authConfig, segment) => {
+  const categories = getAuthCategoriesForSegment(segment);
+  const result = [];
+
+  Object.keys(categories).forEach(categoryId => {
+    const category = categories[categoryId];
+    const selectedMethods = authConfig?.[categoryId] || [];
+
+    result.push({
+      categoryId,
+      categoryLabel: category.label,
+      categoryDescription: category.description,
+      methods: selectedMethods.map(methodId => ({
+        id: methodId,
+        label: getAuthMethodLabel(methodId),
+        description: getAuthMethodDescription(methodId)
+      })),
+      defaultMethods: category.defaultMethods
+    });
+  });
+
+  return result;
+};
+
+/**
+ * Format authentication configuration for export (CSV/PDF)
+ * Returns both method IDs and human-readable labels
+ * @param {Object} authConfig - Authentication configuration { categoryId: [methodId, ...] }
+ * @param {string} segment - Segment type
+ * @param {string} format - 'ids', 'labels', or 'both'
+ * @returns {Object} - Formatted object for export { categoryLabel: string }
+ */
+export const formatAuthConfigForExport = (authConfig, segment, format = 'both') => {
+  const categories = getAuthCategoriesForSegment(segment);
+  const result = {};
+
+  Object.keys(categories).forEach(categoryId => {
+    const category = categories[categoryId];
+    const selectedMethods = authConfig?.[categoryId] || [];
+
+    if (format === 'ids') {
+      result[category.label] = selectedMethods.join(', ');
+    } else if (format === 'labels') {
+      result[category.label] = selectedMethods.map(id => getAuthMethodLabel(id)).join(', ');
+    } else {
+      // 'both' format: "Label (id), Label (id)"
+      result[category.label] = selectedMethods
+        .map(id => `${getAuthMethodLabel(id)} (${id})`)
+        .join(', ');
+    }
+  });
+
+  return result;
+};
+
+/**
+ * Get summary of authentication configuration
+ * Useful for compact display in tables/cards
+ * @param {Object} authConfig - Authentication configuration
+ * @param {string} segment - Segment type
+ * @returns {{ totalMethods: number, categoriesConfigured: number, summary: string }}
+ */
+export const getAuthConfigSummary = (authConfig, segment) => {
+  const categories = getAuthCategoriesForSegment(segment);
+  let totalMethods = 0;
+  let categoriesConfigured = 0;
+  const summaryParts = [];
+
+  Object.keys(categories).forEach(categoryId => {
+    const selectedMethods = authConfig?.[categoryId] || [];
+    if (selectedMethods.length > 0) {
+      categoriesConfigured++;
+      totalMethods += selectedMethods.length;
+      summaryParts.push(`${categories[categoryId].label}: ${selectedMethods.length}`);
+    }
+  });
+
+  return {
+    totalMethods,
+    categoriesConfigured,
+    totalCategories: Object.keys(categories).length,
+    summary: summaryParts.join(' | ') || 'Not configured'
+  };
+};
+
+// ============================================
 // VALIDATION RULES
 // ============================================
 export const VALIDATION_RULES = {
@@ -701,7 +1180,12 @@ export const INITIAL_FORM_STATE = {
     data: { enabled: false, packs: [] },
     device: { enabled: false, packs: [] },
     policy: { enabled: false, packs: [] }
-  }
+  },
+
+  // Step 8 - Authentication Configuration
+  // Structure: { categoryId: [methodId, methodId, ...] }
+  // Example: { users: ['username_password', 'wpa2_psk'], guests: ['otp_mn'] }
+  authenticationConfig: {}
 };
 
 // ============================================
@@ -714,7 +1198,8 @@ export const PROVISIONING_STEPS = [
   { id: 4, title: "Network Infrastructure", description: "Controllers and NAS configuration" },
   { id: 5, title: "Firewall & API", description: "Optional integrations" },
   { id: 6, title: "SSID & Features", description: "WiFi networks and feature toggles" },
-  { id: 7, title: "Top-ups", description: "Self-care portal top-ups" }
+  { id: 7, title: "Top-ups", description: "Self-care portal top-ups" },
+  { id: 8, title: "Authentication", description: "User authentication methods" }
 ];
 
 // ============================================
@@ -1533,6 +2018,17 @@ export default {
   MASTER_POLICY_LIST,
   TOPUP_POLICIES,
   GST_RATE,
+  // Authentication Configuration
+  AUTH_METHODS,
+  SEGMENT_AUTH_CONFIG,
+  getAuthCategoriesForSegment,
+  getDefaultAuthConfig,
+  validateAuthConfig,
+  getAuthMethodLabel,
+  getAuthMethodDescription,
+  formatAuthConfigForDisplay,
+  formatAuthConfigForExport,
+  getAuthConfigSummary,
   VALIDATION_RULES,
   INITIAL_FORM_STATE,
   PROVISIONING_STEPS,

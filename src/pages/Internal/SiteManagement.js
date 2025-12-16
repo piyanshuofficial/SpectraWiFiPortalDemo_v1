@@ -27,8 +27,18 @@ import {
   FaTimes,
   FaSpinner,
   FaCheck,
+  FaKey,
+  FaShieldAlt,
 } from "react-icons/fa";
 import { sites, customers, configTemplates } from "@constants/internalPortalData";
+import {
+  formatAuthConfigForDisplay,
+  getAuthConfigSummary,
+  AUTH_METHODS,
+  getAuthCategoriesForSegment,
+  getDefaultAuthConfig,
+  validateAuthConfig
+} from "@constants/siteProvisioningConfig";
 import notifications from "@utils/notifications";
 import Pagination from "@components/Pagination";
 import SiteProvisioningModal from "@components/SiteProvisioningModal/SiteProvisioningModal";
@@ -242,6 +252,9 @@ const SiteManagement = () => {
     }
 
     if (mode === 'configure') {
+      // Get segment type for auth config initialization
+      const segmentType = site.type?.toLowerCase()?.replace('-', '') || 'miscellaneous';
+
       setConfigFormData({
         // Bandwidth Configuration
         bandwidthType: site.bandwidthType || 'fixed',
@@ -280,6 +293,8 @@ const SiteManagement = () => {
         reportingEnabled: site.reportingEnabled !== false,
         // Email Notifications
         emailAlertEnabled: site.emailAlertEnabled !== false,
+        // Authentication Configuration - use existing or initialize with defaults
+        authenticationConfig: site.authenticationConfig || getDefaultAuthConfig(segmentType),
       });
     }
   };
@@ -1550,6 +1565,44 @@ const SiteManagement = () => {
                       </div>
                     </div>
                   </div>
+
+                  {/* Authentication Configuration */}
+                  <div className="detail-section auth-config-section">
+                    <h3><FaKey className="section-icon" /> Authentication Configuration</h3>
+                    {selectedSite.authenticationConfig ? (
+                      <div className="auth-config-display">
+                        {formatAuthConfigForDisplay(selectedSite.authenticationConfig, selectedSite.type?.toLowerCase()?.replace('-', '')).map(category => (
+                          <div key={category.categoryId} className="auth-category-display">
+                            <div className="auth-category-header-display">
+                              <span className="auth-category-name">{category.categoryLabel}</span>
+                              <span className="auth-category-count">{category.methods.length} method{category.methods.length !== 1 ? 's' : ''}</span>
+                            </div>
+                            <div className="auth-methods-display">
+                              {category.methods.length > 0 ? (
+                                category.methods.map(method => (
+                                  <span
+                                    key={method.id}
+                                    className={`auth-method-badge ${category.defaultMethods?.includes(method.id) ? 'is-default' : ''}`}
+                                    title={method.description}
+                                  >
+                                    {method.label}
+                                  </span>
+                                ))
+                              ) : (
+                                <span className="no-methods">No methods configured</span>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="no-auth-config">
+                        <FaShieldAlt className="no-config-icon" />
+                        <p>Authentication configuration not set for this site.</p>
+                        <span className="hint">Configure authentication methods via the site configuration panel.</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
 
@@ -2019,6 +2072,107 @@ const SiteManagement = () => {
                         <span>Email Alerts Enabled</span>
                       </label>
                     </div>
+                  </div>
+
+                  {/* Authentication Configuration */}
+                  <div className="config-section auth-config-edit-section">
+                    <h4><FaKey className="section-icon" /> Authentication Configuration</h4>
+                    <p className="section-description">
+                      Configure authentication methods for each user category. At least one method must be selected per category.
+                    </p>
+                    {selectedSite?.type && (
+                      <div className="auth-config-edit-container">
+                        {Object.entries(getAuthCategoriesForSegment(selectedSite.type.toLowerCase().replace('-', ''))).map(([categoryId, category]) => {
+                          const selectedMethods = configFormData.authenticationConfig?.[categoryId] || [];
+                          const validationResult = validateAuthConfig(configFormData.authenticationConfig || {}, selectedSite.type.toLowerCase().replace('-', ''));
+                          const categoryError = validationResult.errors.find(e => e.categoryId === categoryId);
+
+                          return (
+                            <div key={categoryId} className={`auth-category-edit ${categoryError ? 'has-error' : ''}`}>
+                              <div className="auth-category-edit-header">
+                                <div className="auth-category-info">
+                                  <span className="auth-category-name">{category.label}</span>
+                                  <span className="auth-category-desc">{category.description}</span>
+                                </div>
+                                <button
+                                  type="button"
+                                  className="btn-link reset-btn"
+                                  onClick={() => {
+                                    handleConfigFormChange({
+                                      target: {
+                                        name: 'authenticationConfig',
+                                        value: {
+                                          ...configFormData.authenticationConfig,
+                                          [categoryId]: [...category.defaultMethods]
+                                        }
+                                      }
+                                    });
+                                  }}
+                                >
+                                  Reset to defaults
+                                </button>
+                              </div>
+                              {categoryError && (
+                                <div className="auth-error-msg">
+                                  {categoryError.message}
+                                </div>
+                              )}
+                              <div className="auth-methods-edit-grid">
+                                {category.availableMethods.map(methodId => {
+                                  const method = AUTH_METHODS[methodId];
+                                  if (!method) return null;
+                                  const isSelected = selectedMethods.includes(methodId);
+                                  const isDefault = category.defaultMethods.includes(methodId);
+
+                                  return (
+                                    <label
+                                      key={methodId}
+                                      className={`auth-method-checkbox ${isSelected ? 'selected' : ''} ${isDefault ? 'is-default' : ''}`}
+                                    >
+                                      <input
+                                        type="checkbox"
+                                        checked={isSelected}
+                                        onChange={(e) => {
+                                          const currentMethods = configFormData.authenticationConfig?.[categoryId] || [];
+                                          let newMethods;
+                                          if (e.target.checked) {
+                                            newMethods = [...currentMethods, methodId];
+                                          } else {
+                                            newMethods = currentMethods.filter(m => m !== methodId);
+                                          }
+                                          handleConfigFormChange({
+                                            target: {
+                                              name: 'authenticationConfig',
+                                              value: {
+                                                ...configFormData.authenticationConfig,
+                                                [categoryId]: newMethods
+                                              }
+                                            }
+                                          });
+                                        }}
+                                      />
+                                      <span className="checkbox-custom"></span>
+                                      <div className="method-info">
+                                        <span className="method-label">
+                                          {method.label}
+                                          {isDefault && <span className="default-tag">Default</span>}
+                                        </span>
+                                        <span className="method-desc">{method.description}</span>
+                                      </div>
+                                    </label>
+                                  );
+                                })}
+                              </div>
+                              <div className="auth-category-footer">
+                                <span className="selected-count">
+                                  {selectedMethods.length} method{selectedMethods.length !== 1 ? 's' : ''} selected
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 </div>
               )}

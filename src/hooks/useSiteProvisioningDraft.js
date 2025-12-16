@@ -136,7 +136,7 @@ const useSiteProvisioningDraft = (userId, debounceMs = 500) => {
    * Go to next step
    */
   const nextStep = useCallback(() => {
-    const next = Math.min(currentStep + 1, 7);
+    const next = Math.min(currentStep + 1, 8);
     goToStep(next);
   }, [currentStep, goToStep]);
 

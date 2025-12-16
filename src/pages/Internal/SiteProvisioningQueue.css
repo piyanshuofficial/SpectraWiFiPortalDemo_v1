@@ -1199,3 +1199,141 @@
     flex-direction: column;
   }
 }
+
+/* ============================================
+   AUTHENTICATION CONFIG - Detail Modal
+   ============================================ */
+
+.pq-detail-modal .auth-config-section {
+  margin-top: var(--space-lg, 24px);
+}
+
+.pq-detail-modal .auth-config-section h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pq-detail-modal .auth-summary-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  background: #f0f4ff;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  color: var(--primary-color, #2563eb);
+  margin-left: auto;
+  font-weight: 500;
+}
+
+.pq-detail-modal .auth-categories-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.pq-detail-modal .auth-category-card {
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid #e5e7eb;
+}
+
+.pq-detail-modal .auth-category-card .category-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.pq-detail-modal .auth-category-card .category-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--primary-color, #2563eb);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+.pq-detail-modal .auth-category-card .category-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary, #1a1a2e);
+}
+
+.pq-detail-modal .auth-category-card .category-description {
+  font-size: 0.75rem;
+  color: var(--text-muted, #9ca3af);
+  margin-bottom: 12px;
+}
+
+.pq-detail-modal .auth-methods-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pq-detail-modal .auth-method-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: white;
+  border-radius: 6px;
+  font-size: 0.8125rem;
+}
+
+.pq-detail-modal .auth-method-item svg {
+  color: #10b981;
+  font-size: 10px;
+}
+
+.pq-detail-modal .auth-method-item .method-label {
+  color: var(--text-primary, #1a1a2e);
+  font-weight: 500;
+}
+
+.pq-detail-modal .auth-method-item .method-id {
+  color: var(--text-muted, #9ca3af);
+  font-size: 0.7rem;
+  margin-left: auto;
+  font-family: monospace;
+}
+
+.pq-detail-modal .auth-methods-empty {
+  font-size: 0.8125rem;
+  color: var(--text-muted, #9ca3af);
+  font-style: italic;
+  padding: 12px;
+  text-align: center;
+}
+
+.pq-detail-modal .auth-config-not-set {
+  padding: 24px;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px dashed #d1d5db;
+  text-align: center;
+  color: var(--text-muted, #9ca3af);
+  font-size: 0.875rem;
+  margin-top: 16px;
+}
+
+@media (max-width: 768px) {
+  .pq-detail-modal .auth-categories-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pq-detail-modal .auth-summary-badge {
+    margin-left: 0;
+    margin-top: 8px;
+  }
+}

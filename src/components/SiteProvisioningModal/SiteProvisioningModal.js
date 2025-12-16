@@ -19,7 +19,8 @@ import {
   FaExclamationTriangle,
   FaClock,
   FaInfoCircle,
-  FaBan
+  FaBan,
+  FaKey
 } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 import useSiteProvisioningDraft from '../../hooks/useSiteProvisioningDraft';
@@ -40,6 +41,10 @@ import {
   PROVISIONING_STEPS,
   MASTER_POLICY_LIST,
   VALIDATION_RULES,
+  AUTH_METHODS,
+  getAuthCategoriesForSegment,
+  getDefaultAuthConfig,
+  validateAuthConfig,
   generateSiteId,
   generateAccountPrefix,
   getReportsForSolutionType,
@@ -179,6 +184,20 @@ const SiteProvisioningModal = ({
       }
     }
   }, [formData.siteType, formData.registeredDeviceLimit, updateField]);
+
+  // Auto-set default authentication config when segment changes
+  const prevSiteTypeForAuth = useRef('');
+  useEffect(() => {
+    if (formData.siteType && formData.siteType !== prevSiteTypeForAuth.current) {
+      prevSiteTypeForAuth.current = formData.siteType;
+      // Only set defaults if authenticationConfig is empty
+      const currentConfig = formData.authenticationConfig || {};
+      if (Object.keys(currentConfig).length === 0) {
+        const defaultAuthConfig = getDefaultAuthConfig(formData.siteType);
+        updateField('authenticationConfig', defaultAuthConfig);
+      }
+    }
+  }, [formData.siteType, formData.authenticationConfig, updateField]);
 
   // Validate current step
   const validateStep = useCallback((step) => {
@@ -419,6 +438,17 @@ const SiteProvisioningModal = ({
         }
         break;
 
+      case 8: // Authentication Configuration
+        if (formData.siteType) {
+          const authValidation = validateAuthConfig(formData.authenticationConfig || {}, formData.siteType);
+          if (!authValidation.isValid) {
+            authValidation.errors.forEach(err => {
+              newErrors[`auth_${err.categoryId}`] = err.message;
+            });
+          }
+        }
+        break;
+
       default:
         break;
     }
@@ -430,7 +460,7 @@ const SiteProvisioningModal = ({
   // Handle next step
   const handleNext = useCallback(() => {
     if (validateStep(currentStep)) {
-      if (currentStep < 7) {
+      if (currentStep < 8) {
         nextStep();
       }
     }
@@ -449,7 +479,7 @@ const SiteProvisioningModal = ({
   const handleSubmit = useCallback(async () => {
     // Validate all steps
     let allValid = true;
-    for (let step = 1; step <= 7; step++) {
+    for (let step = 1; step <= 8; step++) {
       if (!validateStep(step)) {
         allValid = false;
         goToStep(step);
@@ -499,7 +529,8 @@ const SiteProvisioningModal = ({
     4: FaNetworkWired,
     5: FaShieldAlt,
     6: FaWifi,
-    7: FaShoppingCart
+    7: FaShoppingCart,
+    8: FaKey
   };
 
   if (!isOpen) return null;
@@ -1546,6 +1577,107 @@ const SiteProvisioningModal = ({
               )}
             </div>
           )}
+
+          {/* Step 8: Authentication Configuration */}
+          {currentStep === 8 && (
+            <div className="spm-step-content">
+              <h3>Authentication Configuration</h3>
+              <p className="section-description">
+                Configure authentication methods for each user category. At least one method must be selected per category.
+                WPA2-PSK can be combined with other authentication methods.
+              </p>
+
+              {!formData.siteType ? (
+                <div className="info-message warning">
+                  <FaExclamationTriangle />
+                  <div>
+                    <strong>Site Type Required</strong>
+                    <p>Please select a site type/segment in Step 1 to configure authentication methods.</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="auth-config-container">
+                  {Object.entries(getAuthCategoriesForSegment(formData.siteType)).map(([categoryId, category]) => {
+                    const selectedMethods = formData.authenticationConfig?.[categoryId] || [];
+                    const hasError = errors[`auth_${categoryId}`];
+
+                    return (
+                      <div key={categoryId} className={`auth-category-card ${hasError ? 'has-error' : ''}`}>
+                        <div className="auth-category-header">
+                          <h4>{category.label}</h4>
+                          <span className="auth-category-desc">{category.description}</span>
+                        </div>
+
+                        {hasError && (
+                          <div className="auth-error-message">
+                            <FaExclamationTriangle /> {errors[`auth_${categoryId}`]}
+                          </div>
+                        )}
+
+                        <div className="auth-methods-grid">
+                          {category.availableMethods.map(methodId => {
+                            const method = AUTH_METHODS[methodId];
+                            if (!method) return null;
+
+                            const isSelected = selectedMethods.includes(methodId);
+                            const isDefault = category.defaultMethods.includes(methodId);
+
+                            return (
+                              <label
+                                key={methodId}
+                                className={`auth-method-item ${isSelected ? 'selected' : ''} ${isDefault ? 'is-default' : ''}`}
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={isSelected}
+                                  onChange={(e) => {
+                                    const currentMethods = formData.authenticationConfig?.[categoryId] || [];
+                                    let newMethods;
+                                    if (e.target.checked) {
+                                      newMethods = [...currentMethods, methodId];
+                                    } else {
+                                      newMethods = currentMethods.filter(m => m !== methodId);
+                                    }
+                                    updateField('authenticationConfig', {
+                                      ...formData.authenticationConfig,
+                                      [categoryId]: newMethods
+                                    });
+                                  }}
+                                />
+                                <span className="auth-checkbox-custom"></span>
+                                <div className="auth-method-info">
+                                  <span className="auth-method-label">{method.label}</span>
+                                  <span className="auth-method-desc">{method.description}</span>
+                                </div>
+                              </label>
+                            );
+                          })}
+                        </div>
+
+                        <div className="auth-category-footer">
+                          <span className="selected-count">
+                            {selectedMethods.length} method{selectedMethods.length !== 1 ? 's' : ''} selected
+                          </span>
+                          <button
+                            type="button"
+                            className="btn-link"
+                            onClick={() => {
+                              updateField('authenticationConfig', {
+                                ...formData.authenticationConfig,
+                                [categoryId]: [...category.defaultMethods]
+                              });
+                            }}
+                          >
+                            Reset to defaults
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Footer */}
@@ -1569,7 +1701,7 @@ const SiteProvisioningModal = ({
               </button>
             )}
 
-            {currentStep < 7 ? (
+            {currentStep < 8 ? (
               <button
                 type="button"
                 className="btn-primary"

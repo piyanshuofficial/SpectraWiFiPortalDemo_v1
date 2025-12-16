@@ -1,6 +1,7 @@
 // src/utils/exportUtils.js
 
 import Papa from 'papaparse';
+import { formatAuthConfigForExport } from '@constants/siteProvisioningConfig';
 
 /**
  * Unified CSV export function for table or chart data
@@ -138,6 +139,234 @@ export const exportChartDataToCSV = async (data, filename = 'chart-data.csv') =>
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
       
+      resolve();
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+/**
+ * Export site data to CSV with authentication configuration support
+ * Exports site information including auth config in both IDs and labels format
+ * @param {Array} sites - Array of site objects to export
+ * @param {string} filename - Output filename
+ * @param {Object} options - Export options
+ * @param {boolean} options.includeAuthConfig - Whether to include auth config (default: true)
+ * @param {string} options.authConfigFormat - 'both', 'ids', or 'labels' (default: 'both')
+ * @returns {Promise<void>}
+ */
+export const exportSiteDataToCSV = async (sites, filename = 'sites-export.csv', options = {}) => {
+  const { includeAuthConfig = true, authConfigFormat = 'both' } = options;
+
+  return new Promise((resolve, reject) => {
+    try {
+      // Define base headers
+      const baseHeaders = [
+        'Site ID',
+        'Site Name',
+        'Customer',
+        'Segment',
+        'Status',
+        'City',
+        'State',
+        'Address',
+        'Licensed Users',
+        'Bandwidth (Mbps)',
+        'Total APs',
+        'Live APs',
+        'Total Switches',
+        'Live Switches',
+        'Uptime %',
+        'Contact Name',
+        'Contact Email',
+        'Contact Phone',
+        'Created Date',
+        'Last Updated'
+      ];
+
+      // Add auth config headers if enabled
+      let authConfigHeaders = [];
+      if (includeAuthConfig) {
+        // We'll dynamically add auth config columns based on the data
+        authConfigHeaders = ['Authentication Methods Summary'];
+      }
+
+      const headers = [...baseHeaders, ...authConfigHeaders];
+
+      // Transform site data to rows
+      const rows = sites.map(site => {
+        const baseRow = [
+          site.id || '',
+          site.name || '',
+          site.customer || '',
+          site.type || site.segment || '',
+          site.status || '',
+          site.city || site.location?.city || '',
+          site.state || site.location?.state || '',
+          site.address || site.location?.address || '',
+          site.licensedUsers || site.billingData?.licensedUsers || '',
+          site.bandwidth || site.billingData?.bandwidthMbps || '',
+          site.totalAps || site.infrastructure?.aps?.total || '',
+          site.liveAps || site.infrastructure?.aps?.live || '',
+          site.totalSwitches || site.infrastructure?.switches?.total || '',
+          site.liveSwitches || site.infrastructure?.switches?.live || '',
+          site.uptime || '',
+          site.contactName || site.contact?.name || '',
+          site.contactEmail || site.contact?.email || '',
+          site.contactPhone || site.contact?.phone || '',
+          site.createdAt ? new Date(site.createdAt).toLocaleDateString() : '',
+          site.lastUpdated ? new Date(site.lastUpdated).toLocaleDateString() : ''
+        ];
+
+        // Add auth config data if enabled
+        if (includeAuthConfig && site.authenticationConfig) {
+          const segmentType = (site.type || site.segment || 'miscellaneous').toLowerCase().replace('-', '');
+          const authExport = formatAuthConfigForExport(site.authenticationConfig, segmentType, authConfigFormat);
+
+          // Format auth config as a summary string
+          const authSummary = Object.entries(authExport)
+            .map(([category, methods]) => `${category}: ${methods || 'None'}`)
+            .join(' | ');
+
+          baseRow.push(authSummary);
+        } else if (includeAuthConfig) {
+          baseRow.push('Not Configured');
+        }
+
+        return baseRow;
+      });
+
+      const csv = Papa.unparse({
+        fields: headers,
+        data: rows,
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.href = url;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      resolve();
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+/**
+ * Export site data with detailed auth config (separate columns per category)
+ * Creates a more detailed export with each auth category as a separate column
+ * @param {Array} sites - Array of site objects to export
+ * @param {string} filename - Output filename
+ * @param {string} authConfigFormat - 'both', 'ids', or 'labels' (default: 'both')
+ * @returns {Promise<void>}
+ */
+export const exportSiteDataWithDetailedAuthConfig = async (sites, filename = 'sites-detailed-export.csv', authConfigFormat = 'both') => {
+  return new Promise((resolve, reject) => {
+    try {
+      // Collect all unique auth categories across all sites
+      const allAuthCategories = new Set();
+      sites.forEach(site => {
+        if (site.authenticationConfig) {
+          Object.keys(site.authenticationConfig).forEach(cat => allAuthCategories.add(cat));
+        }
+      });
+
+      // Define category labels mapping (simplified)
+      const categoryLabels = {
+        users: 'Auth: Users',
+        guests: 'Auth: Guests',
+        devices: 'Auth: Devices',
+        residents: 'Auth: Residents',
+        members: 'Auth: Members',
+        staff: 'Auth: Staff',
+        roomGuests: 'Auth: Room Guests',
+        conferenceRooms: 'Auth: Conference Rooms'
+      };
+
+      // Base headers
+      const baseHeaders = [
+        'Site ID',
+        'Site Name',
+        'Customer',
+        'Segment',
+        'Status',
+        'City',
+        'State',
+        'Licensed Users',
+        'Bandwidth (Mbps)',
+        'Uptime %'
+      ];
+
+      // Add auth category headers
+      const authHeaders = Array.from(allAuthCategories).map(cat => categoryLabels[cat] || `Auth: ${cat}`);
+
+      const headers = [...baseHeaders, ...authHeaders];
+
+      // Transform site data to rows
+      const rows = sites.map(site => {
+        const segmentType = (site.type || site.segment || 'miscellaneous').toLowerCase().replace('-', '');
+        const authExport = site.authenticationConfig
+          ? formatAuthConfigForExport(site.authenticationConfig, segmentType, authConfigFormat)
+          : {};
+
+        const baseRow = [
+          site.id || '',
+          site.name || '',
+          site.customer || '',
+          site.type || site.segment || '',
+          site.status || '',
+          site.city || site.location?.city || '',
+          site.state || site.location?.state || '',
+          site.licensedUsers || site.billingData?.licensedUsers || '',
+          site.bandwidth || site.billingData?.bandwidthMbps || '',
+          site.uptime || ''
+        ];
+
+        // Add auth config for each category
+        Array.from(allAuthCategories).forEach(cat => {
+          const methods = site.authenticationConfig?.[cat];
+          if (methods && methods.length > 0) {
+            if (authConfigFormat === 'ids') {
+              baseRow.push(methods.join(', '));
+            } else if (authConfigFormat === 'labels') {
+              // Get labels from the export format
+              const catLabel = categoryLabels[cat] || cat;
+              baseRow.push(authExport[catLabel] || methods.join(', '));
+            } else {
+              // 'both' - include both label and ID
+              const catLabel = categoryLabels[cat] || cat;
+              baseRow.push(authExport[catLabel] || methods.join(', '));
+            }
+          } else {
+            baseRow.push('');
+          }
+        });
+
+        return baseRow;
+      });
+
+      const csv = Papa.unparse({
+        fields: headers,
+        data: rows,
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.href = url;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
       resolve();
     } catch (error) {
       reject(error);
