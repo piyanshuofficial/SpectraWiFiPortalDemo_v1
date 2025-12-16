@@ -1347,7 +1347,7 @@ const UserList = () => {
             onBulkImport={canBulkAddUsers && canEditUsers && !isReadOnly ? () => setShowBulkImportModal(true) : undefined}
             disableBulkImport={!canBulkAddUsers || !canEditUsers || isReadOnly}
             onExport={handleExportUsers}
-            disableExport={!canViewReports || exportingCSV}
+            disableExport={!canViewReports || exportingCSV || sortedUsers.length === 0}
             exportLoading={exportingCSV}
             onAddDevice={showAddDevice && !isReadOnly ? () => setShowDeviceModal(true) : undefined}
             disableAddDevice={!showAddDevice || isReadOnly}

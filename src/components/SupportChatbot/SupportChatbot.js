@@ -9,6 +9,7 @@ import {
   FaUser,
   FaSpinner,
   FaChevronDown,
+  FaChevronUp,
   FaLightbulb,
   FaQuestionCircle,
   FaHeadset,
@@ -17,6 +18,8 @@ import {
   FaRedo,
   FaExpandAlt,
   FaCompressAlt,
+  FaGripHorizontal,
+  FaMinus,
 } from "react-icons/fa";
 import { useAuth } from "@context/AuthContext";
 import "./SupportChatbot.css";
@@ -233,6 +236,7 @@ const SupportChatbot = () => {
   const { currentUser } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(false);
   const [messages, setMessages] = useState([
     {
       id: 1,
@@ -247,6 +251,13 @@ const SupportChatbot = () => {
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
+  // Draggable state
+  const [position, setPosition] = useState({ x: null, y: null });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [hasDragged, setHasDragged] = useState(false); // Track if drag occurred (vs click)
+  const chatbotRef = useRef(null);
+
   // Scroll to bottom when new messages arrive
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -258,10 +269,112 @@ const SupportChatbot = () => {
 
   // Focus input when chat opens
   useEffect(() => {
-    if (isOpen && inputRef.current) {
+    if (isOpen && !isMinimized && inputRef.current) {
       setTimeout(() => inputRef.current.focus(), 100);
     }
-  }, [isOpen]);
+  }, [isOpen, isMinimized]);
+
+  // Dragging handlers
+  const handleDragStart = useCallback((e) => {
+    if (e.target.closest('.header-btn') || e.target.closest('.chatbot-input')) return;
+
+    setIsDragging(true);
+    setHasDragged(false); // Reset drag tracking
+    const chatbot = chatbotRef.current;
+    if (chatbot) {
+      const rect = chatbot.getBoundingClientRect();
+      setDragOffset({
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+      });
+    }
+    e.preventDefault();
+  }, []);
+
+  // Handle drag start for toggle button (supports both drag and click)
+  const handleToggleDragStart = useCallback((e) => {
+    setIsDragging(true);
+    setHasDragged(false);
+    const chatbot = chatbotRef.current;
+    if (chatbot) {
+      const rect = chatbot.getBoundingClientRect();
+      setDragOffset({
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+      });
+    }
+    e.preventDefault();
+  }, []);
+
+  const handleDragMove = useCallback((e) => {
+    if (!isDragging) return;
+
+    const newX = e.clientX - dragOffset.x;
+    const newY = e.clientY - dragOffset.y;
+
+    // Constrain to viewport
+    const chatbot = chatbotRef.current;
+    if (chatbot) {
+      const rect = chatbot.getBoundingClientRect();
+      const maxX = window.innerWidth - rect.width;
+      const maxY = window.innerHeight - rect.height;
+
+      const constrainedX = Math.max(0, Math.min(newX, maxX));
+      const constrainedY = Math.max(0, Math.min(newY, maxY));
+
+      // Check if position actually changed (i.e., user dragged)
+      if (position.x !== constrainedX || position.y !== constrainedY) {
+        setHasDragged(true);
+      }
+
+      setPosition({
+        x: constrainedX,
+        y: constrainedY,
+      });
+    }
+  }, [isDragging, dragOffset, position.x, position.y]);
+
+  const handleDragEnd = useCallback(() => {
+    setIsDragging(false);
+  }, []);
+
+  // Handle toggle button click (only open if not dragged)
+  const handleToggleClick = useCallback(() => {
+    if (!hasDragged) {
+      setIsOpen(true);
+    }
+    setHasDragged(false);
+  }, [hasDragged]);
+
+  // Add and remove drag event listeners
+  useEffect(() => {
+    if (isDragging) {
+      document.addEventListener('mousemove', handleDragMove);
+      document.addEventListener('mouseup', handleDragEnd);
+      document.body.style.userSelect = 'none';
+    } else {
+      document.body.style.userSelect = '';
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleDragMove);
+      document.removeEventListener('mouseup', handleDragEnd);
+      document.body.style.userSelect = '';
+    };
+  }, [isDragging, handleDragMove, handleDragEnd]);
+
+  // Reset position when closing
+  const handleClose = useCallback(() => {
+    setIsOpen(false);
+    setIsMinimized(false);
+    // Optionally reset position when closed
+    // setPosition({ x: null, y: null });
+  }, []);
+
+  // Toggle minimize
+  const toggleMinimize = useCallback(() => {
+    setIsMinimized(prev => !prev);
+  }, []);
 
   const handleSendMessage = async (query = inputValue) => {
     if (!query.trim()) return;
@@ -340,26 +453,44 @@ const SupportChatbot = () => {
     setIsExpanded(!isExpanded);
   };
 
+  // Calculate inline styles for positioning
+  const chatbotStyle = position.x !== null && position.y !== null
+    ? { left: `${position.x}px`, top: `${position.y}px`, right: 'auto', bottom: 'auto' }
+    : {};
+
   return (
-    <div className={`support-chatbot ${isOpen ? "open" : ""} ${isExpanded ? "expanded" : ""}`}>
-      {/* Chat Toggle Button */}
+    <div
+      ref={chatbotRef}
+      className={`support-chatbot ${isOpen ? "open" : ""} ${isExpanded ? "expanded" : ""} ${isMinimized ? "minimized" : ""} ${isDragging ? "dragging" : ""}`}
+      style={chatbotStyle}
+    >
+      {/* Chat Toggle Button - Draggable */}
       {!isOpen && (
         <button
           className="chatbot-toggle-btn"
-          onClick={() => setIsOpen(true)}
-          title={`Chat with ${CHATBOT_NAME}`}
+          onMouseDown={handleToggleDragStart}
+          onClick={handleToggleClick}
+          title={`Chat with ${CHATBOT_NAME} (drag to move)`}
           aria-label="Open support chat"
+          style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
         >
           <FaComments />
           <span className="toggle-label">{CHATBOT_NAME}</span>
+          <span className="drag-hint">
+            <FaGripHorizontal />
+          </span>
         </button>
       )}
 
       {/* Chat Window */}
       {isOpen && (
         <div className="chatbot-window">
-          {/* Header */}
-          <div className="chatbot-header">
+          {/* Header - Draggable Area */}
+          <div
+            className="chatbot-header"
+            onMouseDown={handleDragStart}
+            style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
+          >
             <div className="header-info">
               <div className="bot-avatar">
                 <FaRobot />
@@ -368,143 +499,163 @@ const SupportChatbot = () => {
                 <span className="bot-name">{CHATBOT_NAME}</span>
                 <span className="bot-status">
                   <span className="status-dot"></span>
-                  Online - Ready to help
+                  {isMinimized ? "Click to expand" : "Online - Ready to help"}
                 </span>
               </div>
             </div>
             <div className="header-actions">
+              {!isMinimized && (
+                <>
+                  <button
+                    className="header-btn"
+                    onClick={handleReset}
+                    title="Start new conversation"
+                  >
+                    <FaRedo />
+                  </button>
+                  <button
+                    className="header-btn"
+                    onClick={toggleExpand}
+                    title={isExpanded ? "Compress" : "Expand"}
+                  >
+                    {isExpanded ? <FaCompressAlt /> : <FaExpandAlt />}
+                  </button>
+                </>
+              )}
               <button
                 className="header-btn"
-                onClick={handleReset}
-                title="Start new conversation"
+                onClick={toggleMinimize}
+                title={isMinimized ? "Expand chat" : "Minimize chat"}
               >
-                <FaRedo />
-              </button>
-              <button
-                className="header-btn"
-                onClick={toggleExpand}
-                title={isExpanded ? "Minimize" : "Expand"}
-              >
-                {isExpanded ? <FaCompressAlt /> : <FaExpandAlt />}
+                {isMinimized ? <FaChevronUp /> : <FaMinus />}
               </button>
               <button
                 className="header-btn close-btn"
-                onClick={() => setIsOpen(false)}
+                onClick={handleClose}
                 title="Close chat"
               >
                 <FaTimes />
               </button>
             </div>
-          </div>
-
-          {/* Messages Area */}
-          <div className="chatbot-messages">
-            {messages.map((message) => (
-              <div
-                key={message.id}
-                className={`message ${message.type === "bot" ? "bot-message" : "user-message"}`}
-              >
-                <div className="message-avatar">
-                  {message.type === "bot" ? <FaRobot /> : <FaUser />}
-                </div>
-                <div className="message-content">
-                  <div className="message-text">{message.text}</div>
-                  <div className="message-meta">
-                    <span className="message-time">{formatTime(message.timestamp)}</span>
-                    {message.canFeedback && !message.feedback && (
-                      <div className="feedback-buttons">
-                        <button
-                          className="feedback-btn"
-                          onClick={() => handleFeedback(message.id, true)}
-                          title="Helpful"
-                        >
-                          <FaThumbsUp />
-                        </button>
-                        <button
-                          className="feedback-btn"
-                          onClick={() => handleFeedback(message.id, false)}
-                          title="Not helpful"
-                        >
-                          <FaThumbsDown />
-                        </button>
-                      </div>
-                    )}
-                    {message.feedback && (
-                      <span className={`feedback-received ${message.feedback}`}>
-                        {message.feedback === "positive" ? "Thanks for the feedback!" : "We'll improve this"}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
-
-            {isTyping && (
-              <div className="message bot-message typing">
-                <div className="message-avatar">
-                  <FaRobot />
-                </div>
-                <div className="message-content">
-                  <div className="typing-indicator">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <div ref={messagesEndRef} />
-          </div>
-
-          {/* Quick Suggestions */}
-          {showSuggestions && messages.length <= 1 && (
-            <div className="quick-suggestions">
-              <div className="suggestions-header">
-                <FaLightbulb /> Quick questions
-              </div>
-              <div className="suggestions-list">
-                {quickSuggestions.map((suggestion, index) => (
-                  <button
-                    key={index}
-                    className="suggestion-btn"
-                    onClick={() => handleSuggestionClick(suggestion)}
-                  >
-                    {suggestion.text}
-                  </button>
-                ))}
-              </div>
+            {/* Drag indicator */}
+            <div className="drag-indicator" title="Drag to move">
+              <FaGripHorizontal />
             </div>
+          </div>
+
+          {/* Chat Content - Hidden when minimized */}
+          {!isMinimized && (
+            <>
+              {/* Messages Area */}
+              <div className="chatbot-messages">
+                {messages.map((message) => (
+                  <div
+                    key={message.id}
+                    className={`message ${message.type === "bot" ? "bot-message" : "user-message"}`}
+                  >
+                    <div className="message-avatar">
+                      {message.type === "bot" ? <FaRobot /> : <FaUser />}
+                    </div>
+                    <div className="message-content">
+                      <div className="message-text">{message.text}</div>
+                      <div className="message-meta">
+                        <span className="message-time">{formatTime(message.timestamp)}</span>
+                        {message.canFeedback && !message.feedback && (
+                          <div className="feedback-buttons">
+                            <button
+                              className="feedback-btn"
+                              onClick={() => handleFeedback(message.id, true)}
+                              title="Helpful"
+                            >
+                              <FaThumbsUp />
+                            </button>
+                            <button
+                              className="feedback-btn"
+                              onClick={() => handleFeedback(message.id, false)}
+                              title="Not helpful"
+                            >
+                              <FaThumbsDown />
+                            </button>
+                          </div>
+                        )}
+                        {message.feedback && (
+                          <span className={`feedback-received ${message.feedback}`}>
+                            {message.feedback === "positive" ? "Thanks for the feedback!" : "We'll improve this"}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                {isTyping && (
+                  <div className="message bot-message typing">
+                    <div className="message-avatar">
+                      <FaRobot />
+                    </div>
+                    <div className="message-content">
+                      <div className="typing-indicator">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div ref={messagesEndRef} />
+              </div>
+
+              {/* Quick Suggestions */}
+              {showSuggestions && messages.length <= 1 && (
+                <div className="quick-suggestions">
+                  <div className="suggestions-header">
+                    <FaLightbulb /> Quick questions
+                  </div>
+                  <div className="suggestions-list">
+                    {quickSuggestions.map((suggestion, index) => (
+                      <button
+                        key={index}
+                        className="suggestion-btn"
+                        onClick={() => handleSuggestionClick(suggestion)}
+                      >
+                        {suggestion.text}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Input Area */}
+              <div className="chatbot-input">
+                <input
+                  ref={inputRef}
+                  type="text"
+                  placeholder="Type your question..."
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  disabled={isTyping}
+                />
+                <button
+                  className="send-btn"
+                  onClick={() => handleSendMessage()}
+                  disabled={!inputValue.trim() || isTyping}
+                  title="Send message"
+                >
+                  {isTyping ? <FaSpinner className="spin" /> : <FaPaperPlane />}
+                </button>
+              </div>
+
+              {/* Footer */}
+              <div className="chatbot-footer">
+                <FaHeadset /> Need human support?{" "}
+                <a href="/knowledge" onClick={(e) => { e.preventDefault(); handleClose(); }}>
+                  Visit Knowledge Center
+                </a>
+              </div>
+            </>
           )}
-
-          {/* Input Area */}
-          <div className="chatbot-input">
-            <input
-              ref={inputRef}
-              type="text"
-              placeholder="Type your question..."
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyPress={handleKeyPress}
-              disabled={isTyping}
-            />
-            <button
-              className="send-btn"
-              onClick={() => handleSendMessage()}
-              disabled={!inputValue.trim() || isTyping}
-              title="Send message"
-            >
-              {isTyping ? <FaSpinner className="spin" /> : <FaPaperPlane />}
-            </button>
-          </div>
-
-          {/* Footer */}
-          <div className="chatbot-footer">
-            <FaHeadset /> Need human support?{" "}
-            <a href="/knowledge" onClick={(e) => { e.preventDefault(); setIsOpen(false); }}>
-              Visit Knowledge Center
-            </a>
-          </div>
         </div>
       )}
     </div>

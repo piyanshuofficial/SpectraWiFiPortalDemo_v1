@@ -10,37 +10,43 @@
   margin: 0 auto;
 }
 
-/* Page Header */
+/* ============================================
+   PAGE HEADER - Reports Style
+   ============================================ */
+
 .site-management .page-header {
+  margin-bottom: var(--space-xl);
+}
+
+.site-management .page-header-content {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: var(--space-lg);
   flex-wrap: wrap;
   gap: var(--space-md);
 }
 
-.site-management .page-header .header-left h1 {
+.site-management .page-title-section h1 {
   display: flex;
   align-items: center;
   gap: var(--space-sm);
   font-size: var(--font-3xl);
-  font-weight: 600;
+  font-weight: 700;
   margin: 0 0 var(--space-xs) 0;
   color: var(--color-text-primary);
 }
 
-.site-management .page-header .header-left h1 svg {
+.site-management .page-title-icon {
   color: var(--color-accent);
 }
 
-.site-management .page-header .header-left p {
-  font-size: var(--font-sm);
+.site-management .page-subtitle {
+  font-size: var(--font-base);
   color: var(--color-text-secondary);
   margin: 0;
 }
 
-.site-management .header-actions {
+.site-management .page-header-actions {
   display: flex;
   gap: var(--space-sm);
 }
@@ -726,6 +732,11 @@
   text-decoration: underline;
 }
 
+.site-name-text {
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
 .type-badge {
   padding: 2px 8px;
   background-color: var(--color-bg-tertiary);
@@ -887,16 +898,16 @@
     padding: var(--space-md);
   }
 
-  .site-management .page-header {
+  .site-management .page-header-content {
     flex-direction: column;
   }
 
-  .site-management .header-actions {
+  .site-management .page-header-actions {
     width: 100%;
     flex-wrap: wrap;
   }
 
-  .site-management .header-actions .btn {
+  .site-management .page-header-actions .btn {
     flex: 1;
   }
 

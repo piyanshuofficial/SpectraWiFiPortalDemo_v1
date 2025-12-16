@@ -617,6 +617,220 @@ useEffect(() => {
     }
   };
 
+  // Company-level chart export handler for PDF
+  const handleCompanyChartExportPDF = async (title, headers, rows, chartType, dataRows, filename, reportId, chartId) => {
+    setExportingPDF(true);
+    setExportingChart(chartId);
+    let timeoutId = null;
+    try {
+      await new Promise(resolve => {
+        timeoutId = setTimeout(resolve, 1000);
+      });
+
+      let chartData;
+      if (chartType === "bar") {
+        // Determine if it's a grouped bar chart or single
+        const hasActive = dataRows[0]?.active !== undefined;
+        if (hasActive) {
+          chartData = {
+            labels: dataRows.map((d) => d.name),
+            datasets: [
+              {
+                label: headers[1] || "Total",
+                data: dataRows.map((d) => d.value),
+                backgroundColor: "#004aad",
+              },
+              {
+                label: headers[2] || "Active",
+                data: dataRows.map((d) => d.active),
+                backgroundColor: "#4caf50",
+              }
+            ],
+          };
+        } else {
+          chartData = {
+            labels: dataRows.map((d) => d.name),
+            datasets: [{
+              label: headers[1] || "Usage",
+              data: dataRows.map((d) => d.usage || d.value),
+              backgroundColor: dataRows.map(d =>
+                (d.usage || 0) >= 80 ? '#f44336' : (d.usage || 0) >= 60 ? '#ff9800' : '#4caf50'
+              ),
+              borderRadius: 4,
+            }],
+          };
+        }
+      }
+
+      const exportChartOptions = getStandardChartOptions({
+        type: chartType,
+        title,
+        xLabel: "Site",
+        yLabel: headers[1] || "Value",
+        darkMode: false,
+        forExport: true,
+      });
+
+      const { width, height } = EXPORT_CANVAS_SIZES[chartType];
+
+      await exportReportPDF({
+        title: `${segmentCompany.name} - ${title}`,
+        headers,
+        rows,
+        chartData,
+        chartOptions: exportChartOptions,
+        filename,
+        rolePermissions: { canViewReports: hasPermission('canViewReports') },
+        exportCanvasWidth: width,
+        exportCanvasHeight: height,
+        reportId: reportId,
+        criteria: null,
+        addWatermark: false,
+        watermarkText: "CONFIDENTIAL",
+        disclaimerText: `Company: ${segmentCompany.name} | Generated: ${new Date().toLocaleString()}`
+      });
+
+      notifications.exportSuccess("PDF");
+    } catch (error) {
+      notifications.exportFailed("PDF");
+    } finally {
+      if (timeoutId) clearTimeout(timeoutId);
+      setExportingPDF(false);
+      setExportingChart(null);
+    }
+  };
+
+  // Company-level export all data as CSV
+  const handleCompanyExportAllCSV = async () => {
+    setExportingCSV(true);
+    setExportingChart("company-all");
+    let timeoutId = null;
+    try {
+      await new Promise(resolve => {
+        timeoutId = setTimeout(resolve, 500);
+      });
+
+      // Combine all company data into one CSV
+      const companyOverviewData = [
+        ["Company Overview Report", ""],
+        ["Company Name", segmentCompany.name],
+        ["Total Sites", companyStats.totalSites],
+        ["Total Users", companyStats.totalUsers],
+        ["Active Guests", "68"],
+        ["Network Uptime", "99.92%"],
+        ["Report Generated", new Date().toLocaleString()],
+        [""],
+        ["Users by Site"],
+        ["Site", "Total Users", "Active Users"],
+        ...companyChartData.usersBySite.map(s => [s.name, s.value, s.active]),
+        [""],
+        ["Devices by Site"],
+        ["Site", "Total Devices", "Active Devices"],
+        ...companyChartData.devicesBySite.map(s => [s.name, s.value, s.active]),
+        [""],
+        ["Bandwidth Utilization by Site"],
+        ["Site", "Bandwidth Usage (%)"],
+        ...companyChartData.bandwidthBySite.map(s => [s.name, `${s.usage}%`]),
+      ];
+
+      exportChartDataToCSV({
+        headers: [],
+        rows: companyOverviewData
+      }, `${segmentCompany.name.replace(/\s+/g, '_')}_company_analytics.csv`);
+
+      notifications.exportSuccess("CSV");
+    } catch (error) {
+      notifications.exportFailed("CSV");
+    } finally {
+      if (timeoutId) clearTimeout(timeoutId);
+      setExportingCSV(false);
+      setExportingChart(null);
+    }
+  };
+
+  // Company-level export all data as PDF
+  const handleCompanyExportAllPDF = async () => {
+    setExportingPDF(true);
+    setExportingChart("company-all");
+    let timeoutId = null;
+    try {
+      await new Promise(resolve => {
+        timeoutId = setTimeout(resolve, 1500);
+      });
+
+      // Create comprehensive chart data for PDF
+      const chartData = {
+        labels: companyChartData.usersBySite.map(s => s.name),
+        datasets: [
+          {
+            label: "Total Users",
+            data: companyChartData.usersBySite.map(s => s.value),
+            backgroundColor: "#004aad",
+          },
+          {
+            label: "Active Users",
+            data: companyChartData.usersBySite.map(s => s.active),
+            backgroundColor: "#4caf50",
+          }
+        ],
+      };
+
+      const exportChartOptions = getStandardChartOptions({
+        type: "bar",
+        title: "Users by Site",
+        xLabel: "Site",
+        yLabel: "Users",
+        darkMode: false,
+        forExport: true,
+      });
+
+      const { width, height } = EXPORT_CANVAS_SIZES.bar;
+
+      // Comprehensive rows for the PDF table
+      const allRows = [
+        ["Overview", "", ""],
+        ["Total Sites", companyStats.totalSites, ""],
+        ["Total Users", companyStats.totalUsers, ""],
+        ["Active Guests", "68", ""],
+        ["Network Uptime", "99.92%", ""],
+        ["", "", ""],
+        ["Users by Site", "Total", "Active"],
+        ...companyChartData.usersBySite.map(s => [s.name, s.value, s.active]),
+        ["", "", ""],
+        ["Devices by Site", "Total", "Active"],
+        ...companyChartData.devicesBySite.map(s => [s.name, s.value, s.active]),
+        ["", "", ""],
+        ["Bandwidth by Site", "Usage %", ""],
+        ...companyChartData.bandwidthBySite.map(s => [s.name, `${s.usage}%`, ""]),
+      ];
+
+      await exportReportPDF({
+        title: `${segmentCompany.name} - Company Analytics Report`,
+        headers: ["Metric", "Value", "Additional"],
+        rows: allRows,
+        chartData,
+        chartOptions: exportChartOptions,
+        filename: `${segmentCompany.name.replace(/\s+/g, '_')}_company_analytics.pdf`,
+        rolePermissions: { canViewReports: hasPermission('canViewReports') },
+        exportCanvasWidth: width,
+        exportCanvasHeight: height,
+        reportId: "company_analytics",
+        criteria: null,
+        addWatermark: false,
+        watermarkText: "CONFIDENTIAL",
+        disclaimerText: `Company: ${segmentCompany.name} | Report Type: Company Analytics | Generated: ${new Date().toLocaleString()}`
+      });
+
+      notifications.exportSuccess("PDF");
+    } catch (error) {
+      notifications.exportFailed("PDF");
+    } finally {
+      if (timeoutId) clearTimeout(timeoutId);
+      setExportingPDF(false);
+      setExportingChart(null);
+    }
+  };
+
   const handleSupportQuickAction = () => {
     navigate('/knowledge');
     setTimeout(() => {
@@ -741,6 +955,29 @@ useEffect(() => {
       <SitesOverview />
 
       <h2 className="dashboard-section-title">Company Analytics</h2>
+
+      {/* Company-level Export All Button */}
+      <div className="company-export-actions">
+        <Button
+          variant="secondary"
+          onClick={() => handleCompanyExportAllCSV()}
+          disabled={exportingCSV || exportingPDF || !companyChartData.usersBySite?.length}
+          loading={exportingCSV && exportingChart === "company-all"}
+        >
+          <FaFileCsv style={{ marginRight: 6 }} />
+          Export All Data (CSV)
+        </Button>
+        <Button
+          variant="secondary"
+          onClick={() => handleCompanyExportAllPDF()}
+          disabled={exportingCSV || exportingPDF || !companyChartData.usersBySite?.length}
+          loading={exportingPDF && exportingChart === "company-all"}
+        >
+          <FaFilePdf style={{ marginRight: 6 }} />
+          Export All Data (PDF)
+        </Button>
+      </div>
+
       <section className="dashboard-charts company-charts" aria-label="Company analytics charts">
         <Card title="Users by Site">
           <div className="chart-container">
@@ -768,6 +1005,46 @@ useEffect(() => {
                 }
               }}
             />
+          </div>
+          <div className="export-btn-group">
+            <Button
+              variant="secondary"
+              onClick={() =>
+                handleDashboardExportCSV(
+                  ["Site", "Total Users", "Active Users"],
+                  companyChartData.usersBySite.map(s => [s.name, s.value, s.active]),
+                  "company_users_by_site.csv",
+                  "company-users"
+                )
+              }
+              aria-label="Export CSV"
+              loading={exportingCSV && exportingChart === "company-users"}
+              disabled={exportingPDF || (exportingCSV && exportingChart !== "company-users") || !companyChartData.usersBySite?.length}
+            >
+              <FaFileCsv style={{ marginRight: 6 }} />
+              CSV
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={() =>
+                handleCompanyChartExportPDF(
+                  "Users by Site",
+                  ["Site", "Total Users", "Active Users"],
+                  companyChartData.usersBySite.map(s => [s.name, s.value, s.active]),
+                  "bar",
+                  companyChartData.usersBySite,
+                  "company_users_by_site.pdf",
+                  "company_users_by_site",
+                  "company-users"
+                )
+              }
+              aria-label="Export PDF"
+              loading={exportingPDF && exportingChart === "company-users"}
+              disabled={exportingCSV || (exportingPDF && exportingChart !== "company-users") || !companyChartData.usersBySite?.length}
+            >
+              <FaFilePdf style={{ marginRight: 6 }} />
+              PDF
+            </Button>
           </div>
         </Card>
 
@@ -797,6 +1074,46 @@ useEffect(() => {
                 }
               }}
             />
+          </div>
+          <div className="export-btn-group">
+            <Button
+              variant="secondary"
+              onClick={() =>
+                handleDashboardExportCSV(
+                  ["Site", "Total Devices", "Active Devices"],
+                  companyChartData.devicesBySite.map(s => [s.name, s.value, s.active]),
+                  "company_devices_by_site.csv",
+                  "company-devices"
+                )
+              }
+              aria-label="Export CSV"
+              loading={exportingCSV && exportingChart === "company-devices"}
+              disabled={exportingPDF || (exportingCSV && exportingChart !== "company-devices") || !companyChartData.devicesBySite?.length}
+            >
+              <FaFileCsv style={{ marginRight: 6 }} />
+              CSV
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={() =>
+                handleCompanyChartExportPDF(
+                  "Devices by Site",
+                  ["Site", "Total Devices", "Active Devices"],
+                  companyChartData.devicesBySite.map(s => [s.name, s.value, s.active]),
+                  "bar",
+                  companyChartData.devicesBySite,
+                  "company_devices_by_site.pdf",
+                  "company_devices_by_site",
+                  "company-devices"
+                )
+              }
+              aria-label="Export PDF"
+              loading={exportingPDF && exportingChart === "company-devices"}
+              disabled={exportingCSV || (exportingPDF && exportingChart !== "company-devices") || !companyChartData.devicesBySite?.length}
+            >
+              <FaFilePdf style={{ marginRight: 6 }} />
+              PDF
+            </Button>
           </div>
         </Card>
 
@@ -833,6 +1150,46 @@ useEffect(() => {
                 }
               }}
             />
+          </div>
+          <div className="export-btn-group">
+            <Button
+              variant="secondary"
+              onClick={() =>
+                handleDashboardExportCSV(
+                  ["Site", "Bandwidth Usage (%)"],
+                  companyChartData.bandwidthBySite.map(s => [s.name, `${s.usage}%`]),
+                  "company_bandwidth_by_site.csv",
+                  "company-bandwidth"
+                )
+              }
+              aria-label="Export CSV"
+              loading={exportingCSV && exportingChart === "company-bandwidth"}
+              disabled={exportingPDF || (exportingCSV && exportingChart !== "company-bandwidth") || !companyChartData.bandwidthBySite?.length}
+            >
+              <FaFileCsv style={{ marginRight: 6 }} />
+              CSV
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={() =>
+                handleCompanyChartExportPDF(
+                  "Bandwidth Utilization by Site",
+                  ["Site", "Bandwidth Usage (%)"],
+                  companyChartData.bandwidthBySite.map(s => [s.name, `${s.usage}%`]),
+                  "bar",
+                  companyChartData.bandwidthBySite,
+                  "company_bandwidth_by_site.pdf",
+                  "company_bandwidth_by_site",
+                  "company-bandwidth"
+                )
+              }
+              aria-label="Export PDF"
+              loading={exportingPDF && exportingChart === "company-bandwidth"}
+              disabled={exportingCSV || (exportingPDF && exportingChart !== "company-bandwidth") || !companyChartData.bandwidthBySite?.length}
+            >
+              <FaFilePdf style={{ marginRight: 6 }} />
+              PDF
+            </Button>
           </div>
         </Card>
       </section>
@@ -983,7 +1340,7 @@ useEffect(() => {
               }
               aria-label={t('common.exportCsv')}
               loading={exportingCSV && exportingChart === "network-usage"}
-              disabled={exportingPDF || (exportingCSV && exportingChart !== "network-usage")}
+              disabled={exportingPDF || (exportingCSV && exportingChart !== "network-usage") || !networkData?.length}
             >
               <FaFileCsv style={{ marginRight: 6 }} />
               {t('common.exportCsv')}
@@ -1004,7 +1361,7 @@ useEffect(() => {
               }
               aria-label={t('common.exportPdf')}
               loading={exportingPDF && exportingChart === "network-usage"}
-              disabled={exportingCSV || (exportingPDF && exportingChart !== "network-usage")}
+              disabled={exportingCSV || (exportingPDF && exportingChart !== "network-usage") || !networkData?.length}
             >
               <FaFilePdf style={{ marginRight: 6 }} />
               {t('common.exportPdf')}
@@ -1042,7 +1399,7 @@ useEffect(() => {
               }
               aria-label={t('common.exportCsv')}
               loading={exportingCSV && exportingChart === "speed-tier"}
-              disabled={exportingPDF || (exportingCSV && exportingChart !== "speed-tier")}
+              disabled={exportingPDF || (exportingCSV && exportingChart !== "speed-tier") || !speedTierData?.length}
             >
               <FaFileCsv style={{ marginRight: 6 }} />
               {t('common.exportCsv')}
@@ -1063,7 +1420,7 @@ useEffect(() => {
               }
               aria-label={t('common.exportPdf')}
               loading={exportingPDF && exportingChart === "speed-tier"}
-              disabled={exportingCSV || (exportingPDF && exportingChart !== "speed-tier")}
+              disabled={exportingCSV || (exportingPDF && exportingChart !== "speed-tier") || !speedTierData?.length}
             >
               <FaFilePdf style={{ marginRight: 6 }} />
               {t('common.exportPdf')}
@@ -1119,7 +1476,7 @@ useEffect(() => {
               }
               aria-label={t('common.exportCsv')}
               loading={exportingCSV && exportingChart === "peak-usage"}
-              disabled={exportingPDF || (exportingCSV && exportingChart !== "peak-usage")}
+              disabled={exportingPDF || (exportingCSV && exportingChart !== "peak-usage") || !peakUsageData?.length}
             >
               <FaFileCsv style={{ marginRight: 6 }} />
               {t('common.exportCsv')}
@@ -1140,7 +1497,7 @@ useEffect(() => {
               }
               aria-label={t('common.exportPdf')}
               loading={exportingPDF && exportingChart === "peak-usage"}
-              disabled={exportingCSV || (exportingPDF && exportingChart !== "peak-usage")}
+              disabled={exportingCSV || (exportingPDF && exportingChart !== "peak-usage") || !peakUsageData?.length}
             >
               <FaFilePdf style={{ marginRight: 6 }} />
               {t('common.exportPdf')}

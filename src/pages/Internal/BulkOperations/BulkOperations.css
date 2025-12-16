@@ -6,57 +6,54 @@
   margin: 0 auto;
 }
 
-/* Header */
-.bulk-ops-header {
-  margin-bottom: 1.5rem;
+/* Page Header */
+.bulk-operations-page .page-header {
+  margin-bottom: var(--space-xl, 1.5rem);
 }
 
-.bulk-ops-header-content {
+.bulk-operations-page .page-header-content {
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: flex-start;
   flex-wrap: wrap;
-  gap: 1rem;
+  gap: var(--space-md, 1rem);
 }
 
-.bulk-ops-title-section {
+.bulk-operations-page .page-title-section h1 {
   display: flex;
   align-items: center;
-  gap: 1rem;
-}
-
-.bulk-ops-icon {
-  font-size: 2.5rem;
-  color: #004aad;
-  background: linear-gradient(135deg, rgba(0, 74, 173, 0.1) 0%, rgba(0, 74, 173, 0.05) 100%);
-  padding: 0.75rem;
-  border-radius: var(--radius-lg, 0.75rem);
-}
-
-[data-theme="dark"] .bulk-ops-icon {
-  color: var(--color-accent, #60a5fa);
-  background: linear-gradient(135deg, rgba(96, 165, 250, 0.15) 0%, rgba(96, 165, 250, 0.05) 100%);
-}
-
-.bulk-ops-title {
-  font-size: var(--font-2xl, 1.5rem);
+  gap: var(--space-sm, 0.5rem);
+  font-size: var(--font-3xl, 1.875rem);
   font-weight: 700;
-  color: #1e293b;
-  margin: 0;
+  margin: 0 0 var(--space-xs, 0.25rem) 0;
+  color: var(--color-text-primary, #1e293b);
 }
 
-[data-theme="dark"] .bulk-ops-title {
+[data-theme="dark"] .bulk-operations-page .page-title-section h1 {
   color: var(--color-text-primary, #e2e8f0);
 }
 
-.bulk-ops-subtitle {
-  font-size: var(--font-sm, 0.875rem);
-  color: #64748b;
-  margin: 0.25rem 0 0 0;
+.bulk-operations-page .page-title-icon {
+  color: var(--color-accent, #004aad);
 }
 
-[data-theme="dark"] .bulk-ops-subtitle {
+[data-theme="dark"] .bulk-operations-page .page-title-icon {
+  color: var(--color-accent, #60a5fa);
+}
+
+.bulk-operations-page .page-subtitle {
+  font-size: var(--font-base, 1rem);
+  color: var(--color-text-secondary, #64748b);
+  margin: 0;
+}
+
+[data-theme="dark"] .bulk-operations-page .page-subtitle {
   color: var(--color-text-secondary, #94a3b8);
+}
+
+.bulk-operations-page .page-header-actions {
+  display: flex;
+  gap: var(--space-sm, 0.5rem);
 }
 
 /* Tab Navigation */
@@ -158,15 +155,13 @@
     padding: 1rem;
   }
 
-  .bulk-ops-title-section {
+  .bulk-operations-page .page-header-content {
     flex-direction: column;
-    align-items: flex-start;
-    text-align: left;
   }
 
-  .bulk-ops-icon {
-    font-size: 2rem;
-    padding: 0.625rem;
+  .bulk-operations-page .page-header-actions {
+    width: 100%;
+    flex-wrap: wrap;
   }
 
   .bulk-ops-tabs {

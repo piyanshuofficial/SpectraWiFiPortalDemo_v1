@@ -73,6 +73,7 @@ const InternalSupport = () => {
   const [submitting, setSubmitting] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [activeStatCard, setActiveStatCard] = useState(null); // Track active stat card filter
   const [newTicket, setNewTicket] = useState({
     customerId: "",
     siteId: "",
@@ -132,6 +133,44 @@ const InternalSupport = () => {
     setCategoryFilter("all");
     setSearchQuery("");
     setCurrentPage(1);
+    setActiveStatCard(null);
+  };
+
+  // Handle stat card click to filter tickets
+  const handleStatCardClick = (cardType) => {
+    // If clicking the same card, toggle it off (show all)
+    if (activeStatCard === cardType) {
+      clearFilters();
+      return;
+    }
+
+    // Reset filters first
+    setPriorityFilter("all");
+    setStatusFilter("all");
+    setCategoryFilter("all");
+    setCurrentPage(1);
+    setActiveStatCard(cardType);
+
+    // Apply the appropriate filter based on card type
+    switch (cardType) {
+      case "total":
+        // Show all tickets - no filter needed
+        break;
+      case "open":
+        setStatusFilter("open");
+        break;
+      case "inProgress":
+        setStatusFilter("in_progress");
+        break;
+      case "critical":
+        setPriorityFilter("critical");
+        break;
+      case "resolved":
+        setStatusFilter("completed");
+        break;
+      default:
+        break;
+    }
   };
 
   const handleViewTicket = (ticket) => {
@@ -283,7 +322,13 @@ const InternalSupport = () => {
 
       {/* Stats Cards */}
       <div className="support-stats">
-        <div className="stat-card">
+        <div
+          className={`stat-card clickable ${activeStatCard === 'total' ? 'active' : ''}`}
+          onClick={() => handleStatCardClick('total')}
+          role="button"
+          tabIndex={0}
+          onKeyPress={(e) => e.key === 'Enter' && handleStatCardClick('total')}
+        >
           <div className="stat-icon total">
             <FaTicketAlt />
           </div>
@@ -292,7 +337,13 @@ const InternalSupport = () => {
             <span className="stat-label">Total Tickets</span>
           </div>
         </div>
-        <div className="stat-card">
+        <div
+          className={`stat-card clickable ${activeStatCard === 'open' ? 'active' : ''}`}
+          onClick={() => handleStatCardClick('open')}
+          role="button"
+          tabIndex={0}
+          onKeyPress={(e) => e.key === 'Enter' && handleStatCardClick('open')}
+        >
           <div className="stat-icon open">
             <FaExclamationCircle />
           </div>
@@ -301,7 +352,13 @@ const InternalSupport = () => {
             <span className="stat-label">Open</span>
           </div>
         </div>
-        <div className="stat-card">
+        <div
+          className={`stat-card clickable ${activeStatCard === 'inProgress' ? 'active' : ''}`}
+          onClick={() => handleStatCardClick('inProgress')}
+          role="button"
+          tabIndex={0}
+          onKeyPress={(e) => e.key === 'Enter' && handleStatCardClick('inProgress')}
+        >
           <div className="stat-icon progress">
             <FaSpinner />
           </div>
@@ -310,7 +367,13 @@ const InternalSupport = () => {
             <span className="stat-label">In Progress</span>
           </div>
         </div>
-        <div className="stat-card">
+        <div
+          className={`stat-card clickable ${activeStatCard === 'critical' ? 'active' : ''}`}
+          onClick={() => handleStatCardClick('critical')}
+          role="button"
+          tabIndex={0}
+          onKeyPress={(e) => e.key === 'Enter' && handleStatCardClick('critical')}
+        >
           <div className="stat-icon critical">
             <FaExclamationTriangle />
           </div>
@@ -319,7 +382,13 @@ const InternalSupport = () => {
             <span className="stat-label">Critical</span>
           </div>
         </div>
-        <div className="stat-card">
+        <div
+          className={`stat-card clickable ${activeStatCard === 'resolved' ? 'active' : ''}`}
+          onClick={() => handleStatCardClick('resolved')}
+          role="button"
+          tabIndex={0}
+          onKeyPress={(e) => e.key === 'Enter' && handleStatCardClick('resolved')}
+        >
           <div className="stat-icon resolved">
             <FaCheckCircle />
           </div>

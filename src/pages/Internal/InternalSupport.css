@@ -92,6 +92,27 @@
   background: var(--color-accent);
 }
 
+/* Clickable stat cards */
+.stat-card.clickable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.stat-card.clickable:focus {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.stat-card.clickable.active {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px rgba(21, 56, 116, 0.15), var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.stat-card.clickable.active::before {
+  background: var(--color-accent);
+}
+
 .stat-card .stat-icon {
   width: 52px;
   height: 52px;

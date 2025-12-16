@@ -1,7 +1,7 @@
 // src/pages/Internal/SiteManagement.js
 
 import React, { useState, useMemo, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, useParams } from "react-router-dom";
 import { useAuth } from "@context/AuthContext";
 import {
   FaMapMarkerAlt,
@@ -47,6 +47,7 @@ const getUniqueValues = (array, key) => {
 const SiteManagement = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { siteId } = useParams();
   const { hasPermission } = useAuth();
 
   // Loading state
@@ -59,6 +60,20 @@ const SiteManagement = () => {
     }, 700);
     return () => clearTimeout(timer);
   }, []);
+
+  // Handle siteId from URL - open site detail modal when navigating from "Investigate" button
+  useEffect(() => {
+    if (!isLoading && siteId) {
+      const site = sites.find(s => s.id === siteId || s.id === parseInt(siteId));
+      if (site) {
+        setSelectedSite(site);
+        setSiteModalMode('view');
+      } else {
+        notifications.showError(`Site with ID "${siteId}" not found`);
+        navigate('/internal/sites', { replace: true });
+      }
+    }
+  }, [isLoading, siteId, navigate]);
 
   // Get initial filter from URL params
   const initialStatus = searchParams.get("status") || "All";
@@ -513,26 +528,28 @@ const SiteManagement = () => {
     <div className="site-management">
       {/* Page Header */}
       <div className="page-header">
-        <div className="header-left">
-          <h1>
-            <FaMapMarkerAlt /> Site Management
-          </h1>
-          <p>Manage and monitor all customer sites</p>
-        </div>
-        <div className="header-actions">
-          <button className="btn btn-outline" onClick={() => console.log("Refresh")}>
-            <FaSyncAlt /> Refresh
-          </button>
-          <button className="btn btn-outline" onClick={() => console.log("Export")}>
-            <FaDownload /> Export
-          </button>
-          <button
-            type="button"
-            className="btn btn-primary"
-            onClick={() => setShowEnhancedProvisionModal(true)}
-          >
-            <FaPlus /> Provision New Site
-          </button>
+        <div className="page-header-content">
+          <div className="page-title-section">
+            <h1>
+              <FaMapMarkerAlt className="page-title-icon" /> Site Management
+            </h1>
+            <p className="page-subtitle">Manage and monitor all customer sites</p>
+          </div>
+          <div className="page-header-actions">
+            <button className="btn btn-outline" onClick={() => console.log("Refresh")}>
+              <FaSyncAlt /> Refresh
+            </button>
+            <button className="btn btn-outline" onClick={() => console.log("Export")}>
+              <FaDownload /> Export
+            </button>
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={() => setShowEnhancedProvisionModal(true)}
+            >
+              <FaPlus /> Provision New Site
+            </button>
+          </div>
         </div>
       </div>
 
@@ -836,10 +853,7 @@ const SiteManagement = () => {
                 <tr key={site.id} className={site.status}>
                   <td>{getStatusIcon(site.status)}</td>
                   <td>
-                    <span
-                      className="site-name-link"
-                      onClick={() => navigate(`/internal/sites/${site.id}`)}
-                    >
+                    <span className="site-name-text">
                       {site.name}
                     </span>
                   </td>

@@ -370,16 +370,13 @@ const BulkOperations = () => {
   return (
     <div className="bulk-operations-page">
       {/* Page Header */}
-      <div className="bulk-ops-header">
-        <div className="bulk-ops-header-content">
-          <div className="bulk-ops-title-section">
-            <FaTasks className="bulk-ops-icon" />
-            <div>
-              <h1 className="bulk-ops-title">Bulk Operations</h1>
-              <p className="bulk-ops-subtitle">
-                Perform batch actions on users and devices
-              </p>
-            </div>
+      <div className="page-header">
+        <div className="page-header-content">
+          <div className="page-title-section">
+            <h1>
+              <FaTasks className="page-title-icon" /> Bulk Operations
+            </h1>
+            <p className="page-subtitle">Perform batch actions on users and devices</p>
           </div>
         </div>
       </div>

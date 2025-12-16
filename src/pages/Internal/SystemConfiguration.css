@@ -12,35 +12,38 @@
 
 /* Page Header */
 .system-configuration .page-header {
+  margin-bottom: var(--space-xl);
+}
+
+.system-configuration .page-header-content {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: var(--space-lg);
   flex-wrap: wrap;
   gap: var(--space-md);
 }
 
-.system-configuration .page-header .header-left h1 {
+.system-configuration .page-title-section h1 {
   display: flex;
   align-items: center;
   gap: var(--space-sm);
   font-size: var(--font-3xl);
-  font-weight: 600;
+  font-weight: 700;
   margin: 0 0 var(--space-xs) 0;
   color: var(--color-text-primary);
 }
 
-.system-configuration .page-header .header-left h1 svg {
+.system-configuration .page-title-icon {
   color: var(--color-accent);
 }
 
-.system-configuration .page-header .header-left p {
-  font-size: var(--font-sm);
+.system-configuration .page-subtitle {
+  font-size: var(--font-base);
   color: var(--color-text-secondary);
   margin: 0;
 }
 
-.system-configuration .header-actions {
+.system-configuration .page-header-actions {
   display: flex;
   gap: var(--space-sm);
 }
@@ -729,11 +732,11 @@
     padding: var(--space-md);
   }
 
-  .system-configuration .page-header {
+  .system-configuration .page-header-content {
     flex-direction: column;
   }
 
-  .system-configuration .header-actions {
+  .system-configuration .page-header-actions {
     width: 100%;
     flex-wrap: wrap;
   }

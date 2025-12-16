@@ -59,6 +59,7 @@ const InternalAlerts = () => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [selectedAlert, setSelectedAlert] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [activeStatCard, setActiveStatCard] = useState(null); // Track active stat card filter
 
   // Update site filter when URL changes
   useEffect(() => {
@@ -122,6 +123,44 @@ const InternalAlerts = () => {
     setSearchQuery("");
     setCurrentPage(1);
     setSearchParams({});
+    setActiveStatCard(null);
+  };
+
+  // Handle stat card click for filtering
+  const handleStatCardClick = (cardType) => {
+    // If clicking the same card, toggle off (clear filters)
+    if (activeStatCard === cardType) {
+      clearFilters();
+      return;
+    }
+
+    // Reset filters first
+    setTypeFilter("all");
+    setCategoryFilter("all");
+    setStatusFilter("all");
+    setCurrentPage(1);
+    setActiveStatCard(cardType);
+
+    // Apply specific filter based on card type
+    switch (cardType) {
+      case "total":
+        // Show all alerts - no specific filter needed
+        break;
+      case "critical":
+        setTypeFilter("critical");
+        break;
+      case "warning":
+        setTypeFilter("warning");
+        break;
+      case "info":
+        setTypeFilter("info");
+        break;
+      case "pending":
+        setStatusFilter("unacknowledged");
+        break;
+      default:
+        break;
+    }
   };
 
   const handleRefresh = async () => {
@@ -174,26 +213,34 @@ const InternalAlerts = () => {
     <div className="internal-alerts">
       {/* Page Header */}
       <div className="page-header">
-        <div className="header-left">
-          <h1>
-            <FaBell /> Alerts & Notifications
-          </h1>
-          <p>Monitor and manage system alerts across all customers and sites</p>
-        </div>
-        <div className="header-actions">
-          <button
-            className={`btn btn-outline ${isRefreshing ? "refreshing" : ""}`}
-            onClick={handleRefresh}
-            disabled={isRefreshing}
-          >
-            <FaSyncAlt className={isRefreshing ? "spin" : ""} /> {isRefreshing ? "Refreshing..." : "Refresh"}
-          </button>
+        <div className="page-header-content">
+          <div className="page-title-section">
+            <h1>
+              <FaBell className="page-title-icon" /> Alerts & Notifications
+            </h1>
+            <p className="page-subtitle">Monitor and manage system alerts across all customers and sites</p>
+          </div>
+          <div className="page-header-actions">
+            <button
+              className={`btn btn-outline ${isRefreshing ? "refreshing" : ""}`}
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+            >
+              <FaSyncAlt className={isRefreshing ? "spin" : ""} /> {isRefreshing ? "Refreshing..." : "Refresh"}
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Stats Cards */}
       <div className="alerts-stats">
-        <div className="stat-card" onClick={() => setTypeFilter("all")}>
+        <div
+          className={`stat-card clickable ${activeStatCard === "total" ? "active" : ""}`}
+          onClick={() => handleStatCardClick("total")}
+          role="button"
+          tabIndex={0}
+          onKeyPress={(e) => e.key === "Enter" && handleStatCardClick("total")}
+        >
           <div className="stat-icon total">
             <FaBell />
           </div>
@@ -202,7 +249,13 @@ const InternalAlerts = () => {
             <span className="stat-label">Total Alerts</span>
           </div>
         </div>
-        <div className="stat-card" onClick={() => setTypeFilter("critical")}>
+        <div
+          className={`stat-card clickable ${activeStatCard === "critical" ? "active" : ""}`}
+          onClick={() => handleStatCardClick("critical")}
+          role="button"
+          tabIndex={0}
+          onKeyPress={(e) => e.key === "Enter" && handleStatCardClick("critical")}
+        >
           <div className="stat-icon critical">
             <FaExclamationCircle />
           </div>
@@ -211,7 +264,13 @@ const InternalAlerts = () => {
             <span className="stat-label">Critical</span>
           </div>
         </div>
-        <div className="stat-card" onClick={() => setTypeFilter("warning")}>
+        <div
+          className={`stat-card clickable ${activeStatCard === "warning" ? "active" : ""}`}
+          onClick={() => handleStatCardClick("warning")}
+          role="button"
+          tabIndex={0}
+          onKeyPress={(e) => e.key === "Enter" && handleStatCardClick("warning")}
+        >
           <div className="stat-icon warning">
             <FaExclamationTriangle />
           </div>
@@ -220,7 +279,13 @@ const InternalAlerts = () => {
             <span className="stat-label">Warning</span>
           </div>
         </div>
-        <div className="stat-card" onClick={() => setTypeFilter("info")}>
+        <div
+          className={`stat-card clickable ${activeStatCard === "info" ? "active" : ""}`}
+          onClick={() => handleStatCardClick("info")}
+          role="button"
+          tabIndex={0}
+          onKeyPress={(e) => e.key === "Enter" && handleStatCardClick("info")}
+        >
           <div className="stat-icon info">
             <FaInfoCircle />
           </div>
@@ -229,7 +294,13 @@ const InternalAlerts = () => {
             <span className="stat-label">Info</span>
           </div>
         </div>
-        <div className="stat-card" onClick={() => setStatusFilter("unacknowledged")}>
+        <div
+          className={`stat-card clickable ${activeStatCard === "pending" ? "active" : ""}`}
+          onClick={() => handleStatCardClick("pending")}
+          role="button"
+          tabIndex={0}
+          onKeyPress={(e) => e.key === "Enter" && handleStatCardClick("pending")}
+        >
           <div className="stat-icon unack">
             <FaClock />
           </div>

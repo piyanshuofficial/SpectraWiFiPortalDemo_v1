@@ -877,7 +877,7 @@ const GuestManagement = () => {
             >
               <FaPlus style={{ marginRight: 6 }} /> Add Guest
             </Button>
-            <Button variant="secondary" onClick={handleExportGuests}>
+            <Button variant="secondary" onClick={handleExportGuests} disabled={filteredGuests.length === 0}>
               <FaFileExport style={{ marginRight: 6 }} /> Export
             </Button>
           </div>
@@ -1114,7 +1114,7 @@ const GuestManagement = () => {
                 'Print QR Codes'
               )}
             </Button>
-            <Button variant="secondary" onClick={handleExportVouchers}>
+            <Button variant="secondary" onClick={handleExportVouchers} disabled={filteredVouchers.length === 0}>
               <FaFileExport style={{ marginRight: 6 }} /> Export
             </Button>
           </div>

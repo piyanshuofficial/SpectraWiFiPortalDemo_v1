@@ -222,24 +222,26 @@ const CustomerManagement = () => {
     <div className="customer-management">
       {/* Page Header */}
       <div className="page-header">
-        <div className="header-left">
-          <h1>
-            <FaBuilding /> Customer Management
-          </h1>
-          <p>Manage and monitor all customer accounts</p>
-        </div>
-        <div className="header-actions">
-          <button className="btn btn-outline" onClick={() => console.log("Refresh")}>
-            <FaSyncAlt /> Refresh
-          </button>
-          <button className="btn btn-outline" onClick={() => console.log("Export")}>
-            <FaDownload /> Export
-          </button>
-          {hasPermission && hasPermission("canManageCustomers") && (
-            <button className="btn btn-primary" onClick={() => navigate("/internal/customers/new")}>
-              <FaPlus /> Add Customer
+        <div className="page-header-content">
+          <div className="page-title-section">
+            <h1>
+              <FaBuilding className="page-title-icon" /> Customer Management
+            </h1>
+            <p className="page-subtitle">Manage and monitor all customer accounts</p>
+          </div>
+          <div className="page-header-actions">
+            <button className="btn btn-outline" onClick={() => console.log("Refresh")}>
+              <FaSyncAlt /> Refresh
             </button>
-          )}
+            <button className="btn btn-outline" onClick={() => console.log("Export")}>
+              <FaDownload /> Export
+            </button>
+            {hasPermission && hasPermission("canManageCustomers") && (
+              <button className="btn btn-primary" onClick={() => navigate("/internal/customers/new")}>
+                <FaPlus /> Add Customer
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -498,10 +500,7 @@ const CustomerManagement = () => {
                 <tr key={customer.id} className={customer.status}>
                   <td>{getStatusIcon(customer.status)}</td>
                   <td>
-                    <span
-                      className="customer-name-link"
-                      onClick={() => navigate(`/internal/customers/${customer.id}`)}
-                    >
+                    <span className="customer-name-text">
                       {customer.name}
                     </span>
                   </td>

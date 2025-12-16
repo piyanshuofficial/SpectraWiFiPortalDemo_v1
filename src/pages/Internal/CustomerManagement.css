@@ -12,39 +12,42 @@
 }
 
 /* ============================================
-   PAGE HEADER
+   PAGE HEADER - Reports Style
    ============================================ */
 
 .customer-management .page-header {
+  margin-bottom: var(--space-xl);
+}
+
+.customer-management .page-header-content {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: var(--space-lg);
   flex-wrap: wrap;
   gap: var(--space-md);
 }
 
-.customer-management .page-header .header-left h1 {
+.customer-management .page-title-section h1 {
   display: flex;
   align-items: center;
   gap: var(--space-sm);
   font-size: var(--font-3xl);
-  font-weight: 600;
+  font-weight: 700;
   margin: 0 0 var(--space-xs) 0;
   color: var(--color-text-primary);
 }
 
-.customer-management .page-header .header-left h1 svg {
+.customer-management .page-title-icon {
   color: var(--color-accent);
 }
 
-.customer-management .page-header .header-left p {
-  font-size: var(--font-sm);
+.customer-management .page-subtitle {
+  font-size: var(--font-base);
   color: var(--color-text-secondary);
   margin: 0;
 }
 
-.customer-management .header-actions {
+.customer-management .page-header-actions {
   display: flex;
   gap: var(--space-sm);
 }
@@ -656,6 +659,11 @@
   text-decoration: underline;
 }
 
+.customer-name-text {
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
 .contact-cell {
   display: flex;
   flex-direction: column;
@@ -765,16 +773,16 @@
     padding: var(--space-md);
   }
 
-  .customer-management .page-header {
+  .customer-management .page-header-content {
     flex-direction: column;
   }
 
-  .customer-management .header-actions {
+  .customer-management .page-header-actions {
     width: 100%;
     flex-wrap: wrap;
   }
 
-  .customer-management .header-actions .btn {
+  .customer-management .page-header-actions .btn {
     flex: 1;
   }
 

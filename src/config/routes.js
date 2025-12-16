@@ -140,6 +140,16 @@ export const routes = [
     isInternal: true
   },
   {
+    path: '/internal/sites/:siteId',
+    component: SiteManagement,
+    requiredPermission: 'canAccessInternalPortal',
+    fallbackMessage: 'This page is only accessible to internal Spectra staff.',
+    title: 'Site Details',
+    exact: true,
+    chunkName: 'site-management',
+    isInternal: true
+  },
+  {
     path: '/internal/customers',
     component: CustomerManagement,
     requiredPermission: 'canAccessInternalPortal',

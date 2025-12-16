@@ -842,19 +842,21 @@ const SystemConfiguration = () => {
     <div className="system-configuration">
       {/* Page Header */}
       <div className="page-header">
-        <div className="header-left">
-          <h1>
-            <FaCog /> System Configuration
-          </h1>
-          <p>Manage policies, notifications, and access controls</p>
-        </div>
-        <div className="header-actions">
-          <button className="btn btn-outline">
-            <FaUpload /> Import Config
-          </button>
-          <button className="btn btn-outline">
-            <FaDownload /> Export All
-          </button>
+        <div className="page-header-content">
+          <div className="page-title-section">
+            <h1>
+              <FaCog className="page-title-icon" /> System Configuration
+            </h1>
+            <p className="page-subtitle">Manage policies, notifications, and access controls</p>
+          </div>
+          <div className="page-header-actions">
+            <button className="btn btn-outline">
+              <FaUpload /> Import Config
+            </button>
+            <button className="btn btn-outline">
+              <FaDownload /> Export All
+            </button>
+          </div>
         </div>
       </div>
 

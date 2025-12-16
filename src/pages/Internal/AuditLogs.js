@@ -324,6 +324,8 @@ const AuditLogs = () => {
   const [showFilters, setShowFilters] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(20);
+  const [activeStatCard, setActiveStatCard] = useState(null); // Track active stat card filter
+  const [statusFilter, setStatusFilter] = useState("All"); // For failed status filter
 
   // Filter options
   const userTypeOptions = ["All", "internal", "customer"];
@@ -359,6 +361,9 @@ const AuditLogs = () => {
       const matchesCustomer =
         selectedCustomer === "All" || log.customerName === selectedCustomer;
 
+      const matchesStatus =
+        statusFilter === "All" || log.status === statusFilter;
+
       // Date filtering
       const logDate = new Date(log.timestamp);
       const today = new Date();
@@ -388,9 +393,9 @@ const AuditLogs = () => {
           matchesDate = true;
       }
 
-      return matchesSearch && matchesUserType && matchesCategory && matchesSeverity && matchesCustomer && matchesDate;
+      return matchesSearch && matchesUserType && matchesCategory && matchesSeverity && matchesCustomer && matchesDate && matchesStatus;
     }).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-  }, [searchQuery, selectedUserType, selectedCategory, selectedSeverity, selectedCustomer, selectedDateRange]);
+  }, [searchQuery, selectedUserType, selectedCategory, selectedSeverity, selectedCustomer, selectedDateRange, statusFilter]);
 
   // Pagination
   const paginatedLogs = useMemo(() => {
@@ -401,7 +406,7 @@ const AuditLogs = () => {
   // Reset to page 1 when filters change
   React.useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, selectedUserType, selectedCategory, selectedSeverity, selectedCustomer, selectedDateRange]);
+  }, [searchQuery, selectedUserType, selectedCategory, selectedSeverity, selectedCustomer, selectedDateRange, statusFilter]);
 
   // Get action icon
   const getActionIcon = (action) => {
@@ -487,6 +492,48 @@ const AuditLogs = () => {
     setSelectedDateRange("all");
     setSearchQuery("");
     setCurrentPage(1);
+    setActiveStatCard(null);
+    setStatusFilter("All");
+  };
+
+  // Handle stat card click for filtering
+  const handleStatCardClick = (cardType) => {
+    // If clicking the same card, toggle off (clear filters)
+    if (activeStatCard === cardType) {
+      clearFilters();
+      return;
+    }
+
+    // Reset filters first
+    setSelectedUserType("All");
+    setSelectedSeverity("All");
+    setStatusFilter("All");
+    setCurrentPage(1);
+    setActiveStatCard(cardType);
+
+    // Apply specific filter based on card type
+    switch (cardType) {
+      case "total":
+        // Show all events - no specific filter needed
+        break;
+      case "critical":
+        setSelectedSeverity("critical");
+        break;
+      case "warnings":
+        setSelectedSeverity("warning");
+        break;
+      case "internal":
+        setSelectedUserType("internal");
+        break;
+      case "customer":
+        setSelectedUserType("customer");
+        break;
+      case "failed":
+        setStatusFilter("failed");
+        break;
+      default:
+        break;
+    }
   };
 
   // Summary stats
@@ -505,45 +552,83 @@ const AuditLogs = () => {
     <div className="audit-logs">
       {/* Page Header */}
       <div className="page-header">
-        <div className="header-left">
-          <h1>
-            <FaHistory /> Audit Logs
-          </h1>
-          <p>Comprehensive activity trail for platform operations</p>
-        </div>
-        <div className="header-actions">
-          <button className="btn btn-outline" onClick={() => console.log("Refresh")}>
-            <FaSyncAlt /> Refresh
-          </button>
-          <button className="btn btn-outline" onClick={() => console.log("Export")}>
-            <FaDownload /> Export Logs
-          </button>
+        <div className="page-header-content">
+          <div className="page-title-section">
+            <h1>
+              <FaHistory className="page-title-icon" /> Audit Logs
+            </h1>
+            <p className="page-subtitle">Comprehensive activity trail for platform operations</p>
+          </div>
+          <div className="page-header-actions">
+            <button className="btn btn-outline" onClick={() => console.log("Refresh")}>
+              <FaSyncAlt /> Refresh
+            </button>
+            <button className="btn btn-outline" onClick={() => console.log("Export")}>
+              <FaDownload /> Export Logs
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Summary Stats */}
       <div className="summary-stats">
-        <div className="summary-stat">
+        <div
+          className={`summary-stat clickable ${activeStatCard === "total" ? "active" : ""}`}
+          onClick={() => handleStatCardClick("total")}
+          role="button"
+          tabIndex={0}
+          onKeyPress={(e) => e.key === "Enter" && handleStatCardClick("total")}
+        >
           <span className="stat-number">{summaryStats.total}</span>
           <span className="stat-label">Total Events</span>
         </div>
-        <div className="summary-stat critical">
+        <div
+          className={`summary-stat critical clickable ${activeStatCard === "critical" ? "active" : ""}`}
+          onClick={() => handleStatCardClick("critical")}
+          role="button"
+          tabIndex={0}
+          onKeyPress={(e) => e.key === "Enter" && handleStatCardClick("critical")}
+        >
           <span className="stat-number">{summaryStats.critical}</span>
           <span className="stat-label">Critical</span>
         </div>
-        <div className="summary-stat warning">
+        <div
+          className={`summary-stat warning clickable ${activeStatCard === "warnings" ? "active" : ""}`}
+          onClick={() => handleStatCardClick("warnings")}
+          role="button"
+          tabIndex={0}
+          onKeyPress={(e) => e.key === "Enter" && handleStatCardClick("warnings")}
+        >
           <span className="stat-number">{summaryStats.warnings}</span>
           <span className="stat-label">Warnings</span>
         </div>
-        <div className="summary-stat">
+        <div
+          className={`summary-stat clickable ${activeStatCard === "internal" ? "active" : ""}`}
+          onClick={() => handleStatCardClick("internal")}
+          role="button"
+          tabIndex={0}
+          onKeyPress={(e) => e.key === "Enter" && handleStatCardClick("internal")}
+        >
           <span className="stat-number">{summaryStats.internal}</span>
           <span className="stat-label">Internal</span>
         </div>
-        <div className="summary-stat">
+        <div
+          className={`summary-stat clickable ${activeStatCard === "customer" ? "active" : ""}`}
+          onClick={() => handleStatCardClick("customer")}
+          role="button"
+          tabIndex={0}
+          onKeyPress={(e) => e.key === "Enter" && handleStatCardClick("customer")}
+        >
           <span className="stat-number">{summaryStats.customer}</span>
           <span className="stat-label">Customer</span>
         </div>
-        <div className="summary-stat failed">
+        <div
+          className={`summary-stat failed clickable ${activeStatCard === "failed" ? "active" : ""}`}
+          onClick={() => handleStatCardClick("failed")}
+          role="button"
+          tabIndex={0}
+          onKeyPress={(e) => e.key === "Enter" && handleStatCardClick("failed")}
+        >
           <span className="stat-number">{summaryStats.failed}</span>
           <span className="stat-label">Failed</span>
         </div>

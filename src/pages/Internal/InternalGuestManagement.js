@@ -51,7 +51,12 @@ const InternalGuestManagement = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [segmentFilter, setSegmentFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [companyFilter, setCompanyFilter] = useState('all');
   const [expandedSite, setExpandedSite] = useState(null);
+
+  // Site breakdown search and filter state
+  const [siteSearchQuery, setSiteSearchQuery] = useState('');
+  const [siteSegmentFilter, setSiteSegmentFilter] = useState('all');
 
   // Pagination state for guests
   const [guestCurrentPage, setGuestCurrentPage] = useState(1);
@@ -188,6 +193,97 @@ const InternalGuestManagement = () => {
     return stats;
   }, []);
 
+  // Filter sites for "Guest Access by Site" section
+  const filteredSites = useMemo(() => {
+    return Object.entries(guestStatistics).filter(([siteId, stats]) => {
+      // Search filter - matches company/customer name or site name
+      const matchesSearch = siteSearchQuery === '' ||
+        stats.siteName?.toLowerCase().includes(siteSearchQuery.toLowerCase()) ||
+        stats.customerName?.toLowerCase().includes(siteSearchQuery.toLowerCase()) ||
+        stats.companyName?.toLowerCase().includes(siteSearchQuery.toLowerCase());
+
+      // Segment filter
+      const matchesSegment = siteSegmentFilter === 'all' || stats.segment === siteSegmentFilter;
+
+      return matchesSearch && matchesSegment;
+    });
+  }, [siteSearchQuery, siteSegmentFilter]);
+
+  // Export comprehensive report
+  const handleExportReport = () => {
+    // Create comprehensive report data
+    const reportSections = [];
+
+    // Section 1: Overview Summary
+    reportSections.push(['GUEST ACCESS REPORT']);
+    reportSections.push([`Generated: ${new Date().toLocaleString()}`]);
+    reportSections.push([]);
+    reportSections.push(['=== OVERVIEW SUMMARY ===']);
+    reportSections.push(['Metric', 'Value']);
+    reportSections.push(['Total Active Guests', aggregateStats.totalActiveGuests]);
+    reportSections.push(['Checked In Today', aggregateStats.totalCheckedInToday]);
+    reportSections.push(['Pending Check-in', aggregateStats.totalPending]);
+    reportSections.push(['Data Used Today', aggregateStats.totalDataUsedToday >= 1024
+      ? `${(aggregateStats.totalDataUsedToday / 1024).toFixed(1)} TB`
+      : `${aggregateStats.totalDataUsedToday.toFixed(1)} GB`
+    ]);
+    reportSections.push(['Available Vouchers', aggregateStats.totalVouchersAvailable]);
+    reportSections.push(['Guests This Month', aggregateStats.totalGuestsThisMonth]);
+    reportSections.push([]);
+
+    // Section 2: Segment Breakdown
+    reportSections.push(['=== BY SEGMENT ===']);
+    reportSections.push(['Segment', 'Active Guests', 'Total This Month', 'Data Used (GB)', 'Sites']);
+    Object.entries(aggregateStats.bySegment).forEach(([segment, data]) => {
+      reportSections.push([
+        SEGMENT_LABELS[segment] || segment,
+        data.activeGuests,
+        data.totalGuests,
+        data.dataUsed.toFixed(1),
+        data.sites
+      ]);
+    });
+    reportSections.push([]);
+
+    // Section 3: Site-wise Breakdown
+    reportSections.push(['=== BY SITE ===']);
+    reportSections.push(['Site Name', 'Segment', 'Active Guests', 'Checked In Today', 'Checked Out Today', 'Pending', 'Data Used Today', 'Total This Month', 'Vouchers Redeemed']);
+    Object.entries(guestStatistics).forEach(([siteId, stats]) => {
+      reportSections.push([
+        stats.siteName,
+        SEGMENT_LABELS[stats.segment] || stats.segment,
+        stats.today?.activeGuests || 0,
+        stats.today?.checkedIn || 0,
+        stats.today?.checkedOut || 0,
+        stats.today?.pending || 0,
+        stats.today?.dataUsed || '0 GB',
+        stats.thisMonth?.totalGuests || 0,
+        stats.thisMonth?.vouchersRedeemed || 0
+      ]);
+    });
+
+    // Convert to CSV format
+    const csvContent = reportSections.map(row => row.join(',')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T')[0];
+    link.setAttribute('download', `Guest_Access_Report_${timestamp}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    showSuccess('Guest Access Report exported successfully');
+  };
+
+  // Get unique company names for filter dropdown
+  const companyOptions = useMemo(() => {
+    const companies = [...new Set(guestUsers.map(g => g.companyName).filter(Boolean))];
+    return companies.sort();
+  }, []);
+
   // Filter guests
   const filteredGuests = useMemo(() => {
     let guests = [...guestUsers];
@@ -198,7 +294,8 @@ const InternalGuestManagement = () => {
         g.firstName?.toLowerCase().includes(query) ||
         g.lastName?.toLowerCase().includes(query) ||
         g.mobile?.includes(query) ||
-        g.siteName?.toLowerCase().includes(query)
+        g.siteName?.toLowerCase().includes(query) ||
+        g.companyName?.toLowerCase().includes(query)
       );
     }
 
@@ -210,8 +307,12 @@ const InternalGuestManagement = () => {
       guests = guests.filter(g => g.guestStatus === statusFilter);
     }
 
+    if (companyFilter !== 'all') {
+      guests = guests.filter(g => g.companyName === companyFilter);
+    }
+
     return guests;
-  }, [searchQuery, segmentFilter, statusFilter]);
+  }, [searchQuery, segmentFilter, statusFilter, companyFilter]);
 
   // Paginated guests
   const paginatedGuests = useMemo(() => {
@@ -560,9 +661,10 @@ const InternalGuestManagement = () => {
       return;
     }
 
-    const headers = ['Name', 'Mobile', 'Segment', 'Site', 'Type', 'Access Code', 'Valid Until', 'Status', 'Data Used'];
+    const headers = ['Name', 'Company', 'Mobile', 'Segment', 'Site', 'Type', 'Access Code', 'Valid Until', 'Status', 'Data Used'];
     const rows = filteredGuests.map(g => [
       `${g.firstName} ${g.lastName}`,
+      g.companyName || '-',
       g.mobile,
       SEGMENT_LABELS[g.segment] || g.segment,
       g.siteName,
@@ -782,9 +884,56 @@ const InternalGuestManagement = () => {
 
       {/* Site-wise Breakdown */}
       <div className="site-breakdown">
-        <h3><FaMapMarkerAlt /> Guest Access by Site</h3>
+        <div className="site-breakdown-header">
+          <h3><FaMapMarkerAlt /> Guest Access by Site</h3>
+          <div className="site-breakdown-filters">
+            <div className="search-input-wrapper">
+              <FaSearch className="search-icon" />
+              <input
+                type="text"
+                placeholder="Search by company or site..."
+                value={siteSearchQuery}
+                onChange={(e) => setSiteSearchQuery(e.target.value)}
+                className="search-input"
+              />
+            </div>
+            <div className="filter-select-wrapper">
+              <select
+                value={siteSegmentFilter}
+                onChange={(e) => setSiteSegmentFilter(e.target.value)}
+                className="filter-select"
+              >
+                <option value="all">All Segments</option>
+                <option value="enterprise">Enterprise</option>
+                <option value="hotel">Hotel</option>
+                <option value="coLiving">Co-Living</option>
+                <option value="pg">PG</option>
+                <option value="coWorking">Co-Working</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div className="site-results-info">
+          <span>{filteredSites.length} site{filteredSites.length !== 1 ? 's' : ''} found</span>
+          {(siteSearchQuery || siteSegmentFilter !== 'all') && (
+            <button
+              className="btn-text-link"
+              onClick={() => {
+                setSiteSearchQuery('');
+                setSiteSegmentFilter('all');
+              }}
+            >
+              Clear filters
+            </button>
+          )}
+        </div>
         <div className="site-list">
-          {Object.entries(guestStatistics).map(([siteId, stats]) => (
+          {filteredSites.length === 0 ? (
+            <div className="empty-sites-message">
+              <FaMapMarkerAlt />
+              <p>No sites found matching your criteria</p>
+            </div>
+          ) : filteredSites.map(([siteId, stats]) => (
             <div key={siteId} className="site-item">
               <div
                 className="site-header"
@@ -792,7 +941,12 @@ const InternalGuestManagement = () => {
               >
                 <div className="site-info">
                   <span className={`segment-badge ${stats.segment}`}>{SEGMENT_LABELS[stats.segment]}</span>
-                  <span className="site-name">{stats.siteName}</span>
+                  <div className="site-name-wrapper">
+                    <span className="site-name">{stats.siteName}</span>
+                    {stats.customerName && (
+                      <span className="site-company-name">{stats.customerName}</span>
+                    )}
+                  </div>
                 </div>
                 <div className="site-quick-stats">
                   <span className="quick-stat">
@@ -892,7 +1046,7 @@ const InternalGuestManagement = () => {
             <FaPrint style={{ marginRight: 6 }} /> Print QR Codes
             {selectedGuests.length > 0 && <span className="btn-badge">{selectedGuests.length}</span>}
           </Button>
-          <Button variant="secondary" onClick={handleExportGuests}>
+          <Button variant="secondary" onClick={handleExportGuests} disabled={filteredGuests.length === 0}>
             <FaFileExport style={{ marginRight: 6 }} /> Export
           </Button>
         </div>
@@ -901,7 +1055,7 @@ const InternalGuestManagement = () => {
             <FaSearch className="search-icon" />
             <input
               type="text"
-              placeholder="Search guests, sites..."
+              placeholder="Search guests, company, sites..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="search-input"
@@ -919,6 +1073,18 @@ const InternalGuestManagement = () => {
               <option value="coLiving">Co-Living</option>
               <option value="pg">PG</option>
               <option value="coWorking">Co-Working</option>
+            </select>
+          </div>
+          <div className="filter-select-wrapper">
+            <select
+              value={companyFilter}
+              onChange={(e) => setCompanyFilter(e.target.value)}
+              className="filter-select"
+            >
+              <option value="all">All Companies</option>
+              {companyOptions.map(company => (
+                <option key={company} value={company}>{company}</option>
+              ))}
             </select>
           </div>
           <div className="filter-select-wrapper">
@@ -960,6 +1126,7 @@ const InternalGuestManagement = () => {
                 />
               </th>
               <th>Guest</th>
+              <th>Company</th>
               <th>Segment</th>
               <th>Site</th>
               <th>Type</th>
@@ -987,6 +1154,7 @@ const InternalGuestManagement = () => {
                       <span className="guest-contact">{guest.mobile}</span>
                     </div>
                   </td>
+                  <td className="company-cell">{guest.companyName || '-'}</td>
                   <td>
                     <span className={`segment-badge ${guest.segment}`}>
                       {SEGMENT_LABELS[guest.segment] || guest.segment}
@@ -1033,7 +1201,7 @@ const InternalGuestManagement = () => {
               ))
             ) : (
               <tr>
-                <td colSpan="10" className="empty-state">
+                <td colSpan="11" className="empty-state">
                   <FaUserFriends />
                   <p>No guests found</p>
                 </td>
@@ -1075,7 +1243,7 @@ const InternalGuestManagement = () => {
             <FaPrint style={{ marginRight: 6 }} /> Print QR Codes
             {selectedVouchers.length > 0 && <span className="btn-badge">{selectedVouchers.length}</span>}
           </Button>
-          <Button variant="secondary" onClick={handleExportVouchers}>
+          <Button variant="secondary" onClick={handleExportVouchers} disabled={filteredVouchers.length === 0}>
             <FaFileExport style={{ marginRight: 6 }} /> Export
           </Button>
         </div>
@@ -1264,14 +1432,18 @@ const InternalGuestManagement = () => {
     <div className="internal-guest-management">
       {/* Page Header */}
       <div className="page-header">
-        <div className="header-left">
-          <h1><FaUserFriends /> Guest Access Management</h1>
-          <p>Monitor and manage guest access across all sites and segments</p>
-        </div>
-        <div className="header-actions">
-          <button className="btn btn-outline">
-            <FaDownload /> Export Report
-          </button>
+        <div className="page-header-content">
+          <div className="page-title-section">
+            <h1>
+              <FaUserFriends className="page-title-icon" /> Guest Access Management
+            </h1>
+            <p className="page-subtitle">Monitor and manage guest access across all sites and segments</p>
+          </div>
+          <div className="page-header-actions">
+            <button className="btn btn-outline" onClick={handleExportReport}>
+              <FaDownload /> Export Report
+            </button>
+          </div>
         </div>
       </div>
 

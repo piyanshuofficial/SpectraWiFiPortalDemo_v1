@@ -246,43 +246,73 @@ const ScheduledTasksPanel = () => {
       </div>
 
       {/* Filters */}
-      <div className="panel-filters">
-        <div className="search-box">
-          <FaSearch className="search-icon" />
-          <input
-            type="text"
-            placeholder="Search tasks..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="search-input"
-          />
+      <div className="filters-card">
+        <div className="search-row">
+          <div className="search-input-wrapper">
+            <FaSearch className="search-icon" />
+            <input
+              type="text"
+              placeholder="Search tasks by type or ID..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="search-input"
+            />
+            {searchTerm && (
+              <button
+                className="clear-btn"
+                onClick={() => setSearchTerm('')}
+                title="Clear search"
+              >
+                <FaTimes />
+              </button>
+            )}
+          </div>
+
+          <div className="filter-group">
+            <label>Status</label>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="filter-select"
+            >
+              <option value="all">All Statuses</option>
+              <option value={TaskStatus.PENDING}>Pending</option>
+              <option value={TaskStatus.EXECUTING}>Executing</option>
+              <option value={TaskStatus.COMPLETED}>Completed</option>
+              <option value={TaskStatus.FAILED}>Failed</option>
+              <option value={TaskStatus.CANCELLED}>Cancelled</option>
+            </select>
+          </div>
+
+          {completedTasks.length > 0 && (
+            <Button
+              variant="secondary"
+              size="small"
+              onClick={clearCompletedTasks}
+            >
+              <FaTrash style={{ marginRight: 6 }} /> Clear Completed
+            </Button>
+          )}
+
+          {(searchTerm || statusFilter !== 'all') && (
+            <button
+              className="btn-text"
+              onClick={() => {
+                setSearchTerm('');
+                setStatusFilter('all');
+              }}
+            >
+              Clear All Filters
+            </button>
+          )}
         </div>
 
-        <div className="filter-group">
-          <FaFilter className="filter-icon" />
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="filter-select"
-          >
-            <option value="all">All Statuses</option>
-            <option value={TaskStatus.PENDING}>Pending</option>
-            <option value={TaskStatus.EXECUTING}>Executing</option>
-            <option value={TaskStatus.COMPLETED}>Completed</option>
-            <option value={TaskStatus.FAILED}>Failed</option>
-            <option value={TaskStatus.CANCELLED}>Cancelled</option>
-          </select>
+        {/* Results count */}
+        <div className="results-info">
+          <span className="results-count">
+            {filteredTasks.length} task{filteredTasks.length !== 1 ? 's' : ''} found
+          </span>
         </div>
-
-        {completedTasks.length > 0 && (
-          <Button
-            variant="secondary"
-            size="small"
-            onClick={clearCompletedTasks}
-          >
-            Clear Completed
-          </Button>
-        )}
       </div>
 
       {/* Task Lists */}
