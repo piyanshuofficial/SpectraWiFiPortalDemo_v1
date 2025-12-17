@@ -1,13 +1,67 @@
 // src/components/KnowledgeArticleModal.js
 
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
+import ReactDOM from 'react-dom';
 import Modal from './Modal';
 import ImageLightbox from './ImageLightbox';
-import { FaTimes, FaCheckCircle, FaExclamationTriangle, FaLightbulb, FaBook, FaFilePdf } from 'react-icons/fa';
+import { FaTimes, FaCheckCircle, FaExclamationTriangle, FaLightbulb, FaBook, FaFilePdf, FaChevronLeft, FaChevronRight, FaList, FaArrowLeft } from 'react-icons/fa';
 import './KnowledgeArticleModal.css';
 
 const KnowledgeArticleModal = ({ article, onClose }) => {
   const [lightboxImage, setLightboxImage] = useState(null);
+  const [currentStepIndex, setCurrentStepIndex] = useState(0);
+  const [isStepByStepMode, setIsStepByStepMode] = useState(false);
+
+  // Extract all steps from article content for step-by-step navigation
+  const allSteps = useMemo(() => {
+    if (!article || !article.content) return [];
+    const stepsSection = article.content.find(c => c.type === 'steps');
+    return stepsSection?.steps || [];
+  }, [article]);
+
+  // Navigation handlers for step-by-step mode
+  const goToNextStep = useCallback(() => {
+    if (currentStepIndex < allSteps.length - 1) {
+      setCurrentStepIndex(prev => prev + 1);
+    }
+  }, [currentStepIndex, allSteps.length]);
+
+  const goToPrevStep = useCallback(() => {
+    if (currentStepIndex > 0) {
+      setCurrentStepIndex(prev => prev - 1);
+    }
+  }, [currentStepIndex]);
+
+  const enterStepByStepMode = useCallback((startIndex = 0) => {
+    setCurrentStepIndex(startIndex);
+    setIsStepByStepMode(true);
+  }, []);
+
+  const exitStepByStepMode = useCallback(() => {
+    setIsStepByStepMode(false);
+    setCurrentStepIndex(0);
+  }, []);
+
+  // Keyboard navigation for step-by-step mode
+  React.useEffect(() => {
+    if (!isStepByStepMode) return;
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        goToNextStep();
+      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        goToPrevStep();
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        exitStepByStepMode();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isStepByStepMode, goToNextStep, goToPrevStep, exitStepByStepMode]);
 
   if (!article) return null;
 
@@ -406,10 +460,29 @@ const KnowledgeArticleModal = ({ article, onClose }) => {
       case 'steps':
         return (
           <div key={index} className="article-steps">
-            <h3 className="section-heading">{contentItem.title}</h3>
+            <div className="section-heading-row">
+              <h3 className="section-heading">{contentItem.title}</h3>
+              {contentItem.steps.length > 0 && (
+                <button
+                  className="step-by-step-btn"
+                  onClick={() => enterStepByStepMode(0)}
+                  title="View step-by-step with larger screenshots"
+                >
+                  <FaChevronRight className="step-btn-icon" />
+                  Step-by-Step View
+                </button>
+              )}
+            </div>
             <div className="steps-container">
-              {contentItem.steps.map((step) => (
-                <div key={step.number} className="step-item">
+              {contentItem.steps.map((step, stepIdx) => (
+                <div
+                  key={step.number}
+                  className="step-item clickable-step"
+                  onClick={() => enterStepByStepMode(stepIdx)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyPress={(e) => e.key === 'Enter' && enterStepByStepMode(stepIdx)}
+                >
                   <div className="step-number">{step.number}</div>
                   <div className="step-content">
                     <h4 className="step-title">{step.title}</h4>
@@ -430,10 +503,16 @@ const KnowledgeArticleModal = ({ article, onClose }) => {
                       return (
                         <div
                           className="screenshot-placeholder clickable"
-                          onClick={() => handleScreenshotClick(step.screenshot)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleScreenshotClick(step.screenshot);
+                          }}
                           role="button"
                           tabIndex={0}
-                          onKeyPress={(e) => e.key === 'Enter' && handleScreenshotClick(step.screenshot)}
+                          onKeyPress={(e) => {
+                            e.stopPropagation();
+                            e.key === 'Enter' && handleScreenshotClick(step.screenshot);
+                          }}
                           aria-label="Click to view screenshot"
                         >
                           {imageSrc ? (
@@ -447,6 +526,9 @@ const KnowledgeArticleModal = ({ article, onClose }) => {
                         </div>
                       );
                     })()}
+                  </div>
+                  <div className="step-expand-hint">
+                    <FaChevronRight />
                   </div>
                 </div>
               ))}
@@ -518,11 +600,156 @@ const KnowledgeArticleModal = ({ article, onClose }) => {
     }
   };
 
+  // Render step-by-step fullscreen mode using React Portal for proper z-index
+  const renderStepByStepMode = () => {
+    if (!allSteps.length) return null;
+    const currentStep = allSteps[currentStepIndex];
+    const cleanText = currentStep.screenshot?.replace(/^\[Screenshot:\s*/, '').replace(/\]$/, '') || '';
+    const imageName = getScreenshotImage(cleanText);
+    let imageSrc = null;
+
+    try {
+      if (imageName) {
+        imageSrc = require(`@assets/images/knowledge-center/${imageName}`);
+      }
+    } catch (e) {
+      // Image not found
+    }
+
+    // Use React Portal to render at document body level, bypassing all stacking contexts
+    return ReactDOM.createPortal(
+      <div className="step-by-step-overlay" onClick={exitStepByStepMode}>
+        <div className="step-by-step-container" onClick={(e) => e.stopPropagation()}>
+          {/* Header */}
+          <div className="step-by-step-header">
+            <div className="step-by-step-header-left">
+              <button
+                className="step-back-to-overview"
+                onClick={exitStepByStepMode}
+                title="Back to overview"
+              >
+                <FaList />
+                <span>Overview</span>
+              </button>
+              <span className="step-by-step-title">{article.title}</span>
+            </div>
+            <div className="step-by-step-header-right">
+              <span className="step-counter">
+                Step {currentStepIndex + 1} of {allSteps.length}
+              </span>
+              <button
+                className="step-close-btn"
+                onClick={exitStepByStepMode}
+                aria-label="Exit step-by-step mode"
+              >
+                <FaTimes />
+              </button>
+            </div>
+          </div>
+
+          {/* Main Content */}
+          <div className="step-by-step-content">
+            {/* Left Navigation Arrow */}
+            <button
+              className={`step-nav-arrow step-nav-prev ${currentStepIndex === 0 ? 'disabled' : ''}`}
+              onClick={goToPrevStep}
+              disabled={currentStepIndex === 0}
+              aria-label="Previous step"
+            >
+              <FaChevronLeft />
+            </button>
+
+            {/* Step Content */}
+            <div className="step-by-step-main">
+              {/* Step Info */}
+              <div className="step-by-step-info">
+                <div className="step-by-step-number">{currentStep.number}</div>
+                <div className="step-by-step-text">
+                  <h2 className="step-by-step-step-title">{currentStep.title}</h2>
+                  <p className="step-by-step-description">{currentStep.description}</p>
+                </div>
+              </div>
+
+              {/* Large Screenshot Area */}
+              <div className="step-by-step-screenshot">
+                {imageSrc ? (
+                  <img
+                    src={imageSrc}
+                    alt={cleanText}
+                    className="step-by-step-image"
+                    onClick={() => handleScreenshotClick(currentStep.screenshot)}
+                  />
+                ) : currentStep.screenshot ? (
+                  <div className="step-by-step-placeholder">
+                    <span className="placeholder-icon">📷</span>
+                    <span className="placeholder-text">{currentStep.screenshot}</span>
+                    <span className="placeholder-hint">Screenshot placeholder</span>
+                  </div>
+                ) : (
+                  <div className="step-by-step-no-image">
+                    <span>No screenshot for this step</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Right Navigation Arrow */}
+            <button
+              className={`step-nav-arrow step-nav-next ${currentStepIndex === allSteps.length - 1 ? 'disabled' : ''}`}
+              onClick={goToNextStep}
+              disabled={currentStepIndex === allSteps.length - 1}
+              aria-label="Next step"
+            >
+              <FaChevronRight />
+            </button>
+          </div>
+
+          {/* Progress Bar */}
+          <div className="step-by-step-progress">
+            {allSteps.map((_, idx) => (
+              <button
+                key={idx}
+                className={`progress-dot ${idx === currentStepIndex ? 'active' : ''} ${idx < currentStepIndex ? 'completed' : ''}`}
+                onClick={() => setCurrentStepIndex(idx)}
+                aria-label={`Go to step ${idx + 1}`}
+              />
+            ))}
+          </div>
+
+          {/* Footer */}
+          <div className="step-by-step-footer">
+            <span className="step-keyboard-hint">
+              Use ← → arrow keys to navigate • Press ESC to exit
+            </span>
+            {currentStepIndex === allSteps.length - 1 && (
+              <button className="step-finish-btn" onClick={exitStepByStepMode}>
+                <FaCheckCircle />
+                <span>Done</span>
+              </button>
+            )}
+          </div>
+        </div>
+      </div>,
+      document.body
+    );
+  };
+
   return (
     <>
+    {isStepByStepMode && allSteps.length > 0 ? (
+      renderStepByStepMode()
+    ) : (
     <Modal onClose={onClose}>
       <div className="knowledge-article-modal">
         <div className="article-header">
+          <button
+            className="article-back-btn"
+            onClick={onClose}
+            aria-label="Back to Knowledge Center"
+            title="Back to Knowledge Center"
+          >
+            <FaArrowLeft />
+          </button>
           <div className="article-header-content">
             <span className="article-category">{article.category}</span>
             <h2 className="article-title">{article.title}</h2>
@@ -553,6 +780,7 @@ const KnowledgeArticleModal = ({ article, onClose }) => {
       </div>
 
     </Modal>
+    )}
     {lightboxImage && (
       <ImageLightbox
         imageSrc={lightboxImage.src}

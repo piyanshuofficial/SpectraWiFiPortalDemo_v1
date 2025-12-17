@@ -558,10 +558,12 @@ const InternalKnowledgeCenter = () => {
             >
               <FaTimes />
             </button>
-            <h2>{selectedArticle.title}</h2>
-            <span className="article-modal-category">
-              {selectedArticle.category}
-            </span>
+            <div className="article-modal-header">
+              <h2>{selectedArticle.title}</h2>
+              <span className="article-modal-category">
+                {selectedArticle.category}
+              </span>
+            </div>
             <div className="article-modal-content">
               {renderArticleContent(selectedArticle)}
             </div>

@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 import {
   FaChartLine,
   FaSearch,
-  FaFilter,
   FaEye,
   FaFileCsv,
   FaFilePdf,
@@ -18,7 +17,6 @@ import {
   FaWifi,
   FaNetworkWired,
   FaShieldAlt,
-  FaDownload,
   FaChartBar,
   FaChartPie,
   FaCalendarAlt,
@@ -26,26 +24,63 @@ import {
   FaExclamationTriangle,
   FaTicketAlt,
   FaSpinner,
+  FaFileInvoiceDollar,
+  FaDatabase,
+  FaUserCog,
+  FaGlobe,
+  FaClipboardCheck,
+  FaKey,
+  FaShoppingCart,
+  FaSitemap,
 } from "react-icons/fa";
 import {
   customers,
   sites,
   platformMetrics,
 } from "@constants/internalPortalData";
+import {
+  MASTER_REPORT_CONFIG,
+  REPORT_CATEGORIES,
+  getAllReports as getCustomerReports,
+} from "@config/masterReportConfig";
 import notifications from "@utils/notifications";
 import { exportReportPDF } from "@utils/exportReportPDF";
 import { exportChartDataToCSV } from "@utils/exportUtils";
 import "./InternalReports.css";
 
+// Map customer portal categories to icons
+const customerCategoryIcons = {
+  [REPORT_CATEGORIES.BILLING]: FaFileInvoiceDollar,
+  [REPORT_CATEGORIES.USAGE]: FaDatabase,
+  [REPORT_CATEGORIES.WIFI_NETWORK]: FaWifi,
+  [REPORT_CATEGORIES.END_USER]: FaUserCog,
+  [REPORT_CATEGORIES.INTERNET]: FaGlobe,
+  [REPORT_CATEGORIES.SLA]: FaClipboardCheck,
+  [REPORT_CATEGORIES.AUTHENTICATION]: FaKey,
+  [REPORT_CATEGORIES.UPSELL]: FaShoppingCart,
+  [REPORT_CATEGORIES.COMPANY]: FaSitemap,
+};
+
 // Internal-specific report categories
 const internalReportCategories = [
   { id: "all", name: "All Reports", icon: FaChartLine },
-  { id: "platform", name: "Platform Analytics", icon: FaServer },
-  { id: "customer", name: "Customer Reports", icon: FaBuilding },
-  { id: "site", name: "Site Performance", icon: FaMapMarkerAlt },
-  { id: "network", name: "Network & Bandwidth", icon: FaNetworkWired },
-  { id: "security", name: "Security & Compliance", icon: FaShieldAlt },
-  { id: "support", name: "Support & Tickets", icon: FaTicketAlt },
+  // Internal platform categories
+  { id: "platform", name: "Platform Analytics", icon: FaServer, section: "internal" },
+  { id: "customer", name: "Customer Reports", icon: FaBuilding, section: "internal" },
+  { id: "site", name: "Site Performance", icon: FaMapMarkerAlt, section: "internal" },
+  { id: "network", name: "Network & Bandwidth", icon: FaNetworkWired, section: "internal" },
+  { id: "security", name: "Security & Compliance", icon: FaShieldAlt, section: "internal" },
+  { id: "support", name: "Support & Tickets", icon: FaTicketAlt, section: "internal" },
+  // Customer portal categories - separate section
+  { id: "cp-billing", name: "Billing", icon: FaFileInvoiceDollar, section: "customer-portal", cpCategory: REPORT_CATEGORIES.BILLING },
+  { id: "cp-usage", name: "Usage", icon: FaDatabase, section: "customer-portal", cpCategory: REPORT_CATEGORIES.USAGE },
+  { id: "cp-wifi", name: "Wi-Fi Network", icon: FaWifi, section: "customer-portal", cpCategory: REPORT_CATEGORIES.WIFI_NETWORK },
+  { id: "cp-enduser", name: "End-User", icon: FaUserCog, section: "customer-portal", cpCategory: REPORT_CATEGORIES.END_USER },
+  { id: "cp-internet", name: "Internet", icon: FaGlobe, section: "customer-portal", cpCategory: REPORT_CATEGORIES.INTERNET },
+  { id: "cp-sla", name: "SLA", icon: FaClipboardCheck, section: "customer-portal", cpCategory: REPORT_CATEGORIES.SLA },
+  { id: "cp-auth", name: "Authentication", icon: FaKey, section: "customer-portal", cpCategory: REPORT_CATEGORIES.AUTHENTICATION },
+  { id: "cp-upsell", name: "Upsell", icon: FaShoppingCart, section: "customer-portal", cpCategory: REPORT_CATEGORIES.UPSELL },
+  { id: "cp-company", name: "Company", icon: FaSitemap, section: "customer-portal", cpCategory: REPORT_CATEGORIES.COMPANY },
 ];
 
 // Internal reports data
@@ -475,12 +510,41 @@ const InternalReports = () => {
   const [exporting, setExporting] = useState(false);
   const [exportingReportId, setExportingReportId] = useState(null);
 
+  // Transform customer portal reports to match internal report format
+  const customerPortalReports = useMemo(() => {
+    return getCustomerReports().map(report => ({
+      id: `cp-${report.id}`,
+      name: report.name,
+      description: report.description,
+      category: report.category, // Original category from REPORT_CATEGORIES
+      cpCategoryId: `cp-${report.category.toLowerCase().replace(/[^a-z]/g, '')}`, // Mapped category id
+      icon: customerCategoryIcons[report.category] || FaChartLine,
+      exportFormats: ["csv", "pdf"],
+      accessLevel: report.accessLevel,
+      isCustomerPortal: true,
+      originalReport: report,
+    }));
+  }, []);
+
+  // Combine all reports
+  const allReports = useMemo(() => {
+    return [...internalReports, ...customerPortalReports];
+  }, [customerPortalReports]);
+
   // Filter reports based on category and search
   const filteredReports = useMemo(() => {
-    let reports = internalReports;
+    let reports = allReports;
 
     if (activeCategory !== "all") {
-      reports = reports.filter((r) => r.category === activeCategory);
+      const category = internalReportCategories.find(c => c.id === activeCategory);
+
+      if (category?.section === "customer-portal") {
+        // Filter customer portal reports by their category
+        reports = reports.filter((r) => r.isCustomerPortal && r.category === category.cpCategory);
+      } else if (category?.section === "internal") {
+        // Filter internal reports by their category
+        reports = reports.filter((r) => !r.isCustomerPortal && r.category === activeCategory);
+      }
     }
 
     if (searchTerm.trim()) {
@@ -493,13 +557,13 @@ const InternalReports = () => {
     }
 
     return reports;
-  }, [activeCategory, searchTerm]);
+  }, [activeCategory, searchTerm, allReports]);
 
   const pinnedReportObjects = useMemo(() => {
     return pinnedReports
-      .map((id) => internalReports.find((r) => r.id === id))
+      .map((id) => allReports.find((r) => r.id === id))
       .filter(Boolean);
-  }, [pinnedReports]);
+  }, [pinnedReports, allReports]);
 
   const togglePin = useCallback((reportId) => {
     setPinnedReports((prev) => {
@@ -624,14 +688,20 @@ const InternalReports = () => {
 
   // Get category counts
   const categoryCounts = useMemo(() => {
-    const counts = { all: internalReports.length };
+    const counts = { all: allReports.length };
     internalReportCategories.forEach((cat) => {
       if (cat.id !== "all") {
-        counts[cat.id] = internalReports.filter((r) => r.category === cat.id).length;
+        if (cat.section === "customer-portal") {
+          // Count customer portal reports by their original category
+          counts[cat.id] = customerPortalReports.filter((r) => r.category === cat.cpCategory).length;
+        } else {
+          // Count internal reports
+          counts[cat.id] = internalReports.filter((r) => r.category === cat.id).length;
+        }
       }
     });
     return counts;
-  }, []);
+  }, [allReports, customerPortalReports]);
 
   return (
     <div className="internal-reports">
@@ -750,19 +820,55 @@ const InternalReports = () => {
         </div>
       </div>
 
-      {/* Category Tabs */}
-      <div className="category-tabs">
-        {internalReportCategories.map((cat) => (
+      {/* Category Tabs - Grouped by Section */}
+      <div className="category-tabs-wrapper">
+        {/* All Reports Tab */}
+        <div className="category-tabs-section">
           <button
-            key={cat.id}
-            className={`category-tab ${activeCategory === cat.id ? "active" : ""}`}
-            onClick={() => setActiveCategory(cat.id)}
+            className={`category-tab ${activeCategory === "all" ? "active" : ""}`}
+            onClick={() => setActiveCategory("all")}
           >
-            <cat.icon className="tab-icon" />
-            <span className="tab-name">{cat.name}</span>
-            <span className="tab-count">{categoryCounts[cat.id]}</span>
+            <FaChartLine className="tab-icon" />
+            <span className="tab-name">All Reports</span>
+            <span className="tab-count">{categoryCounts["all"]}</span>
           </button>
-        ))}
+        </div>
+
+        {/* Internal Platform Reports */}
+        <div className="category-tabs-section">
+          <span className="section-label">Internal Platform</span>
+          <div className="category-tabs">
+            {internalReportCategories.filter(c => c.section === "internal").map((cat) => (
+              <button
+                key={cat.id}
+                className={`category-tab ${activeCategory === cat.id ? "active" : ""}`}
+                onClick={() => setActiveCategory(cat.id)}
+              >
+                <cat.icon className="tab-icon" />
+                <span className="tab-name">{cat.name}</span>
+                <span className="tab-count">{categoryCounts[cat.id]}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Customer Portal Reports */}
+        <div className="category-tabs-section">
+          <span className="section-label">Customer Portal</span>
+          <div className="category-tabs">
+            {internalReportCategories.filter(c => c.section === "customer-portal").map((cat) => (
+              <button
+                key={cat.id}
+                className={`category-tab ${activeCategory === cat.id ? "active" : ""} customer-portal-tab`}
+                onClick={() => setActiveCategory(cat.id)}
+              >
+                <cat.icon className="tab-icon" />
+                <span className="tab-name">{cat.name}</span>
+                <span className="tab-count">{categoryCounts[cat.id]}</span>
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* Reports Grid */}
@@ -779,7 +885,7 @@ const InternalReports = () => {
           </div>
         ) : (
           filteredReports.map((report) => (
-            <div key={report.id} className="report-card">
+            <div key={report.id} className={`report-card ${report.isCustomerPortal ? 'customer-portal-report' : ''}`}>
               <div className="report-card-header">
                 <div className="report-icon-wrapper">
                   <report.icon />

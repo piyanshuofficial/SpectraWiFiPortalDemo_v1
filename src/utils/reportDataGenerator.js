@@ -727,6 +727,481 @@ export const generateRogueAPList = () => {
   return data;
 };
 
+// ============================================
+// GUEST ACCESS REPORT GENERATORS
+// ============================================
+
+/**
+ * Generate guest access summary data
+ */
+export const generateGuestAccessSummary = (startDate = '2025-01-01', days = 31) => {
+  const dates = generateDateRange(startDate, days);
+
+  return dates.map(date => {
+    const totalGuests = randomInRange(15, 45);
+    const activeGuests = randomInRange(Math.floor(totalGuests * 0.4), Math.floor(totalGuests * 0.7));
+    const checkedIn = randomInRange(5, 20);
+    const checkedOut = randomInRange(3, 15);
+    const dataUsed = randomFloat(5, 50, 2);
+
+    return {
+      date,
+      totalGuests,
+      activeGuests,
+      checkedIn,
+      checkedOut,
+      dataUsed: `${dataUsed} GB`
+    };
+  });
+};
+
+/**
+ * Generate guest activity log data
+ */
+export const generateGuestActivityLog = (startDate = '2025-01-01', days = 7) => {
+  const dates = generateDateRange(startDate, days);
+  const guestNames = [
+    'John Smith', 'Maria Garcia', 'Raj Patel', 'Li Wei', 'Emma Johnson',
+    'Ahmed Khan', 'Sofia Rodriguez', 'James Wilson', 'Priya Sharma', 'Michael Brown'
+  ];
+  const actions = ['Check-in', 'Check-out', 'WiFi Connected', 'WiFi Disconnected', 'Access Extended', 'Voucher Redeemed'];
+  const performers = ['Reception', 'Security', 'System', 'Admin', 'Self-service'];
+  const data = [];
+
+  dates.forEach(date => {
+    const activitiesPerDay = randomInRange(10, 30);
+
+    for (let i = 0; i < activitiesPerDay; i++) {
+      const hour = randomInRange(6, 22);
+      const minute = randomInRange(0, 59);
+      const timestamp = `${date} ${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+      const guestName = guestNames[Math.floor(Math.random() * guestNames.length)];
+      const action = actions[Math.floor(Math.random() * actions.length)];
+      const performedBy = performers[Math.floor(Math.random() * performers.length)];
+      const details = `${action} for ${guestName}`;
+
+      data.push({
+        timestamp,
+        guestName,
+        action,
+        performedBy,
+        details
+      });
+    }
+  });
+
+  return data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+};
+
+/**
+ * Generate guest voucher report data
+ */
+export const generateGuestVoucherReport = (startDate = '2025-01-01', days = 31) => {
+  const dates = generateDateRange(startDate, days);
+  const guestTypes = ['Visitor', 'Contractor', 'Conference', 'VIP', 'Vendor'];
+  const creators = ['Reception', 'Admin', 'HR', 'IT Support', 'Security'];
+  const statuses = ['Active', 'Redeemed', 'Expired'];
+  const data = [];
+
+  dates.forEach(date => {
+    const vouchersPerDay = randomInRange(3, 12);
+
+    for (let i = 0; i < vouchersPerDay; i++) {
+      const voucherCode = `V${date.replace(/-/g, '')}${String(i + 1).padStart(3, '0')}`;
+      const status = statuses[Math.floor(Math.random() * statuses.length)];
+      const guestType = guestTypes[Math.floor(Math.random() * guestTypes.length)];
+      const createdBy = creators[Math.floor(Math.random() * creators.length)];
+      const redeemedBy = status === 'Redeemed' ? `Guest-${randomInRange(100, 999)}` : '-';
+      const validityHours = [4, 8, 12, 24, 48][Math.floor(Math.random() * 5)];
+
+      data.push({
+        voucherCode,
+        status,
+        guestType,
+        createdBy,
+        redeemedBy,
+        validityHours,
+        createdDate: date
+      });
+    }
+  });
+
+  return data;
+};
+
+/**
+ * Generate guest type breakdown data
+ */
+export const generateGuestTypeBreakdown = (startMonth = '2025-01', months = 1) => {
+  const guestTypes = [
+    { type: 'Visitor', baseCount: 150 },
+    { type: 'Contractor', baseCount: 80 },
+    { type: 'Conference', baseCount: 120 },
+    { type: 'VIP', baseCount: 25 },
+    { type: 'Vendor', baseCount: 45 }
+  ];
+
+  const monthsArray = generateMonthRange(startMonth, months);
+  const data = [];
+
+  monthsArray.forEach(month => {
+    let totalGuests = 0;
+    const monthData = guestTypes.map(({ type, baseCount }) => {
+      const count = trendingValue(baseCount, 0, 1, 0.2);
+      totalGuests += count;
+      return { type, count };
+    });
+
+    monthData.forEach(item => {
+      const percentage = ((item.count / totalGuests) * 100).toFixed(1);
+      const avgDuration = randomFloat(1.5, 8, 1);
+      const dataUsed = randomFloat(0.5, 5, 2);
+
+      data.push({
+        month,
+        guestType: item.type,
+        count: item.count,
+        percentage: `${percentage}%`,
+        avgDuration: `${avgDuration} hrs`,
+        dataUsed: `${dataUsed} GB`
+      });
+    });
+  });
+
+  return data;
+};
+
+/**
+ * Generate guest data usage report
+ */
+export const generateGuestDataUsage = (startDate = '2025-01-01', days = 31) => {
+  const dates = generateDateRange(startDate, days);
+  const guestTypes = ['Visitor', 'Contractor', 'Conference', 'VIP', 'Vendor'];
+  const data = [];
+  let guestIdCounter = 1;
+
+  dates.forEach(date => {
+    const guestsPerDay = randomInRange(5, 20);
+
+    for (let i = 0; i < guestsPerDay; i++) {
+      const guestId = `G${String(guestIdCounter++).padStart(4, '0')}`;
+      const guestName = `Guest-${guestId}`;
+      const guestType = guestTypes[Math.floor(Math.random() * guestTypes.length)];
+      const dataUsed = randomFloat(0.1, 8, 2);
+      const sessions = randomInRange(1, 10);
+      const avgSession = randomInRange(15, 180);
+
+      data.push({
+        guestId,
+        guestName,
+        guestType,
+        date,
+        dataUsed: `${dataUsed} GB`,
+        sessions,
+        avgSession: `${Math.floor(avgSession / 60)}h ${avgSession % 60}m`
+      });
+    }
+  });
+
+  return data;
+};
+
+// ============================================
+// COMPANY-LEVEL REPORT GENERATORS
+// ============================================
+
+/**
+ * Generate company overview dashboard data
+ */
+export const generateCompanyOverviewDashboard = () => {
+  const sites = [
+    { name: 'Mumbai Corporate Office', id: 'SITE-MUM-ENT-001' },
+    { name: 'Hyderabad Tech Park', id: 'SITE-HYD-OFF-007' },
+    { name: 'Urban Living - Bangalore', id: 'SITE-BLR-COL-002' },
+    { name: 'WorkHub - Pune', id: 'SITE-PUN-COW-003' },
+    { name: 'Grand Resort Goa', id: 'SITE-GOA-HTL-001' },
+    { name: 'PG Residency - Chennai', id: 'SITE-CHN-PGR-005' },
+    { name: 'Community Hub - Delhi', id: 'SITE-DEL-MIS-006' }
+  ];
+
+  let totalUsers = 0;
+  let totalDevices = 0;
+  let totalBandwidth = 0;
+
+  const siteData = sites.map(site => {
+    const users = randomInRange(100, 500);
+    const devices = randomInRange(users * 2, users * 4);
+    const bandwidth = randomFloat(50, 500, 1);
+
+    totalUsers += users;
+    totalDevices += devices;
+    totalBandwidth += bandwidth;
+
+    return {
+      siteName: site.name,
+      siteId: site.id,
+      users,
+      devices,
+      bandwidth: `${bandwidth} GB`
+    };
+  });
+
+  return {
+    summary: {
+      totalSites: sites.length,
+      totalUsers,
+      totalDevices,
+      totalBandwidth: `${totalBandwidth.toFixed(1)} GB`
+    },
+    sites: siteData
+  };
+};
+
+/**
+ * Generate cross-site usage comparison data
+ */
+export const generateCrossSiteUsageComparison = (startMonth = '2024-01', months = 6) => {
+  const sites = [
+    'Mumbai Corporate Office',
+    'Hyderabad Tech Park',
+    'Urban Living - Bangalore',
+    'WorkHub - Pune',
+    'Grand Resort Goa',
+    'PG Residency - Chennai',
+    'Community Hub - Delhi'
+  ];
+  const monthsArray = generateMonthRange(startMonth, months);
+  const data = [];
+
+  monthsArray.forEach(month => {
+    sites.forEach(siteName => {
+      const totalUsers = randomInRange(100, 500);
+      const avgBandwidth = randomFloat(20, 150, 1);
+      const dataUsage = randomFloat(100, 800, 1);
+
+      data.push({
+        month,
+        siteName,
+        totalUsers,
+        avgBandwidth: `${avgBandwidth} Mbps`,
+        dataUsage: `${dataUsage} GB`
+      });
+    });
+  });
+
+  return data;
+};
+
+/**
+ * Generate consolidated billing report data
+ */
+export const generateConsolidatedBillingReport = (startMonth = '2024-01', months = 6) => {
+  const sites = [
+    { name: 'Mumbai Corporate Office', baseUsers: 350 },
+    { name: 'Hyderabad Tech Park', baseUsers: 180 },
+    { name: 'Urban Living - Bangalore', baseUsers: 280 },
+    { name: 'WorkHub - Pune', baseUsers: 220 },
+    { name: 'Grand Resort Goa', baseUsers: 380 },
+    { name: 'PG Residency - Chennai', baseUsers: 140 },
+    { name: 'Community Hub - Delhi', baseUsers: 190 }
+  ];
+  const monthsArray = generateMonthRange(startMonth, months);
+  const data = [];
+
+  monthsArray.forEach((month, monthIndex) => {
+    sites.forEach(site => {
+      const activeUsers = trendingValue(site.baseUsers, monthIndex, 1.02, 0.1);
+      const ratePerUser = randomFloat(150, 350, 0);
+      const billedAmount = activeUsers * ratePerUser;
+      const dueDate = `${month}-28`;
+
+      data.push({
+        month,
+        siteName: site.name,
+        activeUsers,
+        billedAmount: `₹${billedAmount.toLocaleString()}`,
+        dueDate
+      });
+    });
+  });
+
+  return data;
+};
+
+/**
+ * Generate company license utilization data
+ */
+export const generateCompanyLicenseUtilization = () => {
+  const sites = [
+    { name: 'Mumbai Corporate Office', allocated: 500 },
+    { name: 'Hyderabad Tech Park', allocated: 200 },
+    { name: 'Urban Living - Bangalore', allocated: 300 },
+    { name: 'WorkHub - Pune', allocated: 250 },
+    { name: 'Grand Resort Goa', allocated: 400 },
+    { name: 'PG Residency - Chennai', allocated: 150 },
+    { name: 'Community Hub - Delhi', allocated: 200 }
+  ];
+
+  return sites.map(site => {
+    const utilizationRate = randomFloat(60, 95, 1);
+    const usedLicenses = Math.round((site.allocated * utilizationRate) / 100);
+
+    return {
+      siteName: site.name,
+      allocatedLicenses: site.allocated,
+      usedLicenses,
+      availableLicenses: site.allocated - usedLicenses,
+      utilizationRate: `${utilizationRate}%`
+    };
+  });
+};
+
+/**
+ * Generate company user distribution data
+ */
+export const generateCompanyUserDistribution = (startMonth = '2024-01', months = 6) => {
+  const sites = [
+    'Mumbai Corporate Office',
+    'Hyderabad Tech Park',
+    'Urban Living - Bangalore',
+    'WorkHub - Pune',
+    'Grand Resort Goa',
+    'PG Residency - Chennai',
+    'Community Hub - Delhi'
+  ];
+  const monthsArray = generateMonthRange(startMonth, months);
+  const data = [];
+
+  monthsArray.forEach((month, monthIndex) => {
+    sites.forEach(siteName => {
+      const baseActive = randomInRange(150, 400);
+      const activeUsers = trendingValue(baseActive, monthIndex, 1.03, 0.1);
+      const suspendedUsers = randomInRange(5, 25);
+      const newUsers = randomInRange(10, 50);
+
+      data.push({
+        month,
+        siteName,
+        activeUsers,
+        suspendedUsers,
+        newUsers
+      });
+    });
+  });
+
+  return data;
+};
+
+/**
+ * Generate company alerts summary data
+ */
+export const generateCompanyAlertsSummary = (startDate = '2024-07-01', days = 31) => {
+  const sites = [
+    'Mumbai Corporate Office',
+    'Hyderabad Tech Park',
+    'Urban Living - Bangalore',
+    'WorkHub - Pune',
+    'Grand Resort Goa',
+    'PG Residency - Chennai',
+    'Community Hub - Delhi'
+  ];
+  const dates = generateDateRange(startDate, days);
+  const data = [];
+
+  dates.forEach(date => {
+    sites.forEach(siteName => {
+      const criticalAlerts = randomInRange(0, 5);
+      const warningAlerts = randomInRange(2, 15);
+      const resolvedAlerts = randomInRange(criticalAlerts + warningAlerts - 5, criticalAlerts + warningAlerts + 10);
+
+      data.push({
+        date,
+        siteName,
+        criticalAlerts,
+        warningAlerts,
+        resolvedAlerts: Math.max(0, resolvedAlerts)
+      });
+    });
+  });
+
+  return data;
+};
+
+/**
+ * Generate company-wide guest overview data
+ */
+export const generateCompanyGuestOverview = (startDate = '2025-01-01', days = 31) => {
+  const sites = [
+    { name: 'Mumbai Corporate Office', guestEnabled: true },
+    { name: 'Hyderabad Tech Park', guestEnabled: true },
+    { name: 'Urban Living - Bangalore', guestEnabled: true },
+    { name: 'WorkHub - Pune', guestEnabled: true },
+    { name: 'Grand Resort Goa', guestEnabled: true },
+    { name: 'PG Residency - Chennai', guestEnabled: false },
+    { name: 'Community Hub - Delhi', guestEnabled: true }
+  ];
+  const dates = generateDateRange(startDate, days);
+  const data = [];
+
+  dates.forEach(date => {
+    sites.filter(s => s.guestEnabled).forEach(site => {
+      const totalGuests = randomInRange(10, 80);
+      const activeGuests = randomInRange(Math.floor(totalGuests * 0.3), Math.floor(totalGuests * 0.6));
+      const checkedInToday = randomInRange(5, 25);
+      const dataUsed = randomFloat(2, 30, 2);
+
+      data.push({
+        date,
+        siteName: site.name,
+        totalGuests,
+        activeGuests,
+        checkedInToday,
+        dataUsed: `${dataUsed} GB`
+      });
+    });
+  });
+
+  return data;
+};
+
+/**
+ * Generate guest traffic by site comparison data
+ */
+export const generateCompanyGuestComparison = (startMonth = '2025-01', months = 1) => {
+  const sites = [
+    { name: 'Mumbai Corporate Office', guestEnabled: true },
+    { name: 'Hyderabad Tech Park', guestEnabled: true },
+    { name: 'Urban Living - Bangalore', guestEnabled: true },
+    { name: 'WorkHub - Pune', guestEnabled: true },
+    { name: 'Grand Resort Goa', guestEnabled: true },
+    { name: 'Community Hub - Delhi', guestEnabled: true }
+  ];
+  const guestTypes = ['Visitor', 'Contractor', 'Conference', 'VIP', 'Vendor'];
+  const weekDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+  const monthsArray = generateMonthRange(startMonth, months);
+  const data = [];
+
+  monthsArray.forEach(month => {
+    sites.forEach(site => {
+      const guestsThisMonth = randomInRange(80, 350);
+      const avgDuration = randomFloat(1.5, 6, 1);
+      const peakDay = weekDays[Math.floor(Math.random() * weekDays.length)];
+      const topGuestType = guestTypes[Math.floor(Math.random() * guestTypes.length)];
+
+      data.push({
+        month,
+        siteName: site.name,
+        guestsThisMonth,
+        avgDuration: `${avgDuration} hrs`,
+        peakDay,
+        topGuestType
+      });
+    });
+  });
+
+  return data;
+};
+
 export default {
   generateDateRange,
   generateMonthRange,
@@ -753,5 +1228,20 @@ export default {
   generateAccessPointList,
   generateClientList,
   generateUserAPAnalytics,
-  generateRogueAPList
+  generateRogueAPList,
+  // Guest report generators
+  generateGuestAccessSummary,
+  generateGuestActivityLog,
+  generateGuestVoucherReport,
+  generateGuestTypeBreakdown,
+  generateGuestDataUsage,
+  // Company-level report generators
+  generateCompanyOverviewDashboard,
+  generateCrossSiteUsageComparison,
+  generateConsolidatedBillingReport,
+  generateCompanyLicenseUtilization,
+  generateCompanyUserDistribution,
+  generateCompanyAlertsSummary,
+  generateCompanyGuestOverview,
+  generateCompanyGuestComparison
 };

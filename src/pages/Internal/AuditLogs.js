@@ -304,6 +304,223 @@ const extendedAuditLogs = [
     severity: "info",
     status: "scheduled",
   },
+  // Authentication Configuration Audit Entries
+  {
+    id: "audit_auth_001",
+    timestamp: "2024-01-15T14:30:00",
+    userType: "internal",
+    user: "Priya Sharma",
+    userRole: "Support Engineer",
+    action: "auth_config_update",
+    category: "Auth Configuration",
+    resource: "Site Auth Config",
+    resourceId: "site_001",
+    siteName: "The Oberoi, Mumbai",
+    customerName: "Oberoi Hotels & Resorts",
+    description: "Updated authentication methods for Room Guests: Added PMS Integration, Removed Voucher Code",
+    ipAddress: "192.168.1.105",
+    severity: "info",
+    status: "success",
+    changes: {
+      category: "roomGuests",
+      added: ["pms_integration"],
+      removed: ["voucher_code"]
+    }
+  },
+  {
+    id: "audit_auth_002",
+    timestamp: "2024-01-15T13:45:00",
+    userType: "internal",
+    user: "Anita Desai",
+    userRole: "Super Admin",
+    action: "auth_template_create",
+    category: "Auth Configuration",
+    resource: "Auth Template",
+    resourceId: "auth_tpl_009",
+    siteName: null,
+    customerName: null,
+    description: "Created new authentication template 'Enterprise High Security' for Enterprise segment",
+    ipAddress: "192.168.1.102",
+    severity: "info",
+    status: "success",
+    changes: {
+      templateName: "Enterprise High Security",
+      segment: "enterprise",
+      authMethods: {
+        users: ["adfs_sso", "otp_rmn"],
+        guests: ["voucher_code", "otp_rmn"],
+        devices: ["dot1x", "certificate_auth"]
+      }
+    }
+  },
+  {
+    id: "audit_auth_003",
+    timestamp: "2024-01-15T12:20:00",
+    userType: "internal",
+    user: "Vikram Singh",
+    userRole: "Deployment Engineer",
+    action: "auth_config_provision",
+    category: "Auth Configuration",
+    resource: "Site Auth Config",
+    resourceId: "site_new_015",
+    siteName: "WeWork Cyber Hub",
+    customerName: "WeWork India",
+    description: "Configured authentication methods during site provisioning: Members (3 methods), Guests (2 methods), Devices (2 methods)",
+    ipAddress: "192.168.1.108",
+    severity: "info",
+    status: "success",
+    changes: {
+      members: ["username_password", "otp_rmn", "social_login"],
+      guests: ["otp_rmn", "captive_portal"],
+      devices: ["mac_auth", "wpa2_psk"]
+    }
+  },
+  {
+    id: "audit_auth_004",
+    timestamp: "2024-01-15T11:00:00",
+    userType: "internal",
+    user: "Rahul Mehta",
+    userRole: "Support Engineer",
+    action: "auth_method_disable",
+    category: "Auth Configuration",
+    resource: "Site Auth Config",
+    resourceId: "site_003",
+    siteName: "Nestaway Koramangala",
+    customerName: "Nestaway Technologies",
+    description: "Disabled Social Login authentication method for Guests category due to security review",
+    ipAddress: "192.168.1.110",
+    severity: "warning",
+    status: "success",
+    changes: {
+      category: "guests",
+      disabled: ["social_login"],
+      reason: "Security review"
+    }
+  },
+  {
+    id: "audit_auth_005",
+    timestamp: "2024-01-15T10:15:00",
+    userType: "internal",
+    user: "Anita Desai",
+    userRole: "Super Admin",
+    action: "auth_template_update",
+    category: "Auth Configuration",
+    resource: "Auth Template",
+    resourceId: "auth_tpl_002",
+    siteName: null,
+    customerName: null,
+    description: "Updated 'Hotel Guest Experience' template: Added Room Number Validation for Room Guests",
+    ipAddress: "192.168.1.102",
+    severity: "info",
+    status: "success",
+    changes: {
+      templateName: "Hotel Guest Experience",
+      category: "roomGuests",
+      added: ["room_number_validation"]
+    }
+  },
+  {
+    id: "audit_auth_006",
+    timestamp: "2024-01-15T09:30:00",
+    userType: "customer",
+    user: "Sneha Patel",
+    userRole: "Admin",
+    action: "auth_config_view",
+    category: "Auth Configuration",
+    resource: "Site Auth Config",
+    resourceId: "site_003",
+    siteName: "Nestaway Koramangala",
+    customerName: "Nestaway Technologies",
+    description: "Viewed authentication configuration for site",
+    ipAddress: "10.0.25.30",
+    severity: "info",
+    status: "success",
+  },
+  {
+    id: "audit_auth_007",
+    timestamp: "2024-01-15T08:00:00",
+    userType: "internal",
+    user: "System",
+    userRole: "Automated",
+    action: "auth_config_sync",
+    category: "Auth Configuration",
+    resource: "Auth Templates",
+    resourceId: "sync_batch_001",
+    siteName: null,
+    customerName: null,
+    description: "Synchronized default auth templates to 45 new Enterprise sites",
+    ipAddress: null,
+    severity: "info",
+    status: "success",
+    changes: {
+      templateId: "auth_tpl_001",
+      sitesUpdated: 45
+    }
+  },
+  {
+    id: "audit_auth_008",
+    timestamp: "2024-01-14T16:45:00",
+    userType: "internal",
+    user: "Priya Sharma",
+    userRole: "Support Engineer",
+    action: "auth_config_bulk_update",
+    category: "Auth Configuration",
+    resource: "Multiple Sites",
+    resourceId: "bulk_update_001",
+    siteName: null,
+    customerName: "Zolo Stays",
+    description: "Bulk updated authentication config for 12 Zolo Stays sites: Enabled OTP via RMN for Residents",
+    ipAddress: "192.168.1.105",
+    severity: "info",
+    status: "success",
+    changes: {
+      sitesAffected: 12,
+      category: "residents",
+      enabled: ["otp_rmn"]
+    }
+  },
+  {
+    id: "audit_auth_009",
+    timestamp: "2024-01-14T15:20:00",
+    userType: "internal",
+    user: "Anita Desai",
+    userRole: "Super Admin",
+    action: "auth_template_delete",
+    category: "Auth Configuration",
+    resource: "Auth Template",
+    resourceId: "auth_tpl_old_003",
+    siteName: null,
+    customerName: null,
+    description: "Deleted deprecated authentication template 'Legacy PG Basic' - no sites using this template",
+    ipAddress: "192.168.1.102",
+    severity: "warning",
+    status: "success",
+    changes: {
+      templateName: "Legacy PG Basic",
+      reason: "Deprecated - no active sites"
+    }
+  },
+  {
+    id: "audit_auth_010",
+    timestamp: "2024-01-14T14:00:00",
+    userType: "internal",
+    user: "System",
+    userRole: "Automated",
+    action: "auth_config_validation",
+    category: "Auth Configuration",
+    resource: "Site Auth Config",
+    resourceId: "site_007",
+    siteName: "Stanza Living Bangalore",
+    customerName: "Stanza Living",
+    description: "Auth config validation warning: No authentication methods configured for Guests category",
+    ipAddress: null,
+    severity: "warning",
+    status: "pending",
+    changes: {
+      category: "guests",
+      issue: "No methods configured"
+    }
+  },
 ];
 
 /**
@@ -329,7 +546,7 @@ const AuditLogs = () => {
 
   // Filter options
   const userTypeOptions = ["All", "internal", "customer"];
-  const categoryOptions = ["All", "Authentication", "User Management", "Device Management", "Configuration", "Site Management", "Policy Management", "License Management", "Support", "Monitoring", "System", "Security", "Reports", "Maintenance"];
+  const categoryOptions = ["All", "Authentication", "Auth Configuration", "User Management", "Device Management", "Configuration", "Site Management", "Policy Management", "License Management", "Support", "Monitoring", "System", "Security", "Reports", "Maintenance"];
   const severityOptions = ["All", "info", "warning", "critical"];
   const customerOptions = ["All", ...customers.map(c => c.name)];
   const dateRangeOptions = [
@@ -440,6 +657,22 @@ const AuditLogs = () => {
         return <FaExclamationTriangle />;
       case "report_generate":
         return <FaHistory />;
+      // Auth Configuration actions
+      case "auth_config_update":
+      case "auth_config_provision":
+      case "auth_config_bulk_update":
+      case "auth_config_sync":
+      case "auth_template_update":
+        return <FaKey />;
+      case "auth_template_create":
+        return <FaPlus />;
+      case "auth_template_delete":
+        return <FaTrash />;
+      case "auth_method_disable":
+      case "auth_config_validation":
+        return <FaExclamationTriangle />;
+      case "auth_config_view":
+        return <FaInfoCircle />;
       default:
         return <FaInfoCircle />;
     }

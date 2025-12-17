@@ -360,6 +360,23 @@ export const siteReportData = {
   "topup-history-data": reportGen.generateTopupHistory('2024-01-01', 90, 'data'),
   "topup-history-device": reportGen.generateTopupHistory('2024-01-01', 90, 'device'),
   "topup-history-plan": reportGen.generateTopupHistory('2024-01-01', 90, 'plan'),
+
+  // GUEST ACCESS REPORTS - Site level
+  "guest-access-summary": reportGen.generateGuestAccessSummary('2025-01-01', 31),
+  "guest-activity-log": reportGen.generateGuestActivityLog('2025-01-01', 7),
+  "guest-voucher-report": reportGen.generateGuestVoucherReport('2025-01-01', 31),
+  "guest-type-breakdown": reportGen.generateGuestTypeBreakdown('2025-01', 1),
+  "guest-data-usage": reportGen.generateGuestDataUsage('2025-01-01', 31),
+
+  // COMPANY-LEVEL REPORTS
+  "company-overview-dashboard": reportGen.generateCompanyOverviewDashboard(),
+  "cross-site-usage-comparison": reportGen.generateCrossSiteUsageComparison('2024-01', 6),
+  "consolidated-billing-report": reportGen.generateConsolidatedBillingReport('2024-01', 6),
+  "company-license-utilization": reportGen.generateCompanyLicenseUtilization(),
+  "company-user-distribution": reportGen.generateCompanyUserDistribution('2024-01', 6),
+  "company-alerts-summary": reportGen.generateCompanyAlertsSummary('2024-07-01', 31),
+  "company-guest-overview": reportGen.generateCompanyGuestOverview('2025-01-01', 31),
+  "company-guest-comparison": reportGen.generateCompanyGuestComparison('2025-01', 1),
 };
 
 // ============================================

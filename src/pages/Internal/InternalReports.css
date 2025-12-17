@@ -317,15 +317,37 @@
 }
 
 /* ============================================
-   CATEGORY TABS
+   CATEGORY TABS - Grouped by Section
    ============================================ */
+
+.category-tabs-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  margin-bottom: var(--space-xl);
+}
+
+.category-tabs-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.category-tabs-section .section-label {
+  font-size: var(--font-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-muted);
+  padding-left: var(--space-xs);
+}
 
 .category-tabs {
   display: flex;
   gap: var(--space-sm);
-  margin-bottom: var(--space-xl);
   overflow-x: auto;
   padding-bottom: var(--space-sm);
+  flex-wrap: wrap;
 }
 
 .category-tab {
@@ -370,6 +392,47 @@
 
 .category-tab.active .tab-count {
   background: rgba(255, 255, 255, 0.2);
+}
+
+/* Customer Portal Tabs - Different accent color */
+.category-tab.customer-portal-tab {
+  border-color: var(--color-border-light);
+}
+
+.category-tab.customer-portal-tab:hover {
+  border-color: #059669;
+  color: #047857;
+}
+
+.category-tab.customer-portal-tab.active {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  border-color: #047857;
+  color: white;
+}
+
+/* Customer portal report card indicator */
+.report-card.customer-portal-report .report-icon-wrapper {
+  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+  color: #047857;
+}
+
+.report-card.customer-portal-report::after {
+  content: 'Customer Portal';
+  position: absolute;
+  top: var(--space-sm);
+  right: var(--space-sm);
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  color: white;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+}
+
+.report-card {
+  position: relative;
 }
 
 /* ============================================

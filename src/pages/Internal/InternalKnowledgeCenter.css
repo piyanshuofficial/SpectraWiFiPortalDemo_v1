@@ -273,11 +273,15 @@
 }
 
 .preview-card-category {
+  display: inline-block;
+  background: linear-gradient(135deg, #153874 0%, #204094 100%);
+  color: white;
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-md);
   font-size: var(--font-xs);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--color-accent);
   margin-bottom: var(--space-sm);
 }
 
@@ -756,15 +760,17 @@
 /* Article Modal Header */
 .article-modal-header {
   padding: var(--space-lg) var(--space-xl);
+  padding-right: calc(var(--space-xl) + 50px); /* Space for close button */
   background: linear-gradient(135deg, #153874 0%, #204094 100%);
   color: white;
+  flex-shrink: 0;
 }
 
-.article-modal h2 {
+.article-modal-header h2 {
   font-size: var(--font-xl);
   font-weight: 700;
   color: white;
-  margin: 0 var(--space-4xl) 0 0;
+  margin: 0 0 var(--space-xs) 0;
 }
 
 .article-modal-category {
@@ -777,7 +783,6 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  margin-top: var(--space-sm);
 }
 
 .article-modal-content {

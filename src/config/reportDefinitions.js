@@ -785,6 +785,515 @@ export const REPORT_DEFINITIONS = {
       getRows: (data) => data.map(r => [r.userId, r.topupAmount, r.purchaseDate, r.remaining])
     }
   },
+
+  // ============================================
+  // GUEST ACCESS REPORTS
+  // ============================================
+  "guest-access-summary": {
+    chart: {
+      type: "line",
+      canvasSize: EXPORT_CANVAS_SIZES.line,
+      getData: (data) => ({
+        labels: data.map(d => d.date),
+        datasets: [
+          {
+            label: "Total Guests",
+            data: data.map(d => d.totalGuests),
+            borderColor: "#2150a2",
+            backgroundColor: "rgba(33, 80, 162, 0.1)",
+            fill: false,
+            tension: 0.3
+          },
+          {
+            label: "Active Guests",
+            data: data.map(d => d.activeGuests),
+            borderColor: "#5cb85c",
+            backgroundColor: "rgba(92, 184, 92, 0.1)",
+            fill: false,
+            tension: 0.3
+          }
+        ]
+      }),
+      getOptions: (reportName) => getStandardChartOptions({
+        type: "line",
+        title: reportName,
+        xLabel: "Date",
+        yLabel: "Guests",
+        darkMode: false,
+        forExport: true
+      })
+    },
+    table: {
+      columns: ["Date", "Total Guests", "Active Guests", "Checked In", "Checked Out", "Data Used"],
+      getRows: (data) => data.map(r => [r.date, r.totalGuests, r.activeGuests, r.checkedIn, r.checkedOut, r.dataUsed])
+    },
+    csv: {
+      headers: ["Date", "Total Guests", "Active Guests", "Checked In", "Checked Out", "Data Used"],
+      getRows: (data) => data.map(r => [r.date, r.totalGuests, r.activeGuests, r.checkedIn, r.checkedOut, r.dataUsed])
+    }
+  },
+
+  "guest-activity-log": {
+    table: {
+      columns: ["Timestamp", "Guest Name", "Action", "Performed By", "Details"],
+      getRows: (data) => data.map(r => [r.timestamp, r.guestName, r.action, r.performedBy, r.details])
+    },
+    csv: {
+      headers: ["Timestamp", "Guest Name", "Action", "Performed By", "Details"],
+      getRows: (data) => data.map(r => [r.timestamp, r.guestName, r.action, r.performedBy, r.details])
+    }
+  },
+
+  "guest-voucher-report": {
+    chart: {
+      type: "pie",
+      canvasSize: EXPORT_CANVAS_SIZES.pie,
+      getData: (data) => {
+        const statusCount = { Active: 0, Redeemed: 0, Expired: 0 };
+        data.forEach(item => {
+          if (statusCount[item.status] !== undefined) {
+            statusCount[item.status]++;
+          }
+        });
+        return {
+          labels: Object.keys(statusCount),
+          datasets: [{
+            data: Object.values(statusCount),
+            backgroundColor: ["#5cb85c", "#2150a2", "#d9534f"]
+          }]
+        };
+      },
+      getOptions: (reportName) => getStandardChartOptions({
+        type: "pie",
+        title: reportName,
+        darkMode: false,
+        forExport: true
+      })
+    },
+    table: {
+      columns: ["Voucher Code", "Status", "Guest Type", "Created By", "Redeemed By", "Validity (hrs)", "Created Date"],
+      getRows: (data) => data.map(r => [r.voucherCode, r.status, r.guestType, r.createdBy, r.redeemedBy, r.validityHours, r.createdDate])
+    },
+    csv: {
+      headers: ["Voucher Code", "Status", "Guest Type", "Created By", "Redeemed By", "Validity (hrs)", "Created Date"],
+      getRows: (data) => data.map(r => [r.voucherCode, r.status, r.guestType, r.createdBy, r.redeemedBy, r.validityHours, r.createdDate])
+    }
+  },
+
+  "guest-type-breakdown": {
+    chart: {
+      type: "pie",
+      canvasSize: EXPORT_CANVAS_SIZES.pie,
+      getData: (data) => ({
+        labels: data.map(d => d.guestType),
+        datasets: [{
+          data: data.map(d => d.count),
+          backgroundColor: ["#2150a2", "#3f51b5", "#7986cb", "#c5cae9", "#e8eaf6"]
+        }]
+      }),
+      getOptions: (reportName) => getStandardChartOptions({
+        type: "pie",
+        title: reportName,
+        darkMode: false,
+        forExport: true
+      })
+    },
+    table: {
+      columns: ["Month", "Guest Type", "Count", "Percentage", "Avg Duration", "Data Used"],
+      getRows: (data) => data.map(r => [r.month, r.guestType, r.count, r.percentage, r.avgDuration, r.dataUsed])
+    },
+    csv: {
+      headers: ["Month", "Guest Type", "Count", "Percentage", "Avg Duration", "Data Used"],
+      getRows: (data) => data.map(r => [r.month, r.guestType, r.count, r.percentage, r.avgDuration, r.dataUsed])
+    }
+  },
+
+  "guest-data-usage": {
+    chart: {
+      type: "bar",
+      canvasSize: EXPORT_CANVAS_SIZES.bar,
+      getData: (data) => {
+        // Aggregate by guest type
+        const typeMap = {};
+        data.forEach(item => {
+          const usage = parseFloat(item.dataUsed);
+          if (!typeMap[item.guestType]) {
+            typeMap[item.guestType] = 0;
+          }
+          typeMap[item.guestType] += usage;
+        });
+        return {
+          labels: Object.keys(typeMap),
+          datasets: [{
+            label: "Data Usage (GB)",
+            data: Object.values(typeMap).map(v => v.toFixed(2)),
+            backgroundColor: "rgba(33, 80, 162, 0.6)"
+          }]
+        };
+      },
+      getOptions: (reportName) => getStandardChartOptions({
+        type: "bar",
+        title: reportName,
+        xLabel: "Guest Type",
+        yLabel: "Data Usage (GB)",
+        darkMode: false,
+        forExport: true
+      })
+    },
+    table: {
+      columns: ["Guest ID", "Guest Name", "Guest Type", "Date", "Data Used", "Sessions", "Avg Session"],
+      getRows: (data) => data.map(r => [r.guestId, r.guestName, r.guestType, r.date, r.dataUsed, r.sessions, r.avgSession])
+    },
+    csv: {
+      headers: ["Guest ID", "Guest Name", "Guest Type", "Date", "Data Used", "Sessions", "Avg Session"],
+      getRows: (data) => data.map(r => [r.guestId, r.guestName, r.guestType, r.date, r.dataUsed, r.sessions, r.avgSession])
+    }
+  },
+
+  // ============================================
+  // COMPANY-LEVEL REPORTS
+  // ============================================
+  "company-overview-dashboard": {
+    chart: {
+      type: "bar",
+      canvasSize: EXPORT_CANVAS_SIZES.bar,
+      getData: (data) => {
+        const sites = data.sites || [];
+        return {
+          labels: sites.map(s => s.siteName),
+          datasets: [{
+            label: "Users",
+            data: sites.map(s => s.users),
+            backgroundColor: "rgba(33, 80, 162, 0.6)"
+          }]
+        };
+      },
+      getOptions: (reportName) => getStandardChartOptions({
+        type: "bar",
+        title: reportName,
+        xLabel: "Site",
+        yLabel: "Users",
+        darkMode: false,
+        forExport: true
+      })
+    },
+    table: {
+      columns: ["Site Name", "Site ID", "Users", "Devices", "Bandwidth"],
+      getRows: (data) => {
+        const sites = data.sites || [];
+        return sites.map(r => [r.siteName, r.siteId, r.users, r.devices, r.bandwidth]);
+      }
+    },
+    csv: {
+      headers: ["Site Name", "Site ID", "Users", "Devices", "Bandwidth"],
+      getRows: (data) => {
+        const sites = data.sites || [];
+        return sites.map(r => [r.siteName, r.siteId, r.users, r.devices, r.bandwidth]);
+      }
+    }
+  },
+
+  "cross-site-usage-comparison": {
+    chart: {
+      type: "bar",
+      canvasSize: EXPORT_CANVAS_SIZES.bar,
+      getData: (data) => {
+        const latestMonth = [...new Set(data.map(d => d.month))].sort().pop();
+        const latestData = data.filter(d => d.month === latestMonth);
+        return {
+          labels: latestData.map(d => d.siteName),
+          datasets: [{
+            label: "Total Users",
+            data: latestData.map(d => d.totalUsers),
+            backgroundColor: "rgba(33, 80, 162, 0.6)"
+          }]
+        };
+      },
+      getOptions: (reportName) => getStandardChartOptions({
+        type: "bar",
+        title: reportName,
+        xLabel: "Site",
+        yLabel: "Users",
+        darkMode: false,
+        forExport: true
+      })
+    },
+    table: {
+      columns: ["Month", "Site Name", "Total Users", "Avg Bandwidth", "Data Usage"],
+      getRows: (data) => data.map(r => [r.month, r.siteName, r.totalUsers, r.avgBandwidth, r.dataUsage])
+    },
+    csv: {
+      headers: ["Month", "Site Name", "Total Users", "Avg Bandwidth", "Data Usage"],
+      getRows: (data) => data.map(r => [r.month, r.siteName, r.totalUsers, r.avgBandwidth, r.dataUsage])
+    }
+  },
+
+  "consolidated-billing-report": {
+    chart: {
+      type: "bar",
+      canvasSize: EXPORT_CANVAS_SIZES.bar,
+      getData: (data) => {
+        const latestMonth = [...new Set(data.map(d => d.month))].sort().pop();
+        const latestData = data.filter(d => d.month === latestMonth);
+        return {
+          labels: latestData.map(d => d.siteName),
+          datasets: [{
+            label: "Active Users",
+            data: latestData.map(d => d.activeUsers),
+            backgroundColor: "rgba(33, 80, 162, 0.6)"
+          }]
+        };
+      },
+      getOptions: (reportName) => getStandardChartOptions({
+        type: "bar",
+        title: reportName,
+        xLabel: "Site",
+        yLabel: "Active Users",
+        darkMode: false,
+        forExport: true
+      })
+    },
+    table: {
+      columns: ["Month", "Site Name", "Active Users", "Billed Amount", "Due Date"],
+      getRows: (data) => data.map(r => [r.month, r.siteName, r.activeUsers, r.billedAmount, r.dueDate])
+    },
+    csv: {
+      headers: ["Month", "Site Name", "Active Users", "Billed Amount", "Due Date"],
+      getRows: (data) => data.map(r => [r.month, r.siteName, r.activeUsers, r.billedAmount, r.dueDate])
+    }
+  },
+
+  "company-license-utilization": {
+    chart: {
+      type: "bar",
+      canvasSize: EXPORT_CANVAS_SIZES.bar,
+      getData: (data) => ({
+        labels: data.map(d => d.siteName),
+        datasets: [
+          {
+            label: "Used Licenses",
+            data: data.map(d => d.usedLicenses),
+            backgroundColor: "rgba(33, 80, 162, 0.6)"
+          },
+          {
+            label: "Available Licenses",
+            data: data.map(d => d.availableLicenses),
+            backgroundColor: "rgba(149, 165, 166, 0.6)"
+          }
+        ]
+      }),
+      getOptions: (reportName) => {
+        const baseOptions = getStandardChartOptions({
+          type: "bar",
+          title: reportName,
+          xLabel: "Site",
+          yLabel: "Licenses",
+          darkMode: false,
+          forExport: true
+        });
+        return {
+          ...baseOptions,
+          scales: {
+            ...baseOptions.scales,
+            x: { ...baseOptions.scales.x, stacked: true },
+            y: { ...baseOptions.scales.y, stacked: true }
+          }
+        };
+      }
+    },
+    table: {
+      columns: ["Site Name", "Allocated Licenses", "Used Licenses", "Available Licenses", "Utilization Rate"],
+      getRows: (data) => data.map(r => [r.siteName, r.allocatedLicenses, r.usedLicenses, r.availableLicenses, r.utilizationRate])
+    },
+    csv: {
+      headers: ["Site Name", "Allocated Licenses", "Used Licenses", "Available Licenses", "Utilization Rate"],
+      getRows: (data) => data.map(r => [r.siteName, r.allocatedLicenses, r.usedLicenses, r.availableLicenses, r.utilizationRate])
+    }
+  },
+
+  "company-user-distribution": {
+    chart: {
+      type: "bar",
+      canvasSize: EXPORT_CANVAS_SIZES.bar,
+      getData: (data) => {
+        const latestMonth = [...new Set(data.map(d => d.month))].sort().pop();
+        const latestData = data.filter(d => d.month === latestMonth);
+        return {
+          labels: latestData.map(d => d.siteName),
+          datasets: [
+            {
+              label: "Active Users",
+              data: latestData.map(d => d.activeUsers),
+              backgroundColor: "rgba(92, 184, 92, 0.6)"
+            },
+            {
+              label: "Suspended Users",
+              data: latestData.map(d => d.suspendedUsers),
+              backgroundColor: "rgba(217, 83, 79, 0.6)"
+            },
+            {
+              label: "New Users",
+              data: latestData.map(d => d.newUsers),
+              backgroundColor: "rgba(33, 80, 162, 0.6)"
+            }
+          ]
+        };
+      },
+      getOptions: (reportName) => getStandardChartOptions({
+        type: "bar",
+        title: reportName,
+        xLabel: "Site",
+        yLabel: "Users",
+        darkMode: false,
+        forExport: true
+      })
+    },
+    table: {
+      columns: ["Month", "Site Name", "Active Users", "Suspended Users", "New Users"],
+      getRows: (data) => data.map(r => [r.month, r.siteName, r.activeUsers, r.suspendedUsers, r.newUsers])
+    },
+    csv: {
+      headers: ["Month", "Site Name", "Active Users", "Suspended Users", "New Users"],
+      getRows: (data) => data.map(r => [r.month, r.siteName, r.activeUsers, r.suspendedUsers, r.newUsers])
+    }
+  },
+
+  "company-alerts-summary": {
+    chart: {
+      type: "bar",
+      canvasSize: EXPORT_CANVAS_SIZES.bar,
+      getData: (data) => {
+        // Aggregate by site
+        const siteMap = {};
+        data.forEach(item => {
+          if (!siteMap[item.siteName]) {
+            siteMap[item.siteName] = { critical: 0, warning: 0, resolved: 0 };
+          }
+          siteMap[item.siteName].critical += item.criticalAlerts;
+          siteMap[item.siteName].warning += item.warningAlerts;
+          siteMap[item.siteName].resolved += item.resolvedAlerts;
+        });
+        const sites = Object.keys(siteMap);
+        return {
+          labels: sites,
+          datasets: [
+            {
+              label: "Critical",
+              data: sites.map(s => siteMap[s].critical),
+              backgroundColor: "rgba(217, 83, 79, 0.6)"
+            },
+            {
+              label: "Warning",
+              data: sites.map(s => siteMap[s].warning),
+              backgroundColor: "rgba(255, 152, 0, 0.6)"
+            },
+            {
+              label: "Resolved",
+              data: sites.map(s => siteMap[s].resolved),
+              backgroundColor: "rgba(92, 184, 92, 0.6)"
+            }
+          ]
+        };
+      },
+      getOptions: (reportName) => getStandardChartOptions({
+        type: "bar",
+        title: reportName,
+        xLabel: "Site",
+        yLabel: "Alert Count",
+        darkMode: false,
+        forExport: true
+      })
+    },
+    table: {
+      columns: ["Date", "Site Name", "Critical Alerts", "Warning Alerts", "Resolved Alerts"],
+      getRows: (data) => data.map(r => [r.date, r.siteName, r.criticalAlerts, r.warningAlerts, r.resolvedAlerts])
+    },
+    csv: {
+      headers: ["Date", "Site Name", "Critical Alerts", "Warning Alerts", "Resolved Alerts"],
+      getRows: (data) => data.map(r => [r.date, r.siteName, r.criticalAlerts, r.warningAlerts, r.resolvedAlerts])
+    }
+  },
+
+  "company-guest-overview": {
+    chart: {
+      type: "bar",
+      canvasSize: EXPORT_CANVAS_SIZES.bar,
+      getData: (data) => {
+        // Aggregate by site
+        const siteMap = {};
+        data.forEach(item => {
+          if (!siteMap[item.siteName]) {
+            siteMap[item.siteName] = { total: 0, active: 0 };
+          }
+          siteMap[item.siteName].total += item.totalGuests;
+          siteMap[item.siteName].active += item.activeGuests;
+        });
+        const sites = Object.keys(siteMap);
+        return {
+          labels: sites,
+          datasets: [
+            {
+              label: "Total Guests",
+              data: sites.map(s => siteMap[s].total),
+              backgroundColor: "rgba(33, 80, 162, 0.6)"
+            },
+            {
+              label: "Active Guests",
+              data: sites.map(s => siteMap[s].active),
+              backgroundColor: "rgba(92, 184, 92, 0.6)"
+            }
+          ]
+        };
+      },
+      getOptions: (reportName) => getStandardChartOptions({
+        type: "bar",
+        title: reportName,
+        xLabel: "Site",
+        yLabel: "Guests",
+        darkMode: false,
+        forExport: true
+      })
+    },
+    table: {
+      columns: ["Date", "Site Name", "Total Guests", "Active Guests", "Checked In Today", "Data Used"],
+      getRows: (data) => data.map(r => [r.date, r.siteName, r.totalGuests, r.activeGuests, r.checkedInToday, r.dataUsed])
+    },
+    csv: {
+      headers: ["Date", "Site Name", "Total Guests", "Active Guests", "Checked In Today", "Data Used"],
+      getRows: (data) => data.map(r => [r.date, r.siteName, r.totalGuests, r.activeGuests, r.checkedInToday, r.dataUsed])
+    }
+  },
+
+  "company-guest-comparison": {
+    chart: {
+      type: "bar",
+      canvasSize: EXPORT_CANVAS_SIZES.bar,
+      getData: (data) => ({
+        labels: data.map(d => d.siteName),
+        datasets: [{
+          label: "Guests This Month",
+          data: data.map(d => d.guestsThisMonth),
+          backgroundColor: "rgba(33, 80, 162, 0.6)"
+        }]
+      }),
+      getOptions: (reportName) => getStandardChartOptions({
+        type: "bar",
+        title: reportName,
+        xLabel: "Site",
+        yLabel: "Guest Count",
+        darkMode: false,
+        forExport: true
+      })
+    },
+    table: {
+      columns: ["Month", "Site Name", "Guests This Month", "Avg Duration", "Peak Day", "Top Guest Type"],
+      getRows: (data) => data.map(r => [r.month, r.siteName, r.guestsThisMonth, r.avgDuration, r.peakDay, r.topGuestType])
+    },
+    csv: {
+      headers: ["Month", "Site Name", "Guests This Month", "Avg Duration", "Peak Day", "Top Guest Type"],
+      getRows: (data) => data.map(r => [r.month, r.siteName, r.guestsThisMonth, r.avgDuration, r.peakDay, r.topGuestType])
+    }
+  },
 };
 
 /**

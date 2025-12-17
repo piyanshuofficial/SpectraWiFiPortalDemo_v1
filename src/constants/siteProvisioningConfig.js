@@ -496,93 +496,243 @@ export const GST_RATE = 0.18; // 18%
 
 // ============================================
 // AUTHENTICATION METHODS - MASTER LIST
+// Each method can have requiresConfig: true and configFields for additional setup
 // ============================================
 export const AUTH_METHODS = {
   username_password: {
     id: 'username_password',
     label: 'Username-Password',
-    description: 'Standard credentials login'
+    description: 'Standard credentials login',
+    requiresConfig: true,
+    configFields: [
+      { id: 'minPasswordLength', label: 'Minimum Password Length', type: 'number', default: 8, min: 6, max: 32 },
+      { id: 'requireSpecialChars', label: 'Require Special Characters', type: 'checkbox', default: true },
+      { id: 'passwordExpiry', label: 'Password Expiry (days)', type: 'number', default: 90, min: 0, max: 365, hint: '0 = never expires' },
+      { id: 'maxLoginAttempts', label: 'Max Login Attempts', type: 'number', default: 5, min: 3, max: 10 }
+    ]
   },
   employee_id_password: {
     id: 'employee_id_password',
     label: 'Employee ID-Password',
-    description: 'Employee ID with password authentication'
+    description: 'Employee ID with password authentication',
+    requiresConfig: true,
+    configFields: [
+      { id: 'idPattern', label: 'Employee ID Pattern', type: 'text', default: '', placeholder: 'e.g., EMP-[0-9]{6}' },
+      { id: 'minPasswordLength', label: 'Minimum Password Length', type: 'number', default: 8, min: 6, max: 32 },
+      { id: 'syncWithHRMS', label: 'Sync with HRMS', type: 'checkbox', default: false }
+    ]
   },
   member_id_password: {
     id: 'member_id_password',
     label: 'Member ID-Password',
-    description: 'Member ID with password authentication'
+    description: 'Member ID with password authentication',
+    requiresConfig: true,
+    configFields: [
+      { id: 'idPattern', label: 'Member ID Pattern', type: 'text', default: '', placeholder: 'e.g., MEM-[0-9]{6}' },
+      { id: 'minPasswordLength', label: 'Minimum Password Length', type: 'number', default: 8, min: 6, max: 32 }
+    ]
   },
   lastname_roomnumber: {
     id: 'lastname_roomnumber',
     label: 'Last Name-Room Number',
-    description: 'Hotel-specific authentication (last name + room number)'
+    description: 'Hotel-specific authentication (last name + room number)',
+    requiresConfig: true,
+    configFields: [
+      { id: 'pmsIntegration', label: 'PMS Integration', type: 'select', options: ['None', 'Opera', 'Protel', 'Fidelio', 'Custom API'], default: 'None' },
+      { id: 'pmsApiUrl', label: 'PMS API URL', type: 'text', default: '', showIf: 'pmsIntegration:Custom API' },
+      { id: 'caseSensitive', label: 'Case Sensitive Last Name', type: 'checkbox', default: false },
+      { id: 'autoLogoutOnCheckout', label: 'Auto Logout on Checkout', type: 'checkbox', default: true }
+    ]
   },
   otp_rmn: {
     id: 'otp_rmn',
     label: 'OTP on Registered Mobile',
-    description: 'OTP sent to pre-registered mobile number'
+    description: 'OTP sent to pre-registered mobile number',
+    requiresConfig: true,
+    configFields: [
+      { id: 'otpLength', label: 'OTP Length', type: 'select', options: ['4', '6'], default: '6' },
+      { id: 'otpExpiry', label: 'OTP Validity (seconds)', type: 'number', default: 300, min: 60, max: 600 },
+      { id: 'maxAttempts', label: 'Max OTP Attempts', type: 'number', default: 3, min: 1, max: 5 },
+      { id: 'smsGateway', label: 'SMS Gateway', type: 'select', options: ['Default', 'MSG91', 'Twilio', 'Custom'], default: 'Default' },
+      { id: 'resendCooldown', label: 'Resend Cooldown (seconds)', type: 'number', default: 30, min: 15, max: 120 }
+    ]
   },
   otp_mn: {
     id: 'otp_mn',
     label: 'OTP on Mobile Number',
-    description: 'OTP sent to any provided mobile number'
+    description: 'OTP sent to any provided mobile number',
+    requiresConfig: true,
+    configFields: [
+      { id: 'otpLength', label: 'OTP Length', type: 'select', options: ['4', '6'], default: '6' },
+      { id: 'otpExpiry', label: 'OTP Validity (seconds)', type: 'number', default: 300, min: 60, max: 600 },
+      { id: 'maxAttempts', label: 'Max OTP Attempts', type: 'number', default: 3, min: 1, max: 5 },
+      { id: 'smsGateway', label: 'SMS Gateway', type: 'select', options: ['Default', 'MSG91', 'Twilio', 'Custom'], default: 'Default' },
+      { id: 'allowInternational', label: 'Allow International Numbers', type: 'checkbox', default: false },
+      { id: 'sessionDuration', label: 'Session Duration (hours)', type: 'number', default: 24, min: 1, max: 720 }
+    ]
   },
   adfs_sso: {
     id: 'adfs_sso',
     label: 'ADFS SSO',
-    description: 'Active Directory Federation Services single sign-on'
+    description: 'Active Directory Federation Services single sign-on',
+    requiresConfig: true,
+    configFields: [
+      { id: 'adfsServerUrl', label: 'ADFS Server URL', type: 'text', required: true, placeholder: 'https://adfs.company.com' },
+      { id: 'relyingPartyId', label: 'Relying Party Identifier', type: 'text', required: true },
+      { id: 'certificateThumbprint', label: 'Certificate Thumbprint', type: 'text', required: true },
+      { id: 'claimMapping', label: 'User Claim Attribute', type: 'text', default: 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress' },
+      { id: 'allowedGroups', label: 'Allowed AD Groups (comma-separated)', type: 'text', default: '' }
+    ]
   },
   digital_certificate: {
     id: 'digital_certificate',
     label: 'Digital Certificate',
-    description: 'Certificate-based authentication'
+    description: 'Certificate-based authentication (802.1X EAP-TLS)',
+    requiresConfig: true,
+    configFields: [
+      { id: 'radiusServer', label: 'RADIUS Server IP', type: 'text', required: true, placeholder: '192.168.1.100' },
+      { id: 'radiusPort', label: 'RADIUS Port', type: 'number', default: 1812, min: 1, max: 65535 },
+      { id: 'radiusSecret', label: 'RADIUS Shared Secret', type: 'password', required: true },
+      { id: 'caChain', label: 'CA Certificate Chain', type: 'file', accept: '.pem,.crt,.cer' },
+      { id: 'crlCheck', label: 'Check Certificate Revocation', type: 'checkbox', default: true }
+    ]
   },
   wpa2_psk: {
     id: 'wpa2_psk',
     label: 'WPA2-PSK',
-    description: 'Pre-shared key (can be combined with other methods)'
+    description: 'Pre-shared key (can be combined with other methods)',
+    requiresConfig: true,
+    configFields: [
+      { id: 'pskRotation', label: 'PSK Rotation Period', type: 'select', options: ['Never', 'Weekly', 'Monthly', 'Quarterly'], default: 'Never' },
+      { id: 'minPskLength', label: 'Minimum PSK Length', type: 'number', default: 8, min: 8, max: 63 },
+      { id: 'notifyOnChange', label: 'Notify Users on PSK Change', type: 'checkbox', default: true }
+    ]
   },
   mac_auth: {
     id: 'mac_auth',
     label: 'MAC Authorization',
-    description: 'Device MAC address whitelist authentication'
+    description: 'Device MAC address whitelist authentication',
+    requiresConfig: true,
+    configFields: [
+      { id: 'autoApprove', label: 'Auto-approve New Devices', type: 'checkbox', default: false },
+      { id: 'requireApproval', label: 'Require Admin Approval', type: 'checkbox', default: true },
+      { id: 'maxDevicesPerUser', label: 'Max Devices per User', type: 'number', default: 3, min: 1, max: 10 },
+      { id: 'macFormat', label: 'MAC Address Format', type: 'select', options: ['XX:XX:XX:XX:XX:XX', 'XX-XX-XX-XX-XX-XX', 'XXXXXXXXXXXX'], default: 'XX:XX:XX:XX:XX:XX' }
+    ]
   },
   event_code: {
     id: 'event_code',
     label: 'Event Code',
-    description: 'Shared code for events/conferences'
+    description: 'Shared code for events/conferences',
+    requiresConfig: true,
+    configFields: [
+      { id: 'codeLength', label: 'Code Length', type: 'number', default: 6, min: 4, max: 12 },
+      { id: 'codeType', label: 'Code Type', type: 'select', options: ['Alphanumeric', 'Numeric Only', 'Custom'], default: 'Alphanumeric' },
+      { id: 'validityPeriod', label: 'Default Validity (hours)', type: 'number', default: 8, min: 1, max: 72 },
+      { id: 'maxUsersPerCode', label: 'Max Users per Code', type: 'number', default: 100, min: 1, max: 1000 }
+    ]
   },
   coupon_voucher: {
     id: 'coupon_voucher',
     label: 'Coupon/Voucher',
-    description: 'Pre-generated access vouchers'
+    description: 'Pre-generated access vouchers',
+    requiresConfig: true,
+    configFields: [
+      { id: 'voucherFormat', label: 'Voucher Format', type: 'select', options: ['8-char Alphanumeric', '12-char Alphanumeric', '16-char Alphanumeric', 'Custom'], default: '8-char Alphanumeric' },
+      { id: 'validityType', label: 'Validity Type', type: 'select', options: ['Fixed Duration', 'Fixed End Date', 'First Use + Duration'], default: 'Fixed Duration' },
+      { id: 'defaultValidity', label: 'Default Validity (hours)', type: 'number', default: 24, min: 1, max: 720 },
+      { id: 'singleUse', label: 'Single Use Only', type: 'checkbox', default: true },
+      { id: 'printTemplate', label: 'Print Template', type: 'select', options: ['Standard', 'Compact', 'QR Code', 'Custom'], default: 'Standard' }
+    ]
   },
   passkey_login: {
     id: 'passkey_login',
     label: 'Passkey through Login Page',
-    description: 'Passkey entry via captive portal'
+    description: 'Passkey entry via captive portal',
+    requiresConfig: true,
+    configFields: [
+      { id: 'passkeyLength', label: 'Passkey Length', type: 'number', default: 8, min: 4, max: 16 },
+      { id: 'rotationPeriod', label: 'Rotation Period', type: 'select', options: ['Daily', 'Weekly', 'Monthly', 'Manual'], default: 'Weekly' },
+      { id: 'displayOnPortal', label: 'Display on Captive Portal', type: 'checkbox', default: false },
+      { id: 'requireAcceptTerms', label: 'Require Terms Acceptance', type: 'checkbox', default: true }
+    ]
   },
   otp_auth_key: {
     id: 'otp_auth_key',
     label: 'OTP + Auth Key',
-    description: 'Combination of OTP and authorization key'
+    description: 'Combination of OTP and authorization key',
+    requiresConfig: true,
+    configFields: [
+      { id: 'otpLength', label: 'OTP Length', type: 'select', options: ['4', '6'], default: '6' },
+      { id: 'authKeyLength', label: 'Auth Key Length', type: 'number', default: 8, min: 4, max: 16 },
+      { id: 'otpExpiry', label: 'OTP Validity (seconds)', type: 'number', default: 300, min: 60, max: 600 },
+      { id: 'keyRotation', label: 'Key Rotation', type: 'select', options: ['Never', 'Daily', 'Weekly'], default: 'Never' }
+    ]
   },
   sponsored_employee: {
     id: 'sponsored_employee',
     label: 'Sponsored Access (Employee)',
-    description: 'Employee sponsors a visitor for access'
+    description: 'Employee sponsors a visitor for access',
+    requiresConfig: true,
+    configFields: [
+      { id: 'maxGuestsPerSponsor', label: 'Max Guests per Sponsor', type: 'number', default: 5, min: 1, max: 20 },
+      { id: 'maxGuestDuration', label: 'Max Guest Duration (hours)', type: 'number', default: 8, min: 1, max: 24 },
+      { id: 'requireApproval', label: 'Require Manager Approval', type: 'checkbox', default: false },
+      { id: 'notifySponsor', label: 'Notify Sponsor on Guest Activity', type: 'checkbox', default: true },
+      { id: 'collectVisitorDetails', label: 'Collect Visitor Details', type: 'checkbox', default: true }
+    ]
   },
   sponsored_authority: {
     id: 'sponsored_authority',
     label: 'Sponsored Access (Fixed Authority)',
-    description: 'Designated approver sponsors visitors for access'
+    description: 'Designated approver sponsors visitors for access',
+    requiresConfig: true,
+    configFields: [
+      { id: 'approverEmails', label: 'Approver Email(s)', type: 'text', required: true, placeholder: 'approver1@company.com, approver2@company.com' },
+      { id: 'maxGuestsPerApprover', label: 'Max Guests per Approver', type: 'number', default: 20, min: 1, max: 100 },
+      { id: 'approvalExpiry', label: 'Approval Request Expiry (hours)', type: 'number', default: 24, min: 1, max: 72 },
+      { id: 'autoApproveKnownVisitors', label: 'Auto-approve Known Visitors', type: 'checkbox', default: false }
+    ]
   },
   voucher_auto_account: {
     id: 'voucher_auto_account',
     label: 'Voucher-based Auto Account',
-    description: 'Voucher automatically creates user account'
+    description: 'Voucher automatically creates user account',
+    requiresConfig: true,
+    configFields: [
+      { id: 'accountPrefix', label: 'Account Username Prefix', type: 'text', default: 'GUEST_', placeholder: 'e.g., GUEST_' },
+      { id: 'voucherValidity', label: 'Voucher Validity (days)', type: 'number', default: 30, min: 1, max: 365 },
+      { id: 'accountValidity', label: 'Account Validity (days)', type: 'number', default: 30, min: 1, max: 365 },
+      { id: 'autoDeleteExpired', label: 'Auto-delete Expired Accounts', type: 'checkbox', default: true }
+    ]
   }
+};
+
+/**
+ * Get configuration fields for a specific auth method
+ * @param {string} methodId - Auth method ID
+ * @returns {Array|null} - Array of config fields or null if no config required
+ */
+export const getAuthMethodConfigFields = (methodId) => {
+  const method = AUTH_METHODS[methodId];
+  if (!method || !method.requiresConfig) return null;
+  return method.configFields || [];
+};
+
+/**
+ * Get default configuration values for a specific auth method
+ * @param {string} methodId - Auth method ID
+ * @returns {Object} - Default config values
+ */
+export const getAuthMethodDefaultConfig = (methodId) => {
+  const fields = getAuthMethodConfigFields(methodId);
+  if (!fields) return {};
+
+  const defaults = {};
+  fields.forEach(field => {
+    defaults[field.id] = field.default !== undefined ? field.default : '';
+  });
+  return defaults;
 };
 
 // ============================================
@@ -592,11 +742,13 @@ export const AUTH_METHODS = {
 export const SEGMENT_AUTH_CONFIG = {
   enterprise: {
     label: 'Enterprise',
+    primaryCategory: 'users', // Primary user type that requires at least one auth method
     categories: {
       users: {
         id: 'users',
         label: 'Users (Employees)',
         description: 'Regular employees and staff members',
+        isPrimary: true,
         availableMethods: ['username_password', 'employee_id_password', 'adfs_sso', 'digital_certificate', 'wpa2_psk', 'otp_rmn', 'mac_auth'],
         defaultMethods: ['username_password', 'wpa2_psk']
       },
@@ -604,6 +756,7 @@ export const SEGMENT_AUTH_CONFIG = {
         id: 'conferenceRooms',
         label: 'Training/Conference Rooms',
         description: 'Meeting and training room WiFi access',
+        isPrimary: false,
         availableMethods: ['event_code', 'otp_mn', 'passkey_login', 'coupon_voucher', 'wpa2_psk', 'otp_auth_key'],
         defaultMethods: ['event_code', 'wpa2_psk']
       },
@@ -611,6 +764,7 @@ export const SEGMENT_AUTH_CONFIG = {
         id: 'guests',
         label: 'Guests/Visitors',
         description: 'External visitors and guests',
+        isPrimary: false,
         availableMethods: ['username_password', 'otp_mn', 'otp_rmn', 'wpa2_psk', 'otp_auth_key', 'sponsored_employee', 'sponsored_authority', 'coupon_voucher', 'event_code', 'passkey_login'],
         defaultMethods: ['otp_mn', 'sponsored_employee']
       }
@@ -618,11 +772,13 @@ export const SEGMENT_AUTH_CONFIG = {
   },
   office: {
     label: 'Office',
+    primaryCategory: 'users',
     categories: {
       users: {
         id: 'users',
         label: 'Users',
         description: 'Office staff and employees',
+        isPrimary: true,
         availableMethods: ['username_password', 'otp_rmn', 'wpa2_psk'],
         defaultMethods: ['username_password']
       },
@@ -630,6 +786,7 @@ export const SEGMENT_AUTH_CONFIG = {
         id: 'conferenceRooms',
         label: 'Training/Conference Rooms',
         description: 'Meeting and training room WiFi access',
+        isPrimary: false,
         availableMethods: ['event_code', 'otp_mn', 'passkey_login', 'coupon_voucher', 'wpa2_psk', 'otp_auth_key'],
         defaultMethods: ['event_code', 'wpa2_psk']
       },
@@ -637,6 +794,7 @@ export const SEGMENT_AUTH_CONFIG = {
         id: 'guests',
         label: 'Guests/Visitors',
         description: 'External visitors',
+        isPrimary: false,
         availableMethods: ['otp_mn', 'wpa2_psk'],
         defaultMethods: ['otp_mn']
       }
@@ -644,11 +802,13 @@ export const SEGMENT_AUTH_CONFIG = {
   },
   hotel: {
     label: 'Hotel',
+    primaryCategory: 'roomGuests',
     categories: {
       roomGuests: {
         id: 'roomGuests',
         label: 'Room Guests',
         description: 'Staying guests with room bookings',
+        isPrimary: true,
         availableMethods: ['lastname_roomnumber', 'username_password', 'coupon_voucher', 'wpa2_psk'],
         defaultMethods: ['lastname_roomnumber', 'wpa2_psk']
       },
@@ -656,6 +816,7 @@ export const SEGMENT_AUTH_CONFIG = {
         id: 'staff',
         label: 'Staff/Back-office',
         description: 'Hotel staff and back-office users',
+        isPrimary: false,
         availableMethods: ['username_password', 'wpa2_psk', 'otp_rmn', 'adfs_sso', 'digital_certificate'],
         defaultMethods: ['username_password', 'wpa2_psk']
       },
@@ -663,6 +824,7 @@ export const SEGMENT_AUTH_CONFIG = {
         id: 'devices',
         label: 'Devices (TV/Media & IoT)',
         description: 'Smart TVs, media devices, and IoT devices',
+        isPrimary: false,
         availableMethods: ['mac_auth', 'wpa2_psk'],
         defaultMethods: ['mac_auth', 'wpa2_psk']
       },
@@ -670,6 +832,7 @@ export const SEGMENT_AUTH_CONFIG = {
         id: 'guests',
         label: 'Guests/Visitors',
         description: 'Non-staying visitors, restaurant, event, and conference users',
+        isPrimary: false,
         availableMethods: ['username_password', 'otp_mn', 'event_code', 'coupon_voucher', 'otp_auth_key', 'wpa2_psk'],
         defaultMethods: ['otp_mn', 'event_code']
       }
@@ -677,11 +840,13 @@ export const SEGMENT_AUTH_CONFIG = {
   },
   coLiving: {
     label: 'Co-Living',
+    primaryCategory: 'residents',
     categories: {
       residents: {
         id: 'residents',
         label: 'Residents',
         description: 'Co-living residents',
+        isPrimary: true,
         availableMethods: ['username_password', 'member_id_password', 'voucher_auto_account', 'wpa2_psk'],
         defaultMethods: ['username_password', 'wpa2_psk']
       },
@@ -689,6 +854,7 @@ export const SEGMENT_AUTH_CONFIG = {
         id: 'staff',
         label: 'Staff',
         description: 'Property staff',
+        isPrimary: false,
         availableMethods: ['username_password', 'wpa2_psk'],
         defaultMethods: ['username_password']
       },
@@ -696,6 +862,7 @@ export const SEGMENT_AUTH_CONFIG = {
         id: 'devices',
         label: 'Devices (TV/Media & Smart)',
         description: 'Smart TVs, media devices, and smart devices',
+        isPrimary: false,
         availableMethods: ['mac_auth', 'wpa2_psk'],
         defaultMethods: ['mac_auth', 'wpa2_psk']
       },
@@ -703,6 +870,7 @@ export const SEGMENT_AUTH_CONFIG = {
         id: 'guests',
         label: 'Guests/Visitors',
         description: 'Visitor guests',
+        isPrimary: false,
         availableMethods: ['otp_mn', 'wpa2_psk'],
         defaultMethods: ['otp_mn']
       }
@@ -710,11 +878,13 @@ export const SEGMENT_AUTH_CONFIG = {
   },
   pg: {
     label: 'PG (Paying Guest)',
+    primaryCategory: 'residents',
     categories: {
       residents: {
         id: 'residents',
         label: 'Residents',
         description: 'PG residents',
+        isPrimary: true,
         availableMethods: ['username_password', 'otp_rmn', 'wpa2_psk'],
         defaultMethods: ['username_password', 'otp_rmn']
       },
@@ -722,6 +892,7 @@ export const SEGMENT_AUTH_CONFIG = {
         id: 'staff',
         label: 'Staff',
         description: 'PG staff',
+        isPrimary: false,
         availableMethods: ['username_password', 'otp_rmn', 'wpa2_psk'],
         defaultMethods: ['username_password']
       },
@@ -729,6 +900,7 @@ export const SEGMENT_AUTH_CONFIG = {
         id: 'devices',
         label: 'Devices',
         description: 'Digital and smart devices',
+        isPrimary: false,
         availableMethods: ['mac_auth', 'wpa2_psk'],
         defaultMethods: ['mac_auth']
       },
@@ -736,6 +908,7 @@ export const SEGMENT_AUTH_CONFIG = {
         id: 'guests',
         label: 'Guests/Visitors (Short-term)',
         description: 'Short-term visitors',
+        isPrimary: false,
         availableMethods: ['otp_mn', 'otp_auth_key', 'wpa2_psk'],
         defaultMethods: ['otp_mn']
       }
@@ -743,11 +916,13 @@ export const SEGMENT_AUTH_CONFIG = {
   },
   coWorking: {
     label: 'Co-Working',
+    primaryCategory: 'members',
     categories: {
       members: {
         id: 'members',
         label: 'Members/Co-workers',
         description: 'Co-working members',
+        isPrimary: true,
         availableMethods: ['username_password', 'otp_rmn', 'wpa2_psk'],
         defaultMethods: ['username_password', 'otp_rmn']
       },
@@ -755,6 +930,7 @@ export const SEGMENT_AUTH_CONFIG = {
         id: 'staff',
         label: 'Staff',
         description: 'Co-working space staff',
+        isPrimary: false,
         availableMethods: ['username_password', 'otp_rmn', 'wpa2_psk'],
         defaultMethods: ['username_password']
       },
@@ -762,6 +938,7 @@ export const SEGMENT_AUTH_CONFIG = {
         id: 'devices',
         label: 'Smart Devices',
         description: 'Smart devices and IoT',
+        isPrimary: false,
         availableMethods: ['mac_auth', 'wpa2_psk'],
         defaultMethods: ['mac_auth']
       },
@@ -769,6 +946,7 @@ export const SEGMENT_AUTH_CONFIG = {
         id: 'conferenceRooms',
         label: 'Conference Rooms',
         description: 'Meeting room WiFi access',
+        isPrimary: false,
         availableMethods: ['event_code', 'otp_mn', 'otp_auth_key', 'coupon_voucher', 'wpa2_psk'],
         defaultMethods: ['event_code', 'wpa2_psk']
       },
@@ -776,6 +954,7 @@ export const SEGMENT_AUTH_CONFIG = {
         id: 'guests',
         label: 'Guests/Visitors',
         description: 'External visitors',
+        isPrimary: false,
         availableMethods: ['username_password', 'otp_mn', 'wpa2_psk', 'sponsored_employee', 'sponsored_authority', 'coupon_voucher'],
         defaultMethods: ['otp_mn', 'sponsored_employee']
       }
@@ -783,11 +962,13 @@ export const SEGMENT_AUTH_CONFIG = {
   },
   miscellaneous: {
     label: 'Miscellaneous',
+    primaryCategory: 'users',
     categories: {
       users: {
         id: 'users',
         label: 'Users',
         description: 'General users (Education, Hostels, Hospital, Retail, Events, Others)',
+        isPrimary: true,
         availableMethods: ['username_password', 'adfs_sso', 'wpa2_psk', 'otp_mn', 'otp_rmn', 'digital_certificate'],
         defaultMethods: ['username_password', 'wpa2_psk']
       },
@@ -795,6 +976,7 @@ export const SEGMENT_AUTH_CONFIG = {
         id: 'devices',
         label: 'Devices',
         description: 'Digital and smart devices',
+        isPrimary: false,
         availableMethods: ['mac_auth', 'wpa2_psk'],
         defaultMethods: ['mac_auth']
       },
@@ -802,6 +984,7 @@ export const SEGMENT_AUTH_CONFIG = {
         id: 'guests',
         label: 'Guests/Visitors',
         description: 'External visitors and guests',
+        isPrimary: false,
         availableMethods: ['username_password', 'otp_mn', 'wpa2_psk', 'sponsored_employee', 'sponsored_authority', 'coupon_voucher', 'otp_auth_key', 'event_code'],
         defaultMethods: ['otp_mn', 'wpa2_psk']
       }
@@ -836,31 +1019,92 @@ export const getDefaultAuthConfig = (segment) => {
 };
 
 /**
- * Validate authentication configuration
- * Ensures at least one method is selected per category
+ * Validate authentication configuration for a segment
+ * Only requires at least one method for the primary user category
+ * Also validates that only one method can be marked as default per category
  * @param {Object} authConfig - Authentication configuration object
  * @param {string} segment - Segment type
- * @returns {{ isValid: boolean, errors: Array }} - Validation result
+ * @param {Object} options - Validation options
+ * @param {boolean} options.requirePrimaryOnly - Only require methods for primary category (default: true)
+ * @returns {{ isValid: boolean, errors: Array, warnings: Array }} - Validation result
  */
-export const validateAuthConfig = (authConfig, segment) => {
-  const categories = getAuthCategoriesForSegment(segment);
+export const validateAuthConfig = (authConfig, segment, options = {}) => {
+  const { requirePrimaryOnly = true } = options;
+  const segmentConfig = SEGMENT_AUTH_CONFIG[segment] || SEGMENT_AUTH_CONFIG.miscellaneous;
+  const categories = segmentConfig.categories;
   const errors = [];
+  const warnings = [];
 
   Object.keys(categories).forEach(categoryId => {
-    const selectedMethods = authConfig[categoryId] || [];
-    if (selectedMethods.length === 0) {
+    const category = categories[categoryId];
+    const categoryConfig = authConfig[categoryId];
+
+    // Handle both array format and object format with methods/defaultMethod
+    const selectedMethods = Array.isArray(categoryConfig)
+      ? categoryConfig
+      : (categoryConfig?.methods || []);
+    const defaultMethod = !Array.isArray(categoryConfig) ? categoryConfig?.defaultMethod : null;
+
+    // Check if at least one method is selected for primary category
+    if (category.isPrimary || !requirePrimaryOnly) {
+      if (selectedMethods.length === 0) {
+        if (category.isPrimary) {
+          errors.push({
+            categoryId,
+            categoryLabel: category.label,
+            type: 'required',
+            message: `At least one authentication method is required for ${category.label} (primary user type)`
+          });
+        } else {
+          // Non-primary categories: just a warning, not an error
+          warnings.push({
+            categoryId,
+            categoryLabel: category.label,
+            type: 'recommended',
+            message: `Consider configuring authentication methods for ${category.label}`
+          });
+        }
+      }
+    }
+
+    // Validate default method - only one can be default
+    if (defaultMethod) {
+      // Check default method is in selectedMethods
+      if (!selectedMethods.includes(defaultMethod)) {
+        errors.push({
+          categoryId,
+          categoryLabel: category.label,
+          type: 'invalid_default',
+          message: `Default method "${getAuthMethodLabel(defaultMethod)}" must be one of the selected methods for ${category.label}`
+        });
+      }
+    }
+
+    // Check if more than one method is marked as default (for object format with defaultMethods array)
+    if (!Array.isArray(categoryConfig) && Array.isArray(categoryConfig?.defaultMethods) && categoryConfig.defaultMethods.length > 1) {
       errors.push({
         categoryId,
-        categoryLabel: categories[categoryId].label,
-        message: `At least one authentication method is required for ${categories[categoryId].label}`
+        categoryLabel: category.label,
+        type: 'multiple_defaults',
+        message: `Only one authentication method can be set as default for ${category.label}`
       });
     }
   });
 
   return {
     isValid: errors.length === 0,
-    errors
+    errors,
+    warnings
   };
+};
+
+/**
+ * Get the primary category for a segment
+ * @param {string} segment - Segment type
+ * @returns {string} - Primary category ID
+ */
+export const getPrimaryCategoryForSegment = (segment) => {
+  return SEGMENT_AUTH_CONFIG[segment]?.primaryCategory || SEGMENT_AUTH_CONFIG.miscellaneous.primaryCategory;
 };
 
 /**
