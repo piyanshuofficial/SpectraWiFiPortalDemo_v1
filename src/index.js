@@ -12,6 +12,7 @@ import { LoadingProvider } from './context/LoadingContext';
 import { SegmentProvider } from './context/SegmentContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { ScheduledTasksProvider } from './context/ScheduledTasksContext';
+import { CustomerViewProvider } from './context/CustomerViewContext';
 
 // Initialize i18n before App
 import './i18n';
@@ -27,11 +28,13 @@ root.render(
         <ScheduledTasksProvider>
           <AccessLevelViewProvider>
             <SegmentProvider>
-              <UserProvider>
-                <LoadingProvider>
-                  <App />
-                </LoadingProvider>
-              </UserProvider>
+              <CustomerViewProvider>
+                <UserProvider>
+                  <LoadingProvider>
+                    <App />
+                  </LoadingProvider>
+                </UserProvider>
+              </CustomerViewProvider>
             </SegmentProvider>
           </AccessLevelViewProvider>
         </ScheduledTasksProvider>

@@ -1,6 +1,7 @@
 // src/components/Pagination.js
 
 import React from "react";
+import PropTypes from "prop-types";
 import {
   FaAngleDoubleLeft,
   FaAngleLeft,
@@ -322,6 +323,19 @@ const Pagination = ({
       </div>
     </nav>
   );
+};
+
+Pagination.propTypes = {
+  /** Total number of items to paginate */
+  totalItems: PropTypes.number.isRequired,
+  /** Number of rows displayed per page */
+  rowsPerPage: PropTypes.number.isRequired,
+  /** Callback function when page changes, receives new page number */
+  onPageChange: PropTypes.func.isRequired,
+  /** Callback function when rows per page changes, receives new value */
+  onRowsPerPageChange: PropTypes.func.isRequired,
+  /** Current active page number (1-indexed) */
+  currentPage: PropTypes.number.isRequired,
 };
 
 export default Pagination;

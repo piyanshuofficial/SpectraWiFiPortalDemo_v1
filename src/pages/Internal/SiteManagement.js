@@ -1,4 +1,111 @@
-// src/pages/Internal/SiteManagement.js
+/**
+ * ============================================================================
+ * Site Management Page (Internal Portal)
+ * ============================================================================
+ *
+ * @file src/pages/Internal/SiteManagement.js
+ * @description Comprehensive site management for Spectra internal staff.
+ *              Lists all customer sites across all segments with filtering,
+ *              status monitoring, and provisioning capabilities.
+ *
+ * @portalType Internal (Spectra Staff Only)
+ *
+ * @features
+ * - Grid and List view modes
+ * - Search by site name, location, or customer
+ * - Filter by status, region, customer, segment
+ * - Provision new sites via wizard modal
+ * - View site configuration details
+ * - "View as Customer" to see customer portal as that site
+ * - Credentials management (view/rotate)
+ * - Export site list to CSV
+ * - Site status monitoring (online, degraded, offline)
+ *
+ * @pageStructure
+ * ```
+ * ┌──────────────────────────────────────────────────────────────────────────┐
+ * │ Page Title: "Site Management"                                            │
+ * ├──────────────────────────────────────────────────────────────────────────┤
+ * │ Summary Cards:                                                           │
+ * │ ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐             │
+ * │ │ Total   │ │ Online  │ │ Degraded│ │ Offline │ │ Maint.  │             │
+ * │ │ Sites   │ │    45   │ │    3    │ │    1    │ │    2    │             │
+ * │ └─────────┘ └─────────┘ └─────────┘ └─────────┘ └─────────┘             │
+ * ├──────────────────────────────────────────────────────────────────────────┤
+ * │ Toolbar: [Search] [Filters] [Add Site] [Export] [Grid|List Toggle]      │
+ * ├──────────────────────────────────────────────────────────────────────────┤
+ * │ Filter Panel (collapsible):                                              │
+ * │ [Status ▼] [Region ▼] [Customer ▼] [Segment ▼]                          │
+ * ├──────────────────────────────────────────────────────────────────────────┤
+ * │ Site Cards/Table:                                                        │
+ * │ ┌────────────────────────────────────────────────────────────────────┐  │
+ * │ │ [●] Site Name          Customer: Acme Corp        Segment: Hotel   │  │
+ * │ │     Mumbai, India      Users: 245    Devices: 312  Status: Online  │  │
+ * │ │     [View] [Config] [Credentials] [View as Customer] [...]         │  │
+ * │ └────────────────────────────────────────────────────────────────────┘  │
+ * ├──────────────────────────────────────────────────────────────────────────┤
+ * │ Pagination: [< 1 2 3 4 5 >]  Rows per page: [10 ▼]                      │
+ * └──────────────────────────────────────────────────────────────────────────┘
+ * ```
+ *
+ * @siteStatuses
+ * | Status      | Color  | Description                              |
+ * |-------------|--------|------------------------------------------|
+ * | Online      | Green  | All systems operational                  |
+ * | Degraded    | Yellow | Some connectivity issues                 |
+ * | Offline     | Red    | No connectivity to NAS                   |
+ * | Maintenance | Blue   | Scheduled maintenance window             |
+ * | Pending     | Gray   | Not yet provisioned (in queue)           |
+ *
+ * @provisioningModal
+ * "Add Site" opens SiteProvisioningModal wizard with steps:
+ * 1. Basic Info: Name, location, customer selection
+ * 2. Segment Config: Select segment type (Enterprise, Hotel, etc.)
+ * 3. Network Config: NAS IP, RADIUS settings
+ * 4. Auth Config: Authentication methods (MAB, Captive Portal, etc.)
+ * 5. Policy Config: License count, default policies
+ * 6. Review & Submit
+ *
+ * @viewAsCustomerFeature
+ * Opens CustomerViewModal allowing staff to:
+ * - Impersonate as a specific site user
+ * - View customer portal in read-only mode
+ * - Test what customers see
+ * - Troubleshoot customer-reported issues
+ *
+ * @credentialsManagement
+ * Site credentials panel shows:
+ * - RADIUS shared secret (masked, click to reveal)
+ * - NAS credentials
+ * - API keys if applicable
+ * - Option to rotate/regenerate credentials
+ *
+ * @customerFilter
+ * Supports filtering by customer via URL:
+ * - URL: /internal/sites?customer=CUST001
+ * - Shows only that customer's sites
+ *
+ * @permissions
+ * - canAccessInternalPortal: View sites list
+ * - canProvisionSites: Add new site button visible
+ * - canViewSiteCredentials: View credentials action
+ * - canRotateCredentials: Rotate credentials action
+ *
+ * @dependencies
+ * - internalPortalData.js: Sample sites data
+ * - CustomerViewModal: For impersonation
+ * - SiteProvisioningModal: Site creation wizard
+ * - siteProvisioningConfig.js: Auth method configurations
+ *
+ * @relatedFiles
+ * - SiteProvisioningModal.js: Site provisioning wizard
+ * - SiteProvisioningQueue.js: Pending sites queue
+ * - CustomerManagement.js: Customer listing
+ * - internalPortalData.js: Sample data
+ * - SiteManagement.css: Page styles
+ *
+ * ============================================================================
+ */
 
 import React, { useState, useMemo, useEffect } from "react";
 import { useNavigate, useSearchParams, useParams } from "react-router-dom";
@@ -29,8 +136,12 @@ import {
   FaCheck,
   FaKey,
   FaShieldAlt,
+  FaUserSecret,
 } from "react-icons/fa";
 import { sites, customers, configTemplates } from "@constants/internalPortalData";
+import CustomerViewModal from "@components/CustomerViewModal";
+import SearchableSelect from "@components/SearchableSelect";
+import { getAllCustomers, getSitesForSegment } from "@context/CustomerViewContext";
 import {
   formatAuthConfigForDisplay,
   getAuthConfigSummary,
@@ -65,6 +176,99 @@ const SiteManagement = () => {
 
   // Simulate initial data loading
   useEffect(() => {
+    /* ========================================================================
+     * BACKEND INTEGRATION: Load Sites List for Internal Portal
+     * ========================================================================
+     * API Endpoint: GET /api/v1/internal/sites
+     *
+     * Query Parameters:
+     * - customerId (optional): Filter by customer
+     * - status (optional): Filter by status (online|degraded|offline|maintenance)
+     * - region (optional): Filter by region
+     * - type (optional): Filter by site type
+     * - page: Page number for pagination
+     * - limit: Items per page
+     * - search: Search term for name/city
+     *
+     * Expected Response (Success - 200):
+     * {
+     *   "success": true,
+     *   "data": {
+     *     "sites": [{
+     *       "id": "string",
+     *       "name": "string",
+     *       "customerId": "string",
+     *       "customerName": "string",
+     *       "type": "string",              // Enterprise, Hotel, CoLiving, etc.
+     *       "status": "online|degraded|offline|maintenance",
+     *       "city": "string",
+     *       "state": "string",
+     *       "region": "string",            // North, South, East, West
+     *       "totalUsers": number,
+     *       "activeUsers": number,
+     *       "totalDevices": number,
+     *       "accessPoints": number,
+     *       "uptime": number,              // Percentage
+     *       "lastSeen": "ISO8601",
+     *       "deployedAt": "ISO8601",
+     *       "configTemplate": "string",
+     *       "primaryContact": {
+     *         "name": "string",
+     *         "email": "string",
+     *         "phone": "string"
+     *       },
+     *       "networkConfig": {
+     *         "bandwidthLimit": number,
+     *         "vlans": number,
+     *         "captivePortal": boolean,
+     *         "guestNetwork": boolean
+     *       }
+     *     }],
+     *     "totalCount": number,
+     *     "page": number,
+     *     "limit": number
+     *   }
+     * }
+     *
+     * Backend Processing:
+     * 1. Authenticate internal user and verify permissions
+     * 2. Query sites database with filters
+     * 3. For each site, fetch real-time status from:
+     *    - Network monitoring system (connectivity status)
+     *    - AAA system (active users/sessions)
+     *    - Controller API (access point status)
+     * 4. Calculate uptime from monitoring data
+     * 5. Return paginated results
+     *
+     * Sample Integration Code:
+     * ------------------------
+     * const fetchSites = async () => {
+     *   setIsLoading(true);
+     *   try {
+     *     const params = new URLSearchParams({
+     *       page: currentPage,
+     *       limit: rowsPerPage,
+     *       ...(selectedCustomer !== 'All' && { customerId: selectedCustomer }),
+     *       ...(selectedStatus !== 'All' && { status: selectedStatus }),
+     *       ...(searchQuery && { search: searchQuery })
+     *     });
+     *     const response = await fetch(`/api/v1/internal/sites?${params}`, {
+     *       headers: { 'Authorization': `Bearer ${authToken}` }
+     *     });
+     *     const result = await response.json();
+     *     if (result.success) {
+     *       setSites(result.data.sites);
+     *       setTotalCount(result.data.totalCount);
+     *     }
+     *   } catch (error) {
+     *     notifications.operationFailed('load sites');
+     *   } finally {
+     *     setIsLoading(false);
+     *   }
+     * };
+     * ======================================================================== */
+
+    // TODO: Remove mock and implement actual API call above
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 700);
@@ -117,6 +321,11 @@ const SiteManagement = () => {
   const [configFormData, setConfigFormData] = useState(null);
   // Delete functionality removed - sites should be blocked/suspended via provisioning queue
 
+  // Customer View (impersonation) modal state
+  const [showCustomerViewModal, setShowCustomerViewModal] = useState(false);
+  const [customerForView, setCustomerForView] = useState(null);
+  const [siteForView, setSiteForView] = useState(null);
+
   // Initial form state
   const initialFormState = {
     customerId: "",
@@ -144,8 +353,12 @@ const SiteManagement = () => {
   const [formData, setFormData] = useState(initialFormState);
 
   // Get filter options
-  const customerOptions = useMemo(() =>
-    ["All", ...customers.map(c => c.name)],
+  const customerFilterOptions = useMemo(() =>
+    customers.map(c => ({
+      value: c.name,
+      label: c.name,
+      type: c.type,
+    })),
     []
   );
   const regionOptions = useMemo(() => getUniqueValues(sites, "region"), []);
@@ -355,6 +568,33 @@ const SiteManagement = () => {
         break;
       case "configure":
         openSiteModal(site, 'configure');
+        break;
+      case "viewAsCustomer":
+        // Open customer view modal for impersonation with site preselected
+        // Find the customer and site in the CustomerViewContext data
+        const customer = customers.find(c => c.id === site.customerId);
+        if (customer) {
+          const contextCustomers = getAllCustomers();
+          // Match by customer name since IDs might differ
+          const matchingContextCustomer = contextCustomers.find(c =>
+            c.name === customer.name
+          );
+          if (matchingContextCustomer) {
+            // Get sites for this customer's segment
+            const segmentSites = getSitesForSegment(matchingContextCustomer.segment);
+            // Find matching site by name or similar attributes
+            const matchingSite = segmentSites.find(s =>
+              s.siteName === site.name || s.city === site.city
+            );
+            setCustomerForView(matchingContextCustomer);
+            setSiteForView(matchingSite || null);
+            setShowCustomerViewModal(true);
+          } else {
+            notifications.showInfo("Customer view not available for this site's customer");
+          }
+        } else {
+          notifications.showInfo("Customer information not found for this site");
+        }
         break;
       // Delete case removed - use suspend/block from provisioning queue
       default:
@@ -660,16 +900,19 @@ const SiteManagement = () => {
 
         {showFilters && (
           <div className="filters-row">
-            <div className="filter-group">
+            <div className="filter-group searchable-filter">
               <label>Customer</label>
-              <select
-                value={selectedCustomer}
-                onChange={(e) => setSelectedCustomer(e.target.value)}
-              >
-                {customerOptions.map((opt) => (
-                  <option key={opt} value={opt}>{opt}</option>
-                ))}
-              </select>
+              <SearchableSelect
+                options={customerFilterOptions}
+                value={selectedCustomer === "All" ? "" : selectedCustomer}
+                onChange={(val) => setSelectedCustomer(val || "All")}
+                placeholder="All Customers"
+                searchPlaceholder="Search customers..."
+                getOptionLabel={(opt) => opt.label}
+                getOptionValue={(opt) => opt.value}
+                emptyOption={{ label: "All Customers", value: "" }}
+                size="small"
+              />
             </div>
             <div className="filter-group">
               <label>Status</label>
@@ -765,6 +1008,9 @@ const SiteManagement = () => {
                             </button>
                           </>
                         )}
+                        <button onClick={() => handleSiteAction("viewAsCustomer", site.id)} className="view-as-customer">
+                          <FaUserSecret /> View as Customer
+                        </button>
                         {/* Delete option removed - sites should be blocked/suspended instead */}
                       </div>
                     )}
@@ -2219,6 +2465,18 @@ const SiteManagement = () => {
           setShowEnhancedProvisionModal(false);
         }}
         customers={customers}
+      />
+
+      {/* Customer View Modal for Impersonation */}
+      <CustomerViewModal
+        isOpen={showCustomerViewModal}
+        onClose={() => {
+          setShowCustomerViewModal(false);
+          setCustomerForView(null);
+          setSiteForView(null);
+        }}
+        preselectedCustomer={customerForView}
+        preselectedSite={siteForView}
       />
     </div>
   );

@@ -6,7 +6,9 @@ import AppLayout from '@components/AppLayout';
 import ErrorBoundary from '@components/ErrorBoundary';
 import RouteLoader from '@components/RouteLoader';
 import SupportChatbot from '@components/SupportChatbot';
+import CustomerViewBanner from '@components/CustomerViewBanner';
 import { useAuth } from '@context/AuthContext';
+import { useCustomerView } from '@context/CustomerViewContext';
 import { Permissions, InternalPermissions, UserTypes } from '@utils/accessLevels';
 import { routes } from '@config/routes';
 import '@components/Badge.css';
@@ -170,6 +172,29 @@ const CustomerChatbotWrapper = () => {
 };
 
 /**
+ * Customer View Mode Handler
+ * Manages body class and renders banner when in impersonation mode
+ */
+const CustomerViewModeHandler = () => {
+  const { isImpersonating } = useCustomerView();
+
+  useEffect(() => {
+    if (isImpersonating) {
+      document.body.classList.add('customer-view-active');
+    } else {
+      document.body.classList.remove('customer-view-active');
+    }
+
+    // Cleanup on unmount
+    return () => {
+      document.body.classList.remove('customer-view-active');
+    };
+  }, [isImpersonating]);
+
+  return <CustomerViewBanner />;
+};
+
+/**
  * Main authenticated app content with layout
  */
 const AuthenticatedApp = () => {
@@ -217,6 +242,7 @@ function App() {
       <Router>
         <ScrollToTop />
         <DocumentTitle />
+        <CustomerViewModeHandler />
         <Suspense fallback={<RouteLoader />}>
           <Routes>
             {/* Public auth routes - no layout */}

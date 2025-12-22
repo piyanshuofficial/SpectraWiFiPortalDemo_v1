@@ -89,6 +89,27 @@
   align-items: stretch;
   margin: 0;
   overflow-y: auto;
+  overflow-x: hidden;
+  max-height: calc(100vh - var(--header-height) - 1rem);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+.sidebar-nav::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar-nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
 }
 
 .sidebar-nav,
@@ -148,7 +169,7 @@
 }
 
 .sidebar-nav-icon {
-  font-size: 2.1rem;
+  font-size: 1.89rem; /* 90% of 2.1rem */
   color: inherit;
   transition: color 0.2s;
   margin-bottom: var(--space-xs);
@@ -164,6 +185,22 @@
   line-height: var(--line-height-tight);
   font-weight: 500;
   letter-spacing: 0.01em;
+}
+
+/* For smaller desktop screens - ensure scrolling works */
+@media (max-height: 800px) {
+  .sidebar-nav {
+    max-height: calc(100vh - var(--header-height) - 0.5rem);
+    padding-bottom: 1rem;
+  }
+
+  .sidebar-nav-item {
+    padding: 0.5rem 0.5rem;
+  }
+
+  .sidebar-nav-li {
+    margin-bottom: 0.25rem;
+  }
 }
 
 @media (max-width: 900px) {
@@ -184,36 +221,37 @@
   .sidebar.mobile-open {
     transform: translateX(0);
   }
-  
+
   .sidebar-logo-area {
     height: 3.75rem; /* 60px */
     width: 100%;
   }
-  
+
   .sidebar-logo-img {
     height: 2.5rem; /* 40px */
     max-width: 4.0625rem; /* 65px */
   }
-  
+
   .sidebar-nav {
     flex-direction: column;
     padding: 1rem 0;
     overflow-y: auto;
+    max-height: calc(100vh - 3.75rem);
   }
-  
+
   .sidebar-nav ul {
     display: flex;
     flex-direction: column;
     gap: 0;
     width: 100%;
   }
-  
+
   .sidebar-nav-li {
     width: 100%;
     padding: 0;
     margin-bottom: 0;
   }
-  
+
   .sidebar-nav-item {
     flex-direction: row;
     gap: 1rem;
@@ -221,7 +259,7 @@
     justify-content: flex-start;
     text-align: left;
   }
-  
+
   .sidebar-nav-item.active-link::before {
     left: 0;
     top: 0;
@@ -229,12 +267,12 @@
     width: 0.25rem;
     height: auto;
   }
-  
+
   .sidebar-nav-icon {
-    font-size: 1.5rem;
+    font-size: 1.35rem; /* 90% of 1.5rem */
     margin-bottom: 0;
   }
-  
+
   .sidebar-nav-label {
     font-size: var(--font-base);
     text-align: left;
@@ -273,7 +311,9 @@
 .sidebar.internal-portal .sidebar-nav {
   padding: 0.25rem 0 0.5rem 0;
   flex: 1;
-  overflow: visible;
+  overflow-y: auto;
+  overflow-x: hidden;
+  max-height: calc(100vh - var(--header-height) - 0.5rem);
 }
 
 .sidebar.internal-portal .sidebar-nav-li {
@@ -285,7 +325,7 @@
 }
 
 .sidebar.internal-portal .sidebar-nav-icon {
-  font-size: 1.5rem;
+  font-size: 1.35rem; /* 90% of 1.5rem */
   margin-bottom: 0.1875rem;
 }
 
@@ -435,4 +475,76 @@
   align-items: center;
   justify-content: center;
   gap: 0.125rem;
+}
+
+/* ============================================
+   IMPERSONATION MODE STYLES
+   ============================================ */
+
+.sidebar.impersonating-mode {
+  border-left: 3px solid #f59e0b;
+}
+
+.impersonation-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 0.5rem;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(217, 119, 6, 0.15) 100%);
+  border-bottom: 1px solid rgba(245, 158, 11, 0.3);
+  gap: 0.5rem;
+}
+
+.impersonation-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.125rem;
+}
+
+.impersonation-label {
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.impersonation-customer {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #fcd34d;
+  line-height: 1.2;
+  max-width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.exit-impersonation-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  color: #fcd34d;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.exit-impersonation-btn:hover {
+  background: rgba(245, 158, 11, 0.3);
+  border-color: #f59e0b;
+  color: white;
+}
+
+.exit-impersonation-btn svg {
+  width: 14px;
+  height: 14px;
 }

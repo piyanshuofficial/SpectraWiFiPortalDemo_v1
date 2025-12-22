@@ -164,7 +164,7 @@ LogTableRow.displayName = 'LogTableRow';
 
 const ActivityLogs = () => {
   const { currentSegment } = useSegment();
-  const { isCompanyView, companySites, navigateToSite } = useAccessLevelView();
+  const { isCompanyView, drillDownToSite } = useAccessLevelView();
   const { hasPermission } = usePermissions();
   const { t } = useTranslation();
 
@@ -173,6 +173,115 @@ const ActivityLogs = () => {
 
   // Simulate initial data loading
   useEffect(() => {
+    /* ========================================================================
+     * BACKEND INTEGRATION: Load Activity Logs
+     * ========================================================================
+     * API Endpoint: GET /api/v1/activity-logs
+     *
+     * Query Parameters:
+     * - siteId (optional): Filter by site (null for company view)
+     * - segment: Current segment
+     * - category (optional): Filter by category (user|device|system)
+     * - action (optional): Filter by action (CREATE|UPDATE|DELETE)
+     * - dateRange: Days to fetch (7, 14, 30, 90)
+     * - startDate (optional): Custom date range start
+     * - endDate (optional): Custom date range end
+     * - performedBy (optional): Filter by admin user
+     * - search: Search term for target/entity
+     * - page: Page number
+     * - limit: Items per page
+     * - sortBy: Sort column (timestamp, action, entity)
+     * - sortOrder: Sort direction (asc, desc)
+     *
+     * Expected Response (Success - 200):
+     * {
+     *   "success": true,
+     *   "data": {
+     *     "logs": [{
+     *       "id": "string",               // Unique log ID
+     *       "timestamp": "ISO8601",
+     *       "action": "CREATE|UPDATE|DELETE|LOGIN|LOGOUT|EXPORT|CONFIG",
+     *       "entity": "string",           // User, Device, Policy, Settings, etc.
+     *       "category": "user|device|system|auth",
+     *       "target": "string",           // Name of affected resource
+     *       "targetId": "string",         // ID of affected resource
+     *       "details": "string",          // Human-readable description
+     *       "performedBy": {
+     *         "id": "string",
+     *         "name": "string",
+     *         "role": "string",
+     *         "email": "string"
+     *       },
+     *       "ipAddress": "string",
+     *       "userAgent": "string",
+     *       "siteId": "string",
+     *       "siteName": "string",
+     *       "metadata": {                 // Additional context
+     *         "oldValue": object,         // Previous state (for updates)
+     *         "newValue": object,         // New state (for updates)
+     *         "reason": "string"          // Optional reason for action
+     *       }
+     *     }],
+     *     "totalCount": number,
+     *     "page": number,
+     *     "limit": number,
+     *     "filters": {                    // Available filter options
+     *       "categories": ["user", "device", "system"],
+     *       "actions": ["CREATE", "UPDATE", "DELETE"],
+     *       "performers": [{ id, name }]
+     *     }
+     *   }
+     * }
+     *
+     * Backend Processing:
+     * 1. Verify user has canViewActivityLogs permission
+     * 2. Query activity_logs table with filters
+     * 3. For company view, aggregate logs across all sites
+     * 4. For site view, filter by specific siteId
+     * 5. Include performer details from users table
+     * 6. Paginate and sort results
+     *
+     * Audit Log Storage Best Practices:
+     * - Store logs in append-only table (no updates/deletes)
+     * - Use separate database/partition for high write volumes
+     * - Implement log rotation and archival policy
+     * - Index on: timestamp, siteId, category, performedBy
+     * - Consider Elasticsearch for advanced search/filtering
+     *
+     * Sample Integration Code:
+     * ------------------------
+     * const fetchActivityLogs = async () => {
+     *   setIsLoading(true);
+     *   try {
+     *     const params = new URLSearchParams({
+     *       segment: currentSegment,
+     *       dateRange: dateRangeFilter,
+     *       page: currentPage,
+     *       limit: rowsPerPage,
+     *       sortBy: sortColumn,
+     *       sortOrder: sortDirection,
+     *       ...(categoryFilter !== 'all' && { category: categoryFilter }),
+     *       ...(actionFilter !== 'all' && { action: actionFilter }),
+     *       ...(siteFilter !== 'all' && { siteId: siteFilter }),
+     *       ...(searchQuery && { search: searchQuery })
+     *     });
+     *     const response = await fetch(`/api/v1/activity-logs?${params}`, {
+     *       headers: { 'Authorization': `Bearer ${authToken}` }
+     *     });
+     *     const result = await response.json();
+     *     if (result.success) {
+     *       setActivityLogs(result.data.logs);
+     *       setTotalCount(result.data.totalCount);
+     *     }
+     *   } catch (error) {
+     *     notifications.operationFailed('load activity logs');
+     *   } finally {
+     *     setIsLoading(false);
+     *   }
+     * };
+     * ======================================================================== */
+
+    // TODO: Remove mock and implement actual API call above
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 600);
@@ -200,8 +309,8 @@ const ActivityLogs = () => {
 
   // Get company sites for logs generation
   const availableSites = useMemo(() => {
-    return companySites?.length > 0 ? companySites : sampleCompanySites || [];
-  }, [companySites]);
+    return sampleCompanySites || [];
+  }, []);
 
   // Generate logs based on segment and company sites
   const allLogs = useMemo(() => generateActivityLogs(currentSegment, availableSites), [currentSegment, availableSites]);
@@ -331,10 +440,12 @@ const ActivityLogs = () => {
 
   // Handle site click to navigate to site view
   const handleSiteClick = useCallback((siteId) => {
-    if (navigateToSite) {
-      navigateToSite(siteId);
+    // Find the site name from available sites
+    const site = availableSites.find(s => s.siteId === siteId);
+    if (drillDownToSite && site) {
+      drillDownToSite(siteId, site.siteName);
     }
-  }, [navigateToSite]);
+  }, [drillDownToSite, availableSites]);
 
   const handleExportCSV = async () => {
     if (filteredLogs.length === 0) {
@@ -431,7 +542,7 @@ const ActivityLogs = () => {
                 onChange={(e) => handleFilterChange(setSiteFilter)(e.target.value)}
               >
                 <option value="all">All Sites</option>
-                {companySites.map(site => (
+                {availableSites.map(site => (
                   <option key={site.siteId} value={site.siteId}>{site.siteName}</option>
                 ))}
               </select>

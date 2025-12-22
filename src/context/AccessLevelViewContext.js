@@ -1,4 +1,112 @@
-// src/context/AccessLevelViewContext.js
+/**
+ * ============================================================================
+ * Access Level View Context
+ * ============================================================================
+ *
+ * @file src/context/AccessLevelViewContext.js
+ * @description Manages the view level for COMPANY-level customer users.
+ *              Allows users with company-wide access to drill down into
+ *              individual sites or view aggregated company data.
+ *
+ * @concept
+ * Customer users can have two access levels:
+ *
+ * 1. SITE Level Access:
+ *    - Can only see data for their assigned site
+ *    - Full editing capabilities for that site
+ *    - Cannot switch to other sites or company view
+ *
+ * 2. COMPANY Level Access:
+ *    - Can see aggregated data across all company sites
+ *    - Company View: Read-only aggregated view
+ *    - Site View: Can drill down to specific site with edit access
+ *
+ * @viewModes
+ * ```
+ * ┌─────────────────────────────────────────────────────────────────────────┐
+ * │                     Company Level User Views                            │
+ * ├──────────────────────────────┬──────────────────────────────────────────┤
+ * │       COMPANY VIEW           │           SITE VIEW (Drilled Down)       │
+ * ├──────────────────────────────┼──────────────────────────────────────────┤
+ * │ • Aggregated data            │ • Single site data                       │
+ * │ • All sites in tables        │ • Specific site only                     │
+ * │ • READ-ONLY mode             │ • EDIT allowed (based on role)           │
+ * │ • Summary statistics         │ • Detailed statistics                    │
+ * │ • Cross-site reports         │ • Site-specific reports                  │
+ * └──────────────────────────────┴──────────────────────────────────────────┘
+ *                                     ↑ ↓
+ *                            drillDownToSite()
+ *                          returnToCompanyView()
+ * ```
+ *
+ * @readOnlyMode
+ * Company view is READ-ONLY because:
+ * - Cannot determine which site an action should apply to
+ * - Prevents accidental bulk operations
+ * - Users must explicitly select a site to make changes
+ *
+ * @architecture
+ * ```
+ * ┌──────────────────────────────────────────────────────────────────────┐
+ * │                  AccessLevelViewContext Provider                     │
+ * ├──────────────────────────────────────────────────────────────────────┤
+ * │  State:                                                              │
+ * │  ├── viewLevel         : 'company' | 'site'                         │
+ * │  ├── selectedSiteId    : Site ID when drilled down                  │
+ * │  └── selectedSiteName  : Site name for display                      │
+ * ├──────────────────────────────────────────────────────────────────────┤
+ * │  Computed:                                                           │
+ * │  ├── isCompanyView     : Boolean - In company aggregate view?       │
+ * │  ├── isSiteView        : Boolean - In specific site view?           │
+ * │  ├── canEditInCurrentView : Boolean - Is editing allowed?           │
+ * │  └── currentSiteId     : The active site ID                         │
+ * ├──────────────────────────────────────────────────────────────────────┤
+ * │  Actions:                                                            │
+ * │  ├── drillDownToSite() : Enter site-specific view                   │
+ * │  └── returnToCompanyView() : Go back to aggregate view              │
+ * └──────────────────────────────────────────────────────────────────────┘
+ * ```
+ *
+ * @usage
+ * ```jsx
+ * import { useAccessLevelView } from '@context/AccessLevelViewContext';
+ *
+ * const UserList = () => {
+ *   const {
+ *     isCompanyView,
+ *     canEditInCurrentView,
+ *     drillDownToSite,
+ *     currentSiteId
+ *   } = useAccessLevelView();
+ *
+ *   // Show all sites data in company view, filtered in site view
+ *   const users = isCompanyView
+ *     ? allCompanyUsers
+ *     : allCompanyUsers.filter(u => u.siteId === currentSiteId);
+ *
+ *   // Disable edit button in company view
+ *   return (
+ *     <Button disabled={!canEditInCurrentView}>Edit User</Button>
+ *   );
+ * };
+ * ```
+ *
+ * @internalUsers
+ * Internal (Spectra staff) users are NOT affected by this context.
+ * They have their own internal portal with different navigation.
+ *
+ * @persistence
+ * View state is persisted in localStorage so users don't lose
+ * their drilled-down view on page refresh.
+ *
+ * @relatedFiles
+ * - AuthContext.js       : Determines if user is COMPANY or SITE level
+ * - Header.js            : Displays current view and site selector
+ * - useReadOnlyMode.js   : Hook for checking edit restrictions
+ * - Dashboard.js         : Shows aggregated vs site-specific data
+ *
+ * ============================================================================
+ */
 
 import React, { createContext, useContext, useState, useCallback, useMemo } from "react";
 import { useAuth } from "./AuthContext";

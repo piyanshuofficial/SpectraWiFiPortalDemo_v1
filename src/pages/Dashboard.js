@@ -1,4 +1,118 @@
-// src/pages/Dashboard.js
+/**
+ * ============================================================================
+ * Customer Portal Dashboard
+ * ============================================================================
+ *
+ * @file src/pages/Dashboard.js
+ * @description Main dashboard page for customer portal users. Displays key
+ *              metrics, charts, activity feed, and site overview. Content
+ *              adapts based on segment and user access level.
+ *
+ * @dashboardSections
+ * ```
+ * ┌──────────────────────────────────────────────────────────────────────────┐
+ * │ DASHBOARD LAYOUT                                                         │
+ * ├──────────────────────────────────────────────────────────────────────────┤
+ * │                                                                          │
+ * │ ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐             │
+ * │ │ Active  │ │ License │ │  Data   │ │ Network │ │ Alerts  │  METRIC     │
+ * │ │ Users   │ │ Usage   │ │ Usage   │ │ Uptime  │ │         │  CARDS      │
+ * │ └─────────┘ └─────────┘ └─────────┘ └─────────┘ └─────────┘             │
+ * │                                                                          │
+ * │ ┌─────────────────────────────────────────────────────────────────────┐ │
+ * │ │ Sites Overview (Company View Only)                                  │ │
+ * │ │ Grid of site cards with status, metrics, drill-down                 │ │
+ * │ └─────────────────────────────────────────────────────────────────────┘ │
+ * │                                                                          │
+ * │ ┌────────────────────────────┐ ┌──────────────────────────────────────┐ │
+ * │ │ USAGE CHART                │ │ DEVICE DISTRIBUTION                  │ │
+ * │ │ Line chart showing         │ │ Pie/Doughnut chart showing           │ │
+ * │ │ data usage over time       │ │ device types breakdown               │ │
+ * │ └────────────────────────────┘ └──────────────────────────────────────┘ │
+ * │                                                                          │
+ * │ ┌────────────────────────────┐ ┌──────────────────────────────────────┐ │
+ * │ │ USER STATUS                │ │ RECENT ACTIVITY                      │ │
+ * │ │ Bar chart showing          │ │ Activity feed showing                │ │
+ * │ │ Active/Suspended/Blocked   │ │ recent user and device events        │ │
+ * │ └────────────────────────────┘ └──────────────────────────────────────┘ │
+ * │                                                                          │
+ * └──────────────────────────────────────────────────────────────────────────┘
+ * ```
+ *
+ * @metricCards
+ * | Metric        | Icon           | Description                          |
+ * |---------------|----------------|--------------------------------------|
+ * | Active Users  | FaUsers        | Currently active user count          |
+ * | License Usage | FaChartPie     | Used/Total licenses percentage       |
+ * | Data Usage    | FaNetworkWired | Total bandwidth consumed             |
+ * | Network Uptime| FaCheckCircle  | Network availability percentage      |
+ * | Alerts        | FaExclamationTriangle | Active alerts count          |
+ * | Guest Status  | FaUserFriends  | Active guests (if guest enabled)     |
+ *
+ * @segmentVariations
+ * Dashboard metrics vary by segment to show realistic data:
+ * - Enterprise: Higher user counts, more data usage
+ * - Hotel: Focus on guest metrics, daily check-ins
+ * - Co-Living: Resident-focused metrics
+ * - PG: Smaller scale metrics
+ *
+ * @companyVsSiteView
+ * Company View:
+ * - Shows aggregated metrics across all sites
+ * - Displays Sites Overview grid with site cards
+ * - Charts show company-wide trends
+ * - Activity feed shows all sites
+ *
+ * Site View:
+ * - Shows metrics for specific site only
+ * - No Sites Overview section
+ * - Charts show site-specific data
+ * - Activity filtered to current site
+ *
+ * @exportFeatures
+ * - Export charts as PNG images
+ * - Export chart data as CSV
+ * - Export full dashboard as PDF report
+ *
+ * @charts
+ * | Chart             | Type     | Data Shown                          |
+ * |-------------------|----------|-------------------------------------|
+ * | Usage Trends      | Line     | Daily/weekly data usage             |
+ * | Device Types      | Doughnut | Laptop/Mobile/Tablet distribution   |
+ * | User Status       | Bar      | Active/Suspended/Blocked counts     |
+ * | Site Performance  | Bar      | Per-site metrics (company view)     |
+ *
+ * @activityFeed
+ * Shows recent events:
+ * - User registrations
+ * - Status changes
+ * - Device connections
+ * - Policy updates
+ * - System alerts
+ *
+ * @dataRefresh
+ * Current implementation uses static sample data.
+ * TODO: Backend integration should:
+ * - Fetch metrics on mount
+ * - Poll every 30-60 seconds
+ * - Or use WebSocket for real-time updates
+ *
+ * @dependencies
+ * - Chart.js (via react-chartjs-2): For chart rendering
+ * - useSegmentCompanyData: Segment-specific data
+ * - useAccessLevelView: Company/site view detection
+ * - useSegmentActivities: Activity feed data
+ * - exportUtils: CSV/PDF export functions
+ *
+ * @relatedFiles
+ * - SitesOverview.js: Sites grid component (company view)
+ * - Card.js: Metric card component
+ * - companySampleData.js: Demo company data
+ * - Dashboard.css: Page styles
+ * - commonChartOptions.js: Shared chart configurations
+ *
+ * ============================================================================
+ */
 
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Card from "../components/Card";
@@ -382,6 +496,534 @@ const Dashboard = () => {
     return segmentPeakUsage[currentSegment] || segmentPeakUsage.enterprise;
   }, [currentSegment]);
 
+  // ============================================
+  // ADDITIONAL CHART DATA FOR RANDOMIZED SELECTION
+  // ============================================
+
+  // User Growth Trend - Available for all segments
+  const userGrowthData = useMemo(() => {
+    const baseGrowth = {
+      enterprise: [820, 835, 842, 850, 855, 862, 870, 878, 885, 892, 900, 910],
+      coLiving: [280, 290, 295, 302, 308, 312, 318, 322, 328, 335, 340, 348],
+      hotel: [380, 395, 410, 420, 435, 445, 455, 468, 480, 492, 505, 520],
+      coWorking: [220, 228, 235, 242, 250, 258, 265, 272, 280, 288, 295, 302],
+      pg: [150, 158, 165, 172, 178, 185, 192, 198, 205, 212, 218, 225],
+      miscellaneous: [75, 78, 82, 85, 88, 92, 95, 98, 102, 105, 108, 112]
+    };
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const data = baseGrowth[currentSegment] || baseGrowth.enterprise;
+    return months.map((month, i) => ({ month, users: data[i] }));
+  }, [currentSegment]);
+
+  // Bandwidth Consumption Trend - Only for fixed bandwidth sites
+  const bandwidthTrendData = useMemo(() => {
+    const baseTrend = {
+      enterprise: [180, 195, 210, 225, 240, 255, 270, 285, 300, 315, 330, 345],
+      coLiving: [85, 92, 98, 105, 112, 118, 125, 132, 138, 145, 152, 160],
+      hotel: [120, 135, 150, 165, 180, 195, 210, 225, 240, 255, 270, 285],
+      coWorking: [95, 105, 115, 125, 135, 145, 155, 165, 175, 185, 195, 205],
+      pg: [45, 52, 58, 65, 72, 78, 85, 92, 98, 105, 112, 120],
+      miscellaneous: [25, 28, 32, 35, 38, 42, 45, 48, 52, 55, 58, 62]
+    };
+    const weeks = ["W1", "W2", "W3", "W4", "W5", "W6", "W7", "W8", "W9", "W10", "W11", "W12"];
+    const data = baseTrend[currentSegment] || baseTrend.enterprise;
+    return weeks.map((week, i) => ({ week, bandwidth: data[i] }));
+  }, [currentSegment]);
+
+  // Guest Check-ins by Hour - Only for Hotel segment
+  const guestCheckinData = useMemo(() => {
+    return [
+      { hour: "6AM", checkins: 5 },
+      { hour: "8AM", checkins: 12 },
+      { hour: "10AM", checkins: 25 },
+      { hour: "12PM", checkins: 45 },
+      { hour: "2PM", checkins: 68 },
+      { hour: "4PM", checkins: 52 },
+      { hour: "6PM", checkins: 35 },
+      { hour: "8PM", checkins: 18 },
+      { hour: "10PM", checkins: 8 }
+    ];
+  }, []);
+
+  // Guest Duration of Stay - Only for Hotel segment
+  const guestDurationData = useMemo(() => {
+    return [
+      { duration: "< 1 hour", count: 45 },
+      { duration: "1-2 hours", count: 85 },
+      { duration: "2-4 hours", count: 120 },
+      { duration: "4-8 hours", count: 95 },
+      { duration: "8-24 hours", count: 65 },
+      { duration: "> 24 hours", count: 35 }
+    ];
+  }, []);
+
+  // Top-up Purchases - Only for Hotel, CoLiving, PG segments
+  const topupPurchasesData = useMemo(() => {
+    const baseData = {
+      hotel: [
+        { package: "1GB - ₹99", count: 245 },
+        { package: "3GB - ₹199", count: 180 },
+        { package: "5GB - ₹299", count: 120 },
+        { package: "10GB - ₹499", count: 65 },
+        { package: "Unlimited Day - ₹149", count: 95 }
+      ],
+      coLiving: [
+        { package: "5GB - ₹149", count: 85 },
+        { package: "10GB - ₹249", count: 120 },
+        { package: "25GB - ₹449", count: 95 },
+        { package: "50GB - ₹799", count: 45 },
+        { package: "Speed Boost - ₹99", count: 65 }
+      ],
+      pg: [
+        { package: "2GB - ₹79", count: 55 },
+        { package: "5GB - ₹149", count: 85 },
+        { package: "10GB - ₹249", count: 45 },
+        { package: "Night Unlimited - ₹49", count: 120 },
+        { package: "Weekend Pack - ₹99", count: 75 }
+      ]
+    };
+    return baseData[currentSegment] || [];
+  }, [currentSegment]);
+
+  // Monthly Usage Comparison - Available for all segments
+  const monthlyComparisonData = useMemo(() => {
+    const baseComparison = {
+      enterprise: { lastMonth: 2650, thisMonth: 2800, growth: 5.7 },
+      coLiving: { lastMonth: 1420, thisMonth: 1500, growth: 5.6 },
+      hotel: { lastMonth: 1680, thisMonth: 1800, growth: 7.1 },
+      coWorking: { lastMonth: 1120, thisMonth: 1200, growth: 7.1 },
+      pg: { lastMonth: 560, thisMonth: 600, growth: 7.1 },
+      miscellaneous: { lastMonth: 280, thisMonth: 300, growth: 7.1 }
+    };
+    const data = baseComparison[currentSegment] || baseComparison.enterprise;
+    return [
+      { period: "Last Month", usage: data.lastMonth },
+      { period: "This Month", usage: data.thisMonth }
+    ];
+  }, [currentSegment]);
+
+  // Evening vs Daytime Usage - Only for CoLiving and PG segments
+  const eveningDaytimeData = useMemo(() => {
+    const baseData = {
+      coLiving: [
+        { period: "Daytime (6AM-6PM)", usage: 35, color: "#4caf50" },
+        { period: "Evening (6PM-12AM)", usage: 55, color: "#ff9800" },
+        { period: "Night (12AM-6AM)", usage: 10, color: "#9c27b0" }
+      ],
+      pg: [
+        { period: "Daytime (6AM-6PM)", usage: 25, color: "#4caf50" },
+        { period: "Evening (6PM-12AM)", usage: 60, color: "#ff9800" },
+        { period: "Night (12AM-6AM)", usage: 15, color: "#9c27b0" }
+      ]
+    };
+    return baseData[currentSegment] || [];
+  }, [currentSegment]);
+
+  // Site bandwidth type - for demo purposes, assume fixed bandwidth for enterprise/office
+  const isFixedBandwidthSite = useMemo(() => {
+    return ['enterprise', 'office', 'coWorking'].includes(currentSegment);
+  }, [currentSegment]);
+
+  // ============================================
+  // RANDOMIZED CHART SELECTION LOGIC
+  // ============================================
+
+  // Define available charts with their conditions
+  const availableCharts = useMemo(() => {
+    const charts = [
+      {
+        id: 'speedTier',
+        title: t('charts.usersBySpeedTier'),
+        available: true, // Available for all segments
+        priority: 1
+      },
+      {
+        id: 'dataUsage',
+        title: t('charts.networkUsage'),
+        available: true, // Available for all segments
+        priority: 1
+      },
+      {
+        id: 'peakUsage',
+        title: t('charts.peakUsageHours'),
+        available: ['coLiving', 'hotel', 'pg', 'coWorking'].includes(currentSegment),
+        priority: 2
+      },
+      {
+        id: 'bandwidthTrend',
+        title: 'Bandwidth Consumption Trend',
+        available: isFixedBandwidthSite,
+        priority: 2
+      },
+      {
+        id: 'userGrowth',
+        title: 'User Growth Trend',
+        available: true, // Available for all segments
+        priority: 1
+      },
+      {
+        id: 'guestCheckins',
+        title: 'Guest Check-ins by Hour',
+        available: currentSegment === 'hotel',
+        priority: 3
+      },
+      {
+        id: 'guestDuration',
+        title: 'Guest Duration of Stay',
+        available: currentSegment === 'hotel',
+        priority: 3
+      },
+      {
+        id: 'topupPurchases',
+        title: 'Top-up Purchases',
+        available: ['hotel', 'coLiving', 'pg'].includes(currentSegment),
+        priority: 2
+      },
+      {
+        id: 'monthlyComparison',
+        title: 'Monthly Usage Comparison',
+        available: true, // Available for all segments
+        priority: 1
+      },
+      {
+        id: 'eveningDaytime',
+        title: 'Evening vs Daytime Usage',
+        available: ['coLiving', 'pg'].includes(currentSegment),
+        priority: 3
+      }
+    ];
+
+    return charts.filter(chart => chart.available);
+  }, [currentSegment, isFixedBandwidthSite, t]);
+
+  // Select 3 random charts from available pool - seeded by date for consistency within a day
+  const selectedCharts = useMemo(() => {
+    const today = new Date();
+    const seed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
+
+    // Simple seeded random function
+    const seededRandom = (s) => {
+      const x = Math.sin(s) * 10000;
+      return x - Math.floor(x);
+    };
+
+    const available = [...availableCharts];
+    const selected = [];
+    let seedOffset = 0;
+
+    // Select 3 charts
+    while (selected.length < 3 && available.length > 0) {
+      const randomIndex = Math.floor(seededRandom(seed + seedOffset + currentSegment.length) * available.length);
+      selected.push(available[randomIndex]);
+      available.splice(randomIndex, 1);
+      seedOffset++;
+    }
+
+    return selected;
+  }, [availableCharts, currentSegment]);
+
+  // Helper function to render a chart based on its ID
+  const renderChart = (chartConfig) => {
+    const { id, title } = chartConfig;
+
+    switch (id) {
+      case 'dataUsage':
+        return (
+          <Card key={id} title={t('charts.networkUsage')}>
+            <div id="chart-network-usage" className="chart-container">
+              <Line
+                data={{
+                  labels: networkData.map((n) => n.day),
+                  datasets: [{
+                    label: t('charts.networkUsage'),
+                    data: networkData.map((n) => n.usageGB),
+                    borderColor: "#004aad",
+                    backgroundColor: "rgba(0,74,173,0.2)",
+                    fill: true,
+                    tension: 0.4,
+                  }],
+                }}
+                options={chartOptions}
+              />
+            </div>
+            <div className="export-btn-group">
+              <Button variant="secondary" onClick={() => handleDashboardExportCSV([t('dashboard.day'), t('charts.networkUsage')], networkData.map((n) => [n.day, n.usageGB]), "network_usage.csv", "network-usage")} aria-label={t('common.exportCsv')} loading={exportingCSV && exportingChart === "network-usage"} disabled={exportingPDF || (exportingCSV && exportingChart !== "network-usage") || !networkData?.length}>
+                <FaFileCsv style={{ marginRight: 6 }} />{t('common.exportCsv')}
+              </Button>
+              <Button variant="secondary" onClick={() => handleDashboardExportPDF(t('charts.networkUsage'), [t('dashboard.day'), t('charts.networkUsage')], networkData.map((n) => [n.day, n.usageGB]), "line", networkData, "network_usage.pdf", "network_usage", "network-usage")} aria-label={t('common.exportPdf')} loading={exportingPDF && exportingChart === "network-usage"} disabled={exportingCSV || (exportingPDF && exportingChart !== "network-usage") || !networkData?.length}>
+                <FaFilePdf style={{ marginRight: 6 }} />{t('common.exportPdf')}
+              </Button>
+            </div>
+          </Card>
+        );
+
+      case 'speedTier':
+        return (
+          <Card key={id} title={t('charts.usersBySpeedTier')}>
+            <div id="chart-speed-tier" className="chart-container">
+              <Bar
+                data={{
+                  labels: speedTierData.map((d) => d.speedTier),
+                  datasets: [{
+                    label: t('dashboard.userCount'),
+                    data: speedTierData.map((d) => d.userCount),
+                    backgroundColor: ["#004aad", "#3f51b5", "#7986cb", "#c5cae9"],
+                    borderWidth: 1,
+                  }],
+                }}
+                options={chartOptions}
+              />
+            </div>
+            <div className="export-btn-group">
+              <Button variant="secondary" onClick={() => handleDashboardExportCSV([t('dashboard.speedTier'), t('dashboard.userCount')], speedTierData.map((d) => [d.speedTier, d.userCount]), "users_by_speed_tier.csv", "speed-tier")} aria-label={t('common.exportCsv')} loading={exportingCSV && exportingChart === "speed-tier"} disabled={exportingPDF || (exportingCSV && exportingChart !== "speed-tier") || !speedTierData?.length}>
+                <FaFileCsv style={{ marginRight: 6 }} />{t('common.exportCsv')}
+              </Button>
+              <Button variant="secondary" onClick={() => handleDashboardExportPDF(t('charts.usersBySpeedTier'), [t('dashboard.speedTier'), t('dashboard.userCount')], speedTierData.map((d) => [d.speedTier, d.userCount]), "bar", speedTierData, "users_by_speed_tier.pdf", "users_by_speed_tier", "speed-tier")} aria-label={t('common.exportPdf')} loading={exportingPDF && exportingChart === "speed-tier"} disabled={exportingCSV || (exportingPDF && exportingChart !== "speed-tier") || !speedTierData?.length}>
+                <FaFilePdf style={{ marginRight: 6 }} />{t('common.exportPdf')}
+              </Button>
+            </div>
+          </Card>
+        );
+
+      case 'peakUsage':
+        return (
+          <Card key={id} title={t('charts.peakUsageHours')}>
+            <div id="chart-peak-usage" className="chart-container">
+              <Bar
+                data={{
+                  labels: peakUsageData.map((p) => p.period),
+                  datasets: [{
+                    label: t('charts.usagePercent'),
+                    data: peakUsageData.map((p) => p.usage),
+                    backgroundColor: peakUsageData.map((_, i) => {
+                      const colors = ['#4caf50', '#8bc34a', '#ffeb3b', '#ff9800', '#ff5722', '#9c27b0'];
+                      return colors[i % colors.length];
+                    }),
+                    borderRadius: 4,
+                  }],
+                }}
+                options={{
+                  ...chartOptions,
+                  plugins: { ...chartOptions.plugins, legend: { display: false } },
+                  scales: { y: { beginAtZero: true, max: 40, ticks: { callback: (value) => `${value}%` } } }
+                }}
+              />
+            </div>
+            <div className="export-btn-group">
+              <Button variant="secondary" onClick={() => handleDashboardExportCSV([t('dashboard.timePeriod'), t('charts.usagePercent')], peakUsageData.map((p) => [p.period, `${p.usage}%`]), "peak_usage_hours.csv", "peak-usage")} aria-label={t('common.exportCsv')} loading={exportingCSV && exportingChart === "peak-usage"} disabled={exportingPDF || (exportingCSV && exportingChart !== "peak-usage") || !peakUsageData?.length}>
+                <FaFileCsv style={{ marginRight: 6 }} />{t('common.exportCsv')}
+              </Button>
+              <Button variant="secondary" onClick={() => handleDashboardExportPDF(t('charts.peakUsageHours'), [t('dashboard.timePeriod'), t('charts.usagePercent')], peakUsageData.map((p) => [p.period, `${p.usage}%`]), "bar", peakUsageData, "peak_usage_hours.pdf", "peak_usage", "peak-usage")} aria-label={t('common.exportPdf')} loading={exportingPDF && exportingChart === "peak-usage"} disabled={exportingCSV || (exportingPDF && exportingChart !== "peak-usage") || !peakUsageData?.length}>
+                <FaFilePdf style={{ marginRight: 6 }} />{t('common.exportPdf')}
+              </Button>
+            </div>
+          </Card>
+        );
+
+      case 'userGrowth':
+        return (
+          <Card key={id} title="User Growth Trend">
+            <div id="chart-user-growth" className="chart-container">
+              <Line
+                data={{
+                  labels: userGrowthData.map((d) => d.month),
+                  datasets: [{
+                    label: "Users",
+                    data: userGrowthData.map((d) => d.users),
+                    borderColor: "#4caf50",
+                    backgroundColor: "rgba(76,175,80,0.2)",
+                    fill: true,
+                    tension: 0.4,
+                  }],
+                }}
+                options={chartOptions}
+              />
+            </div>
+            <div className="export-btn-group">
+              <Button variant="secondary" onClick={() => handleDashboardExportCSV(["Month", "Users"], userGrowthData.map((d) => [d.month, d.users]), "user_growth.csv", "user-growth")} aria-label={t('common.exportCsv')} loading={exportingCSV && exportingChart === "user-growth"} disabled={exportingPDF || (exportingCSV && exportingChart !== "user-growth") || !userGrowthData?.length}>
+                <FaFileCsv style={{ marginRight: 6 }} />{t('common.exportCsv')}
+              </Button>
+              <Button variant="secondary" onClick={() => handleDashboardExportPDF("User Growth Trend", ["Month", "Users"], userGrowthData.map((d) => [d.month, d.users]), "line", userGrowthData, "user_growth.pdf", "user_growth", "user-growth")} aria-label={t('common.exportPdf')} loading={exportingPDF && exportingChart === "user-growth"} disabled={exportingCSV || (exportingPDF && exportingChart !== "user-growth") || !userGrowthData?.length}>
+                <FaFilePdf style={{ marginRight: 6 }} />{t('common.exportPdf')}
+              </Button>
+            </div>
+          </Card>
+        );
+
+      case 'bandwidthTrend':
+        return (
+          <Card key={id} title="Bandwidth Consumption Trend">
+            <div id="chart-bandwidth-trend" className="chart-container">
+              <Line
+                data={{
+                  labels: bandwidthTrendData.map((d) => d.week),
+                  datasets: [{
+                    label: "Bandwidth (GB)",
+                    data: bandwidthTrendData.map((d) => d.bandwidth),
+                    borderColor: "#ff9800",
+                    backgroundColor: "rgba(255,152,0,0.2)",
+                    fill: true,
+                    tension: 0.4,
+                  }],
+                }}
+                options={chartOptions}
+              />
+            </div>
+            <div className="export-btn-group">
+              <Button variant="secondary" onClick={() => handleDashboardExportCSV(["Week", "Bandwidth (GB)"], bandwidthTrendData.map((d) => [d.week, d.bandwidth]), "bandwidth_trend.csv", "bandwidth-trend")} aria-label={t('common.exportCsv')} loading={exportingCSV && exportingChart === "bandwidth-trend"} disabled={exportingPDF || (exportingCSV && exportingChart !== "bandwidth-trend") || !bandwidthTrendData?.length}>
+                <FaFileCsv style={{ marginRight: 6 }} />{t('common.exportCsv')}
+              </Button>
+              <Button variant="secondary" onClick={() => handleDashboardExportPDF("Bandwidth Consumption Trend", ["Week", "Bandwidth (GB)"], bandwidthTrendData.map((d) => [d.week, d.bandwidth]), "line", bandwidthTrendData, "bandwidth_trend.pdf", "bandwidth_trend", "bandwidth-trend")} aria-label={t('common.exportPdf')} loading={exportingPDF && exportingChart === "bandwidth-trend"} disabled={exportingCSV || (exportingPDF && exportingChart !== "bandwidth-trend") || !bandwidthTrendData?.length}>
+                <FaFilePdf style={{ marginRight: 6 }} />{t('common.exportPdf')}
+              </Button>
+            </div>
+          </Card>
+        );
+
+      case 'guestCheckins':
+        return (
+          <Card key={id} title="Guest Check-ins by Hour">
+            <div id="chart-guest-checkins" className="chart-container">
+              <Bar
+                data={{
+                  labels: guestCheckinData.map((d) => d.hour),
+                  datasets: [{
+                    label: "Check-ins",
+                    data: guestCheckinData.map((d) => d.checkins),
+                    backgroundColor: "#3f51b5",
+                    borderRadius: 4,
+                  }],
+                }}
+                options={{ ...chartOptions, plugins: { ...chartOptions.plugins, legend: { display: false } } }}
+              />
+            </div>
+            <div className="export-btn-group">
+              <Button variant="secondary" onClick={() => handleDashboardExportCSV(["Hour", "Check-ins"], guestCheckinData.map((d) => [d.hour, d.checkins]), "guest_checkins.csv", "guest-checkins")} aria-label={t('common.exportCsv')} loading={exportingCSV && exportingChart === "guest-checkins"} disabled={exportingPDF || (exportingCSV && exportingChart !== "guest-checkins") || !guestCheckinData?.length}>
+                <FaFileCsv style={{ marginRight: 6 }} />{t('common.exportCsv')}
+              </Button>
+              <Button variant="secondary" onClick={() => handleDashboardExportPDF("Guest Check-ins by Hour", ["Hour", "Check-ins"], guestCheckinData.map((d) => [d.hour, d.checkins]), "bar", guestCheckinData, "guest_checkins.pdf", "guest_checkins", "guest-checkins")} aria-label={t('common.exportPdf')} loading={exportingPDF && exportingChart === "guest-checkins"} disabled={exportingCSV || (exportingPDF && exportingChart !== "guest-checkins") || !guestCheckinData?.length}>
+                <FaFilePdf style={{ marginRight: 6 }} />{t('common.exportPdf')}
+              </Button>
+            </div>
+          </Card>
+        );
+
+      case 'guestDuration':
+        return (
+          <Card key={id} title="Guest Duration of Stay">
+            <div id="chart-guest-duration" className="chart-container">
+              <Bar
+                data={{
+                  labels: guestDurationData.map((d) => d.duration),
+                  datasets: [{
+                    label: "Guests",
+                    data: guestDurationData.map((d) => d.count),
+                    backgroundColor: ["#e91e63", "#9c27b0", "#673ab7", "#3f51b5", "#2196f3", "#00bcd4"],
+                    borderRadius: 4,
+                  }],
+                }}
+                options={{ ...chartOptions, plugins: { ...chartOptions.plugins, legend: { display: false } } }}
+              />
+            </div>
+            <div className="export-btn-group">
+              <Button variant="secondary" onClick={() => handleDashboardExportCSV(["Duration", "Guests"], guestDurationData.map((d) => [d.duration, d.count]), "guest_duration.csv", "guest-duration")} aria-label={t('common.exportCsv')} loading={exportingCSV && exportingChart === "guest-duration"} disabled={exportingPDF || (exportingCSV && exportingChart !== "guest-duration") || !guestDurationData?.length}>
+                <FaFileCsv style={{ marginRight: 6 }} />{t('common.exportCsv')}
+              </Button>
+              <Button variant="secondary" onClick={() => handleDashboardExportPDF("Guest Duration of Stay", ["Duration", "Guests"], guestDurationData.map((d) => [d.duration, d.count]), "bar", guestDurationData, "guest_duration.pdf", "guest_duration", "guest-duration")} aria-label={t('common.exportPdf')} loading={exportingPDF && exportingChart === "guest-duration"} disabled={exportingCSV || (exportingPDF && exportingChart !== "guest-duration") || !guestDurationData?.length}>
+                <FaFilePdf style={{ marginRight: 6 }} />{t('common.exportPdf')}
+              </Button>
+            </div>
+          </Card>
+        );
+
+      case 'topupPurchases':
+        return (
+          <Card key={id} title="Top-up Purchases">
+            <div id="chart-topup-purchases" className="chart-container">
+              <Bar
+                data={{
+                  labels: topupPurchasesData.map((d) => d.package),
+                  datasets: [{
+                    label: "Purchases",
+                    data: topupPurchasesData.map((d) => d.count),
+                    backgroundColor: ["#4caf50", "#8bc34a", "#cddc39", "#ffeb3b", "#ffc107"],
+                    borderRadius: 4,
+                  }],
+                }}
+                options={{ ...chartOptions, plugins: { ...chartOptions.plugins, legend: { display: false } } }}
+              />
+            </div>
+            <div className="export-btn-group">
+              <Button variant="secondary" onClick={() => handleDashboardExportCSV(["Package", "Purchases"], topupPurchasesData.map((d) => [d.package, d.count]), "topup_purchases.csv", "topup-purchases")} aria-label={t('common.exportCsv')} loading={exportingCSV && exportingChart === "topup-purchases"} disabled={exportingPDF || (exportingCSV && exportingChart !== "topup-purchases") || !topupPurchasesData?.length}>
+                <FaFileCsv style={{ marginRight: 6 }} />{t('common.exportCsv')}
+              </Button>
+              <Button variant="secondary" onClick={() => handleDashboardExportPDF("Top-up Purchases", ["Package", "Purchases"], topupPurchasesData.map((d) => [d.package, d.count]), "bar", topupPurchasesData, "topup_purchases.pdf", "topup_purchases", "topup-purchases")} aria-label={t('common.exportPdf')} loading={exportingPDF && exportingChart === "topup-purchases"} disabled={exportingCSV || (exportingPDF && exportingChart !== "topup-purchases") || !topupPurchasesData?.length}>
+                <FaFilePdf style={{ marginRight: 6 }} />{t('common.exportPdf')}
+              </Button>
+            </div>
+          </Card>
+        );
+
+      case 'monthlyComparison':
+        return (
+          <Card key={id} title="Monthly Usage Comparison">
+            <div id="chart-monthly-comparison" className="chart-container">
+              <Bar
+                data={{
+                  labels: monthlyComparisonData.map((d) => d.period),
+                  datasets: [{
+                    label: "Usage (GB)",
+                    data: monthlyComparisonData.map((d) => d.usage),
+                    backgroundColor: ["#9e9e9e", "#004aad"],
+                    borderRadius: 4,
+                  }],
+                }}
+                options={{ ...chartOptions, plugins: { ...chartOptions.plugins, legend: { display: false } } }}
+              />
+            </div>
+            <div className="export-btn-group">
+              <Button variant="secondary" onClick={() => handleDashboardExportCSV(["Period", "Usage (GB)"], monthlyComparisonData.map((d) => [d.period, d.usage]), "monthly_comparison.csv", "monthly-comparison")} aria-label={t('common.exportCsv')} loading={exportingCSV && exportingChart === "monthly-comparison"} disabled={exportingPDF || (exportingCSV && exportingChart !== "monthly-comparison") || !monthlyComparisonData?.length}>
+                <FaFileCsv style={{ marginRight: 6 }} />{t('common.exportCsv')}
+              </Button>
+              <Button variant="secondary" onClick={() => handleDashboardExportPDF("Monthly Usage Comparison", ["Period", "Usage (GB)"], monthlyComparisonData.map((d) => [d.period, d.usage]), "bar", monthlyComparisonData, "monthly_comparison.pdf", "monthly_comparison", "monthly-comparison")} aria-label={t('common.exportPdf')} loading={exportingPDF && exportingChart === "monthly-comparison"} disabled={exportingCSV || (exportingPDF && exportingChart !== "monthly-comparison") || !monthlyComparisonData?.length}>
+                <FaFilePdf style={{ marginRight: 6 }} />{t('common.exportPdf')}
+              </Button>
+            </div>
+          </Card>
+        );
+
+      case 'eveningDaytime':
+        return (
+          <Card key={id} title="Evening vs Daytime Usage">
+            <div id="chart-evening-daytime" className="chart-container">
+              <Doughnut
+                data={{
+                  labels: eveningDaytimeData.map((d) => d.period),
+                  datasets: [{
+                    data: eveningDaytimeData.map((d) => d.usage),
+                    backgroundColor: eveningDaytimeData.map((d) => d.color),
+                    borderWidth: 2,
+                  }],
+                }}
+                options={pieChartOptions}
+              />
+            </div>
+            <div className="export-btn-group">
+              <Button variant="secondary" onClick={() => handleDashboardExportCSV(["Time Period", "Usage (%)"], eveningDaytimeData.map((d) => [d.period, `${d.usage}%`]), "evening_daytime_usage.csv", "evening-daytime")} aria-label={t('common.exportCsv')} loading={exportingCSV && exportingChart === "evening-daytime"} disabled={exportingPDF || (exportingCSV && exportingChart !== "evening-daytime") || !eveningDaytimeData?.length}>
+                <FaFileCsv style={{ marginRight: 6 }} />{t('common.exportCsv')}
+              </Button>
+              <Button variant="secondary" onClick={() => handleDashboardExportPDF("Evening vs Daytime Usage", ["Time Period", "Usage (%)"], eveningDaytimeData.map((d) => [d.period, `${d.usage}%`]), "pie", eveningDaytimeData, "evening_daytime_usage.pdf", "evening_daytime", "evening-daytime")} aria-label={t('common.exportPdf')} loading={exportingPDF && exportingChart === "evening-daytime"} disabled={exportingCSV || (exportingPDF && exportingChart !== "evening-daytime") || !eveningDaytimeData?.length}>
+                <FaFilePdf style={{ marginRight: 6 }} />{t('common.exportPdf')}
+              </Button>
+            </div>
+          </Card>
+        );
+
+      default:
+        return null;
+    }
+  };
+
   const safeNumber = (value, fallback = 0) => typeof value === "number" && !isNaN(value) ? value : fallback;
 
   // Filter activities to last 24 hours and sort by most recent first
@@ -433,6 +1075,100 @@ useEffect(() => {
   let timeoutId = null;
 
   const loadDashboard = async () => {
+    /* ========================================================================
+     * BACKEND INTEGRATION: Load Dashboard Data
+     * ========================================================================
+     * API Endpoints (call in parallel):
+     *
+     * 1. GET /api/v1/dashboard/metrics
+     *    Query: ?siteId={siteId}&segment={segment}&companyView={isCompanyView}
+     *    Response: {
+     *      activeUsers: number,
+     *      activeUsersDelta: number,      // Change from previous period
+     *      licenseUsagePercent: number,
+     *      licenseUsageDelta: number,
+     *      dataUsageTB: number,
+     *      dataUsageDelta: number,
+     *      networkUptime: number,
+     *      uptimeDelta: number,
+     *      totalAlerts: number,
+     *      criticalAlerts: number,
+     *      activeGuests: number,
+     *      checkedInToday: number
+     *    }
+     *
+     * 2. GET /api/v1/dashboard/charts/network-usage
+     *    Query: ?siteId={siteId}&segment={segment}&days=90
+     *    Response: {
+     *      data: [{ date: "YYYY-MM-DD", usageGB: number }]
+     *    }
+     *
+     * 3. GET /api/v1/dashboard/charts/speed-distribution
+     *    Query: ?siteId={siteId}&segment={segment}
+     *    Response: {
+     *      data: [{ speedTier: string, userCount: number }]
+     *    }
+     *
+     * 4. GET /api/v1/dashboard/charts/peak-usage
+     *    Query: ?siteId={siteId}&segment={segment}&period=24h
+     *    Response: {
+     *      data: [{ period: string, usage: number }]
+     *    }
+     *
+     * 5. GET /api/v1/dashboard/activities
+     *    Query: ?siteId={siteId}&segment={segment}&limit=20
+     *    Response: {
+     *      activities: [{
+     *        id: string,
+     *        type: string,
+     *        user: string,
+     *        action: string,
+     *        timestamp: ISO8601,
+     *        details: object
+     *      }]
+     *    }
+     *
+     * 6. GET /api/v1/dashboard/alerts
+     *    Query: ?siteId={siteId}&segment={segment}&status=active
+     *    Response: {
+     *      alerts: [{
+     *        id: string,
+     *        severity: "critical"|"warning"|"info",
+     *        message: string,
+     *        timestamp: ISO8601,
+     *        acknowledged: boolean
+     *      }]
+     *    }
+     *
+     * Backend Processing:
+     * - Aggregate data from multiple sources:
+     *   - User database for user counts
+     *   - AAA system for online users/sessions
+     *   - Network monitoring for bandwidth/uptime
+     *   - Activity logs for recent actions
+     * - Cache dashboard data (5-minute TTL recommended)
+     * - Support company-level aggregation (sum across sites)
+     *
+     * Sample Integration Code:
+     * ------------------------
+     * const [metricsRes, networkRes, speedRes, peakRes, activitiesRes] = await Promise.all([
+     *   fetch(`/api/v1/dashboard/metrics?siteId=${siteId}&segment=${segment}`),
+     *   fetch(`/api/v1/dashboard/charts/network-usage?siteId=${siteId}&segment=${segment}&days=90`),
+     *   fetch(`/api/v1/dashboard/charts/speed-distribution?siteId=${siteId}&segment=${segment}`),
+     *   fetch(`/api/v1/dashboard/charts/peak-usage?siteId=${siteId}&segment=${segment}`),
+     *   fetch(`/api/v1/dashboard/activities?siteId=${siteId}&segment=${segment}&limit=20`)
+     * ]);
+     *
+     * const metrics = await metricsRes.json();
+     * const networkData = await networkRes.json();
+     * // ... update state with fetched data
+     *
+     * Real-time Updates (Optional):
+     * - WebSocket: wss://api/ws/dashboard/{siteId}
+     * - Events: USER_CONNECTED, USER_DISCONNECTED, ALERT_NEW, DATA_USAGE_UPDATE
+     * ======================================================================== */
+
+    // TODO: Remove mock data and implement actual API calls above
     startLoading('dashboard');
     try {
       timeoutId = setTimeout(() => {
@@ -544,51 +1280,187 @@ useEffect(() => {
       await new Promise(resolve => {
         timeoutId = setTimeout(resolve, 1000);
       });
-      
+
+      // Determine chart configuration based on chartId for proper data mapping
       let chartData;
-      if (chartType === "line") {
-        chartData = {
-          labels: dataRows.map((n) => n.day),
-          datasets: [{
-            label: "Network Usage (GB)",
-            data: dataRows.map((n) => n.usageGB),
-            borderColor: "#004aad",
-            backgroundColor: "rgba(0,74,173,0.2)",
-            fill: true,
-            tension: 0.4,
-          }],
-        };
-      } else if (chartType === "bar") {
-        chartData = {
-          labels: dataRows.map((d) => d.speedTier),
-          datasets: [{
-            label: "User Count",
-            data: dataRows.map((d) => d.userCount),
-            backgroundColor: ["#004aad", "#3f51b5", "#7986cb", "#c5cae9"],
-            borderWidth: 1,
-          }],
-        };
-      } else if (chartType === "pie") {
-        chartData = {
-          labels: dataRows.map((a) => a.alertType),
-          datasets: [{
-            label: "Alerts",
-            data: dataRows.map((a) => a.count),
-            backgroundColor: ["#4caf50", "#ff9800", "#f44336"],
-          }],
-        };
+      let xLabel = "";
+      let yLabel = "";
+
+      // Map chartId to proper data structure and labels
+      switch (chartId) {
+        case "network-usage":
+          chartData = {
+            labels: dataRows.map((d) => d.day),
+            datasets: [{
+              label: "Network Usage (GB)",
+              data: dataRows.map((d) => d.usageGB),
+              borderColor: "#004aad",
+              backgroundColor: "rgba(0,74,173,0.2)",
+              fill: true,
+              tension: 0.4,
+            }],
+          };
+          xLabel = "Day";
+          yLabel = "Network Usage (GB)";
+          break;
+
+        case "user-growth":
+          chartData = {
+            labels: dataRows.map((d) => d.month),
+            datasets: [{
+              label: "Users",
+              data: dataRows.map((d) => d.users),
+              borderColor: "#4caf50",
+              backgroundColor: "rgba(76,175,80,0.2)",
+              fill: true,
+              tension: 0.4,
+            }],
+          };
+          xLabel = "Month";
+          yLabel = "Users";
+          break;
+
+        case "bandwidth-trend":
+          chartData = {
+            labels: dataRows.map((d) => d.week),
+            datasets: [{
+              label: "Bandwidth (GB)",
+              data: dataRows.map((d) => d.bandwidth),
+              borderColor: "#ff9800",
+              backgroundColor: "rgba(255,152,0,0.2)",
+              fill: true,
+              tension: 0.4,
+            }],
+          };
+          xLabel = "Week";
+          yLabel = "Bandwidth (GB)";
+          break;
+
+        case "speed-tier":
+          chartData = {
+            labels: dataRows.map((d) => d.speedTier),
+            datasets: [{
+              label: "User Count",
+              data: dataRows.map((d) => d.userCount),
+              backgroundColor: ["#004aad", "#3f51b5", "#7986cb", "#c5cae9"],
+              borderWidth: 1,
+            }],
+          };
+          xLabel = "Speed Tier";
+          yLabel = "User Count";
+          break;
+
+        case "peak-usage":
+          chartData = {
+            labels: dataRows.map((d) => d.period),
+            datasets: [{
+              label: "Usage %",
+              data: dataRows.map((d) => d.usage),
+              backgroundColor: "#2196f3",
+              borderRadius: 4,
+            }],
+          };
+          xLabel = "Time Period";
+          yLabel = "Usage %";
+          break;
+
+        case "guest-checkins":
+          chartData = {
+            labels: dataRows.map((d) => d.hour),
+            datasets: [{
+              label: "Check-ins",
+              data: dataRows.map((d) => d.checkins),
+              backgroundColor: "#3f51b5",
+              borderRadius: 4,
+            }],
+          };
+          xLabel = "Hour";
+          yLabel = "Check-ins";
+          break;
+
+        case "guest-duration":
+          chartData = {
+            labels: dataRows.map((d) => d.duration),
+            datasets: [{
+              label: "Guests",
+              data: dataRows.map((d) => d.count),
+              backgroundColor: "#9c27b0",
+              borderRadius: 4,
+            }],
+          };
+          xLabel = "Duration";
+          yLabel = "Guests";
+          break;
+
+        case "topup-purchases":
+          chartData = {
+            labels: dataRows.map((d) => d.package),
+            datasets: [{
+              label: "Purchases",
+              data: dataRows.map((d) => d.count),
+              backgroundColor: "#ff5722",
+              borderRadius: 4,
+            }],
+          };
+          xLabel = "Package";
+          yLabel = "Purchases";
+          break;
+
+        case "alert-distribution":
+          chartData = {
+            labels: dataRows.map((d) => d.alertType),
+            datasets: [{
+              label: "Alerts",
+              data: dataRows.map((d) => d.count),
+              backgroundColor: ["#4caf50", "#ff9800", "#f44336"],
+            }],
+          };
+          break;
+
+        case "device-status":
+          chartData = {
+            labels: dataRows.map((d) => d.status),
+            datasets: [{
+              label: "Devices",
+              data: dataRows.map((d) => d.count),
+              backgroundColor: ["#4caf50", "#f44336", "#9e9e9e"],
+            }],
+          };
+          break;
+
+        default:
+          // Fallback: try to infer from data structure
+          if (dataRows.length > 0) {
+            const keys = Object.keys(dataRows[0]);
+            const labelKey = keys[0];
+            const valueKey = keys[1];
+            chartData = {
+              labels: dataRows.map((d) => d[labelKey]),
+              datasets: [{
+                label: title,
+                data: dataRows.map((d) => d[valueKey]),
+                borderColor: "#004aad",
+                backgroundColor: chartType === "line" ? "rgba(0,74,173,0.2)" : "#004aad",
+                fill: chartType === "line",
+                tension: chartType === "line" ? 0.4 : undefined,
+              }],
+            };
+            xLabel = labelKey;
+            yLabel = valueKey;
+          }
+          break;
       }
 
       const exportChartOptions = getStandardChartOptions({
         type: chartType,
         title,
-        xLabel: chartType === "line" ? "Day" : chartType === "bar" ? "Speed Tier" : "",
-        yLabel: chartType === "line" ? "Network Usage (GB)" : chartType === "bar" ? "User Count" : "",
+        xLabel,
+        yLabel,
         darkMode: false,
         forExport: true,
       });
-      
-      const { width, height } = EXPORT_CANVAS_SIZES[chartType];
+
+      const { width, height } = EXPORT_CANVAS_SIZES[chartType] || { width: 900, height: 450 };
 
       await exportReportPDF({
         title,
@@ -606,7 +1478,7 @@ useEffect(() => {
         watermarkText: "CONFIDENTIAL",
         disclaimerText: "This report contains confidential information. Data is subject to change. For internal use only."
       });
-      
+
       notifications.exportSuccess("PDF");
     } catch (error) {
       notifications.exportFailed("PDF");
@@ -832,10 +1704,7 @@ useEffect(() => {
   };
 
   const handleSupportQuickAction = () => {
-    navigate('/knowledge');
-    setTimeout(() => {
-      window.dispatchEvent(new CustomEvent('triggerSupportHighlight', { detail: 'highlight-support' }));
-    }, ANIMATION.HIGHLIGHT_DURATION);
+    navigate('/support');
   };
 
   const handleQuickAction = (path, requiredPermission) => {
@@ -1308,202 +2177,7 @@ useEffect(() => {
 
       <h2 className="dashboard-section-title">{t('dashboard.networkAnalytics')}</h2>
       <section className="dashboard-charts" aria-label="Dashboard charts section">
-        <Card title={t('charts.networkUsage')}>
-          <div id="chart-network-usage" className="chart-container">
-            <Line
-              data={{
-                labels: networkData.map((n) => n.day),
-                datasets: [
-                  {
-                    label: t('charts.networkUsage'),
-                    data: networkData.map((n) => n.usageGB),
-                    borderColor: "#004aad",
-                    backgroundColor: "rgba(0,74,173,0.2)",
-                    fill: true,
-                    tension: 0.4,
-                  },
-                ],
-              }}
-              options={chartOptions}
-            />
-          </div>
-          <div className="export-btn-group">
-            <Button
-              variant="secondary"
-              onClick={() =>
-                handleDashboardExportCSV(
-                  [t('dashboard.day'), t('charts.networkUsage')],
-                  networkData.map((n) => [n.day, n.usageGB]),
-                  "network_usage.csv",
-                  "network-usage"
-                )
-              }
-              aria-label={t('common.exportCsv')}
-              loading={exportingCSV && exportingChart === "network-usage"}
-              disabled={exportingPDF || (exportingCSV && exportingChart !== "network-usage") || !networkData?.length}
-            >
-              <FaFileCsv style={{ marginRight: 6 }} />
-              {t('common.exportCsv')}
-            </Button>
-            <Button
-              variant="secondary"
-              onClick={() =>
-                handleDashboardExportPDF(
-                  t('charts.networkUsage'),
-                  [t('dashboard.day'), t('charts.networkUsage')],
-                  networkData.map((n) => [n.day, n.usageGB]),
-                  "line",
-                  networkData,
-                  "network_usage.pdf",
-                  "network_usage",
-                  "network-usage"
-                )
-              }
-              aria-label={t('common.exportPdf')}
-              loading={exportingPDF && exportingChart === "network-usage"}
-              disabled={exportingCSV || (exportingPDF && exportingChart !== "network-usage") || !networkData?.length}
-            >
-              <FaFilePdf style={{ marginRight: 6 }} />
-              {t('common.exportPdf')}
-            </Button>
-          </div>
-        </Card>
-
-        <Card title={t('charts.usersBySpeedTier')}>
-          <div id="chart-speed-tier" className="chart-container">
-            <Bar
-              data={{
-                labels: speedTierData.map((d) => d.speedTier),
-                datasets: [
-                  {
-                    label: t('dashboard.userCount'),
-                    data: speedTierData.map((d) => d.userCount),
-                    backgroundColor: ["#004aad", "#3f51b5", "#7986cb", "#c5cae9"],
-                    borderWidth: 1,
-                  },
-                ],
-              }}
-              options={chartOptions}
-            />
-          </div>
-          <div className="export-btn-group">
-            <Button
-              variant="secondary"
-              onClick={() =>
-                handleDashboardExportCSV(
-                  [t('dashboard.speedTier'), t('dashboard.userCount')],
-                  speedTierData.map((d) => [d.speedTier, d.userCount]),
-                  "users_by_speed_tier.csv",
-                  "speed-tier"
-                )
-              }
-              aria-label={t('common.exportCsv')}
-              loading={exportingCSV && exportingChart === "speed-tier"}
-              disabled={exportingPDF || (exportingCSV && exportingChart !== "speed-tier") || !speedTierData?.length}
-            >
-              <FaFileCsv style={{ marginRight: 6 }} />
-              {t('common.exportCsv')}
-            </Button>
-            <Button
-              variant="secondary"
-              onClick={() =>
-                handleDashboardExportPDF(
-                  t('charts.usersBySpeedTier'),
-                  [t('dashboard.speedTier'), t('dashboard.userCount')],
-                  speedTierData.map((d) => [d.speedTier, d.userCount]),
-                  "bar",
-                  speedTierData,
-                  "users_by_speed_tier.pdf",
-                  "users_by_speed_tier",
-                  "speed-tier"
-                )
-              }
-              aria-label={t('common.exportPdf')}
-              loading={exportingPDF && exportingChart === "speed-tier"}
-              disabled={exportingCSV || (exportingPDF && exportingChart !== "speed-tier") || !speedTierData?.length}
-            >
-              <FaFilePdf style={{ marginRight: 6 }} />
-              {t('common.exportPdf')}
-            </Button>
-          </div>
-        </Card>
-
-        <Card title={t('charts.peakUsageHours')}>
-          <div id="chart-peak-usage" className="chart-container">
-            <Bar
-              data={{
-                labels: peakUsageData.map((p) => p.period),
-                datasets: [
-                  {
-                    label: t('charts.usagePercent'),
-                    data: peakUsageData.map((p) => p.usage),
-                    backgroundColor: peakUsageData.map((_, i) => {
-                      const colors = ['#4caf50', '#8bc34a', '#ffeb3b', '#ff9800', '#ff5722', '#9c27b0'];
-                      return colors[i % colors.length];
-                    }),
-                    borderRadius: 4,
-                  },
-                ],
-              }}
-              options={{
-                ...chartOptions,
-                plugins: {
-                  ...chartOptions.plugins,
-                  legend: { display: false },
-                },
-                scales: {
-                  y: {
-                    beginAtZero: true,
-                    max: 40,
-                    ticks: {
-                      callback: (value) => `${value}%`
-                    }
-                  }
-                }
-              }}
-            />
-          </div>
-          <div className="export-btn-group">
-            <Button
-              variant="secondary"
-              onClick={() =>
-                handleDashboardExportCSV(
-                  [t('dashboard.timePeriod'), t('charts.usagePercent')],
-                  peakUsageData.map((p) => [p.period, `${p.usage}%`]),
-                  "peak_usage_hours.csv",
-                  "peak-usage"
-                )
-              }
-              aria-label={t('common.exportCsv')}
-              loading={exportingCSV && exportingChart === "peak-usage"}
-              disabled={exportingPDF || (exportingCSV && exportingChart !== "peak-usage") || !peakUsageData?.length}
-            >
-              <FaFileCsv style={{ marginRight: 6 }} />
-              {t('common.exportCsv')}
-            </Button>
-            <Button
-              variant="secondary"
-              onClick={() =>
-                handleDashboardExportPDF(
-                  t('charts.peakUsageHours'),
-                  [t('dashboard.timePeriod'), t('charts.usagePercent')],
-                  peakUsageData.map((p) => [p.period, `${p.usage}%`]),
-                  "bar",
-                  peakUsageData,
-                  "peak_usage_hours.pdf",
-                  "peak_usage",
-                  "peak-usage"
-                )
-              }
-              aria-label={t('common.exportPdf')}
-              loading={exportingPDF && exportingChart === "peak-usage"}
-              disabled={exportingCSV || (exportingPDF && exportingChart !== "peak-usage") || !peakUsageData?.length}
-            >
-              <FaFilePdf style={{ marginRight: 6 }} />
-              {t('common.exportPdf')}
-            </Button>
-          </div>
-        </Card>
+        {selectedCharts.map(chart => renderChart(chart))}
       </section>
 
       <h2 className="dashboard-section-title">{t('dashboard.recentActivities')}</h2>

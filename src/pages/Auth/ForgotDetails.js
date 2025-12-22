@@ -24,6 +24,66 @@ const ForgotDetails = () => {
     setError("");
     setIsLoading(true);
 
+    /* ========================================================================
+     * BACKEND INTEGRATION: Password/Account Recovery Request
+     * ========================================================================
+     * API Endpoint: POST /api/v1/auth/forgot-password
+     *
+     * Request Payload:
+     * {
+     *   "type": "serviceId" | "username",  // Recovery method chosen
+     *   "value": "string"                   // Service ID or Username
+     * }
+     *
+     * Expected Response (Success - 200):
+     * {
+     *   "success": true,
+     *   "data": {
+     *     "message": "Recovery instructions sent",
+     *     "maskedEmail": "u***@example.com",    // Optional: show where email sent
+     *     "maskedMobile": "91****5678"          // Optional: show where SMS sent
+     *   }
+     * }
+     *
+     * Expected Response (Error - 400/404):
+     * {
+     *   "success": false,
+     *   "error": {
+     *     "code": "INVALID_INPUT|USER_NOT_FOUND|RATE_LIMITED",
+     *     "message": "Error message"
+     *   }
+     * }
+     *
+     * Security Notes:
+     * - Always return success even if user not found (prevent enumeration)
+     * - Rate limit requests per IP (e.g., 3 per hour)
+     * - Log all recovery attempts for security audit
+     *
+     * Sample Integration Code:
+     * ------------------------
+     * try {
+     *   const response = await fetch('/api/v1/auth/forgot-password', {
+     *     method: 'POST',
+     *     headers: { 'Content-Type': 'application/json' },
+     *     body: JSON.stringify({
+     *       type: activeTab,
+     *       value: activeTab === 'serviceId' ? serviceId : username
+     *     })
+     *   });
+     *   const data = await response.json();
+     *
+     *   if (data.success) {
+     *     setSuccess(true);
+     *     // Optionally show masked contact info where recovery sent
+     *   } else {
+     *     setError(data.error.message);
+     *   }
+     * } catch (error) {
+     *   setError('Failed to process request. Please try again.');
+     * }
+     * ======================================================================== */
+
+    // TODO: Remove mock and implement actual password recovery API call
     await new Promise((resolve) => setTimeout(resolve, 800));
 
     const value = activeTab === "serviceId" ? serviceId : username;
@@ -122,8 +182,9 @@ const ForgotDetails = () => {
                   <form onSubmit={handleSubmit}>
                     {activeTab === "serviceId" ? (
                       <div className="form-field">
-                        <label>Service ID</label>
+                        <label htmlFor="service-id-input">Service ID</label>
                         <input
+                          id="service-id-input"
                           type="text"
                           value={serviceId}
                           onChange={(e) => setServiceId(e.target.value)}
@@ -133,8 +194,9 @@ const ForgotDetails = () => {
                       </div>
                     ) : (
                       <div className="form-field">
-                        <label>Username</label>
+                        <label htmlFor="username-input">Username</label>
                         <input
+                          id="username-input"
                           type="text"
                           value={username}
                           onChange={(e) => setUsername(e.target.value)}

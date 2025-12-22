@@ -401,3 +401,60 @@
     padding: 0.5rem 1rem;
   }
 }
+
+/* Bulk Import Not Allowed Message */
+.bulk-import-not-allowed {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2rem;
+  text-align: center;
+}
+
+.bulk-import-not-allowed .warning-icon {
+  font-size: 3rem;
+  color: #d97706;
+  margin-bottom: 1rem;
+}
+
+.bulk-import-not-allowed h3 {
+  font-size: var(--font-xl);
+  color: #1e293b;
+  margin: 0 0 0.75rem 0;
+  font-weight: 600;
+}
+
+.bulk-import-not-allowed p {
+  color: #64748b;
+  margin: 0 0 0.5rem 0;
+  font-size: var(--font-base);
+  line-height: 1.5;
+}
+
+.bulk-import-not-allowed p strong {
+  color: #1e293b;
+  text-transform: capitalize;
+}
+
+.bulk-import-not-allowed .hint {
+  font-size: var(--font-sm);
+  color: #94a3b8;
+  margin-top: 0.5rem;
+}
+
+[data-theme="dark"] .bulk-import-not-allowed h3 {
+  color: var(--color-text-primary, #e2e8f0);
+}
+
+[data-theme="dark"] .bulk-import-not-allowed p {
+  color: var(--color-text-secondary, #94a3b8);
+}
+
+[data-theme="dark"] .bulk-import-not-allowed p strong {
+  color: var(--color-text-primary, #e2e8f0);
+}
+
+[data-theme="dark"] .bulk-import-not-allowed .hint {
+  color: var(--color-text-muted, #64748b);
+}

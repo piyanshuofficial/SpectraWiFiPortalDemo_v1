@@ -1,4 +1,135 @@
-// src/pages/UserManagement/UserList.js
+/**
+ * ============================================================================
+ * User List Page (User Management)
+ * ============================================================================
+ *
+ * @file src/pages/UserManagement/UserList.js
+ * @description Main user management page displaying all users for the current
+ *              site/company with filtering, sorting, pagination, and CRUD actions.
+ *              This is one of the core pages of the customer portal.
+ *
+ * @features
+ * - Tabular display of all users with sortable columns
+ * - Search and advanced filtering capabilities
+ * - Status-based filtering (Active, Suspended, Blocked)
+ * - Site filtering for company-level users
+ * - Pagination with configurable rows per page
+ * - Column visibility toggle (show/hide columns)
+ * - Export to CSV functionality
+ * - Add/Edit user via modal form
+ * - Bulk import from CSV
+ * - Status change actions (Suspend, Block, Activate)
+ * - License usage indicator
+ *
+ * @pageStructure
+ * ```
+ * ┌──────────────────────────────────────────────────────────────────────────┐
+ * │ Page Title: "User Management"                                           │
+ * ├──────────────────────────────────────────────────────────────────────────┤
+ * │ [Company View Banner - if in company view]                              │
+ * ├────────────────────────────────────────────────┬─────────────────────────┤
+ * │  UserToolbar:                                  │  License Usage Ring     │
+ * │  [Search] [Status Filter] [Add] [Import] [Export] [Add Device]          │
+ * ├──────────────────────────────────────────────────────────────────────────┤
+ * │ Column Controls: [✓ ID] [✓ Policy] [ Location] [✓ Status] ...           │
+ * ├──────────────────────────────────────────────────────────────────────────┤
+ * │ [Show Advanced Filters] button                                          │
+ * │ ┌──────────────────────────────────────────────────────────────────────┐ │
+ * │ │ Advanced Filters Panel (collapsible)                                 │ │
+ * │ └──────────────────────────────────────────────────────────────────────┘ │
+ * ├──────────────────────────────────────────────────────────────────────────┤
+ * │                         User Data Table                                  │
+ * │ ┌────┬────────┬─────────┬─────────┬──────────┬─────────┬─────────┐     │
+ * │ │ ID │ Name   │ Mobile  │ Email   │ Policy   │ Status  │ Actions │     │
+ * │ ├────┼────────┼─────────┼─────────┼──────────┼─────────┼─────────┤     │
+ * │ │ U1 │ John D │ 91-xxx  │ j@e.com │ 50Mbps...│ Active  │ [i][✎] │     │
+ * │ │ U2 │ Jane S │ 91-xxx  │ jane@.. │ 100Mb... │ Suspended│ [i][✎] │     │
+ * │ └────┴────────┴─────────┴─────────┴──────────┴─────────┴─────────┘     │
+ * ├──────────────────────────────────────────────────────────────────────────┤
+ * │ Pagination: [< 1 2 3 4 5 >]  Rows per page: [10 ▼]                      │
+ * └──────────────────────────────────────────────────────────────────────────┘
+ * ```
+ *
+ * @userStatuses
+ * | Status    | Color  | Description                            | Actions Allowed     |
+ * |-----------|--------|----------------------------------------|---------------------|
+ * | Active    | Green  | User has network access                | Edit, Suspend, Block|
+ * | Suspended | Yellow | Temporarily disabled, can reactivate   | Edit, Activate, Block|
+ * | Blocked   | Red    | Permanently disabled, CANNOT reactivate| View only           |
+ *
+ * @permissions
+ * - canEditUsers: Add, Edit, Suspend, Block, Activate users
+ * - canViewReports: Export user list to CSV
+ * - canBulkImportUsers: Access bulk import feature
+ * - canAddUserDevice: Add device from this page
+ *
+ * @companyView
+ * When a company-level user views this page:
+ * - Shows users from ALL sites with site column
+ * - Site filter dropdown appears in banner
+ * - Edit actions disabled (read-only aggregated view)
+ * - Must drill down to site for editing
+ *
+ * @dataFlow
+ * ```
+ * Mount
+ *   │
+ *   ▼
+ * Load users from sample data (TODO: API call)
+ *   │
+ *   ▼
+ * Apply segment filter (from context)
+ *   │
+ *   ▼
+ * Apply search/status filters
+ *   │
+ *   ▼
+ * Sort by selected column
+ *   │
+ *   ▼
+ * Paginate for display
+ *   │
+ *   ▼
+ * Render table with memoized rows
+ * ```
+ *
+ * @stateManagement
+ * - users: Array of user objects
+ * - editingUser: User being edited (null when adding)
+ * - showFormModal: Controls add/edit modal visibility
+ * - searchTerm, filters: Filter state from useFilter hook
+ * - currentPage, rowsPerPage: Pagination from useTableState
+ *
+ * @modals
+ * - UserFormModal: Add/Edit user form
+ * - UserDetailsModal: View full user details
+ * - BulkImportModal: CSV import wizard
+ * - DeviceFormModal: Add device to user
+ * - ConfirmationModal: Status change confirmations
+ *
+ * @performance
+ * - React.memo on UserTableRow to prevent unnecessary re-renders
+ * - useMemo for filtered/sorted/paged data
+ * - useCallback for event handlers
+ * - Skeleton loader during initial load
+ *
+ * @dependencies
+ * - usePermissions: Permission checking
+ * - useSegment: Current segment from context
+ * - useTableState: Pagination and column visibility
+ * - useFilter/useSort: Data filtering and sorting
+ * - useAccessLevelView: Company/site view state
+ * - useReadOnlyMode: Customer impersonation check
+ *
+ * @relatedFiles
+ * - UserFormModal.js: Add/Edit form
+ * - UserDetailsModal.js: User details view
+ * - UserToolbar.js: Action toolbar
+ * - userSampleData.js: Demo data
+ * - UserManagement.css: Page styles
+ *
+ * ============================================================================
+ */
 
 import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { useTranslation } from 'react-i18next';
@@ -27,7 +158,7 @@ import userSampleData from "../../constants/userSampleData";
 import UserLicenseRing from '../../components/common/UserLicenseRing';
 import { useLocation } from 'react-router-dom';
 import notifications from "../../utils/notifications";
-import SEGMENT_DEVICE_AVAILABILITY from '../../config/segmentDeviceConfig';
+// Note: Segment device permissions now come from usePermissions hook (segmentPermissionsConfig)
 import { PAGINATION } from '../../constants/appConstants';
 import { useLoading } from "../../context/LoadingContext";
 import LoadingOverlay from "../../components/Loading/LoadingOverlay";
@@ -35,6 +166,7 @@ import SkeletonLoader from "../../components/Loading/SkeletonLoader";
 import { exportChartDataToCSV } from "../../utils/exportUtils";
 import { useAccessLevelView } from "../../context/AccessLevelViewContext";
 import { companySites } from "../../constants/companySampleData";
+import { useReadOnlyMode } from "../../hooks/useReadOnlyMode";
 
 const PolicyCell = React.memo(({ speed, dataVolume, deviceLimit }) => {
   if (!speed && !dataVolume && !deviceLimit) return <td className="policy-column">--</td>;
@@ -152,13 +284,17 @@ const UserTableRow = React.memo(({
 UserTableRow.displayName = 'UserTableRow';
 
 const UserList = () => {
-  const { canEditUsers, canViewReports } = usePermissions();
+  const { canEditUsers, canViewReports, canBulkImportUsers, canAddUserDevice, canAddDigitalDevice } = usePermissions();
   const { currentSegment } = useSegment();
   const { canBulkAddUsers } = useBulkOperations();
+
+  // Use segment permissions - canBulkImportUsers from usePermissions takes precedence
+  const allowBulkImport = canBulkImportUsers;
   const location = useLocation();
   const { startLoading, stopLoading, isLoading } = useLoading();
   const { t } = useTranslation();
   const { isCompanyView, isSiteView, canEditInCurrentView, drillDownToSite } = useAccessLevelView();
+  const { isReadOnly: isCustomerViewReadOnly, blockAction } = useReadOnlyMode();
 
   // Site filter for company view
   const [siteFilter, setSiteFilter] = useState('all');
@@ -185,10 +321,9 @@ const UserList = () => {
   const [changingStatus, setChangingStatus] = useState(false);
   const [showDeviceModal, setShowDeviceModal] = useState(false);
 
-  const segmentDeviceConfig = SEGMENT_DEVICE_AVAILABILITY[segmentFilter] || {};
-  const allowUserDevices = segmentDeviceConfig.allowUserDevices ?? false;
-  const allowDigitalDevices = segmentDeviceConfig.allowDigitalDevices ?? false;
-  const showAddDevice = allowUserDevices || allowDigitalDevices;
+  // Use segment permissions for device availability (from usePermissions)
+  // canAddUserDevice and canAddDigitalDevice are now derived from segmentPermissionsConfig
+  const showAddDevice = canAddUserDevice || canAddDigitalDevice;
 
   const columns = useMemo(() => {
     const segmentCols = segmentSpecificFields[segmentFilter] || [];
@@ -456,6 +591,9 @@ const UserList = () => {
   ]);
 
   const handleUserSubmit = useCallback(async (userObj) => {
+    // Block in read-only mode (customer view impersonation)
+    if (blockAction("Adding/editing users")) return;
+
     setSubmitting(true);
     let timeoutId = null;
     try {
@@ -642,22 +780,25 @@ const UserList = () => {
       if (timeoutId) clearTimeout(timeoutId);
       setSubmitting(false);
     }
-  }, [editingUser, segmentFilter]);
+  }, [editingUser, segmentFilter, blockAction]);
 
   const handleSuspendClick = useCallback((user) => {
+    if (blockAction("Suspending users")) return;
     setUserToChangeStatus({ user, newStatus: "Suspended" });
     setShowSuspendConfirmation(true);
-  }, []);
+  }, [blockAction]);
 
   const handleActivateClick = useCallback((user) => {
+    if (blockAction("Activating users")) return;
     setUserToChangeStatus({ user, newStatus: "Active" });
     setShowActivateConfirmation(true);
-  }, []);
+  }, [blockAction]);
 
   const handleBlockClick = useCallback((user) => {
+    if (blockAction("Blocking users")) return;
     setUserToChangeStatus({ user, newStatus: "Blocked" });
     setShowBlockConfirmation(true);
-  }, []);
+  }, [blockAction]);
 
   const handleConfirmStatusChange = useCallback(async () => {
     if (!userToChangeStatus) return;
@@ -823,6 +964,7 @@ const UserList = () => {
   }, []);
 
   const handleDelete = useCallback(async (id) => {
+    if (blockAction("Deleting users")) return;
     if (window.confirm("Are you sure you want to delete this user?")) {
       startLoading('users');
       let timeoutId = null;
@@ -937,9 +1079,10 @@ const UserList = () => {
         stopLoading('users');
       }
     }
-  }, [startLoading, stopLoading]);
+  }, [startLoading, stopLoading, blockAction]);
 
   const handleEditClick = useCallback((user) => {
+    if (blockAction("Editing users")) return;
     const isBlocked = user.status === "Blocked" || user.status === "Restricted";
     if (isBlocked) {
       notifications.showError("Cannot edit user with Blocked status");
@@ -947,7 +1090,7 @@ const UserList = () => {
     }
     setEditingUser(user);
     setShowFormModal(true);
-  }, []);
+  }, [blockAction]);
 
   const handleDetailsClick = useCallback((user) => {
     // ========================================
@@ -1297,8 +1440,8 @@ const UserList = () => {
     );
   }
 
-  // Determine if edit actions should be disabled (company view is read-only)
-  const isReadOnly = isCompanyView && !canEditInCurrentView;
+  // Determine if edit actions should be disabled (company view or customer impersonation mode)
+  const isReadOnly = isCustomerViewReadOnly || (isCompanyView && !canEditInCurrentView);
 
   return (
     <div className="user-list-container">
@@ -1344,8 +1487,8 @@ const UserList = () => {
             onUserTypeChange={e => setUserTypeFilter(e.target.value)}
             onAdd={canEditUsers && !isReadOnly ? () => setShowFormModal(true) : undefined}
             disableAdd={!canEditUsers || isReadOnly}
-            onBulkImport={canBulkAddUsers && canEditUsers && !isReadOnly ? () => setShowBulkImportModal(true) : undefined}
-            disableBulkImport={!canBulkAddUsers || !canEditUsers || isReadOnly}
+            onBulkImport={allowBulkImport && canEditUsers && !isReadOnly ? () => setShowBulkImportModal(true) : undefined}
+            disableBulkImport={!allowBulkImport || !canEditUsers || isReadOnly}
             onExport={handleExportUsers}
             disableExport={!canViewReports || exportingCSV || sortedUsers.length === 0}
             exportLoading={exportingCSV}

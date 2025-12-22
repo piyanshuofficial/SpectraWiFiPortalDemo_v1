@@ -132,6 +132,7 @@ export const segmentSites = {
       alerts: 2,
       criticalAlerts: 0,
       setupDate: "2023-01-20",
+      activationDate: "2023-01-20T10:30:00Z",
     },
     {
       siteId: "SITE-DEL-ENT-002",
@@ -154,6 +155,7 @@ export const segmentSites = {
       alerts: 1,
       criticalAlerts: 0,
       setupDate: "2023-03-15",
+      activationDate: "2023-03-15T14:00:00Z",
     },
     {
       siteId: "SITE-BLR-ENT-003",
@@ -176,6 +178,7 @@ export const segmentSites = {
       alerts: 0,
       criticalAlerts: 0,
       setupDate: "2023-05-10",
+      activationDate: "2023-05-10T11:30:00Z",
     },
     {
       siteId: "SITE-HYD-ENT-004",
@@ -198,6 +201,7 @@ export const segmentSites = {
       alerts: 1,
       criticalAlerts: 0,
       setupDate: "2023-07-01",
+      activationDate: "2023-07-01T09:00:00Z",
     },
   ],
   [SEGMENTS.HOTEL]: [
@@ -224,6 +228,7 @@ export const segmentSites = {
       setupDate: "2023-03-15",
       rooms: 250,
       occupancy: 85,
+      activationDate: "2023-03-15T10:00:00Z",
     },
     {
       siteId: "SITE-MUM-HTL-002",
@@ -248,6 +253,7 @@ export const segmentSites = {
       setupDate: "2023-04-20",
       rooms: 200,
       occupancy: 78,
+      activationDate: "2023-04-20T12:00:00Z",
     },
     {
       siteId: "SITE-JAI-HTL-003",
@@ -272,6 +278,7 @@ export const segmentSites = {
       setupDate: "2023-06-10",
       rooms: 150,
       occupancy: 72,
+      activationDate: "2023-06-10T15:00:00Z",
     },
   ],
   [SEGMENTS.CO_LIVING]: [
@@ -298,6 +305,7 @@ export const segmentSites = {
       setupDate: "2023-02-25",
       beds: 180,
       occupancy: 92,
+      activationDate: "2023-02-25T10:00:00Z",
     },
     {
       siteId: "SITE-BLR-COL-002",
@@ -322,6 +330,7 @@ export const segmentSites = {
       setupDate: "2023-04-10",
       beds: 150,
       occupancy: 88,
+      activationDate: "2023-04-10T14:00:00Z",
     },
     {
       siteId: "SITE-MUM-COL-003",
@@ -346,6 +355,7 @@ export const segmentSites = {
       setupDate: "2023-06-20",
       beds: 120,
       occupancy: 85,
+      activationDate: "2023-06-20T11:00:00Z",
     },
   ],
   [SEGMENTS.PG]: [
@@ -372,6 +382,7 @@ export const segmentSites = {
       setupDate: "2023-04-20",
       beds: 50,
       occupancy: 94,
+      activationDate: "2023-04-20T09:00:00Z",
     },
     {
       siteId: "SITE-BLR-PG-002",
@@ -396,6 +407,7 @@ export const segmentSites = {
       setupDate: "2023-05-15",
       beds: 40,
       occupancy: 90,
+      activationDate: "2023-05-15T10:00:00Z",
     },
     {
       siteId: "SITE-CHN-PG-003",
@@ -420,6 +432,7 @@ export const segmentSites = {
       setupDate: "2023-07-10",
       beds: 35,
       occupancy: 86,
+      activationDate: "2023-07-10T11:30:00Z",
     },
   ],
   [SEGMENTS.CO_WORKING]: [
@@ -446,6 +459,7 @@ export const segmentSites = {
       setupDate: "2023-05-05",
       desks: 250,
       occupancy: 88,
+      activationDate: "2023-05-05T09:00:00Z",
     },
     {
       siteId: "SITE-MUM-COW-002",
@@ -470,6 +484,7 @@ export const segmentSites = {
       setupDate: "2023-06-15",
       desks: 220,
       occupancy: 82,
+      activationDate: "2023-06-15T11:00:00Z",
     },
     {
       siteId: "SITE-BLR-COW-003",
@@ -494,6 +509,7 @@ export const segmentSites = {
       setupDate: "2023-08-01",
       desks: 180,
       occupancy: 78,
+      activationDate: "2023-08-01T10:00:00Z",
     },
   ],
   [SEGMENTS.OFFICE]: [
@@ -518,6 +534,7 @@ export const segmentSites = {
       alerts: 1,
       criticalAlerts: 0,
       setupDate: "2023-06-15",
+      activationDate: "2023-06-15T09:00:00Z",
     },
     {
       siteId: "SITE-DEL-OFF-002",
@@ -540,6 +557,7 @@ export const segmentSites = {
       alerts: 0,
       criticalAlerts: 0,
       setupDate: "2023-07-20",
+      activationDate: "2023-07-20T10:00:00Z",
     },
     {
       siteId: "SITE-CHN-OFF-003",
@@ -562,6 +580,7 @@ export const segmentSites = {
       alerts: 1,
       criticalAlerts: 0,
       setupDate: "2023-09-01",
+      activationDate: "2023-09-01T11:00:00Z",
     },
   ],
   [SEGMENTS.MISCELLANEOUS]: [
@@ -586,6 +605,7 @@ export const segmentSites = {
       alerts: 0,
       criticalAlerts: 0,
       setupDate: "2023-07-15",
+      activationDate: "2023-07-15T09:30:00Z",
     },
     {
       siteId: "SITE-MUM-MISC-002",
@@ -608,6 +628,7 @@ export const segmentSites = {
       alerts: 1,
       criticalAlerts: 0,
       setupDate: "2023-08-20",
+      activationDate: "2023-08-20T14:00:00Z",
     },
   ],
 };
@@ -673,42 +694,42 @@ export const segmentUsers = {
 
 export const segmentPolicies = {
   [SEGMENTS.ENTERPRISE]: [
-    { id: "POL-ENT-001", name: "Enterprise Unlimited", speed: "100 Mbps", dataLimit: "Unlimited", devices: 5, users: 450 },
-    { id: "POL-ENT-002", name: "Enterprise Standard", speed: "50 Mbps", dataLimit: "500 GB", devices: 3, users: 1200 },
-    { id: "POL-ENT-003", name: "Enterprise Basic", speed: "25 Mbps", dataLimit: "200 GB", devices: 2, users: 750 },
+    { id: "POL-ENT-001", name: "ProFi Business - Unlimited", speed: "100 Mbps", dataLimit: "Unlimited", devices: 5, users: 450, product: "profi_business" },
+    { id: "POL-ENT-002", name: "ProFi Business - Standard", speed: "50 Mbps", dataLimit: "500 GB", devices: 3, users: 1200, product: "profi_business" },
+    { id: "POL-ENT-003", name: "Business Wi-Fi - Basic", speed: "25 Mbps", dataLimit: "200 GB", devices: 2, users: 750, product: "business_wifi" },
   ],
   [SEGMENTS.HOTEL]: [
-    { id: "POL-HTL-001", name: "Hotel Premium WiFi", speed: "50 Mbps", dataLimit: "Unlimited", devices: 5, users: 280 },
-    { id: "POL-HTL-002", name: "Hotel Standard WiFi", speed: "25 Mbps", dataLimit: "50 GB/day", devices: 3, users: 1800 },
-    { id: "POL-HTL-003", name: "Hotel Event Package", speed: "100 Mbps", dataLimit: "Unlimited", devices: 50, users: 45 },
-    { id: "POL-HTL-004", name: "Hotel Staff", speed: "20 Mbps", dataLimit: "100 GB", devices: 2, users: 120 },
+    { id: "POL-HTL-001", name: "ProFi Hotels - Premium", speed: "50 Mbps", dataLimit: "Unlimited", devices: 5, users: 280, product: "profi_hotels" },
+    { id: "POL-HTL-002", name: "ProFi Hotels - Standard", speed: "25 Mbps", dataLimit: "50 GB/day", devices: 3, users: 1800, product: "profi_hotels" },
+    { id: "POL-HTL-003", name: "ProFi Hotels - Event", speed: "100 Mbps", dataLimit: "Unlimited", devices: 50, users: 45, product: "profi_hotels" },
+    { id: "POL-HTL-004", name: "ProFi Hotels - Staff", speed: "20 Mbps", dataLimit: "100 GB", devices: 2, users: 120, product: "profi_hotels" },
   ],
   [SEGMENTS.CO_LIVING]: [
-    { id: "POL-COL-001", name: "Co-Living Unlimited", speed: "100 Mbps", dataLimit: "Unlimited", devices: 5, users: 85 },
-    { id: "POL-COL-002", name: "Co-Living Standard", speed: "50 Mbps", dataLimit: "500 GB", devices: 3, users: 420 },
-    { id: "POL-COL-003", name: "Co-Living Basic", speed: "25 Mbps", dataLimit: "200 GB", devices: 2, users: 245 },
+    { id: "POL-COL-001", name: "ProFi Shared Living - Unlimited", speed: "100 Mbps", dataLimit: "Unlimited", devices: 5, users: 85, product: "profi_shared_living" },
+    { id: "POL-COL-002", name: "ProFi Shared Living - Standard", speed: "50 Mbps", dataLimit: "500 GB", devices: 3, users: 420, product: "profi_shared_living" },
+    { id: "POL-COL-003", name: "ProFi Shared Living - Basic", speed: "25 Mbps", dataLimit: "200 GB", devices: 2, users: 245, product: "profi_shared_living" },
   ],
   [SEGMENTS.PG]: [
-    { id: "POL-PG-001", name: "PG Premium", speed: "50 Mbps", dataLimit: "300 GB", devices: 3, users: 35 },
-    { id: "POL-PG-002", name: "PG Standard", speed: "25 Mbps", dataLimit: "150 GB", devices: 2, users: 145 },
-    { id: "POL-PG-003", name: "PG Basic", speed: "15 Mbps", dataLimit: "75 GB", devices: 1, users: 45 },
+    { id: "POL-PG-001", name: "ProFi PG - Premium", speed: "50 Mbps", dataLimit: "300 GB", devices: 3, users: 35, product: "profi_pg" },
+    { id: "POL-PG-002", name: "ProFi PG - Standard", speed: "25 Mbps", dataLimit: "150 GB", devices: 2, users: 145, product: "profi_pg" },
+    { id: "POL-PG-003", name: "ProFi PG - Basic", speed: "15 Mbps", dataLimit: "75 GB", devices: 1, users: 45, product: "profi_pg" },
   ],
   [SEGMENTS.CO_WORKING]: [
-    { id: "POL-COW-001", name: "Co-Working Enterprise", speed: "100 Mbps", dataLimit: "Unlimited", devices: 25, users: 15 },
-    { id: "POL-COW-002", name: "Co-Working Team", speed: "50 Mbps", dataLimit: "500 GB", devices: 10, users: 85 },
-    { id: "POL-COW-003", name: "Co-Working Individual", speed: "25 Mbps", dataLimit: "200 GB", devices: 3, users: 450 },
-    { id: "POL-COW-004", name: "Co-Working Day Pass", speed: "15 Mbps", dataLimit: "10 GB/day", devices: 2, users: 120 },
+    { id: "POL-COW-001", name: "ProFi Business - Enterprise", speed: "100 Mbps", dataLimit: "Unlimited", devices: 25, users: 15, product: "profi_business" },
+    { id: "POL-COW-002", name: "ProFi Business - Team", speed: "50 Mbps", dataLimit: "500 GB", devices: 10, users: 85, product: "profi_business" },
+    { id: "POL-COW-003", name: "Business Wi-Fi - Individual", speed: "25 Mbps", dataLimit: "200 GB", devices: 3, users: 450, product: "business_wifi" },
+    { id: "POL-COW-004", name: "Business Wi-Fi - Day Pass", speed: "15 Mbps", dataLimit: "10 GB/day", devices: 2, users: 120, product: "business_wifi" },
   ],
   [SEGMENTS.OFFICE]: [
-    { id: "POL-OFF-001", name: "Office Executive", speed: "100 Mbps", dataLimit: "Unlimited", devices: 5, users: 45 },
-    { id: "POL-OFF-002", name: "Office Manager", speed: "50 Mbps", dataLimit: "500 GB", devices: 3, users: 180 },
-    { id: "POL-OFF-003", name: "Office Standard", speed: "25 Mbps", dataLimit: "200 GB", devices: 2, users: 650 },
-    { id: "POL-OFF-004", name: "Office Guest", speed: "10 Mbps", dataLimit: "20 GB", devices: 1, users: 85 },
+    { id: "POL-OFF-001", name: "ProFi Office - Executive", speed: "100 Mbps", dataLimit: "Unlimited", devices: 5, users: 45, product: "profi_office" },
+    { id: "POL-OFF-002", name: "ProFi Office - Manager", speed: "50 Mbps", dataLimit: "500 GB", devices: 3, users: 180, product: "profi_office" },
+    { id: "POL-OFF-003", name: "ProFi SoHo - Standard", speed: "25 Mbps", dataLimit: "200 GB", devices: 2, users: 650, product: "profi_soho" },
+    { id: "POL-OFF-004", name: "ProFi SoHo - Guest", speed: "10 Mbps", dataLimit: "20 GB", devices: 1, users: 85, product: "profi_soho" },
   ],
   [SEGMENTS.MISCELLANEOUS]: [
-    { id: "POL-MISC-001", name: "Misc Standard", speed: "25 Mbps", dataLimit: "150 GB", devices: 2, users: 180 },
-    { id: "POL-MISC-002", name: "Misc Guest", speed: "15 Mbps", dataLimit: "10 GB", devices: 1, users: 120 },
-    { id: "POL-MISC-003", name: "Misc Vendor", speed: "20 Mbps", dataLimit: "50 GB", devices: 2, users: 50 },
+    { id: "POL-MISC-001", name: "Business Wi-Fi - Standard", speed: "25 Mbps", dataLimit: "150 GB", devices: 2, users: 180, product: "business_wifi" },
+    { id: "POL-MISC-002", name: "Business Wi-Fi - Guest", speed: "15 Mbps", dataLimit: "10 GB", devices: 1, users: 120, product: "business_wifi" },
+    { id: "POL-MISC-003", name: "Business Wi-Fi - Vendor", speed: "20 Mbps", dataLimit: "50 GB", devices: 2, users: 50, product: "business_wifi" },
   ],
 };
 
@@ -771,6 +792,29 @@ export const getCompanyBySegment = (segment) => {
  */
 export const getSitesBySegment = (segment) => {
   return segmentSites[segment] || segmentSites[SEGMENTS.ENTERPRISE];
+};
+
+/**
+ * Check if a site is visible to customers
+ * Only sites with status 'active' should be visible on customer portal
+ * Sites in configuration_pending, under_configuration, under_testing, rfs_pending are NOT visible
+ * @param {Object} site - Site object
+ * @returns {boolean} - True if site should be visible to customers
+ */
+export const isSiteVisibleToCustomer = (site) => {
+  return site.status?.toLowerCase() === 'active';
+};
+
+/**
+ * Get active sites visible to customers for a specific segment
+ * Only sites with status 'active' should be visible on customer portal
+ * Sites in configuration_pending, under_testing, rfs_pending are not visible to customers
+ * @param {string} segment - The segment key
+ * @returns {Array} - Array of sites visible to customers
+ */
+export const getActiveSitesBySegment = (segment) => {
+  const sites = getSitesBySegment(segment);
+  return sites.filter((site) => isSiteVisibleToCustomer(site));
 };
 
 /**
@@ -869,6 +913,8 @@ export default {
   segmentActivityLogs,
   getCompanyBySegment,
   getSitesBySegment,
+  getActiveSitesBySegment,
+  isSiteVisibleToCustomer,
   getUsersBySegment,
   getPoliciesBySegment,
   getActivityLogsBySegment,

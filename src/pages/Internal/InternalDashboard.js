@@ -1,4 +1,108 @@
-// src/pages/Internal/InternalDashboard.js
+/**
+ * ============================================================================
+ * Internal Portal Dashboard
+ * ============================================================================
+ *
+ * @file src/pages/Internal/InternalDashboard.js
+ * @description Main dashboard for Spectra internal staff (Operations, Support,
+ *              Sales teams). Provides a bird's-eye view of all customers, sites,
+ *              system health, alerts, and platform metrics.
+ *
+ * @portalType Internal (Spectra Staff Only)
+ *
+ * @dashboardSections
+ * ```
+ * ┌──────────────────────────────────────────────────────────────────────────┐
+ * │ INTERNAL DASHBOARD LAYOUT                                                │
+ * ├──────────────────────────────────────────────────────────────────────────┤
+ * │ Customer Filter Banner (if customer selected from URL)                   │
+ * │ "Viewing data for: [Customer Name]"                                      │
+ * ├──────────────────────────────────────────────────────────────────────────┤
+ * │ Platform Metrics:                                                        │
+ * │ ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐             │
+ * │ │ Total   │ │ Total   │ │ Active  │ │ System  │ │ Support │             │
+ * │ │Customers│ │ Sites   │ │ Users   │ │ Alerts  │ │ Tickets │             │
+ * │ └─────────┘ └─────────┘ └─────────┘ └─────────┘ └─────────┘             │
+ * ├──────────────────────────────────────────────────────────────────────────┤
+ * │ ┌───────────────────────────┐ ┌────────────────────────────────────────┐ │
+ * │ │ SITE STATUS BREAKDOWN     │ │ SYSTEM ALERTS                          │ │
+ * │ │ ● Online: 45              │ │ [!] Critical: NAS down at Site X       │ │
+ * │ │ ● Degraded: 3             │ │ [!] Warning: License expiry Site Y     │ │
+ * │ │ ● Offline: 1              │ │ [i] Info: Maintenance scheduled        │ │
+ * │ │ ○ Maintenance: 2          │ │                                        │ │
+ * │ └───────────────────────────┘ └────────────────────────────────────────┘ │
+ * ├──────────────────────────────────────────────────────────────────────────┤
+ * │ ┌───────────────────────────┐ ┌────────────────────────────────────────┐ │
+ * │ │ RECENT ACTIVITY           │ │ QUICK ACTIONS                          │ │
+ * │ │ • Site provisioned        │ │ [View as Customer]                     │ │
+ * │ │ • User created            │ │ [Add New Site]                         │ │
+ * │ │ • Alert resolved          │ │ [View Provisioning Queue]              │ │
+ * │ └───────────────────────────┘ └────────────────────────────────────────┘ │
+ * └──────────────────────────────────────────────────────────────────────────┘
+ * ```
+ *
+ * @metricCards
+ * | Metric          | Description                              | Click Action           |
+ * |-----------------|------------------------------------------|------------------------|
+ * | Total Customers | Count of all customer accounts           | → Customer Management  |
+ * | Total Sites     | Count of all provisioned sites           | → Site Management      |
+ * | Active Users    | Sum of users across all sites            | → Reports              |
+ * | System Alerts   | Active alerts requiring attention        | → Alerts page          |
+ * | Support Tickets | Open support tickets                     | → Support page         |
+ *
+ * @siteStatuses
+ * | Status      | Color  | Icon            | Description                    |
+ * |-------------|--------|-----------------|--------------------------------|
+ * | Online      | Green  | FaCheckCircle   | Site fully operational         |
+ * | Degraded    | Yellow | FaExclamationCircle | Partial issues             |
+ * | Offline     | Red    | FaTimesCircle   | Site down                      |
+ * | Maintenance | Blue   | FaCog           | Planned maintenance            |
+ *
+ * @alertSeverities
+ * | Severity | Color  | Icon               | Auto-Priority   |
+ * |----------|--------|--------------------|-----------------|
+ * | Critical | Red    | FaExclamationCircle| P1 - Immediate  |
+ * | Warning  | Yellow | FaExclamationTriangle | P2 - High    |
+ * | Info     | Blue   | FaInfoCircle       | P3 - Low        |
+ *
+ * @customerFilter
+ * Dashboard supports filtering by customer via URL parameter:
+ * - URL: /internal/dashboard?customer=CUST001
+ * - Shows only that customer's sites and alerts
+ * - Useful when navigating from customer management
+ *
+ * @customerViewFeature
+ * "View as Customer" button opens modal to:
+ * - Select customer to impersonate
+ * - Choose site (or company view)
+ * - Select role to view as
+ * - Then navigates to customer portal in read-only mode
+ *
+ * @permissions
+ * - canAccessInternalPortal: View dashboard (all internal users)
+ * - canProvisionSites: Add new site action visible
+ * - canAccessProvisioningQueue: View queue link visible
+ *
+ * @dataRefresh
+ * TODO: Backend integration should:
+ * - Load metrics on mount
+ * - Auto-refresh alerts every 60 seconds
+ * - WebSocket for real-time alert notifications
+ *
+ * @dependencies
+ * - useAuth: Permission checking
+ * - internalPortalData.js: Sample internal data
+ * - CustomerViewModal: Impersonation selection
+ *
+ * @relatedFiles
+ * - SiteManagement.js: Sites listing page
+ * - CustomerManagement.js: Customers listing page
+ * - InternalAlerts.js: Full alerts management
+ * - SiteProvisioningQueue.js: Provisioning queue
+ * - internalPortalData.js: Sample data constants
+ *
+ * ============================================================================
+ */
 
 import React, { useState, useMemo, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -25,7 +129,9 @@ import {
   FaBell,
   FaPercentage,
   FaBook,
+  FaEye,
 } from "react-icons/fa";
+import CustomerViewModal from "@components/CustomerViewModal";
 import {
   customers,
   sites,
@@ -70,6 +176,9 @@ const InternalDashboard = () => {
 
   // Loading state
   const [isLoading, setIsLoading] = useState(true);
+
+  // Customer View Modal state
+  const [showCustomerViewModal, setShowCustomerViewModal] = useState(false);
 
   // Simulate initial data loading
   useEffect(() => {
@@ -297,6 +406,10 @@ const InternalDashboard = () => {
         <button className="quick-action-card" onClick={() => navigate("/internal/knowledge")}>
           <FaBook />
           <span>Docs</span>
+        </button>
+        <button className="quick-action-card view-as-customer" onClick={() => setShowCustomerViewModal(true)}>
+          <FaEye />
+          <span>View as Customer</span>
         </button>
       </div>
 
@@ -697,6 +810,11 @@ const InternalDashboard = () => {
         </div>
       </div>
 
+      {/* Customer View Modal */}
+      <CustomerViewModal
+        isOpen={showCustomerViewModal}
+        onClose={() => setShowCustomerViewModal(false)}
+      />
     </div>
   );
 };

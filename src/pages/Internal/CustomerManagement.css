@@ -578,6 +578,15 @@
   background-color: #fff5f5;
 }
 
+.customer-management .dropdown-menu button.view-as-customer {
+  color: #f59e0b;
+}
+
+.customer-management .dropdown-menu button.view-as-customer:hover {
+  background-color: #fffbeb;
+  color: #b45309;
+}
+
 /* ============================================
    LIST VIEW TABLE - Customer Portal Style
    ============================================ */

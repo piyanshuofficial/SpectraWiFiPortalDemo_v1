@@ -37,6 +37,7 @@ import {
 } from 'react-icons/fa';
 import { useSegment } from '@context/SegmentContext';
 import { useAccessLevelView } from '@context/AccessLevelViewContext';
+import { useReadOnlyMode } from '@hooks/useReadOnlyMode';
 import { useSiteConfig } from '@hooks/useSiteConfig';
 import {
   guestUsers,
@@ -82,6 +83,9 @@ const GuestManagement = () => {
     drillDownToSite,
     returnToCompanyView,
   } = useAccessLevelView();
+
+  // Read-only mode for customer impersonation
+  const { isReadOnly: isCustomerViewReadOnly, blockAction } = useReadOnlyMode();
 
   // Determine effective site ID and name based on view context
   // Use segment-aware configSiteId for site view to ensure data matches current segment
@@ -379,7 +383,56 @@ const GuestManagement = () => {
 
     setIsExtending(true);
     try {
-      // Simulate API call
+      /* ========================================================================
+       * BACKEND INTEGRATION: Extend Guest Access
+       * ========================================================================
+       * API Endpoint: PATCH /api/v1/guests/{guestId}/extend
+       *
+       * Request Payload:
+       * {
+       *   "duration": "string",            // e.g., "24h", "48h", "7d"
+       *   "durationHours": number,         // Extension in hours
+       *   "reason": "string (optional)"    // Reason for extension
+       * }
+       *
+       * Expected Response (Success - 200):
+       * {
+       *   "success": true,
+       *   "data": {
+       *     "guestId": "string",
+       *     "previousValidUntil": "ISO8601",
+       *     "newValidUntil": "ISO8601",
+       *     "extendedBy": number           // Hours extended
+       *   }
+       * }
+       *
+       * Backend Processing:
+       * 1. Verify guest exists and is active/not expired
+       * 2. Calculate new validity period
+       * 3. Update guest record in database
+       * 4. Update AAA system:
+       *    - Extend account validity in RADIUS
+       *    - Update session timeout if applicable
+       * 5. Send notification to guest (optional):
+       *    - SMS/Email with updated validity
+       * 6. Create audit log entry
+       *
+       * Sample Integration Code:
+       * ------------------------
+       * const response = await fetch(`/api/v1/guests/${guestToExtend.id}/extend`, {
+       *   method: 'PATCH',
+       *   headers: {
+       *     'Content-Type': 'application/json',
+       *     'Authorization': `Bearer ${authToken}`
+       *   },
+       *   body: JSON.stringify({
+       *     duration: extendDuration,
+       *     durationHours: GUEST_DURATION_PRESETS[extendDuration]?.hours || 24
+       *   })
+       * });
+       * ======================================================================== */
+
+      // TODO: Remove mock and implement actual API call above
       await new Promise(resolve => setTimeout(resolve, 800));
       const durationLabel = GUEST_DURATION_PRESETS[extendDuration]?.label || extendDuration;
       showSuccess(`Access extended by ${durationLabel} for ${guestToExtend.firstName} ${guestToExtend.lastName}`);
@@ -408,7 +461,62 @@ const GuestManagement = () => {
 
     setIsRevoking(true);
     try {
-      // Simulate API call
+      /* ========================================================================
+       * BACKEND INTEGRATION: Revoke Guest Access
+       * ========================================================================
+       * API Endpoint: DELETE /api/v1/guests/{guestId}/access
+       *               OR PATCH /api/v1/guests/{guestId}/revoke
+       *
+       * Request Payload:
+       * {
+       *   "reason": "string (optional)",   // Reason for revocation
+       *   "forceDisconnect": boolean       // Immediately disconnect active sessions
+       * }
+       *
+       * Expected Response (Success - 200):
+       * {
+       *   "success": true,
+       *   "data": {
+       *     "guestId": "string",
+       *     "previousStatus": "active",
+       *     "newStatus": "revoked",
+       *     "revokedAt": "ISO8601",
+       *     "sessionsTerminated": number   // Number of active sessions disconnected
+       *   }
+       * }
+       *
+       * Backend Processing:
+       * 1. Verify guest exists
+       * 2. Immediately terminate active sessions:
+       *    - Call AAA API: POST /aaa/api/disconnect-user
+       *    - Clear MAC addresses from whitelist
+       * 3. Update guest status in database to 'revoked'
+       * 4. Disable/delete account in AAA system:
+       *    - RADIUS: Disable or remove user entry
+       *    - Clear any cached authentication
+       * 5. Create audit log entry with:
+       *    - Who revoked (admin ID)
+       *    - Reason for revocation
+       *    - Timestamp
+       * 6. Send notification to guest (optional):
+       *    - SMS/Email informing access has been revoked
+       *
+       * Sample Integration Code:
+       * ------------------------
+       * const response = await fetch(`/api/v1/guests/${guestToRevoke.id}/revoke`, {
+       *   method: 'PATCH',
+       *   headers: {
+       *     'Content-Type': 'application/json',
+       *     'Authorization': `Bearer ${authToken}`
+       *   },
+       *   body: JSON.stringify({
+       *     forceDisconnect: true,
+       *     reason: 'Admin revocation'
+       *   })
+       * });
+       * ======================================================================== */
+
+      // TODO: Remove mock and implement actual API call above
       await new Promise(resolve => setTimeout(resolve, 800));
       showSuccess(`Access revoked for ${guestToRevoke.firstName} ${guestToRevoke.lastName}`);
       setShowRevokeConfirmation(false);
@@ -744,7 +852,85 @@ const GuestManagement = () => {
     setIsSubmitting(true);
 
     try {
-      // Simulate API call
+      /* ========================================================================
+       * BACKEND INTEGRATION: Create Guest Account
+       * ========================================================================
+       * API Endpoint: POST /api/v1/guests
+       *
+       * Request Payload:
+       * {
+       *   "firstName": "string",
+       *   "lastName": "string",
+       *   "mobile": "string",
+       *   "email": "string (optional)",
+       *   "guestType": "string",           // e.g., "visitor", "contractor", "conference"
+       *   "duration": "string",            // e.g., "24h", "48h", "7d"
+       *   "durationHours": number,         // Calculated duration in hours
+       *   "hostId": "string",              // Host user ID
+       *   "hostName": "string",            // Host name (for 'other' selection)
+       *   "purposeOfVisit": "string",
+       *   "companyName": "string (optional)",
+       *   "siteId": "string",
+       *   "segment": "string"
+       * }
+       *
+       * Expected Response (Success - 201):
+       * {
+       *   "success": true,
+       *   "data": {
+       *     "guestId": "string",
+       *     "accessCode": "string",        // Auto-generated access code/password
+       *     "username": "string",          // Auto-generated username (mobile or custom)
+       *     "validFrom": "ISO8601",
+       *     "validUntil": "ISO8601",
+       *     "policyApplied": "string",
+       *     "qrCode": "base64 (optional)",
+       *     "credentials": {
+       *       "ssid": "string",
+       *       "username": "string",
+       *       "password": "string"
+       *     }
+       *   }
+       * }
+       *
+       * Backend Processing:
+       * 1. Validate guest data and check for duplicates
+       * 2. Check guest license availability for segment
+       * 3. Generate unique access code/password
+       * 4. Create guest record in database
+       * 5. Provision in AAA system with time-limited access:
+       *    - Set account validity period (validFrom -> validUntil)
+       *    - Apply guest policy (bandwidth, data limits)
+       * 6. Send credentials via SMS/Email:
+       *    - POST /api/notifications/send-credentials
+       *    - Include: SSID, username, password, validity
+       * 7. Create audit log entry
+       * 8. Notify host (optional):
+       *    - POST /api/notifications/host-notification
+       *
+       * Sample Integration Code:
+       * ------------------------
+       * const response = await fetch('/api/v1/guests', {
+       *   method: 'POST',
+       *   headers: {
+       *     'Content-Type': 'application/json',
+       *     'Authorization': `Bearer ${authToken}`
+       *   },
+       *   body: JSON.stringify({
+       *     ...guestForm,
+       *     durationHours: GUEST_DURATION_PRESETS[guestForm.duration]?.hours || 24,
+       *     hostName: getHostName(),
+       *     siteId: effectiveSiteId,
+       *     segment
+       *   })
+       * });
+       * const result = await response.json();
+       * if (result.success) {
+       *   showSuccess(`Guest added. Access Code: ${result.data.accessCode}`);
+       * }
+       * ======================================================================== */
+
+      // TODO: Remove mock and implement actual API call above
       await new Promise(resolve => setTimeout(resolve, 1000));
 
       const accessCode = generateVoucherCode();
@@ -777,7 +963,81 @@ const GuestManagement = () => {
     setIsSubmitting(true);
 
     try {
-      // Simulate API call
+      /* ========================================================================
+       * BACKEND INTEGRATION: Generate Guest Vouchers (Bulk)
+       * ========================================================================
+       * API Endpoint: POST /api/v1/guests/vouchers/bulk
+       *
+       * Request Payload:
+       * {
+       *   "quantity": number,              // 1-100 vouchers
+       *   "guestType": "string",           // Type of guest access
+       *   "duration": "string",            // e.g., "24h", "48h", "7d"
+       *   "prefix": "string",              // Voucher code prefix (e.g., "GV")
+       *   "siteId": "string",
+       *   "segment": "string",
+       *   "policyId": "string (optional)"  // Override default policy
+       * }
+       *
+       * Expected Response (Success - 201):
+       * {
+       *   "success": true,
+       *   "data": {
+       *     "batchId": "string",           // Batch identifier for tracking
+       *     "vouchers": [
+       *       {
+       *         "id": "string",
+       *         "code": "string",          // e.g., "GV-ABC123"
+       *         "guestType": "string",
+       *         "validityHours": number,
+       *         "status": "active",
+       *         "createdAt": "ISO8601",
+       *         "expiresAt": "ISO8601"
+       *       }
+       *     ],
+       *     "totalGenerated": number,
+       *     "qrCodes": ["base64..."]        // Optional: pre-generated QR codes
+       *   }
+       * }
+       *
+       * Backend Processing:
+       * 1. Validate quantity limits (max 100 per batch)
+       * 2. Check voucher quota/license for segment
+       * 3. Generate unique voucher codes:
+       *    - Format: {prefix}-{random_alphanumeric}
+       *    - Ensure uniqueness across all vouchers
+       * 4. Store vouchers in database:
+       *    - Status: 'active'
+       *    - Link to batch for bulk management
+       * 5. Pre-provision in AAA system (optional):
+       *    - Create accounts in RADIUS with disabled status
+       *    - Enable on first use (voucher redemption)
+       * 6. Generate QR codes (optional):
+       *    - Include: code, SSID, site info
+       * 7. Create audit log entry
+       *
+       * Sample Integration Code:
+       * ------------------------
+       * const response = await fetch('/api/v1/guests/vouchers/bulk', {
+       *   method: 'POST',
+       *   headers: {
+       *     'Content-Type': 'application/json',
+       *     'Authorization': `Bearer ${authToken}`
+       *   },
+       *   body: JSON.stringify({
+       *     ...voucherForm,
+       *     siteId: effectiveSiteId,
+       *     segment
+       *   })
+       * });
+       * const result = await response.json();
+       * if (result.success) {
+       *   // Optionally store batch ID for future reference
+       *   showSuccess(`Generated ${result.data.totalGenerated} vouchers`);
+       * }
+       * ======================================================================== */
+
+      // TODO: Remove mock and implement actual API call above
       await new Promise(resolve => setTimeout(resolve, 1500));
 
       const generatedCodes = [];
@@ -932,8 +1192,8 @@ const GuestManagement = () => {
             <Button
               variant="primary"
               onClick={handleAddGuest}
-              disabled={!canEditInCurrentView}
-              title={!canEditInCurrentView ? 'Switch to Site View to add guests' : 'Add new guest'}
+              disabled={!canEditInCurrentView || isCustomerViewReadOnly}
+              title={isCustomerViewReadOnly ? 'Disabled in customer view mode' : !canEditInCurrentView ? 'Switch to Site View to add guests' : 'Add new guest'}
             >
               <FaPlus style={{ marginRight: 6 }} /> Add Guest
             </Button>
@@ -1078,7 +1338,7 @@ const GuestManagement = () => {
                     >
                       <FaEye />
                     </button>
-                    {canEditInCurrentView && guest.guestStatus === GUEST_STATUS.PENDING && (
+                    {canEditInCurrentView && !isCustomerViewReadOnly && guest.guestStatus === GUEST_STATUS.PENDING && (
                       <button
                         className="btn-icon-sm success"
                         onClick={() => handleCheckIn(guest)}
@@ -1087,7 +1347,7 @@ const GuestManagement = () => {
                         <FaSignInAlt />
                       </button>
                     )}
-                    {canEditInCurrentView && (guest.guestStatus === GUEST_STATUS.ACTIVE || guest.guestStatus === GUEST_STATUS.CHECKED_IN) && (
+                    {canEditInCurrentView && !isCustomerViewReadOnly && (guest.guestStatus === GUEST_STATUS.ACTIVE || guest.guestStatus === GUEST_STATUS.CHECKED_IN) && (
                       <>
                         <button
                           className="btn-icon-sm warning"
@@ -1157,8 +1417,8 @@ const GuestManagement = () => {
             <Button
               variant="primary"
               onClick={handleGenerateVouchers}
-              disabled={!canEditInCurrentView}
-              title={!canEditInCurrentView ? 'Switch to Site View to generate vouchers' : 'Generate new vouchers'}
+              disabled={!canEditInCurrentView || isCustomerViewReadOnly}
+              title={isCustomerViewReadOnly ? 'Disabled in customer view mode' : !canEditInCurrentView ? 'Switch to Site View to generate vouchers' : 'Generate new vouchers'}
             >
               <FaPlus style={{ marginRight: 6 }} /> Generate Vouchers
             </Button>

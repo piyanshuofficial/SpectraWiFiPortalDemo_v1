@@ -6,7 +6,8 @@
     "guestManagement": "Guest Management",
     "reporting": "Reporting",
     "knowledgeCenter": "Knowledge Center",
-    "activityLogs": "Activity Logs"
+    "activityLogs": "Activity Logs",
+    "helpSupport": "Help & Support"
   },
   "header": {
     "backToSite": "Back To Site Dashboard",

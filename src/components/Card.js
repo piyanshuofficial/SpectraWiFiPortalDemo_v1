@@ -1,9 +1,76 @@
-// src/components/Card.js
+/**
+ * ============================================================================
+ * Card Component
+ * ============================================================================
+ *
+ * @file src/components/Card.js
+ * @description Dashboard metric card component that displays key statistics
+ *              with optional trend visualization. Used primarily on the
+ *              Dashboard page to show KPIs like Active Users, Data Usage, etc.
+ *
+ * @usage
+ * ```jsx
+ * // Basic metric card
+ * <Card title="Active Users" icon={<FaUsers />}>
+ *   1,234
+ * </Card>
+ *
+ * // With trend sparkline
+ * <Card
+ *   title="Data Usage"
+ *   icon={<FaWifi />}
+ *   trendData={[1.0, 1.2, 1.5, 1.8, 2.0]}
+ *   trendIncrease={true}
+ * >
+ *   2.0 TB
+ * </Card>
+ * ```
+ *
+ * @features
+ * - Icon and title header for visual identification
+ * - Main content area for displaying values
+ * - Sparkline trend visualization showing historical data
+ * - Trend indicator (up/down arrow with percentage)
+ * - Responsive design for different screen sizes
+ *
+ * @trendCalculation
+ * The component calculates percentage change between first and last
+ * values in trendData array to show growth/decline percentage.
+ *
+ * @dependencies
+ * - react-sparklines : For sparkline chart visualization
+ * - react-icons      : For trend arrow icons
+ * - Card.css         : Styling for card layout and colors
+ *
+ * @usedIn
+ * - Dashboard.js     : Main dashboard metric cards
+ * - InternalDashboard.js : Internal portal dashboard
+ *
+ * @accessibility
+ * - ARIA live region for trend updates
+ * - Proper img role for sparkline with descriptive label
+ *
+ * ============================================================================
+ */
+
 import React from "react";
+import PropTypes from "prop-types";
 import { Sparklines, SparklinesLine } from "react-sparklines";
 import { FaArrowUp, FaArrowDown } from "react-icons/fa";
 import "./Card.css";
 
+/**
+ * Card - Dashboard metric display component with trend visualization
+ *
+ * @param {Object} props - Component props
+ * @param {string} props.title - Card header title
+ * @param {React.ReactNode} props.icon - Icon element for visual identification
+ * @param {React.ReactNode} props.children - Main content (typically a metric value)
+ * @param {number[]} props.trendData - Array of numbers for sparkline visualization
+ * @param {boolean} props.trendIncrease - Direction of trend (true=up, false=down)
+ * @param {Object} props.style - Custom inline styles
+ * @returns {JSX.Element} Rendered card element
+ */
 const Card = ({ 
   title, 
   icon, 
@@ -88,6 +155,30 @@ const Card = ({
       )}
     </div>
   );
+};
+
+Card.propTypes = {
+  /** Card title displayed in header */
+  title: PropTypes.string,
+  /** Icon element displayed next to title */
+  icon: PropTypes.node,
+  /** Card content */
+  children: PropTypes.node,
+  /** Array of numbers for sparkline trend visualization */
+  trendData: PropTypes.arrayOf(PropTypes.number),
+  /** Whether the trend direction is increasing (true) or decreasing (false) */
+  trendIncrease: PropTypes.bool,
+  /** Custom inline styles for the card container */
+  style: PropTypes.object,
+};
+
+Card.defaultProps = {
+  title: undefined,
+  icon: undefined,
+  children: undefined,
+  trendData: [],
+  trendIncrease: true,
+  style: undefined,
 };
 
 export default Card;

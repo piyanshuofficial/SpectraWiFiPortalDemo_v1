@@ -50,6 +50,88 @@ const Login = () => {
     setError("");
     setIsLoading(true);
 
+    /* ========================================================================
+     * BACKEND INTEGRATION: User Authentication (Login ID + Password)
+     * ========================================================================
+     * API Endpoint: POST /api/v1/auth/login
+     *
+     * Request Payload:
+     * {
+     *   "loginId": "string",        // User's login ID or email
+     *   "password": "string",       // User's password (should be sent over HTTPS)
+     *   "rememberMe": boolean       // Extend session duration if true
+     * }
+     *
+     * Expected Response (Success - 200):
+     * {
+     *   "success": true,
+     *   "data": {
+     *     "accessToken": "JWT_TOKEN",
+     *     "refreshToken": "REFRESH_TOKEN",
+     *     "expiresIn": 3600,        // Token expiry in seconds
+     *     "user": {
+     *       "id": "user_id",
+     *       "name": "User Full Name",
+     *       "email": "user@example.com",
+     *       "role": "admin|manager|user",
+     *       "userType": "CUSTOMER|INTERNAL",
+     *       "segment": "Enterprise|Hotel|CoLiving|CoWorking|PG|Misc",
+     *       "companyId": "company_id",
+     *       "companyName": "Company Name",
+     *       "siteId": "site_id",      // null for company-level users
+     *       "siteName": "Site Name",
+     *       "permissions": ["canEditUsers", "canManageDevices", ...]
+     *     }
+     *   }
+     * }
+     *
+     * Expected Response (Error - 401):
+     * {
+     *   "success": false,
+     *   "error": {
+     *     "code": "INVALID_CREDENTIALS|ACCOUNT_LOCKED|ACCOUNT_SUSPENDED",
+     *     "message": "Invalid login credentials"
+     *   }
+     * }
+     *
+     * Sample Integration Code:
+     * ------------------------
+     * try {
+     *   const response = await fetch('/api/v1/auth/login', {
+     *     method: 'POST',
+     *     headers: { 'Content-Type': 'application/json' },
+     *     body: JSON.stringify({ loginId, password, rememberMe })
+     *   });
+     *   const data = await response.json();
+     *
+     *   if (data.success) {
+     *     // Store tokens securely
+     *     localStorage.setItem('accessToken', data.data.accessToken);
+     *     if (rememberMe) {
+     *       localStorage.setItem('refreshToken', data.data.refreshToken);
+     *     } else {
+     *       sessionStorage.setItem('refreshToken', data.data.refreshToken);
+     *     }
+     *
+     *     // Update auth context with user data
+     *     login(data.data.user, data.data.accessToken);
+     *
+     *     // Redirect based on user type
+     *     if (data.data.user.userType === 'INTERNAL') {
+     *       navigate('/internal/dashboard');
+     *     } else {
+     *       navigate('/dashboard');
+     *     }
+     *   } else {
+     *     setError(data.error.message);
+     *   }
+     * } catch (error) {
+     *   setError('Network error. Please try again.');
+     *   console.error('Login error:', error);
+     * }
+     * ======================================================================== */
+
+    // TODO: Remove mock login and implement actual API call above
     await new Promise((resolve) => setTimeout(resolve, 500));
 
     const result = login(loginId, password, rememberMe);
@@ -68,11 +150,132 @@ const Login = () => {
     setError("");
 
     if (!otpSent) {
+      /* ======================================================================
+       * BACKEND INTEGRATION: Send OTP to Mobile Number
+       * ======================================================================
+       * API Endpoint: POST /api/v1/auth/send-otp
+       *
+       * Request Payload:
+       * {
+       *   "mobileNumber": "string",   // 10-digit mobile number
+       *   "countryCode": "+91"        // Country code (default: India)
+       * }
+       *
+       * Expected Response (Success - 200):
+       * {
+       *   "success": true,
+       *   "data": {
+       *     "otpId": "unique_otp_session_id",  // Use this to verify OTP
+       *     "expiresIn": 300,                  // OTP validity in seconds (5 mins)
+       *     "maskedMobile": "91****5678"       // For display purposes
+       *   }
+       * }
+       *
+       * Expected Response (Error - 400/429):
+       * {
+       *   "success": false,
+       *   "error": {
+       *     "code": "INVALID_MOBILE|RATE_LIMITED|USER_NOT_FOUND",
+       *     "message": "Error message"
+       *   }
+       * }
+       *
+       * Sample Integration Code:
+       * ------------------------
+       * try {
+       *   const response = await fetch('/api/v1/auth/send-otp', {
+       *     method: 'POST',
+       *     headers: { 'Content-Type': 'application/json' },
+       *     body: JSON.stringify({ mobileNumber, countryCode: '+91' })
+       *   });
+       *   const data = await response.json();
+       *
+       *   if (data.success) {
+       *     setOtpSessionId(data.data.otpId);  // Store for verification
+       *     setOtpSent(true);
+       *   } else {
+       *     setError(data.error.message);
+       *   }
+       * } catch (error) {
+       *   setError('Failed to send OTP. Please try again.');
+       * }
+       * ==================================================================== */
+
+      // TODO: Remove mock and implement actual OTP send API call
       setIsLoading(true);
       await new Promise((resolve) => setTimeout(resolve, 800));
       setOtpSent(true);
       setIsLoading(false);
     } else {
+      /* ======================================================================
+       * BACKEND INTEGRATION: Verify OTP and Login
+       * ======================================================================
+       * API Endpoint: POST /api/v1/auth/verify-otp
+       *
+       * Request Payload:
+       * {
+       *   "otpId": "string",          // OTP session ID from send-otp response
+       *   "otp": "string",            // 6-digit OTP entered by user
+       *   "mobileNumber": "string"    // Mobile number for verification
+       * }
+       *
+       * Expected Response (Success - 200):
+       * {
+       *   "success": true,
+       *   "data": {
+       *     "accessToken": "JWT_TOKEN",
+       *     "refreshToken": "REFRESH_TOKEN",
+       *     "expiresIn": 3600,
+       *     "user": {
+       *       "id": "user_id",
+       *       "name": "User Full Name",
+       *       "email": "user@example.com",
+       *       "role": "admin|manager|user",
+       *       "userType": "CUSTOMER|INTERNAL",
+       *       "segment": "Enterprise|Hotel|CoLiving|CoWorking|PG|Misc",
+       *       "companyId": "company_id",
+       *       "companyName": "Company Name",
+       *       "siteId": "site_id",
+       *       "siteName": "Site Name",
+       *       "permissions": [...]
+       *     }
+       *   }
+       * }
+       *
+       * Expected Response (Error - 400/401):
+       * {
+       *   "success": false,
+       *   "error": {
+       *     "code": "INVALID_OTP|OTP_EXPIRED|MAX_ATTEMPTS_EXCEEDED",
+       *     "message": "Error message",
+       *     "attemptsRemaining": 2    // Optional: remaining attempts
+       *   }
+       * }
+       *
+       * Sample Integration Code:
+       * ------------------------
+       * try {
+       *   const response = await fetch('/api/v1/auth/verify-otp', {
+       *     method: 'POST',
+       *     headers: { 'Content-Type': 'application/json' },
+       *     body: JSON.stringify({ otpId: otpSessionId, otp, mobileNumber })
+       *   });
+       *   const data = await response.json();
+       *
+       *   if (data.success) {
+       *     localStorage.setItem('accessToken', data.data.accessToken);
+       *     sessionStorage.setItem('refreshToken', data.data.refreshToken);
+       *     login(data.data.user, data.data.accessToken);
+       *     navigate('/dashboard');
+       *   } else {
+       *     setError(data.error.message);
+       *   }
+       * } catch (error) {
+       *   setError('Verification failed. Please try again.');
+       * }
+       * ==================================================================== */
+
+      // TODO: Remove mock and implement actual OTP verification API call
       if (otp.length === 6) {
         setIsLoading(true);
         await new Promise((resolve) => setTimeout(resolve, 500));
@@ -142,8 +345,9 @@ const Login = () => {
               {activeTab === "loginId" ? (
                 <form onSubmit={handleLoginIdSubmit}>
                   <div className="form-field">
-                    <label>Enter Login ID</label>
+                    <label htmlFor="login-id-input">Enter Login ID</label>
                     <input
+                      id="login-id-input"
                       type="text"
                       value={loginId}
                       onChange={(e) => setLoginId(e.target.value)}
@@ -153,9 +357,10 @@ const Login = () => {
                   </div>
 
                   <div className="form-field">
-                    <label>Enter Password</label>
+                    <label htmlFor="password-input">Enter Password</label>
                     <div className="password-wrapper">
                       <input
+                        id="password-input"
                         type={showPassword ? "text" : "password"}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
@@ -193,9 +398,12 @@ const Login = () => {
               ) : (
                 <form onSubmit={handleMobileOtpSubmit}>
                   <div className="form-field">
-                    <label>{otpSent ? "Enter OTP" : "Enter Mobile Number"}</label>
+                    <label htmlFor={otpSent ? "otp-input" : "mobile-input"}>
+                      {otpSent ? "Enter OTP" : "Enter Mobile Number"}
+                    </label>
                     {!otpSent ? (
                       <input
+                        id="mobile-input"
                         type="tel"
                         value={mobileNumber}
                         onChange={(e) =>
@@ -206,6 +414,7 @@ const Login = () => {
                       />
                     ) : (
                       <input
+                        id="otp-input"
                         type="text"
                         value={otp}
                         onChange={(e) =>

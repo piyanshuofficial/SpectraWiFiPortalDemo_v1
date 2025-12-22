@@ -22,6 +22,7 @@ import {
 import { systemAlerts, customers, sites } from "@constants/internalPortalData";
 import notifications from "@utils/notifications";
 import Pagination from "@components/Pagination";
+import SearchableSelect from "@components/SearchableSelect";
 import "./InternalAlerts.css";
 
 const typeOptions = ["all", "critical", "warning", "info"];
@@ -113,6 +114,25 @@ const InternalAlerts = () => {
       unacknowledged: all.filter((a) => !a.acknowledged).length,
     };
   }, []);
+
+  // Customer and Site filter options for SearchableSelect
+  const customerFilterOptions = useMemo(() =>
+    customers.map(c => ({
+      value: c.id,
+      label: c.name,
+      type: c.type,
+    })),
+    []
+  );
+
+  const siteFilterOptions = useMemo(() =>
+    sites.map(s => ({
+      value: s.id,
+      label: s.name,
+      region: s.region,
+    })),
+    []
+  );
 
   const clearFilters = () => {
     setTypeFilter("all");
@@ -372,27 +392,33 @@ const InternalAlerts = () => {
                 ))}
               </select>
             </div>
-            <div className="filter-group">
+            <div className="filter-group searchable-filter">
               <label>Customer</label>
-              <select value={customerFilter} onChange={(e) => setCustomerFilter(e.target.value)}>
-                <option value="all">All Customers</option>
-                {customers.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
+              <SearchableSelect
+                options={customerFilterOptions}
+                value={customerFilter === "all" ? "" : customerFilter}
+                onChange={(val) => setCustomerFilter(val || "all")}
+                placeholder="All Customers"
+                searchPlaceholder="Search customers..."
+                getOptionLabel={(opt) => opt.label}
+                getOptionValue={(opt) => opt.value}
+                emptyOption={{ label: "All Customers", value: "" }}
+                size="small"
+              />
             </div>
-            <div className="filter-group">
+            <div className="filter-group searchable-filter">
               <label>Site</label>
-              <select value={siteFilter} onChange={(e) => setSiteFilter(e.target.value)}>
-                <option value="all">All Sites</option>
-                {sites.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name}
-                  </option>
-                ))}
-              </select>
+              <SearchableSelect
+                options={siteFilterOptions}
+                value={siteFilter === "all" ? "" : siteFilter}
+                onChange={(val) => setSiteFilter(val || "all")}
+                placeholder="All Sites"
+                searchPlaceholder="Search sites..."
+                getOptionLabel={(opt) => opt.label}
+                getOptionValue={(opt) => opt.value}
+                emptyOption={{ label: "All Sites", value: "" }}
+                size="small"
+              />
             </div>
             <button className="btn btn-text" onClick={clearFilters}>
               Clear Filters

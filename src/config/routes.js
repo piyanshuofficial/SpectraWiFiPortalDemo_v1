@@ -1,16 +1,94 @@
-// src/config/routes.js
+/**
+ * ============================================================================
+ * Routes Configuration
+ * ============================================================================
+ *
+ * @file src/config/routes.js
+ * @description Centralized route configuration for both Customer Portal and
+ *              Internal Portal. Uses React.lazy for code splitting and
+ *              includes permission requirements for each route.
+ *
+ * @codeSplitting
+ * All page components are lazy-loaded to reduce initial bundle size.
+ * Each route gets its own webpack chunk, loaded only when navigated to.
+ *
+ * Chunk naming convention: webpackChunkName comment
+ * Example: import(/* webpackChunkName: "dashboard" * / './Dashboard')
+ *
+ * @routeStructure
+ * ```
+ * Customer Portal Routes (/*)
+ * ├── /dashboard          - Main dashboard (Dashboard.js)
+ * ├── /users              - User management (UserList.js)
+ * ├── /devices            - Device management (DeviceList.js)
+ * ├── /guests             - Guest management (GuestManagement.js)
+ * ├── /reports            - Reports (ReportDashboard.js)
+ * ├── /knowledge          - Knowledge center (KnowledgeHome.js)
+ * ├── /logs               - Activity logs (ActivityLogs.js)
+ * └── /support            - Help & Support (Support.js)
+ *
+ * Internal Portal Routes (/internal/*)
+ * ├── /internal/dashboard      - Internal dashboard
+ * ├── /internal/sites          - Site management
+ * ├── /internal/provisioning   - Provisioning queue
+ * ├── /internal/customers      - Customer management
+ * ├── /internal/guests         - Guest access management
+ * ├── /internal/reports        - Internal reports
+ * ├── /internal/support        - Support tickets
+ * ├── /internal/alerts         - System alerts
+ * ├── /internal/bulk-operations- Bulk operations
+ * ├── /internal/logs           - Audit logs
+ * ├── /internal/config         - System configuration
+ * └── /internal/knowledge      - Internal knowledge base
+ * ```
+ *
+ * @routeProperties
+ * Each route object contains:
+ * - path: URL path
+ * - component: Lazy-loaded React component
+ * - requiredPermission: Permission key from accessLevels.js
+ * - fallbackMessage: Error message when permission denied
+ * - title: Page title for document.title
+ * - chunkName: Webpack chunk identifier
+ *
+ * @preloading
+ * Routes can be preloaded on hover for faster navigation:
+ * - preloadRoute(path): Triggers component load
+ * - Used in Sidebar.js onMouseEnter
+ *
+ * @permissionGuards
+ * Routes are wrapped with ProtectedRoute component:
+ * 1. Checks if user is authenticated
+ * 2. Checks if user has requiredPermission
+ * 3. Shows fallbackMessage if denied
+ * 4. Redirects to login if not authenticated
+ *
+ * @internalVsCustomer
+ * Internal routes (/internal/*):
+ * - Require canAccessInternalPortal permission
+ * - Only visible to internal Spectra users
+ * - Different layout and sidebar menu
+ *
+ * Customer routes (/*):
+ * - Available to customer portal users
+ * - Permissions vary by route
+ * - Subject to segment-specific restrictions
+ *
+ * @suspenseBoundary
+ * All routes are wrapped in React.Suspense:
+ * - Shows loading spinner while chunk loads
+ * - Prevents flash of content
+ *
+ * @relatedFiles
+ * - App.js: Uses routes array for Route components
+ * - ProtectedRoute.js: Permission guard wrapper
+ * - Sidebar.js: Uses for navigation and preloading
+ * - accessLevels.js: Permission definitions
+ *
+ * ============================================================================
+ */
 
 import { lazy } from 'react';
-
-/**
- * Centralized Route Configuration
- * 
- * Benefits:
- * - Code splitting: Each route loaded on-demand
- * - Maintainability: All routes in one place
- * - Scalability: Easy to add/modify routes
- * - Performance: Smaller initial bundle
- */
 
 // ============================================
 // LAZY-LOADED ROUTE COMPONENTS
@@ -24,6 +102,7 @@ const GuestManagement = lazy(() => import(/* webpackChunkName: "guest-management
 const ReportDashboard = lazy(() => import(/* webpackChunkName: "reports" */ '../pages/Reports/ReportDashboard'));
 const KnowledgeHome = lazy(() => import(/* webpackChunkName: "knowledge-center" */ '../pages/KnowledgeCenter/KnowledgeHome'));
 const ActivityLogs = lazy(() => import(/* webpackChunkName: "activity-logs" */ '../pages/ActivityLogs/ActivityLogs'));
+const Support = lazy(() => import(/* webpackChunkName: "support" */ '../pages/Support/Support'));
 
 // Internal Portal Routes
 const InternalDashboard = lazy(() => import(/* webpackChunkName: "internal-dashboard" */ '../pages/Internal/InternalDashboard'));
@@ -37,6 +116,7 @@ const InternalReports = lazy(() => import(/* webpackChunkName: "internal-reports
 const InternalSupport = lazy(() => import(/* webpackChunkName: "internal-support" */ '../pages/Internal/InternalSupport'));
 const InternalAlerts = lazy(() => import(/* webpackChunkName: "internal-alerts" */ '../pages/Internal/InternalAlerts'));
 const BulkOperations = lazy(() => import(/* webpackChunkName: "bulk-operations" */ '../pages/Internal/BulkOperations/BulkOperations'));
+const SiteProvisioningQueue = lazy(() => import(/* webpackChunkName: "site-provisioning" */ '../pages/Internal/SiteProvisioningQueue'));
 
 // ============================================
 // ROUTE DEFINITIONS
@@ -117,6 +197,15 @@ export const routes = [
     title: 'Activity Logs',
     exact: true,
     chunkName: 'activity-logs'
+  },
+  {
+    path: '/support',
+    component: Support,
+    requiredPermission: 'canViewReports',
+    fallbackMessage: 'You need basic access to view the Help & Support section.',
+    title: 'Help & Support',
+    exact: true,
+    chunkName: 'support'
   },
   // Internal Portal Routes
   {
@@ -237,6 +326,16 @@ export const routes = [
     title: 'Bulk Operations',
     exact: true,
     chunkName: 'bulk-operations',
+    isInternal: true
+  },
+  {
+    path: '/internal/provisioning',
+    component: SiteProvisioningQueue,
+    requiredPermission: 'canAccessProvisioningQueue',
+    fallbackMessage: 'You need Deployment Engineer or higher access to use the Site Provisioning Queue.',
+    title: 'Site Provisioning Queue',
+    exact: true,
+    chunkName: 'site-provisioning',
     isInternal: true
   }
 ];

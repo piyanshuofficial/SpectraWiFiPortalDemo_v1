@@ -64,7 +64,7 @@ const sampleQueueData = [
     companyName: "Horizon Technologies Pvt Ltd",
     segment: "enterprise",
     solutionType: "managed_wifi",
-    productName: "Spectra WiFi Enterprise",
+    productName: "ProFi Business",
     status: SITE_STATUS.CONFIGURATION_PENDING,
     priority: QUEUE_PRIORITY.HIGH,
     // Pre-filled from billing middleware (non-editable)
@@ -109,7 +109,7 @@ const sampleQueueData = [
     companyName: "Urban Living Properties",
     segment: "coLiving",
     solutionType: "managed_wifi",
-    productName: "Spectra WiFi Standard",
+    productName: "ProFi for Shared Living",
     status: SITE_STATUS.UNDER_CONFIGURATION,
     priority: QUEUE_PRIORITY.MEDIUM,
     billingData: {
@@ -150,7 +150,7 @@ const sampleQueueData = [
     companyName: "Grand Hyatt Hotels",
     segment: "hotel",
     solutionType: "managed_wifi_infra",
-    productName: "Spectra Managed WiFi",
+    productName: "ProFi for Hotels",
     status: SITE_STATUS.UNDER_TESTING,
     priority: QUEUE_PRIORITY.HIGH,
     billingData: {
@@ -201,7 +201,7 @@ const sampleQueueData = [
     companyName: "WeWork India",
     segment: "coWorking",
     solutionType: "managed_wifi",
-    productName: "Spectra WiFi Premium",
+    productName: "ProFi Business",
     status: SITE_STATUS.RFS_PENDING,
     priority: QUEUE_PRIORITY.MEDIUM,
     billingData: {
@@ -251,7 +251,7 @@ const sampleQueueData = [
     companyName: "Student Haven Properties",
     segment: "pg",
     solutionType: "managed_wifi",
-    productName: "Spectra WiFi Basic",
+    productName: "ProFi for PG",
     status: SITE_STATUS.CONFIGURATION_PENDING,
     priority: QUEUE_PRIORITY.LOW,
     billingData: {

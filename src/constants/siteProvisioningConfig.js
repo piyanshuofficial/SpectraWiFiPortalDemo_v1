@@ -61,13 +61,26 @@ export const SITE_TYPES = [
 // PRODUCT NAMES
 // ============================================
 export const PRODUCT_NAMES = [
-  { value: "spectra_wifi_basic", label: "Spectra WiFi Basic" },
-  { value: "spectra_wifi_standard", label: "Spectra WiFi Standard" },
-  { value: "spectra_wifi_premium", label: "Spectra WiFi Premium" },
-  { value: "spectra_wifi_enterprise", label: "Spectra WiFi Enterprise" },
-  { value: "spectra_managed_wifi", label: "Spectra Managed WiFi" },
-  { value: "spectra_hotspot", label: "Spectra Hotspot Solution" }
+  { value: "profi_pg", label: "ProFi for PG", segments: ["pg"] },
+  { value: "profi_hotels", label: "ProFi for Hotels", segments: ["hotel"] },
+  { value: "profi_office", label: "ProFi for Office", segments: ["office"] },
+  { value: "profi_soho", label: "ProFi for SoHo", segments: ["office"] },
+  { value: "profi_business", label: "ProFi Business", segments: ["enterprise", "office", "coWorking", "miscellaneous"] },
+  { value: "business_wifi", label: "Business Wi-Fi", segments: ["enterprise", "office", "coWorking", "miscellaneous"] },
+  { value: "profi_shared_living", label: "ProFi for Shared Living", segments: ["coLiving"], defaultSegment: "coLiving" }
 ];
+
+/**
+ * Get products available for a specific segment
+ * @param {string} segment - The segment type (e.g., 'pg', 'hotel', 'office', etc.)
+ * @returns {Array} - Array of products available for the segment
+ */
+export const getProductsBySegment = (segment) => {
+  if (!segment) return PRODUCT_NAMES;
+  return PRODUCT_NAMES.filter(product =>
+    product.segments.includes(segment.toLowerCase())
+  );
+};
 
 // ============================================
 // BANDWIDTH TYPES
@@ -1874,15 +1887,16 @@ export const SITE_STATUS_TRANSITIONS = {
 
 /**
  * User roles allowed to perform status transitions
+ * Role names match InternalRoles from accessLevels.js (snake_case format)
  */
 export const STATUS_TRANSITION_ROLES = {
-  [SITE_STATUS.CONFIGURATION_PENDING]: ['deploymentEngineer', 'admin', 'superAdmin'],
-  [SITE_STATUS.UNDER_CONFIGURATION]: ['deploymentEngineer', 'admin', 'superAdmin'],
-  [SITE_STATUS.UNDER_TESTING]: ['deploymentEngineer', 'testEngineer', 'admin', 'superAdmin'],
-  [SITE_STATUS.RFS_PENDING]: ['deliveryTeam', 'admin', 'superAdmin'],
-  [SITE_STATUS.ACTIVE]: ['deliveryTeam', 'admin', 'superAdmin'],
-  [SITE_STATUS.SUSPENDED]: ['admin', 'superAdmin'],
-  [SITE_STATUS.BLOCKED]: ['superAdmin']
+  [SITE_STATUS.CONFIGURATION_PENDING]: ['deployment_engineer', 'operations_manager', 'super_admin', 'demo_account'],
+  [SITE_STATUS.UNDER_CONFIGURATION]: ['deployment_engineer', 'operations_manager', 'super_admin', 'demo_account'],
+  [SITE_STATUS.UNDER_TESTING]: ['deployment_engineer', 'operations_manager', 'super_admin', 'demo_account'],
+  [SITE_STATUS.RFS_PENDING]: ['deployment_engineer', 'operations_manager', 'super_admin', 'demo_account'],
+  [SITE_STATUS.ACTIVE]: ['deployment_engineer', 'operations_manager', 'super_admin', 'demo_account'],
+  [SITE_STATUS.SUSPENDED]: ['operations_manager', 'super_admin', 'demo_account'],
+  [SITE_STATUS.BLOCKED]: ['super_admin', 'demo_account']
 };
 
 // ============================================

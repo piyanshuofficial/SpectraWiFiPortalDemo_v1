@@ -1,4 +1,113 @@
-// src/pages/Internal/CustomerManagement.js
+/**
+ * ============================================================================
+ * Customer Management Page (Internal Portal)
+ * ============================================================================
+ *
+ * @file src/pages/Internal/CustomerManagement.js
+ * @description Customer account management for Spectra internal staff.
+ *              Lists all customer organizations with their sites, license
+ *              usage, and contract information. Supports customer impersonation.
+ *
+ * @portalType Internal (Spectra Staff Only)
+ *
+ * @features
+ * - Grid and List view modes for customer display
+ * - Search by customer name, ID, or contact info
+ * - Filter by status (Active, Suspended, Trial, Churned)
+ * - Filter by industry (Hospitality, Enterprise, Real Estate, etc.)
+ * - View customer details modal
+ * - "View as Customer" to impersonate customer portal
+ * - Navigate to customer's sites
+ * - Export customer list to CSV
+ * - Customer metrics (sites count, users, devices)
+ *
+ * @pageStructure
+ * ```
+ * ┌──────────────────────────────────────────────────────────────────────────┐
+ * │ Page Title: "Customer Management"                                        │
+ * ├──────────────────────────────────────────────────────────────────────────┤
+ * │ Summary Cards:                                                           │
+ * │ ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐                         │
+ * │ │ Total   │ │ Active  │ │ Trial   │ │ Licenses│                         │
+ * │ │Customers│ │   45    │ │    8    │ │  12,450 │                         │
+ * │ └─────────┘ └─────────┘ └─────────┘ └─────────┘                         │
+ * ├──────────────────────────────────────────────────────────────────────────┤
+ * │ Toolbar: [Search] [Filters] [Add Customer] [Export] [Grid|List]         │
+ * ├──────────────────────────────────────────────────────────────────────────┤
+ * │ Filter Panel (collapsible):                                              │
+ * │ [Status ▼] [Industry ▼]                                                  │
+ * ├──────────────────────────────────────────────────────────────────────────┤
+ * │ Customer Cards/Table:                                                    │
+ * │ ┌────────────────────────────────────────────────────────────────────┐  │
+ * │ │ [Logo] Acme Corporation          Industry: Enterprise              │  │
+ * │ │        Sites: 5   Users: 1,200   Licenses: 1,500/2,000            │  │
+ * │ │        Contract: 2024-01 to 2026-12        Status: ● Active       │  │
+ * │ │        [View Details] [View Sites] [View as Customer] [...]        │  │
+ * │ └────────────────────────────────────────────────────────────────────┘  │
+ * ├──────────────────────────────────────────────────────────────────────────┤
+ * │ Pagination: [< 1 2 3 4 5 >]  Rows per page: [10 ▼]                      │
+ * └──────────────────────────────────────────────────────────────────────────┘
+ * ```
+ *
+ * @customerStatuses
+ * | Status    | Color  | Description                              |
+ * |-----------|--------|------------------------------------------|
+ * | Active    | Green  | Active paying customer                   |
+ * | Trial     | Blue   | In trial period                          |
+ * | Suspended | Yellow | Payment/compliance issue                 |
+ * | Churned   | Gray   | Former customer                          |
+ *
+ * @customerDetailModal
+ * Shows comprehensive customer information:
+ * - Company details (name, industry, GST, PAN)
+ * - Contact information (primary, billing, technical)
+ * - Contract details (start/end dates, value)
+ * - Sites list with quick access
+ * - License summary (used/total by segment)
+ * - Activity timeline
+ *
+ * @viewAsCustomerFeature
+ * Clicking "View as Customer" opens CustomerViewModal:
+ * - Select which site to view (or company view)
+ * - Select role to impersonate (Admin, Manager, User)
+ * - Opens customer portal in read-only mode
+ * - Shows impersonation banner in sidebar
+ *
+ * @customerData
+ * Each customer object contains:
+ * - id, name: Customer identifiers
+ * - industry: Business vertical
+ * - status: Account status
+ * - sites: Array of associated sites
+ * - contact: Contact person details
+ * - contract: Contract dates and value
+ * - licenses: License allocation details
+ *
+ * @permissions
+ * - canAccessInternalPortal: View customers list
+ * - canEditCustomers: Edit customer details
+ * - canSuspendCustomers: Change customer status
+ * - canViewAsCustomer: Impersonation feature
+ *
+ * @navigationLinks
+ * From customer card:
+ * - "View Sites" → /internal/sites?customer={customerId}
+ * - "View Details" → Opens detail modal
+ * - "Dashboard" → /internal/dashboard?customer={customerId}
+ *
+ * @dependencies
+ * - internalPortalData.js: Sample customer data
+ * - CustomerViewModal: For impersonation
+ * - SearchableSelect: Customer selection dropdown
+ *
+ * @relatedFiles
+ * - SiteManagement.js: Customer's sites
+ * - CustomerViewModal.js: Impersonation modal
+ * - internalPortalData.js: Sample data
+ * - CustomerManagement.css: Page styles
+ *
+ * ============================================================================
+ */
 
 import React, { useState, useMemo, useEffect } from "react";
 import { createPortal } from "react-dom";
@@ -32,8 +141,12 @@ import {
   FaFileContract,
   FaIdCard,
   FaGlobe,
+  FaUserSecret,
 } from "react-icons/fa";
 import { customers, getSitesByCustomer, licenses } from "@constants/internalPortalData";
+import CustomerViewModal from "@components/CustomerViewModal";
+import SearchableSelect from "@components/SearchableSelect";
+import { getAllCustomers } from "@context/CustomerViewContext";
 import notifications from "@utils/notifications";
 import Pagination from "@components/Pagination";
 import PageLoadingSkeleton from "@components/Loading/PageLoadingSkeleton";
@@ -66,8 +179,96 @@ const CustomerManagement = () => {
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [showCustomerModal, setShowCustomerModal] = useState(false);
 
+  // Customer View (impersonation) modal state
+  const [showCustomerViewModal, setShowCustomerViewModal] = useState(false);
+  const [customerForView, setCustomerForView] = useState(null);
+
   // Simulate initial data loading
   useEffect(() => {
+    /* ========================================================================
+     * BACKEND INTEGRATION: Load Customers List for Internal Portal
+     * ========================================================================
+     * API Endpoint: GET /api/v1/internal/customers
+     *
+     * Query Parameters:
+     * - status (optional): Filter by status (active|inactive|suspended)
+     * - industry (optional): Filter by industry type
+     * - page: Page number for pagination
+     * - limit: Items per page
+     * - search: Search term for name/email
+     *
+     * Expected Response (Success - 200):
+     * {
+     *   "success": true,
+     *   "data": {
+     *     "customers": [{
+     *       "id": "string",
+     *       "name": "string",
+     *       "status": "active|inactive|suspended",
+     *       "industry": "string",
+     *       "type": "string",              // Enterprise, Hospitality, etc.
+     *       "contactName": "string",
+     *       "contactEmail": "string",
+     *       "contactPhone": "string",
+     *       "billingEmail": "string",
+     *       "website": "string",
+     *       "totalSites": number,
+     *       "activeSites": number,
+     *       "totalUsers": number,
+     *       "totalDevices": number,
+     *       "createdAt": "ISO8601",
+     *       "contractStart": "ISO8601",
+     *       "contractEnd": "ISO8601",
+     *       "license": {
+     *         "tier": "string",
+     *         "totalCapacity": number,
+     *         "usedCapacity": number,
+     *         "expiresAt": "ISO8601"
+     *       },
+     *       "segments": ["Enterprise", "Hotel", ...]  // Enabled segments
+     *     }],
+     *     "totalCount": number,
+     *     "page": number,
+     *     "limit": number
+     *   }
+     * }
+     *
+     * Backend Processing:
+     * 1. Authenticate internal user and verify permissions
+     * 2. Query customers database with filters
+     * 3. Aggregate site data per customer
+     * 4. Include license information from billing system
+     * 5. Calculate utilization metrics
+     *
+     * Sample Integration Code:
+     * ------------------------
+     * const fetchCustomers = async () => {
+     *   setIsLoading(true);
+     *   try {
+     *     const params = new URLSearchParams({
+     *       page: currentPage,
+     *       limit: rowsPerPage,
+     *       ...(selectedStatus !== 'All' && { status: selectedStatus }),
+     *       ...(selectedIndustry !== 'All' && { industry: selectedIndustry }),
+     *       ...(searchQuery && { search: searchQuery })
+     *     });
+     *     const response = await fetch(`/api/v1/internal/customers?${params}`, {
+     *       headers: { 'Authorization': `Bearer ${authToken}` }
+     *     });
+     *     const result = await response.json();
+     *     if (result.success) {
+     *       setCustomers(result.data.customers);
+     *       setTotalCount(result.data.totalCount);
+     *     }
+     *   } catch (error) {
+     *     notifications.operationFailed('load customers');
+     *   } finally {
+     *     setIsLoading(false);
+     *   }
+     * };
+     * ======================================================================== */
+
+    // TODO: Remove mock and implement actual API call above
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 700);
@@ -76,7 +277,13 @@ const CustomerManagement = () => {
 
   // Get filter options
   const statusOptions = ["All", "active", "inactive", "suspended"];
-  const industryOptions = ["All", ...new Set(customers.map(c => c.industry))];
+  const industryFilterOptions = useMemo(() =>
+    [...new Set(customers.map(c => c.industry))].map(ind => ({
+      value: ind,
+      label: ind,
+    })),
+    []
+  );
 
   // Enhance customers with site data
   const enhancedCustomers = useMemo(() => {
@@ -169,6 +376,20 @@ const CustomerManagement = () => {
       case "analytics":
         // Navigate to internal dashboard with customer filter
         navigate(`/internal/dashboard?customer=${customerId}`);
+        break;
+      case "viewAsCustomer":
+        // Open customer view modal for impersonation
+        // Find matching customer from CustomerViewContext data
+        const contextCustomers = getAllCustomers();
+        const matchingContextCustomer = contextCustomers.find(c =>
+          c.name === customer.name || c.id === customerId
+        );
+        if (matchingContextCustomer) {
+          setCustomerForView(matchingContextCustomer);
+          setShowCustomerViewModal(true);
+        } else {
+          notifications.showInfo("Customer view not available for this customer");
+        }
         break;
       case "delete":
         // Delete functionality removed - customers should be suspended instead
@@ -327,16 +548,19 @@ const CustomerManagement = () => {
                 ))}
               </select>
             </div>
-            <div className="filter-group">
+            <div className="filter-group searchable-filter">
               <label>Industry</label>
-              <select
-                value={selectedIndustry}
-                onChange={(e) => setSelectedIndustry(e.target.value)}
-              >
-                {industryOptions.map((opt) => (
-                  <option key={opt} value={opt}>{opt}</option>
-                ))}
-              </select>
+              <SearchableSelect
+                options={industryFilterOptions}
+                value={selectedIndustry === "All" ? "" : selectedIndustry}
+                onChange={(val) => setSelectedIndustry(val || "All")}
+                placeholder="All Industries"
+                searchPlaceholder="Search industries..."
+                getOptionLabel={(opt) => opt.label}
+                getOptionValue={(opt) => opt.value}
+                emptyOption={{ label: "All Industries", value: "" }}
+                size="small"
+              />
             </div>
             <button className="btn btn-text" onClick={clearFilters}>
               Clear Filters
@@ -394,6 +618,9 @@ const CustomerManagement = () => {
                         </button>
                         <button onClick={() => handleCustomerAction("analytics", customer.id)}>
                           <FaChartLine /> Analytics
+                        </button>
+                        <button onClick={() => handleCustomerAction("viewAsCustomer", customer.id)} className="view-as-customer">
+                          <FaUserSecret /> View as Customer
                         </button>
                         {hasPermission && hasPermission("canManageCustomers") && (
                           <>
@@ -744,6 +971,16 @@ const CustomerManagement = () => {
         </div>,
         document.body
       )}
+
+      {/* Customer View Modal for Impersonation */}
+      <CustomerViewModal
+        isOpen={showCustomerViewModal}
+        onClose={() => {
+          setShowCustomerViewModal(false);
+          setCustomerForView(null);
+        }}
+        preselectedCustomer={customerForView}
+      />
     </div>
   );
 };

@@ -1,7 +1,68 @@
-// src/components/Sidebar.js
+/**
+ * ============================================================================
+ * Sidebar Component
+ * ============================================================================
+ *
+ * @file src/components/Sidebar.js
+ * @description Navigation sidebar component that displays menu items based on
+ *              user type (Customer vs Internal) and permissions. Handles
+ *              collapsible state, mobile responsiveness, and route preloading.
+ *
+ * @portalTypes
+ * The sidebar automatically detects which portal the user is in:
+ * - Customer Portal: Shows user/device management, reports, etc.
+ * - Internal Portal: Shows sites, customers, provisioning queue, etc.
+ *
+ * @permissionSystem
+ * Menu items are filtered based on user permissions from usePermissions hook.
+ * Each item specifies required permission - items without permission are hidden.
+ *
+ * @features
+ * - Collapsible sidebar (toggle between icon-only and full width)
+ * - Mobile responsive with hamburger menu
+ * - Active route highlighting
+ * - Route preloading on hover (performance optimization)
+ * - Translation support (i18n) for customer portal
+ * - Customer view banner when impersonating
+ *
+ * @structure
+ * ```
+ * ┌────────────────────┐
+ * │  Logo              │
+ * ├────────────────────┤
+ * │  [Company Banner]  │  ← Only in customer view mode
+ * ├────────────────────┤
+ * │  Nav Item 1        │
+ * │  Nav Item 2        │
+ * │  Nav Item 3        │
+ * │  ...               │
+ * ├────────────────────┤
+ * │  Logout Button     │
+ * └────────────────────┘
+ * ```
+ *
+ * @menuConfiguration
+ * - customerSidebarItems: Menu for customer portal users
+ * - internalSidebarItems: Menu for internal Spectra staff
+ *
+ * @dependencies
+ * - react-router-dom : For NavLink and navigation
+ * - react-icons      : For menu item icons
+ * - usePermissions   : For permission-based filtering
+ * - useSiteConfig    : For site-specific configurations
+ * - useCustomerView  : For customer impersonation banner
+ * - react-i18next    : For internationalization
+ *
+ * @relatedFiles
+ * - Sidebar.css      : Styles including collapse/expand animations
+ * - routes.js        : Route configuration and preloading
+ * - usePermissions.js: Permission checking logic
+ *
+ * ============================================================================
+ */
 
 import React, { useState, useEffect, useRef } from "react";
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   FaTachometerAlt,
   FaUsers,
@@ -20,17 +81,29 @@ import {
   FaTicketAlt,
   FaTasks,
   FaBell,
-  FaEllipsisH,
-  FaChevronDown,
+  FaSignOutAlt,
+  FaClipboardCheck,
+  FaHeadset,
 } from "react-icons/fa";
 import { usePermissions } from "@hooks/usePermissions";
 import { useSiteConfig } from "@hooks/useSiteConfig";
+import { useCustomerView } from "@context/CustomerViewContext";
 import { preloadRoute } from "@config/routes";
 import { useTranslation } from "react-i18next";
 import logoMark from "@assets/images/spectra-logo-white.png";
 import "@components/Sidebar.css";
 
-// Customer portal sidebar items with translation keys
+/**
+ * Customer Portal Sidebar Menu Items
+ *
+ * Each item contains:
+ * - to: Route path for navigation
+ * - icon: Icon component to display
+ * - labelKey: i18n translation key
+ * - label: Fallback label if translation fails
+ * - permission: Required permission to view this item
+ * - requiresGuestAccess: (optional) Only show if site has guest access enabled
+ */
 const customerSidebarItems = [
   {
     to: "/dashboard",
@@ -82,6 +155,13 @@ const customerSidebarItems = [
     label: "Activity Logs",
     permission: "canViewLogs"
   },
+  {
+    to: "/support",
+    icon: FaHeadset,
+    labelKey: "nav.helpSupport",
+    label: "Help & Support",
+    permission: "canViewReports"
+  },
 ];
 
 // Internal portal sidebar items (no translation for internal portal)
@@ -97,6 +177,12 @@ const internalSidebarItems = [
     icon: FaMapMarkerAlt,
     label: "Sites",
     permission: "canAccessInternalPortal"
+  },
+  {
+    to: "/internal/provisioning",
+    icon: FaClipboardCheck,
+    label: "Provisioning Queue",
+    permission: "canAccessProvisioningQueue"
   },
   {
     to: "/internal/customers",
@@ -157,18 +243,19 @@ const internalSidebarItems = [
 const Sidebar = () => {
   const { hasPermission } = usePermissions();
   const { guestAccessEnabled } = useSiteConfig();
+  const { isImpersonating, impersonatedCustomer, exitCustomerView } = useCustomerView();
   const { t } = useTranslation();
   const location = useLocation();
+  const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [showOverflowMenu, setShowOverflowMenu] = useState(false);
-  const [hasOverflow, setHasOverflow] = useState(false);
-  const [visibleCount, setVisibleCount] = useState(0);
   const navRef = useRef(null);
-  const overflowMenuRef = useRef(null);
 
   // Determine if we're on internal portal routes
-  const isInternalPortal = location.pathname.startsWith('/internal');
+  const isInternalPortalRoute = location.pathname.startsWith('/internal');
+
+  // When impersonating, show customer sidebar regardless of current route
+  const isInternalPortal = isInternalPortalRoute && !isImpersonating;
 
   useEffect(() => {
     const checkMobile = () => {
@@ -212,62 +299,6 @@ const Sidebar = () => {
     return true;
   });
 
-  // Check for overflow and calculate visible items (only for internal portal on desktop)
-  useEffect(() => {
-    if (!isInternalPortal || isMobile) {
-      setHasOverflow(false);
-      setVisibleCount(accessibleItems.length);
-      return;
-    }
-
-    const checkOverflow = () => {
-      if (!navRef.current) return;
-
-      const navElement = navRef.current;
-      const sidebarHeight = navElement.parentElement?.clientHeight || window.innerHeight;
-      const logoHeight = 60; // Logo area height
-      const moreButtonHeight = 56; // Height for the "more" button
-      const availableHeight = sidebarHeight - logoHeight - moreButtonHeight - 20; // 20px buffer
-
-      // Each nav item is approximately 56px (icon + label + padding)
-      const itemHeight = 56;
-      const maxVisibleItems = Math.floor(availableHeight / itemHeight);
-
-      if (accessibleItems.length > maxVisibleItems && maxVisibleItems > 0) {
-        setHasOverflow(true);
-        setVisibleCount(Math.max(maxVisibleItems - 1, 1)); // Reserve space for "more" button
-      } else {
-        setHasOverflow(false);
-        setVisibleCount(accessibleItems.length);
-      }
-    };
-
-    checkOverflow();
-    window.addEventListener('resize', checkOverflow);
-
-    return () => window.removeEventListener('resize', checkOverflow);
-  }, [isInternalPortal, isMobile, accessibleItems.length]);
-
-  // Close overflow menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (overflowMenuRef.current && !overflowMenuRef.current.contains(event.target)) {
-        setShowOverflowMenu(false);
-      }
-    };
-
-    if (showOverflowMenu) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showOverflowMenu]);
-
-  // Close overflow menu on route change
-  useEffect(() => {
-    setShowOverflowMenu(false);
-  }, [location.pathname]);
-
   const handleMouseEnter = (path) => {
     preloadRoute(path);
   };
@@ -279,17 +310,6 @@ const Sidebar = () => {
   const closeMobileMenu = () => {
     setMobileOpen(false);
   };
-
-  const toggleOverflowMenu = () => {
-    setShowOverflowMenu(!showOverflowMenu);
-  };
-
-  // Split items into visible and overflow
-  const visibleItems = hasOverflow ? accessibleItems.slice(0, visibleCount) : accessibleItems;
-  const overflowItems = hasOverflow ? accessibleItems.slice(visibleCount) : [];
-
-  // Check if any overflow item is active
-  const isOverflowItemActive = overflowItems.some(item => location.pathname.startsWith(item.to));
 
   if (accessibleItems.length === 0) {
     return (
@@ -364,7 +384,7 @@ const Sidebar = () => {
       )}
 
       <aside
-        className={`sidebar ${mobileOpen ? 'mobile-open' : ''} ${isInternalPortal ? 'internal-portal' : ''}`}
+        className={`sidebar ${mobileOpen ? 'mobile-open' : ''} ${isInternalPortal ? 'internal-portal' : ''} ${isImpersonating ? 'impersonating-mode' : ''}`}
         role="navigation"
         aria-label="Main navigation"
       >
@@ -376,9 +396,30 @@ const Sidebar = () => {
             draggable={false}
           />
         </div>
+
+        {/* Impersonation indicator */}
+        {isImpersonating && (
+          <div className="impersonation-indicator">
+            <div className="impersonation-info">
+              <span className="impersonation-label">Viewing as</span>
+              <span className="impersonation-customer">{impersonatedCustomer?.name}</span>
+            </div>
+            <button
+              className="exit-impersonation-btn"
+              onClick={() => {
+                exitCustomerView();
+                navigate('/internal/dashboard');
+              }}
+              title="Exit customer view"
+            >
+              <FaSignOutAlt />
+            </button>
+          </div>
+        )}
+
         <nav aria-label="Main navigation" ref={navRef}>
           <ul className="sidebar-nav">
-            {visibleItems.map(({ to, icon: Icon, labelKey, label }) => (
+            {accessibleItems.map(({ to, icon: Icon, labelKey, label }) => (
               <li key={to} className="sidebar-nav-li">
                 <NavLink
                   to={to}
@@ -398,52 +439,6 @@ const Sidebar = () => {
                 </NavLink>
               </li>
             ))}
-
-            {/* Overflow "More" button for internal portal */}
-            {hasOverflow && overflowItems.length > 0 && !isMobile && (
-              <li className="sidebar-nav-li sidebar-overflow-container" ref={overflowMenuRef}>
-                <button
-                  className={`sidebar-nav-item sidebar-more-button ${showOverflowMenu ? 'active' : ''} ${isOverflowItemActive ? 'has-active-child' : ''}`}
-                  onClick={toggleOverflowMenu}
-                  aria-expanded={showOverflowMenu}
-                  aria-haspopup="true"
-                  aria-label={`More options (${overflowItems.length} more)`}
-                >
-                  <span className="sidebar-nav-icon" aria-hidden="true">
-                    <FaEllipsisH />
-                  </span>
-                  <span className="sidebar-nav-label">
-                    More
-                    <FaChevronDown className={`sidebar-more-chevron ${showOverflowMenu ? 'rotated' : ''}`} />
-                  </span>
-                </button>
-
-                {/* Overflow dropdown menu */}
-                {showOverflowMenu && (
-                  <div className="sidebar-overflow-menu" role="menu">
-                    {overflowItems.map(({ to, icon: Icon, labelKey, label }) => (
-                      <NavLink
-                        key={to}
-                        to={to}
-                        className={({ isActive }) =>
-                          "sidebar-overflow-item" + (isActive ? " active-link" : "")
-                        }
-                        role="menuitem"
-                        aria-label={labelKey ? t(labelKey) : label}
-                        onMouseEnter={() => handleMouseEnter(to)}
-                        onFocus={() => handleMouseEnter(to)}
-                        onClick={() => setShowOverflowMenu(false)}
-                      >
-                        <span className="sidebar-overflow-icon" aria-hidden="true">
-                          <Icon />
-                        </span>
-                        <span className="sidebar-overflow-label">{labelKey ? t(labelKey) : label}</span>
-                      </NavLink>
-                    ))}
-                  </div>
-                )}
-              </li>
-            )}
           </ul>
         </nav>
       </aside>

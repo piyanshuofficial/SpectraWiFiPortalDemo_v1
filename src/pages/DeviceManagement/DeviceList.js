@@ -1,4 +1,111 @@
-// src/pages/DeviceManagement/DeviceList.js
+/**
+ * ============================================================================
+ * Device List Page (Device Management)
+ * ============================================================================
+ *
+ * @file src/pages/DeviceManagement/DeviceList.js
+ * @description Main device management page displaying all registered devices
+ *              for the current site/company. Supports grid and list views,
+ *              device registration, and disconnect functionality.
+ *
+ * @features
+ * - Grid view (cards) and List view (table) display modes
+ * - Device summary statistics cards (Total, Online, Offline, Blocked)
+ * - Search and filter by status, category, user
+ * - Site filtering for company-level users
+ * - Add new device via modal form
+ * - Bulk import devices from CSV
+ * - Disconnect device from network
+ * - Export device list to CSV
+ * - Real-time online/offline status indicators
+ *
+ * @deviceCategories
+ * | Category    | Icon        | Description                     |
+ * |-------------|-------------|---------------------------------|
+ * | Laptop      | FaLaptop    | Desktop/laptop computers        |
+ * | Mobile      | FaMobileAlt | Smartphones                     |
+ * | Tablet      | FaTablet    | Tablet devices                  |
+ * | IoT/Digital | FaGlobeAmericas | Smart devices, IoT            |
+ *
+ * @deviceStatuses
+ * | Status   | Indicator | Description                       |
+ * |----------|-----------|-----------------------------------|
+ * | Online   | Green dot | Device currently connected        |
+ * | Offline  | Gray dot  | Device not connected              |
+ * | Blocked  | Red       | Device access revoked             |
+ *
+ * @pageStructure
+ * ```
+ * ┌──────────────────────────────────────────────────────────────────────────┐
+ * │ Page Title: "Device Management"                                          │
+ * ├──────────────────────────────────────────────────────────────────────────┤
+ * │ Summary Cards:                                                           │
+ * │ ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐                         │
+ * │ │ Total   │ │ Online  │ │ Offline │ │ Blocked │                         │
+ * │ │   156   │ │   89    │ │   64    │ │    3    │                         │
+ * │ └─────────┘ └─────────┘ └─────────┘ └─────────┘                         │
+ * ├──────────────────────────────────────────────────────────────────────────┤
+ * │ Toolbar: [Search] [Status Filter] [Add Device] [Import] [Grid|List]     │
+ * ├──────────────────────────────────────────────────────────────────────────┤
+ * │ Grid View:                          │ List View:                         │
+ * │ ┌────────┐ ┌────────┐ ┌────────┐   │ ┌────────────────────────────────┐ │
+ * │ │ [icon] │ │ [icon] │ │ [icon] │   │ │ Name │ MAC │ User │ Status    │ │
+ * │ │ Device1│ │ Device2│ │ Device3│   │ ├────────────────────────────────┤ │
+ * │ │ Online │ │ Offline│ │ Online │   │ │ Dev1 │ xx  │ John │ Online    │ │
+ * │ └────────┘ └────────┘ └────────┘   │ │ Dev2 │ xx  │ Jane │ Offline   │ │
+ * │ ┌────────┐ ┌────────┐              │ └────────────────────────────────┘ │
+ * │ │ ...    │ │ ...    │              │                                    │
+ * ├──────────────────────────────────────────────────────────────────────────┤
+ * │ Pagination: [< 1 2 3 4 5 >]  Items per page: [12 ▼]                     │
+ * └──────────────────────────────────────────────────────────────────────────┘
+ * ```
+ *
+ * @permissions
+ * - canManageDevices: Add, Edit, Delete, Disconnect devices
+ * - canViewReports: Export device list
+ * - canBulkImportDevices: Access bulk import
+ * - canDisconnectDevice: Force disconnect from network
+ *
+ * @companyView
+ * When in company view:
+ * - Shows devices from ALL sites with site column
+ * - Site filter dropdown available
+ * - Edit/disconnect actions disabled (read-only)
+ * - Must drill down to site for device actions
+ *
+ * @disconnectFeature
+ * The disconnect feature:
+ * - Forces immediate disconnection from NAS
+ * - Calls AAA system to terminate session
+ * - Device can reconnect automatically (not blocked)
+ * - Used for troubleshooting or session refresh
+ *
+ * @deviceData
+ * Each device object contains:
+ * - id, name: Device identifiers
+ * - mac: MAC address (unique)
+ * - category: Device type (Laptop, Mobile, etc.)
+ * - owner: Associated user name
+ * - online: Current connection status
+ * - siteId, siteName: Site association
+ * - vendor: OUI-based vendor name
+ * - lastSeen: Last connection timestamp
+ *
+ * @dependencies
+ * - usePermissions: Permission checking
+ * - useSegment: Current segment
+ * - useAccessLevelView: Company/site view state
+ * - useReadOnlyMode: Customer impersonation check
+ * - DeviceFormModal: Add/Edit device form
+ *
+ * @relatedFiles
+ * - DeviceFormModal.js: Device registration form
+ * - DeviceToolbar.js: Action toolbar
+ * - segmentDeviceConfig.js: Segment-specific device rules
+ * - DeviceList.css: Page styles
+ *
+ * ============================================================================
+ */
 
 import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { FaDesktop, FaGlobeAmericas, FaBan, FaWifi, FaMobileAlt, FaLaptop, FaTablet, FaTh, FaList, FaEdit, FaTrash, FaPowerOff, FaBuilding, FaInfoCircle } from "react-icons/fa";
@@ -9,6 +116,7 @@ import { useBulkOperations } from "../../hooks/useBulkOperations";
 import { useLoading } from "../../context/LoadingContext";
 import { useSegment } from "../../context/SegmentContext";
 import { useAccessLevelView } from "../../context/AccessLevelViewContext";
+import { useReadOnlyMode } from "../../hooks/useReadOnlyMode";
 import { useTranslation } from "react-i18next";
 import { companySites } from "../../constants/companySampleData";
 import Button from "../../components/Button";
@@ -173,6 +281,7 @@ const DeviceList = () => {
   const { canBulkAddUserDevices, canBulkAddSmartDigitalDevices } = useBulkOperations();
   const { t } = useTranslation();
   const { isCompanyView, canEditInCurrentView, drillDownToSite } = useAccessLevelView();
+  const { isReadOnly: isCustomerViewReadOnly, blockAction } = useReadOnlyMode();
 
   const [devices, setDevices] = useState([]);
   const [showDeviceModal, setShowDeviceModal] = useState(false);
@@ -212,8 +321,8 @@ const DeviceList = () => {
   const canEditDevice = hasDevicePermission && allowDeviceEdit;
   const canDeleteDevice = hasDevicePermission && allowDeviceDelete;
 
-  // Read-only mode in company view (unless drilled down with edit permissions)
-  const isReadOnly = isCompanyView && !canEditInCurrentView;
+  // Read-only mode in company view or customer impersonation mode
+  const isReadOnly = isCustomerViewReadOnly || (isCompanyView && !canEditInCurrentView);
 
   const segmentUsers = useMemo(() => {
     return (userSampleData.users || []).filter(user => user.segment === segmentFilter);
@@ -629,6 +738,9 @@ const DeviceList = () => {
   }, [primaryTypeFilter, subTypeFilter, statusFilter, siteFilter, searchTerm, rowsPerPage, segmentFilter, resetToPage1]);
 
   const handleDeviceSubmit = useCallback(async (deviceInfo) => {
+    // Block in read-only mode (customer view impersonation)
+    if (blockAction("Adding/editing devices")) return;
+
     setSubmitting(true);
     try {
       await new Promise(resolve => setTimeout(resolve, 800));
@@ -698,19 +810,21 @@ const DeviceList = () => {
   }, [devices, segmentFilter]);
 
   const handleDeleteDevice = useCallback((device) => {
+    if (blockAction("Deleting devices")) return;
+
     if (!hasDevicePermission) {
       notifications.noPermission("delete devices");
       return;
     }
 
     if (!allowDeviceDelete) {
-      notifications.showError(`Device deletion is not available for ${segmentFilter} segment.`);
+      notifications.showError("Device deletion is not available for your account type.");
       return;
     }
 
     setDeviceToDelete(device);
     setShowDeleteConfirmation(true);
-  }, [hasDevicePermission, allowDeviceDelete, segmentFilter]);
+  }, [hasDevicePermission, allowDeviceDelete, segmentFilter, blockAction]);
 
   const handleConfirmDelete = useCallback(async () => {
     if (!deviceToDelete) return;
@@ -824,6 +938,8 @@ const DeviceList = () => {
   }, []);
 
   const handleDisconnectDevice = useCallback((device) => {
+    if (blockAction("Disconnecting devices")) return;
+
     if (!device.online) {
       notifications.showInfo(`${device.name} is already offline`);
       return;
@@ -831,7 +947,7 @@ const DeviceList = () => {
 
     setDeviceToDisconnect(device);
     setShowDisconnectConfirmation(true);
-  }, []);
+  }, [blockAction]);
 
   const handleConfirmDisconnect = useCallback(async () => {
     if (!deviceToDisconnect) return;
@@ -915,34 +1031,38 @@ const DeviceList = () => {
   }, [searchTerm]);
 
   const handleRegisterDeviceClick = useCallback(() => {
+    if (blockAction("Registering devices")) return;
+
     if (!hasDevicePermission) {
       notifications.noPermission("register devices");
       return;
     }
 
     if (!showRegisterDevice) {
-      notifications.showError(`Device registration is not available for ${segmentFilter} segment.`);
+      notifications.showError("Device registration is not available for your account type.");
       return;
     }
 
     setEditingDevice(null);
     setShowDeviceModal(true);
-  }, [hasDevicePermission, showRegisterDevice, segmentFilter]);
+  }, [hasDevicePermission, showRegisterDevice, segmentFilter, blockAction]);
 
   const handleEditDevice = useCallback((device) => {
+    if (blockAction("Editing devices")) return;
+
     if (!hasDevicePermission) {
       notifications.noPermission("edit devices");
       return;
     }
 
     if (!allowDeviceEdit) {
-      notifications.showError(`Device editing is not available for ${segmentFilter} segment.`);
+      notifications.showError("Device editing is not available for your account type.");
       return;
     }
 
     setEditingDevice(device);
     setShowDeviceModal(true);
-  }, [hasDevicePermission, allowDeviceEdit, segmentFilter]);
+  }, [hasDevicePermission, allowDeviceEdit, segmentFilter, blockAction]);
 
   /**
    * Handle bulk import of devices
@@ -1033,24 +1153,26 @@ const DeviceList = () => {
    * Handle bulk import with type selection
    */
   const handleBulkImport = useCallback((type) => {
+    if (blockAction("Importing devices")) return;
+
     if (!hasDevicePermission) {
       notifications.noPermission("import devices");
       return;
     }
 
     if (type === 'userDevices' && !canBulkAddUserDevices) {
-      notifications.showError(`Bulk import of user devices is not available for ${segmentFilter} segment.`);
+      notifications.showError("Bulk import of user devices is not available for your account type.");
       return;
     }
 
     if (type === 'smartDigitalDevices' && !canBulkAddSmartDigitalDevices) {
-      notifications.showError(`Bulk import of smart/digital devices is not available for ${segmentFilter} segment.`);
+      notifications.showError("Bulk import of smart/digital devices is not available for your account type.");
       return;
     }
 
     setBulkImportType(type);
     setShowBulkImportModal(true);
-  }, [hasDevicePermission, canBulkAddUserDevices, canBulkAddSmartDigitalDevices, segmentFilter]);
+  }, [hasDevicePermission, canBulkAddUserDevices, canBulkAddSmartDigitalDevices, segmentFilter, blockAction]);
 
   /**
    * Export device list to CSV

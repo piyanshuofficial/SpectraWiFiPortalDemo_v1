@@ -1,8 +1,9 @@
 // src/components/BulkImportModal.js
 
 import React, { useState, useCallback, useRef } from 'react';
-import { FiX, FiUpload, FiDownload, FiAlertCircle, FiCheckCircle, FiClipboard } from 'react-icons/fi';
+import { FiX, FiUpload, FiDownload, FiAlertCircle, FiCheckCircle, FiClipboard, FiAlertTriangle } from 'react-icons/fi';
 import { useBulkOperations } from '../hooks/useBulkOperations';
+import { usePermissions } from '../hooks/usePermissions';
 import { CSV_TEMPLATES, VALIDATION_RULES } from '../config/bulkOperationsConfig';
 import './BulkImportModal.css';
 
@@ -10,6 +11,7 @@ import './BulkImportModal.css';
  * BulkImportModal Component
  *
  * Provides functionality to bulk import users or devices via CSV file upload or direct paste
+ * Respects segment-based permissions from segmentPermissionsConfig
  *
  * @param {string} type - Type of import: 'users', 'humanDevices', or 'otherDevices'
  * @param {boolean} isOpen - Whether modal is open
@@ -17,7 +19,11 @@ import './BulkImportModal.css';
  * @param {function} onImport - Callback function when import is successful
  */
 const BulkImportModal = ({ type = 'users', isOpen, onClose, onImport }) => {
-  const { bulkConfig, allowExcelPaste, maxBulkUsers, maxBulkDevices } = useBulkOperations();
+  const { allowExcelPaste, maxBulkUsers, maxBulkDevices } = useBulkOperations();
+  const { canBulkImportUsers, canBulkImportDevices, currentSegment } = usePermissions();
+
+  // Check if bulk import is allowed for current segment based on type
+  const isBulkImportAllowed = type === 'users' ? canBulkImportUsers : canBulkImportDevices;
 
   const [activeTab, setActiveTab] = useState('upload'); // 'upload' or 'paste'
   const [file, setFile] = useState(null);
@@ -269,6 +275,39 @@ const BulkImportModal = ({ type = 'users', isOpen, onClose, onImport }) => {
   }, [validationResults, onImport, onClose]);
 
   if (!isOpen) return null;
+
+  // Show a message if bulk import is not allowed for current segment
+  if (!isBulkImportAllowed) {
+    return (
+      <div className="bulk-import-modal-backdrop">
+        <div className="bulk-import-modal">
+          <div className="bulk-import-header">
+            <h2>Bulk Import {entityNamePlural}</h2>
+            <button className="close-button" onClick={onClose}>
+              <FiX size={24} />
+            </button>
+          </div>
+          <div className="bulk-import-content">
+            <div className="bulk-import-not-allowed">
+              <FiAlertTriangle className="warning-icon" />
+              <h3>Bulk Import Not Available</h3>
+              <p>
+                Bulk import of {entityNamePlural.toLowerCase()} is not enabled for the <strong>{currentSegment}</strong> segment.
+              </p>
+              <p className="hint">
+                This feature can be enabled by an administrator during site provisioning.
+              </p>
+            </div>
+          </div>
+          <div className="bulk-import-footer">
+            <button className="btn btn-cancel" onClick={onClose}>
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bulk-import-modal-backdrop">

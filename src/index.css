@@ -342,3 +342,120 @@ p {
     scroll-behavior: smooth;
   }
 }
+
+/* ============================================
+   READ-ONLY MODE STYLES (Customer View)
+   ============================================ */
+
+/* Global read-only button styling */
+body.customer-view-active button.read-only-disabled,
+body.customer-view-active .read-only-disabled {
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+  pointer-events: none;
+  position: relative;
+}
+
+/* Read-only badge for buttons */
+.read-only-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  background: var(--color-warning);
+  color: #000;
+  font-size: var(--font-xs);
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  text-transform: uppercase;
+}
+
+/* Read-only tooltip styling */
+.read-only-tooltip {
+  position: relative;
+}
+
+.read-only-tooltip::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 10px;
+  background: rgba(0, 0, 0, 0.85);
+  color: #fff;
+  font-size: var(--font-xs);
+  white-space: nowrap;
+  border-radius: var(--radius-sm);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s, visibility 0.2s;
+  z-index: var(--z-tooltip);
+}
+
+.read-only-tooltip:hover::after {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Disable form inputs in read-only mode */
+body.customer-view-active .read-only-form input:not([type="search"]),
+body.customer-view-active .read-only-form select,
+body.customer-view-active .read-only-form textarea {
+  background-color: var(--color-bg-tertiary) !important;
+  cursor: not-allowed !important;
+  opacity: 0.7;
+}
+
+/* Visual indicator for read-only tables */
+body.customer-view-active .read-only-table .action-buttons button:not(.view-action),
+body.customer-view-active .read-only-table .dropdown-menu button:not(.view-action) {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Pulse animation for read-only indicator */
+@keyframes readOnlyPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(255, 193, 7, 0);
+  }
+}
+
+.read-only-indicator {
+  animation: readOnlyPulse 2s ease-in-out infinite;
+}
+
+/* ============================================
+   SEARCHABLE SELECT FILTER STYLES
+   ============================================ */
+.filter-group.searchable-filter {
+  min-width: 180px;
+  position: relative;
+}
+
+.filter-group.searchable-filter .searchable-select {
+  width: 100%;
+}
+
+.filter-group.searchable-filter .searchable-select-trigger {
+  min-height: 34px;
+  font-size: 13px;
+  padding: 6px 10px;
+}
+
+.filter-group.searchable-filter .searchable-select-dropdown {
+  min-width: 220px;
+}
+
+/* Ensure dropdown appears above other filter elements */
+.filters-row .filter-group.searchable-filter {
+  z-index: 10;
+}
+
+.filters-row .filter-group.searchable-filter:focus-within {
+  z-index: 100;
+}

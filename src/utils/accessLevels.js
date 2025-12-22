@@ -1,4 +1,105 @@
-// src/utils/accessLevels.js
+/**
+ * ============================================================================
+ * Access Levels & Permissions Configuration
+ * ============================================================================
+ *
+ * @file src/utils/accessLevels.js
+ * @description Central configuration for Role-Based Access Control (RBAC).
+ *              Defines user types, access levels, roles, and the complete
+ *              permissions matrix used throughout both portals.
+ *
+ * @architecture
+ * ```
+ * ┌─────────────────────────────────────────────────────────────────────────┐
+ * │                    ACCESS CONTROL HIERARCHY                             │
+ * ├─────────────────────────────────────────────────────────────────────────┤
+ * │                                                                         │
+ * │  UserType                                                               │
+ * │  ├── INTERNAL (Spectra Staff)                                          │
+ * │  │   └── InternalRoles                                                 │
+ * │  │       ├── SUPER_ADMIN (Full access)                                 │
+ * │  │       ├── OPERATIONS_MANAGER                                        │
+ * │  │       ├── SUPPORT_ENGINEER                                          │
+ * │  │       ├── DEPLOYMENT_ENGINEER                                       │
+ * │  │       └── SALES_REPRESENTATIVE                                      │
+ * │  │                                                                      │
+ * │  └── CUSTOMER (Portal Users)                                           │
+ * │      ├── AccessLevel                                                   │
+ * │      │   ├── COMPANY (Multi-site, aggregated)                         │
+ * │      │   └── SITE (Single location)                                   │
+ * │      └── Roles                                                         │
+ * │          ├── ADMIN (Full control)                                     │
+ * │          ├── MANAGER (Limited admin)                                  │
+ * │          └── USER (View + limited edit)                               │
+ * │                                                                         │
+ * └─────────────────────────────────────────────────────────────────────────┘
+ * ```
+ *
+ * @permissionMatrix
+ * Customer Portal Permissions (AccessLevel + Role):
+ *
+ * | Permission      | Company-Admin | Company-Manager | Site-Admin | Site-Manager | User |
+ * |-----------------|---------------|-----------------|------------|--------------|------|
+ * | canEditUsers    | Drill-down    | Drill-down      | ✓          | ✓            | ✗    |
+ * | canViewReports  | ✓             | ✓               | ✓          | ✓            | ✓    |
+ * | canManageDevices| Drill-down    | Drill-down      | ✓          | ✓            | ✗    |
+ * | canExportData   | ✓             | ✓               | ✓          | ✗            | ✗    |
+ * | canViewLogs     | ✓             | ✓               | ✓          | ✓            | ✗    |
+ *
+ * Note: "Drill-down" means the permission only applies when viewing
+ *       a specific site, not in aggregated company view.
+ *
+ * @companyViewBehavior
+ * COMPANY level users have special behavior:
+ * - Aggregated view: READ-ONLY across all sites
+ * - Must drill down to specific site for editing
+ * - canDrillDownToSite permission enables this
+ * - Site filter dropdown appears in header
+ *
+ * @internalPermissions
+ * Internal Portal Permissions (by InternalRole):
+ *
+ * | Permission               | Super Admin | Ops Manager | Support | Deployment |
+ * |--------------------------|-------------|-------------|---------|------------|
+ * | canAccessInternalPortal  | ✓           | ✓           | ✓       | ✓          |
+ * | canProvisionSites        | ✓           | ✓           | ✗       | ✓          |
+ * | canAccessBulkOperations  | ✓           | ✗           | ✗       | ✗          |
+ * | canViewAsCustomer        | ✓           | ✓           | ✓       | ✗          |
+ * | canRotateCredentials     | ✓           | ✓           | ✗       | ✗          |
+ *
+ * @guestPermissions
+ * Guest management permissions (subset):
+ * - canViewGuestManagement: See guest list
+ * - canManageGuests: Add/edit/delete guests
+ * - canExtendGuestStay: Extend check-out dates
+ * - canGenerateVouchers: Create WiFi vouchers
+ *
+ * @usage
+ * ```jsx
+ * import { Permissions, AccessLevels, Roles } from '@utils/accessLevels';
+ *
+ * // Get permissions for user
+ * const userPerms = Permissions[AccessLevels.SITE][Roles.ADMIN];
+ *
+ * // Check specific permission
+ * if (userPerms.canEditUsers) {
+ *   // Show edit button
+ * }
+ * ```
+ *
+ * @helperFunctions
+ * - getPermissionsForUser(user): Returns combined permission object
+ * - hasPermission(user, permission): Check single permission
+ * - getDefaultRole(userType): Default role for new users
+ *
+ * @relatedFiles
+ * - AuthContext.js: Uses for login/permission checking
+ * - usePermissions.js: Hook wrapper for components
+ * - ProtectedRoute.js: Route-level permission guards
+ * - Sidebar.js: Menu item visibility
+ *
+ * ============================================================================
+ */
 
 /**
  * User Types - Distinguishes between internal Spectra staff and customers
@@ -25,16 +126,19 @@ export const Roles = {
   ADMIN: "admin",
   MANAGER: "manager",
   USER: "user",
-  VIEWER: "viewer",
+  DEMO: "demo",
 };
 
 /**
- * Internal Portal Roles - 3 roles for Spectra staff
+ * Internal Portal Roles - 6 roles for Spectra staff
  */
 export const InternalRoles = {
   SUPER_ADMIN: "super_admin",
+  OPERATIONS_MANAGER: "operations_manager",
   SUPPORT_ENGINEER: "support_engineer",
   DEPLOYMENT_ENGINEER: "deployment_engineer",
+  SALES_REPRESENTATIVE: "sales_representative",
+  DEMO_ACCOUNT: "demo_account",
 };
 
 /**
@@ -44,7 +148,7 @@ export const InternalRoles = {
  * COMPANY > SITE
  *
  * Role Hierarchy (highest to lowest):
- * ADMIN > MANAGER > USER > VIEWER
+ * ADMIN > MANAGER > USER
  *
  * SITE level: Full operational control for a single location
  * COMPANY level: Aggregated view-only, can drill down to sites for changes
@@ -71,6 +175,15 @@ export const Permissions = {
       canViewLogs: true,
       canDrillDownToSite: false,
       canEditAtSiteLevel: true,
+      // Guest Management
+      canViewGuestManagement: true,
+      canManageGuests: true,
+      canExtendGuestStay: true,
+      // Support
+      canViewSupportTickets: true,
+      canCreateSupportTickets: true,
+      // System
+      canManageNotifications: true,
     },
     [Roles.MANAGER]: {
       canEditUsers: true,
@@ -87,6 +200,15 @@ export const Permissions = {
       canViewLogs: true,
       canDrillDownToSite: false,
       canEditAtSiteLevel: true,
+      // Guest Management
+      canViewGuestManagement: true,
+      canManageGuests: true,
+      canExtendGuestStay: true,
+      // Support
+      canViewSupportTickets: true,
+      canCreateSupportTickets: true,
+      // System
+      canManageNotifications: false,
     },
     [Roles.USER]: {
       canEditUsers: false,
@@ -103,22 +225,43 @@ export const Permissions = {
       canViewLogs: false,
       canDrillDownToSite: false,
       canEditAtSiteLevel: false,
+      // Guest Management
+      canViewGuestManagement: true,
+      canManageGuests: false,
+      canExtendGuestStay: false,
+      // Support
+      canViewSupportTickets: true,
+      canCreateSupportTickets: true,
+      // System
+      canManageNotifications: false,
     },
-    [Roles.VIEWER]: {
-      canEditUsers: false,
+    [Roles.DEMO]: {
+      // Demo role - Full access for testing and demonstrations
+      canEditUsers: true,
       canViewReports: true,
-      canManageDevices: false,
-      canManagePolicies: false,
+      canManageDevices: true,
+      canManagePolicies: true,
       canViewAnalytics: true,
-      canExportData: false,
-      canManageSegments: false,
+      canExportData: true,
+      canManageSegments: true,
       canViewMultipleSites: false,
       canManageBilling: false,
       canConfigureSystem: false,
-      canManageRoles: false,
-      canViewLogs: false,
+      canManageRoles: true,
+      canViewLogs: true,
       canDrillDownToSite: false,
-      canEditAtSiteLevel: false,
+      canEditAtSiteLevel: true,
+      // Guest Management
+      canViewGuestManagement: true,
+      canManageGuests: true,
+      canExtendGuestStay: true,
+      // Support
+      canViewSupportTickets: true,
+      canCreateSupportTickets: true,
+      // System
+      canManageNotifications: true,
+      isDemoMode: true,
+      useSampleDataOnly: true,
     },
   },
 
@@ -139,6 +282,15 @@ export const Permissions = {
       canViewLogs: true,
       canDrillDownToSite: true,
       canEditAtSiteLevel: true, // Can edit when drilled down
+      // Guest Management
+      canViewGuestManagement: true,
+      canManageGuests: true,
+      canExtendGuestStay: true,
+      // Support
+      canViewSupportTickets: true,
+      canCreateSupportTickets: true,
+      // System
+      canManageNotifications: true,
     },
     [Roles.MANAGER]: {
       canEditUsers: true, // Only when drilled down to site
@@ -155,6 +307,15 @@ export const Permissions = {
       canViewLogs: true,
       canDrillDownToSite: true,
       canEditAtSiteLevel: true, // Can edit when drilled down
+      // Guest Management
+      canViewGuestManagement: true,
+      canManageGuests: true,
+      canExtendGuestStay: true,
+      // Support
+      canViewSupportTickets: true,
+      canCreateSupportTickets: true,
+      // System
+      canManageNotifications: false,
     },
     [Roles.USER]: {
       canEditUsers: false,
@@ -171,22 +332,43 @@ export const Permissions = {
       canViewLogs: false,
       canDrillDownToSite: true,
       canEditAtSiteLevel: false, // View only even when drilled down
+      // Guest Management
+      canViewGuestManagement: true,
+      canManageGuests: false,
+      canExtendGuestStay: false,
+      // Support
+      canViewSupportTickets: true,
+      canCreateSupportTickets: true,
+      // System
+      canManageNotifications: false,
     },
-    [Roles.VIEWER]: {
-      canEditUsers: false,
+    [Roles.DEMO]: {
+      // Demo role at COMPANY level - Full access for testing and demonstrations
+      canEditUsers: true,
       canViewReports: true,
-      canManageDevices: false,
-      canManagePolicies: false,
+      canManageDevices: true,
+      canManagePolicies: true,
       canViewAnalytics: true,
-      canExportData: false,
-      canManageSegments: false,
+      canExportData: true,
+      canManageSegments: true,
       canViewMultipleSites: true,
-      canManageBilling: false,
-      canConfigureSystem: false,
-      canManageRoles: false,
-      canViewLogs: false,
+      canManageBilling: true,
+      canConfigureSystem: true,
+      canManageRoles: true,
+      canViewLogs: true,
       canDrillDownToSite: true,
-      canEditAtSiteLevel: false, // View only even when drilled down
+      canEditAtSiteLevel: true,
+      // Guest Management
+      canViewGuestManagement: true,
+      canManageGuests: true,
+      canExtendGuestStay: true,
+      // Support
+      canViewSupportTickets: true,
+      canCreateSupportTickets: true,
+      // System
+      canManageNotifications: true,
+      isDemoMode: true,
+      useSampleDataOnly: true,
     },
   },
 };
@@ -239,6 +421,10 @@ export const InternalPermissions = {
     canEditDeviceCategory: true,
     // Single User Scheduling (Super Admin + Support Engineer)
     canScheduleUserActions: true,
+    // Site Provisioning Queue
+    canAccessProvisioningQueue: true,
+    // Customer Impersonation
+    canImpersonateCustomer: true,
   },
   [InternalRoles.SUPPORT_ENGINEER]: {
     // Limited customer-facing permissions
@@ -281,6 +467,10 @@ export const InternalPermissions = {
     canEditDeviceCategory: true,
     // Single User Scheduling (Allowed)
     canScheduleUserActions: true,
+    // Site Provisioning Queue (Not Available)
+    canAccessProvisioningQueue: false,
+    // Customer Impersonation (Allowed for troubleshooting)
+    canImpersonateCustomer: true,
   },
   [InternalRoles.DEPLOYMENT_ENGINEER]: {
     // Deployment-focused permissions
@@ -323,6 +513,152 @@ export const InternalPermissions = {
     canEditDeviceCategory: false,
     // Single User Scheduling (Not Available)
     canScheduleUserActions: false,
+    // Site Provisioning Queue (Primary Access - This is their main responsibility!)
+    canAccessProvisioningQueue: true,
+    // Customer Impersonation (Not Available)
+    canImpersonateCustomer: false,
+  },
+  [InternalRoles.OPERATIONS_MANAGER]: {
+    // Operations Manager - Oversees daily operations across sites
+    canEditUsers: true,
+    canViewReports: true,
+    canManageDevices: true,
+    canManagePolicies: true,
+    canViewAnalytics: true,
+    canExportData: true,
+    canManageSegments: true,
+    canViewMultipleSites: true,
+    canManageBilling: true,
+    canConfigureSystem: false,
+    canManageRoles: false,
+    canViewLogs: true,
+    // Internal-specific permissions
+    canAccessInternalPortal: true,
+    canProvisionSites: false,
+    canConfigureSites: true,
+    canManageAllSites: true,
+    canViewAllCustomers: true,
+    canManageInternalUsers: false,
+    canAccessSystemSettings: false,
+    canViewAuditLogs: true,
+    canManageLicenses: true,
+    canAccessSupportTools: true,
+    // Bulk Operations (Limited)
+    canAccessBulkOperations: true,
+    canBulkRegisterUsers: false,
+    canBulkRegisterDevices: false,
+    canBulkActivateUsers: true,
+    canBulkSuspendUsers: true,
+    canBulkBlockUsers: false,
+    canBulkChangePolicies: true,
+    canBulkRenameDevices: false,
+    canBulkResendPasswords: true,
+    canScheduleBulkOperations: true,
+    // Device Editing (Allowed)
+    canEditDeviceMAC: true,
+    canEditDeviceCategory: true,
+    // Single User Scheduling (Allowed)
+    canScheduleUserActions: true,
+    // Site Provisioning Queue (Allowed)
+    canAccessProvisioningQueue: true,
+    // Customer Impersonation (Allowed for oversight)
+    canImpersonateCustomer: true,
+  },
+  [InternalRoles.SALES_REPRESENTATIVE]: {
+    // Sales Representative - View-only access for demos and customer presentations
+    canEditUsers: false,
+    canViewReports: true,
+    canManageDevices: false,
+    canManagePolicies: false,
+    canViewAnalytics: true,
+    canExportData: true,
+    canManageSegments: false,
+    canViewMultipleSites: true,
+    canManageBilling: true,
+    canConfigureSystem: false,
+    canManageRoles: false,
+    canViewLogs: false,
+    // Internal-specific permissions
+    canAccessInternalPortal: true,
+    canProvisionSites: false,
+    canConfigureSites: false,
+    canManageAllSites: false,
+    canViewAllCustomers: true,
+    canManageInternalUsers: false,
+    canAccessSystemSettings: false,
+    canViewAuditLogs: false,
+    canManageLicenses: true,
+    canAccessSupportTools: false,
+    // Bulk Operations (Not Available)
+    canAccessBulkOperations: false,
+    canBulkRegisterUsers: false,
+    canBulkRegisterDevices: false,
+    canBulkActivateUsers: false,
+    canBulkSuspendUsers: false,
+    canBulkBlockUsers: false,
+    canBulkChangePolicies: false,
+    canBulkRenameDevices: false,
+    canBulkResendPasswords: false,
+    canScheduleBulkOperations: false,
+    // Device Editing (Not Available)
+    canEditDeviceMAC: false,
+    canEditDeviceCategory: false,
+    // Single User Scheduling (Not Available)
+    canScheduleUserActions: false,
+    // Site Provisioning Queue (Not Available)
+    canAccessProvisioningQueue: false,
+    // Customer Impersonation (Allowed for demos)
+    canImpersonateCustomer: true,
+  },
+  [InternalRoles.DEMO_ACCOUNT]: {
+    // Demo Account - Full view access with sample data, persists after go-live
+    // This role always shows sample/demo data for training and presentations
+    canEditUsers: true,
+    canViewReports: true,
+    canManageDevices: true,
+    canManagePolicies: true,
+    canViewAnalytics: true,
+    canExportData: true,
+    canManageSegments: true,
+    canViewMultipleSites: true,
+    canManageBilling: true,
+    canConfigureSystem: true,
+    canManageRoles: true,
+    canViewLogs: true,
+    // Internal-specific permissions
+    canAccessInternalPortal: true,
+    canProvisionSites: true,
+    canConfigureSites: true,
+    canManageAllSites: true,
+    canViewAllCustomers: true,
+    canManageInternalUsers: false,
+    canAccessSystemSettings: true,
+    canViewAuditLogs: true,
+    canManageLicenses: true,
+    canAccessSupportTools: true,
+    // Bulk Operations (Full Access for demo)
+    canAccessBulkOperations: true,
+    canBulkRegisterUsers: true,
+    canBulkRegisterDevices: true,
+    canBulkActivateUsers: true,
+    canBulkSuspendUsers: true,
+    canBulkBlockUsers: true,
+    canBulkChangePolicies: true,
+    canBulkRenameDevices: true,
+    canBulkResendPasswords: true,
+    canScheduleBulkOperations: true,
+    // Device Editing (Full Access for demo)
+    canEditDeviceMAC: true,
+    canEditDeviceCategory: true,
+    // Single User Scheduling (Full Access for demo)
+    canScheduleUserActions: true,
+    // Special Demo Account flag - always use sample data
+    isDemoMode: true,
+    useSampleDataOnly: true,
+    // Site Provisioning Queue (Full Access for demo)
+    canAccessProvisioningQueue: true,
+    // Customer Impersonation (Full Access for demo)
+    canImpersonateCustomer: true,
   },
 };
 
@@ -340,6 +676,14 @@ export const DemoCredentials = {
       displayName: "Rajesh Kumar",
     },
     {
+      id: "int_ops_mgr",
+      label: "Operations Manager",
+      username: "operations@spectra.co",
+      password: "demo123",
+      role: InternalRoles.OPERATIONS_MANAGER,
+      displayName: "Sunita Verma",
+    },
+    {
       id: "int_support",
       label: "Support Engineer",
       username: "support@spectra.co",
@@ -354,6 +698,23 @@ export const DemoCredentials = {
       password: "demo123",
       role: InternalRoles.DEPLOYMENT_ENGINEER,
       displayName: "Amit Patel",
+    },
+    {
+      id: "int_sales",
+      label: "Sales Representative",
+      username: "sales@spectra.co",
+      password: "demo123",
+      role: InternalRoles.SALES_REPRESENTATIVE,
+      displayName: "Vikram Singh",
+    },
+    {
+      id: "int_demo",
+      label: "Demo Account",
+      username: "demo@spectra.co",
+      password: "demo123",
+      role: InternalRoles.DEMO_ACCOUNT,
+      displayName: "Demo User",
+      isDemoMode: true,
     },
   ],
   customer: [
@@ -377,17 +738,6 @@ export const DemoCredentials = {
       role: Roles.MANAGER,
       accessLevel: AccessLevels.COMPANY,
       displayName: "Meera Reddy",
-      companyId: "COMP_001",
-      companyName: "Sample Technologies Pvt Ltd",
-    },
-    {
-      id: "cust_company_viewer",
-      label: "Company Viewer",
-      username: "company.viewer@customer.com",
-      password: "demo123",
-      role: Roles.VIEWER,
-      accessLevel: AccessLevels.COMPANY,
-      displayName: "Arun Nair",
       companyId: "COMP_001",
       companyName: "Sample Technologies Pvt Ltd",
     },
@@ -428,17 +778,31 @@ export const DemoCredentials = {
       siteName: "Mumbai HQ",
       companyId: "COMP_001",
     },
+    // Demo Account - Full access for testing customer portal
     {
-      id: "cust_site_viewer",
-      label: "Site Viewer",
-      username: "site.viewer@customer.com",
+      id: "cust_demo_company",
+      label: "Demo Account (Company)",
+      username: "demo@customer.com",
       password: "demo123",
-      role: Roles.VIEWER,
+      role: Roles.DEMO,
+      accessLevel: AccessLevels.COMPANY,
+      displayName: "Demo Customer",
+      companyId: "COMP_001",
+      companyName: "Sample Technologies Pvt Ltd",
+      isDemoMode: true,
+    },
+    {
+      id: "cust_demo_site",
+      label: "Demo Account (Site)",
+      username: "demo.site@customer.com",
+      password: "demo123",
+      role: Roles.DEMO,
       accessLevel: AccessLevels.SITE,
-      displayName: "Anita Desai",
+      displayName: "Demo Site User",
       siteId: "SITE-MUM-ENT-001",
       siteName: "Mumbai HQ",
       companyId: "COMP_001",
+      isDemoMode: true,
     },
   ],
 };

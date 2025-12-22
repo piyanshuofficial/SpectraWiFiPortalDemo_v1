@@ -1,20 +1,15 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm install:*)",
-      "Bash(npm run build:*)",
-      "Bash(dir \"C:\\Users\\piyanshu.agrawal\\portal-frontend\" /b)",
-      "Bash(findstr:*)",
-      "Bash(dir /s /b \"C:\\Users\\piyanshu.agrawal\\portal-frontend\\prompt\")",
-      "WebFetch(domain:one.spectra.co)",
-      "Bash(dir:*)",
-      "Bash(python:*)",
-      "Bash(node -e:*)",
-      "Bash(npm start)",
-      "Bash(powershell -Command \"(Get-Content ''C:\\Users\\piyanshu.agrawal\\portal-frontend\\src\\pages\\GuestManagement\\GuestManagement.js'').Length\")",
-      "Bash(powershell -Command \"(Get-Content ''C:\\Users\\piyanshu.agrawal\\portal-frontend\\src\\pages\\Internal\\SystemConfiguration.js'').Length\")",
-      "Bash(powershell -Command \"(Get-Content ''C:\\Users\\piyanshu.agrawal\\portal-frontend\\src\\pages\\GuestManagement\\GuestManagement.css'').Length\")",
-      "Bash(powershell:*)"
+      "Bash(ls:*)",
+      "Bash(while read f)",
+      "Bash(do grep -q \"propTypes\" \"$f\")",
+      "Bash(echo:*)",
+      "Bash(done)",
+      "Bash(grep:*)",
+      "Bash(del \"C:\\Users\\piyanshu.agrawal\\portal-frontend\\KNOWLEDGE_CENTER_SCREENSHOTS.md\")",
+      "Bash(del \"C:\\Users\\piyanshu.agrawal\\portal-frontend\\build\\assets\\videos\\README.md\")",
+      "Bash(del \"C:\\Users\\piyanshu.agrawal\\portal-frontend\\public\\assets\\videos\\README.md\")"
     ],
     "deny": [],
     "ask": []

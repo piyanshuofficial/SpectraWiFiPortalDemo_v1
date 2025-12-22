@@ -28,7 +28,9 @@ import {
   FaLock,
   FaSitemap,
   FaUserShield,
-  FaBriefcase
+  FaBriefcase,
+  FaHandshake,
+  FaPlayCircle
 } from "react-icons/fa";
 import {
   UserTypes,
@@ -84,6 +86,11 @@ const PERMISSION_CATEGORIES = {
     label: "Scheduling",
     icon: FaClipboardList,
     permissions: ["canScheduleUserActions"]
+  },
+  demo_mode: {
+    label: "Demo Mode",
+    icon: FaPlayCircle,
+    permissions: ["isDemoMode", "useSampleDataOnly"]
   }
 };
 
@@ -139,7 +146,11 @@ const PERMISSION_DESCRIPTIONS = {
   canScheduleBulkOperations: "Schedule bulk operations for later",
 
   // Scheduling
-  canScheduleUserActions: "Schedule user actions for future execution"
+  canScheduleUserActions: "Schedule user actions for future execution",
+
+  // Demo Mode
+  isDemoMode: "Demo mode enabled - shows sample data only",
+  useSampleDataOnly: "Always use sample data instead of live data"
 };
 
 const PERMISSION_LABELS = {
@@ -179,7 +190,9 @@ const PERMISSION_LABELS = {
   canBulkRenameDevices: "Bulk Rename Devices",
   canBulkResendPasswords: "Bulk Resend Passwords",
   canScheduleBulkOperations: "Schedule Bulk Operations",
-  canScheduleUserActions: "Schedule User Actions"
+  canScheduleUserActions: "Schedule User Actions",
+  isDemoMode: "Demo Mode",
+  useSampleDataOnly: "Sample Data Only"
 };
 
 // ============================================
@@ -192,6 +205,12 @@ const INTERNAL_ROLE_META = {
     color: "#7c3aed",
     icon: FaUserShield
   },
+  [InternalRoles.OPERATIONS_MANAGER]: {
+    label: "Operations Manager",
+    description: "Oversees daily operations across sites. Can manage billing, perform bulk operations, and access support tools.",
+    color: "#dc2626",
+    icon: FaBriefcase
+  },
   [InternalRoles.SUPPORT_ENGINEER]: {
     label: "Support Engineer",
     description: "Customer support focused role with access to troubleshooting tools and user management capabilities.",
@@ -203,6 +222,18 @@ const INTERNAL_ROLE_META = {
     description: "Site deployment and configuration focused role. Can provision new sites and manage network configurations.",
     color: "#059669",
     icon: FaWrench
+  },
+  [InternalRoles.SALES_REPRESENTATIVE]: {
+    label: "Sales Representative",
+    description: "View-only access for demos and customer presentations. Can view analytics, reports, and billing information.",
+    color: "#ea580c",
+    icon: FaHandshake
+  },
+  [InternalRoles.DEMO_ACCOUNT]: {
+    label: "Demo Account",
+    description: "Full access with sample data only. This role always shows demo data even after going live - ideal for training and presentations.",
+    color: "#8b5cf6",
+    icon: FaPlayCircle
   }
 };
 

@@ -46,6 +46,7 @@ export const companySites = [
     alerts: 2,
     criticalAlerts: 0,
     setupDate: "2023-01-20",
+    activationDate: "2023-01-20T10:30:00Z",
   },
   {
     siteId: "SITE-DEL-ENT-002",
@@ -68,6 +69,7 @@ export const companySites = [
     alerts: 1,
     criticalAlerts: 0,
     setupDate: "2023-03-15",
+    activationDate: "2023-03-15T14:00:00Z",
   },
   {
     siteId: "SITE-BLR-ENT-003",
@@ -90,6 +92,7 @@ export const companySites = [
     alerts: 0,
     criticalAlerts: 0,
     setupDate: "2023-05-10",
+    activationDate: "2023-05-10T11:30:00Z",
   },
   {
     siteId: "SITE-HYD-ENT-004",
@@ -112,6 +115,7 @@ export const companySites = [
     alerts: 1,
     criticalAlerts: 0,
     setupDate: "2023-07-01",
+    activationDate: "2023-07-01T09:00:00Z",
   },
   {
     siteId: "SITE-CHN-ENT-005",
@@ -134,6 +138,7 @@ export const companySites = [
     alerts: 0,
     criticalAlerts: 0,
     setupDate: "2023-09-15",
+    activationDate: "2023-09-15T16:00:00Z",
   },
   {
     siteId: "SITE-PUN-ENT-006",
@@ -156,6 +161,7 @@ export const companySites = [
     alerts: 3,
     criticalAlerts: 1,
     setupDate: "2024-01-10",
+    activationDate: "2024-01-10T12:30:00Z",
   },
 ];
 
@@ -217,6 +223,24 @@ export const getSitesByCity = (city) => {
  */
 export const getSitesWithAlerts = () => {
   return companySites.filter((site) => site.alerts > 0);
+};
+
+/**
+ * Get active sites visible to customers
+ * Only sites with status 'active' should be visible on customer portal
+ * Sites in configuration_pending, under_testing, rfs_pending are not visible to customers
+ */
+export const getActiveSitesForCustomer = () => {
+  return companySites.filter((site) => site.status?.toLowerCase() === 'active');
+};
+
+/**
+ * Check if a site is visible to customers
+ * @param {Object} site - Site object
+ * @returns {boolean} - True if site should be visible to customers
+ */
+export const isSiteVisibleToCustomer = (site) => {
+  return site.status?.toLowerCase() === 'active';
 };
 
 /**
@@ -311,6 +335,8 @@ export default {
   getSitesBySegment,
   getSitesByCity,
   getSitesWithAlerts,
+  getActiveSitesForCustomer,
+  isSiteVisibleToCustomer,
   getSiteChartData,
   companyActivityLogs,
 };

@@ -1,4 +1,121 @@
-// src/pages/UserManagement/UserFormModal.js
+/**
+ * ============================================================================
+ * User Form Modal Component
+ * ============================================================================
+ *
+ * @file src/pages/UserManagement/UserFormModal.js
+ * @description Modal form for creating new users or editing existing users.
+ *              Handles segment-specific fields, policy selection, license
+ *              validation, and date-based deactivation scheduling.
+ *
+ * @modes
+ * - ADD Mode: Creating a new user (user prop is null)
+ * - EDIT Mode: Modifying existing user (user prop contains user data)
+ *
+ * @formFields
+ * Common fields (all segments):
+ * - User ID (required, read-only in edit mode)
+ * - First Name, Last Name (required)
+ * - Mobile (required, format: 91-XXXXXXXXXX)
+ * - Email (required for some segments)
+ * - Speed, Data Volume, Device Limit (policy selection)
+ * - Data Cycle Type (Daily/Monthly)
+ *
+ * Segment-specific fields:
+ * - Co-Living: Resident Type, Check-in/Check-out dates
+ * - Co-Working: Member Type, Move-in/Move-out dates
+ * - Hotel: Check-in/Check-out dates and times
+ * - Enterprise: Department, Employee ID
+ * - PG: Room Number, Floor
+ *
+ * @policySelection
+ * ```
+ * ┌──────────────────────────────────────────────────────────────────────────┐
+ * │                    Policy Selection Logic                                │
+ * ├──────────────────────────────────────────────────────────────────────────┤
+ * │ Fixed Bandwidth Sites:                                                   │
+ * │   Speed options limited by site's maxBandwidth                          │
+ * │   All data/device options available                                     │
+ * │                                                                          │
+ * │ User Level Sites:                                                        │
+ * │   Options cascaded based on available policy combinations               │
+ * │   Speed→Data→Device filtering ensures valid combinations only           │
+ * └──────────────────────────────────────────────────────────────────────────┘
+ * ```
+ *
+ * @licenseValidation
+ * Before submission, checks:
+ * 1. Overall site license availability
+ * 2. Per-policy license limits (for user-level sites)
+ * 3. Shows error if no licenses available
+ *
+ * @autoDeactivation
+ * For segments with check-out/move-out dates:
+ * - System schedules automatic user deactivation
+ * - Deactivation occurs at specified time on check-out date
+ * - Backend should create scheduled job when user saved
+ *
+ * @segmentBehaviors
+ * | Segment     | Cycle Type          | Date Fields Required          |
+ * |-------------|---------------------|-------------------------------|
+ * | Enterprise  | Daily/Monthly       | None                          |
+ * | Hotel       | Daily (default)     | Check-in/out (unless Monthly) |
+ * | Co-Living   | Based on resident   | Short-term: Check-in/out      |
+ * | Co-Working  | Based on member     | Temporary: Move-in/out        |
+ * | PG          | Monthly only        | None                          |
+ * | Misc        | Site-configured     | None                          |
+ *
+ * @validation
+ * - Required field validation
+ * - Email format validation
+ * - Date range validation (end >= start)
+ * - Time validation for same-day check-in/out
+ * - License availability check
+ *
+ * @submitFlow
+ * ```
+ * User clicks Submit
+ *       │
+ *       ▼
+ * Validate all fields
+ *       │
+ *       ▼ (if valid)
+ * Check license availability
+ *       │
+ *       ▼ (if available)
+ * Generate policy ID
+ *       │
+ *       ▼
+ * For EDIT: Show confirmation modal
+ * For ADD: Submit directly
+ *       │
+ *       ▼
+ * Call onSubmit with user data
+ * ```
+ *
+ * @editRestrictions
+ * When editing (user prop exists):
+ * - User ID: Read-only
+ * - Email: Read-only for some segments
+ * - Mobile: Read-only for some segments
+ * - Cycle Type: Read-only (cannot change billing cycle)
+ *
+ * @dependencies
+ * - Modal: Base modal component
+ * - policyConfig: Policy options and validation
+ * - segmentFieldConfig: Segment-specific form fields
+ * - siteConfig: Site settings including bandwidth limits
+ * - licenseUtils: License availability checking
+ * - validationUtils: Field validation functions
+ *
+ * @relatedFiles
+ * - UserList.js: Parent page that renders this modal
+ * - policyConfig.js: Policy options and combinations
+ * - segmentFieldConfig.js: Segment-specific fields
+ * - licenseUtils.js: License checking utilities
+ *
+ * ============================================================================
+ */
 
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import Modal from "../../components/Modal";
@@ -565,7 +682,7 @@ const UserFormModal = ({
           <div className="user-form-row">
             <label htmlFor="mobile">
               Mobile <span className="required-asterisk">*</span>
-              {user && !allowMobileEdit && <span style={{ fontSize: '0.85em', color: '#666' }}> (Non-editable for this segment)</span>}
+              {user && !allowMobileEdit && <span style={{ fontSize: '0.85em', color: '#666' }}> (Read-only)</span>}
             </label>
             <input
               id="mobile"
@@ -591,7 +708,7 @@ const UserFormModal = ({
           <div className="user-form-row">
             <label htmlFor="email">
               Email{isEmailRequired && <span className="required-asterisk">*</span>}
-              {user && !allowEmailEdit && <span style={{ fontSize: '0.85em', color: '#666' }}> (Non-editable for this segment)</span>}
+              {user && !allowEmailEdit && <span style={{ fontSize: '0.85em', color: '#666' }}> (Read-only)</span>}
             </label>
             <input
               id="email"
